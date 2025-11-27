@@ -96,25 +96,20 @@ export const hi: TranslationNamespaces = {
     description:
       "यहाँ आपको अपने सैलून की एक तेज़ झलक मिलती है। आगे चलकर यहाँ के आँकड़े सीधे बुकिंग इंजन से आएँगे।",
     nextStepTitle: "अगला कदम",
-    nextStepDescription:
-      "शुरू करने के लिए कर्मचारी, सेवाएँ और शिफ्ट्स जोड़ें, फिर अपना सार्वजनिक बुकिंग लिंक साझा करें।",
-    nextStepBodyTitle: "1. कर्मचारी और सेवाएँ जोड़ें",
+    nextStepDescription: "टेक्निकल सेटअप",
+    nextStepBodyTitle: "Supabase से कनेक्ट करें",
     nextStepBodyText:
-      "“कर्मचारी” और “सेवाएँ” में जाएँ और वे टीम सदस्य व ट्रीटमेंट्स जोड़ें जो आप ऑफ़र करते हैं।",
-    stepTwoTitle: "2. शिफ्ट्स और समय‑सारणी बनाएँ",
-    stepTwoText:
-      "“शिफ्ट्स” में प्रत्येक कर्मचारी के लिए वे दिन और समय सेट करें जिनमें वे बुकिंग के लिए उपलब्ध हों।",
-    stepThreeTitle: "3. सार्वजनिक बुकिंग लिंक साझा करें",
-    stepThreeText:
-      "जब सब तैयार हो जाए, तो `/book/[slug]` लिंक अपनी वेबसाइट, इंस्टाग्राम या गूगल प्रोफ़ाइल पर साझा करें।",
-    statsTodayTitle: "आज के मुख्य आँकड़े",
-    statsTodayBookingsLabel: "आज की बुकिंग्स",
-    statsUpcomingLabel: "आने वाली टाइम्स",
-    statsEmployeesLabel: "सक्रिय कर्मचारी",
-    statsOccupancyLabel: "क्षमता उपयोग",
-    emptyStateTitle: "अभी तक कोई डेटा नहीं",
-    emptyStateBody:
-      "जैसे‑जैसे बुकिंग्स आती जाएँगी, यहाँ रोज़ के महत्वपूर्ण नंबर दिखेंगे।",
+      "अपनी Supabase keys को `.env.local` में जोड़ें और multi‑tenancy को सक्रिय करें।",
+    onboardingTitle: "Onboarding",
+    onboardingDescription: "पहला सैलून",
+    onboardingBodyTitle: "अपना पहला सैलून बनाएँ",
+    onboardingBodyText:
+      "हम बाद में नाम, पता और ओनर की जानकारी भरने के लिए एक सरल wizard जोड़ेंगे।",
+    bookingTitle: "बुकिंग",
+    bookingDescription: "जल्द आ रहा है",
+    bookingBodyTitle: "इंटरनल कैलेंडर और पब्लिक बुकिंग पेज",
+    bookingBodyText:
+      "यह कार्ड बाद में सिस्टम से आने वाले असली बुकिंग डेटा से बदल दिया जाएगा।",
   },
   calendar: {
     title: "कैलेंडर",
