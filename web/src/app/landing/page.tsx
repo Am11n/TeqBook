@@ -1455,7 +1455,7 @@ export default function LandingPage() {
                 <option value="hi">🇮🇳 हिन्दी</option>
               </select>
             </div>
-            <Link href="/auth/login">
+            <Link href="/login">
               <Button variant="outline" size="sm">
                 {locale === "nb"
                   ? "Logg inn"
@@ -1501,7 +1501,7 @@ export default function LandingPage() {
                 {t.heroSubtitle}
               </p>
               <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Link href="/auth/login" className="w-full sm:w-auto">
+                <Link href="/login" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto">
                     {t.ctaPrimary}
                   </Button>
