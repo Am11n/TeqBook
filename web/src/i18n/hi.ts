@@ -40,15 +40,17 @@ export const hi: TranslationNamespaces = {
       "यह सैलून या तो मौजूद नहीं है या सार्वजनिक बुकिंग के लिए सक्रिय नहीं है।",
   },
   login: {
-    title: "लॉग इन",
-    description: "अपने सैलून की बुकिंग और सेटिंग्स प्रबंधित करें।",
+    title: "TeqBook में लॉग इन करें",
+    description:
+      "लोकल डेवलपमेंट के लिए: Supabase डैशबोर्ड में ई‑मेल और पासवर्ड के साथ एक यूज़र बनाइए, और यहाँ बिना ई‑मेल वेरिफिकेशन के लॉग इन कीजिए।",
     emailLabel: "ई‑मेल",
+    emailPlaceholder: "aap@salon.com",
     passwordLabel: "पासवर्ड",
-    submitLabel: "लॉग इन",
-    loadingLabel: "लॉग इन हो रहा है...",
-    errorRequired: "कृपया ई‑मेल और पासवर्ड दर्ज करें।",
-    errorGeneric:
-      "लॉग इन नहीं हो सका। ई‑मेल/पासवर्ड जाँचें या दोबारा प्रयास करें।",
+    passwordPlaceholder: "कम से कम 6 अक्षर",
+    loginError: "लॉग इन नहीं हो सका।",
+    loggingIn: "लॉग इन हो रहा है...",
+    loginButton: "लॉग इन",
+    tip: "टिप: Supabase में आप Auth > Authentication > Email के तहत ई‑मेल कन्फर्मेशन को अस्थायी रूप से बंद कर सकते हैं, ताकि नए यूज़र सीधे लॉग इन कर सकें।",
   },
   onboarding: {
     title: "अपना पहला सैलून बनाएँ",
