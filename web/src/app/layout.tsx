@@ -16,10 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TeqBook – Salon Dashboard",
   description: "Nordic-inspired salon booking SaaS.",
+  // Use relative paths so favicon works both locally and under GitHub Pages basePath.
   icons: {
-    icon: "/Favikon.svg",
-    shortcut: "/Favikon.svg",
-    apple: "/Favikon.svg",
+    icon: "Favikon.svg",
+    shortcut: "Favikon.svg",
+    apple: "Favikon.svg",
   },
 };
 

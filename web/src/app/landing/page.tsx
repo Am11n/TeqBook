@@ -1394,7 +1394,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             <Image
-              src="/Favikon.svg"
+              src="Favikon.svg"
               alt={t.brand}
               width={120}
               height={32}

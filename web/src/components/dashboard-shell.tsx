@@ -55,7 +55,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       <aside className="hidden w-64 border-r bg-sidebar px-6 py-6 md:flex md:flex-col md:gap-8">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/Favikon.svg"
+            src="Favikon.svg"
             alt="TeqBook logo"
             width={120}
             height={32}
@@ -180,14 +180,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 className="flex items-center gap-2"
                 onClick={() => setMobileNavOpen(false)}
               >
-                  <Image
-                    src="/Favikon.svg"
-                    alt="TeqBook logo"
-                    width={120}
-                    height={32}
-                    className="h-8 w-auto"
-                    priority
-                  />
+                <Image
+                  src="Favikon.svg"
+                  alt="TeqBook logo"
+                  width={120}
+                  height={32}
+                  className="h-8 w-auto"
+                  priority
+                />
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold tracking-tight">
                     Eivo
