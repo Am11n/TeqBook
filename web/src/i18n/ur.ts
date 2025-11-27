@@ -2,39 +2,56 @@ import type { TranslationNamespaces } from "./translations";
 
 export const ur: TranslationNamespaces = {
   publicBooking: {
-    title: "اپوائنٹمنٹ بُک کریں",
-    subtitle: "آن لائن بُک کریں، ادائیگی ہمیشہ سیلون پر ہی کی جاتی ہے۔",
-    selectServiceLabel: "سروس منتخب کریں",
-    selectEmployeeLabel: "اسٹاف منتخب کریں (اختیاری)",
-    selectDateLabel: "تاریخ منتخب کریں",
-    selectTimeLabel: "وقت منتخب کریں",
-    customerNameLabel: "نام",
-    customerPhoneLabel: "فون نمبر",
-    customerEmailLabel: "ای میل (اختیاری)",
-    notesLabel: "نوٹس (اختیاری)",
-    confirmButton: "بُکنگ کی تصدیق کریں",
-    successTitle: "بُکنگ بن گئی!",
-    successBody:
-      "آپ کی بُکنگ بن چکی ہے۔ براہِ کرم ادائیگی کے لیے سیلون پر تشریف لائیں – آن لائن کارڈ کی ادائیگی نہیں لی جاتی۔",
-    payAtSalonBadge: "ادائیگی سیلون پر",
-    noSlotsTitle: "اس دن کے لیے کوئی خالی وقت نہیں",
-    noSlotsBody:
-      "کوئی اور دن یا دوسری سروس/اسٹاف آزما کر دیکھیں، یا براہِ راست سیلون سے رابطہ کریں۔",
-    loading: "لوڈ ہو رہا ہے...",
-    errorTitle: "بُکنگ صفحہ نہیں دکھایا جا سکا",
-    errorBody:
-      "یہ سیلون یا تو نہیں ملا یا عوامی بُکنگ کے لیے فعال نہیں ہے۔ براہِ کرم یو آر ایل چیک کریں یا براہِ راست سیلون سے رابطہ کریں۔",
+    notFound:
+      "یہ سیلون نہیں ملا یا عوامی بُکنگ کے لیے فعال نہیں ہے۔ براہِ کرم URL چیک کریں یا براہِ راست سیلون سے رابطہ کریں۔",
+    loadError: "سروسز یا اسٹاف لوڈ نہیں ہو سکے۔",
+    loadingSalon: "سیلون لوڈ ہو رہا ہے…",
+    headerSubtitle: "آن لائن بُک کریں – ادائیگی ہمیشہ سیلون پر ہی ہوتی ہے۔",
+    payInSalonBadge: "ادائیگی سیلون پر",
+    step1Title: "1. سروس منتخب کریں",
+    step1Description:
+      "پہلے سروس منتخب کریں، پھر اگر چاہیں تو اسٹاف اور وقت منتخب کریں۔",
+    serviceLabel: "سروس",
+    servicePlaceholder: "سروس منتخب کریں…",
+    employeeLabel: "اسٹاف",
+    employeePlaceholder: "اسٹاف منتخب کریں…",
+    dateLabel: "تاریخ",
+    loadSlots: "خالی اوقات دیکھیں",
+    loadingSlots: "خالی اوقات لوڈ ہو رہے ہیں…",
+    step2Label: "2. وقت منتخب کریں",
+    noSlotsYet: "پہلے خالی اوقات حاصل کریں",
+    selectSlotPlaceholder: "کوئی وقت منتخب کریں…",
+    step3Title: "3. آپ کی معلومات",
+    step3Description:
+      "ہم یہ معلومات بُکنگ کی تصدیق اور آئندہ ریمائنڈرز کے لیے استعمال کرتے ہیں۔ ادائیگی ہمیشہ سیلون پر ہی کی جاتی ہے۔",
+    nameLabel: "نام",
+    emailLabel: "ای میل (اختیاری)",
+    emailPlaceholder: "aap@example.com",
+    phoneLabel: "فون (اختیاری)",
+    phonePlaceholder: "+92 300 000 0000",
+    submitSaving: "درخواست بھیجی جا رہی ہے…",
+    submitLabel: "درخواست کنفرم کریں",
+    payInfo:
+      "آپ ہمیشہ سیلون پر ہی ادائیگی کرتے ہیں۔ آن لائن کارڈ پیمنٹ نہیں لی جاتی۔",
+    successMessage:
+      "آپ کی بُکنگ رجسٹر ہو گئی ہے! سیلون کنفرم کرے گا اور ادائیگی سیلون پر ہی ہوگی۔",
+    createError: "بُکنگ بناتے وقت کچھ غلط ہو گیا۔",
+    unavailableTitle: "بُکنگ پیج نہیں دکھایا جا سکا",
+    unavailableDescription:
+      "یہ سیلون یا تو موجود نہیں یا عوامی بُکنگ کے لیے فعال نہیں ہے۔",
   },
   login: {
     title: "TeqBook میں لاگ اِن کریں",
-    description: "اپنے سیلون کی بُکنگ اور سیٹنگز مینج کریں۔",
+    description:
+      "لوکل ڈیویلپمنٹ کے لیے: Supabase ڈیش بورڈ میں ای میل اور پاس ورڈ کے ساتھ ایک یوزر بنائیں، اور یہاں بغیر ای میل ویری فیکیشن کے لاگ اِن کریں۔",
     emailLabel: "ای میل",
+    emailPlaceholder: "aap@salon.com",
     passwordLabel: "پاس ورڈ",
-    submitLabel: "لاگ اِن",
-    loadingLabel: "لاگ اِن ہو رہا ہے...",
-    errorRequired: "براہِ کرم ای میل اور پاس ورڈ درج کریں۔",
-    errorGeneric:
-      "لاگ اِن نہیں ہو سکا۔ ای میل/پاس ورڈ چیک کریں یا دوبارہ کوشش کریں۔",
+    passwordPlaceholder: "کم از کم 6 حروف",
+    loginError: "لاگ اِن نہیں ہو سکا۔",
+    loggingIn: "لاگ اِن ہو رہا ہے...",
+    loginButton: "لاگ اِن",
+    tip: "ٹِپ: Supabase میں آپ Auth > Authentication > Email کے تحت ای میل کنفرمیشن کو عارضی طور پر بند کر سکتے ہیں تاکہ نئے یوزرز فوراً لاگ اِن کر سکیں۔",
   },
   onboarding: {
     title: "اپنا پہلا سیلون بنائیں",
@@ -74,27 +91,22 @@ export const ur: TranslationNamespaces = {
   home: {
     title: "جائزہ",
     description:
-      "یہاں آپ کو اپنے سیلون کی ایک تیز جھلک ملتی ہے۔ مستقبل میں یہاں کے نمبر براہِ راست بُکنگ انجِن سے آئیں گے۔",
+      "یہاں آپ کو اپنے سیلون کی ایک تیز جھلک ملتی ہے۔ مستقبل میں یہاں کے نمبر براہِ راست بُکنگ انجن سے آئیں گے۔",
     nextStepTitle: "اگلا قدم",
-    nextStepDescription:
-      "شروع کرنے کے لیے ملازمین، سروسز اور شفٹس شامل کریں، پھر اپنی عوامی بُکنگ صفحہ شیئر کریں۔",
-    nextStepBodyTitle: "۱. ملازمین اور سروسز شامل کریں",
+    nextStepDescription: "ٹیکنیکل سیٹ اَپ",
+    nextStepBodyTitle: "Supabase سے کنیکٹ کریں",
     nextStepBodyText:
-      "“ملازمین” اور “سروسز” میں جائیں، وہ ٹیم ممبرز اور ٹریٹمنٹس شامل کریں جو آپ آفر کرتے ہیں۔",
-    stepTwoTitle: "۲. شفٹس اور اوقات کار بنائیں",
-    stepTwoText:
-      "“شفٹس” میں ہر ملازم کے لیے وہ دن اور اوقات سیٹ کریں جن میں وہ بُکنگ کے لیے دستیاب ہو۔",
-    stepThreeTitle: "۳. عوامی بُکنگ لنک شیئر کریں",
-    stepThreeText:
-      "جب سب کچھ تیار ہو جائے، تو `/book/[slug]` لنک اپنی ویب سائٹ، انسٹاگرام یا گوگل پروفائل پر شیئر کریں۔",
-    statsTodayTitle: "آج کی اہم معلومات",
-    statsTodayBookingsLabel: "آج کی بُکنگز",
-    statsUpcomingLabel: "آنے والی ٹائیمز",
-    statsEmployeesLabel: "فعال ملازمین",
-    statsOccupancyLabel: "قابلیت کا استعمال",
-    emptyStateTitle: "ابھی تک کوئی ڈیٹا نہیں",
-    emptyStateBody:
-      "جب بُکنگز آنا شروع ہوں گی، تو یہاں روزانہ کے اہم نمبر ظاہر ہوں گے۔",
+      "اپنی Supabase keys کو `.env.local` میں شامل کریں اور multi‑tenancy کو آن کریں۔",
+    onboardingTitle: "Onboarding",
+    onboardingDescription: "پہلا سیلون",
+    onboardingBodyTitle: "اپنا پہلا سیلون بنائیں",
+    onboardingBodyText:
+      "بعد میں ہم نام، ایڈریس اور اونر کی تفصیل کے لیے ایک سادہ وزارڈ شامل کریں گے۔",
+    bookingTitle: "بُکنگ",
+    bookingDescription: "جلد آ رہا ہے",
+    bookingBodyTitle: "اندرونی کیلنڈر اور عوامی بُکنگ پیج",
+    bookingBodyText:
+      "یہ کارڈ بعد میں سسٹم سے آنے والے اصل بُکنگ ڈیٹا سے تبدیل ہو جائے گا۔",
   },
   calendar: {
     title: "کیلنڈر",
