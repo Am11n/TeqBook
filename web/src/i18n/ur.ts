@@ -56,17 +56,20 @@ export const ur: TranslationNamespaces = {
   onboarding: {
     title: "اپنا پہلا سیلون بنائیں",
     description:
-      "ہم آپ کے لیے ایک سیلون بناتے ہیں اور آپ کے یوزر کو اسی کے ساتھ جوڑتے ہیں۔",
-    salonNameLabel: "سیلون کا نام",
-    salonNamePlaceholder: "مثال: TeqBook سیلون",
-    submitLabel: "سیلون بنائیں",
-    loadingLabel: "سیلون بنایا جا رہا ہے...",
-    successTitle: "سیلون بن گیا!",
-    successBody:
-      "آپ کا سیلون بن گیا ہے۔ اب آپ ملازمین، سروسز اور بُکنگز شامل کر سکتے ہیں۔",
-    errorRequired: "براہِ کرم سیلون کا نام درج کریں۔",
-    errorGeneric:
-      "کچھ غلط ہو گیا۔ براہِ کرم بعد میں دوبارہ کوشش کریں یا ایڈمن سے رابطہ کریں۔",
+      "ہم ڈیٹا بیس میں آپ کے لیے ایک سیلون بناتے ہیں اور آپ کے یوزر کو مالک کے طور پر جوڑتے ہیں۔",
+    footerHint:
+      "اگر یہاں ایرر آئے تو Supabase میں وہ functions اور policies چیک کریں جو ہم نے SQL editor میں بنائی تھیں۔",
+    nameLabel: "سیلون کا نام",
+    namePlaceholder: "مثال: TeqBook سیلون",
+    createError: "سیلون بنایا نہیں جا سکا۔",
+    saving: "سیلون بنایا جا رہا ہے...",
+    saveButton: "سیلون محفوظ کریں",
+    step1:
+      "1. یہ پیج Postgres فنکشن create_salon_for_current_user کو کال کرتا ہے۔",
+    step2:
+      "2. فنکشن salons میں ایک row اور profiles میں ایک row بناتا (یا اپڈیٹ کرتا) ہے۔",
+    step3:
+      "3. جب سب کچھ محفوظ ہو جائے، تو آپ کو ڈیش بورڈ پر ری ڈائریکٹ کر دیا جاتا ہے۔",
   },
   dashboard: {
     brandSubtitle: "سیلون ڈیش بورڈ",
