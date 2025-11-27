@@ -1,19 +1,18 @@
 import PublicBookingPage from "@/components/public-booking-page";
 
-type PageProps = {
-  params: {
-    salon_slug: string;
-  };
+type RouteParams = {
+  salon_slug: string;
 };
 
 // With output: "export", dynamic routes must define generateStaticParams.
-// We don't pre-generate any concrete slugs at build time for GitHub Pages,
-// so we return an empty list here and let the app handle routing client-side.
-export function generateStaticParams(): PageProps["params"][] {
-  return [];
-}
+// For GitHub Pages we don't know real slugs at build time, so we export
+// a single placeholder path. The actual runtime slugs will typically be
+// used in a deployed environment with a real domain.
+export const generateStaticParams = async (): Promise<RouteParams[]> => {
+  return [{ salon_slug: "example-salon" }];
+};
 
-export default function BookSalonPage({ params }: PageProps) {
+export default function BookSalonPage({ params }: { params: RouteParams }) {
   const { salon_slug } = params;
   return <PublicBookingPage slug={salon_slug} />;
 }
