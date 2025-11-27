@@ -260,7 +260,6 @@ export const ti: TranslationNamespaces = {
     statusScheduled: "ተመዝጊቡ",
     statusCompleted: "ተዛዚሙ",
     statusCancelled: "ተሰሪዙ",
-    colNotes: "ማስታወሻ",
     dialogTitle: "ሓድሽ መመዝገብቲ",
     dialogDescription:
       "ሰራሕተኛ፣ ኣገልግሎትን ጊዜን ምረፅ። ዝቐረቡ ጊዜታት ብምኽንያት ስርሒታት ስራሕን ዝነበሩ መመዝገብታትን ንኽፍትሕ ክኸውን እዩ።",
