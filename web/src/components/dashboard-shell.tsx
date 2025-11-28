@@ -253,6 +253,37 @@ export function DashboardShell({ children }: DashboardShellProps) {
               />
             </nav>
 
+            {/* Language selector for mobile */}
+            <div className="mt-4 flex flex-col gap-2 border-t pt-4">
+              <label className="text-xs font-medium text-muted-foreground">
+                {texts.langLabel}:
+              </label>
+              <select
+                value={locale}
+                onChange={(e) => {
+                  setLocale(e.target.value as any);
+                  setMobileNavOpen(false);
+                }}
+                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="nb">🇳🇴 Norsk</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="so">🇸🇴 Soomaali</option>
+                <option value="ti">🇪🇷 ትግርኛ</option>
+                <option value="am">🇪🇹 አማርኛ</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="pl">🇵🇱 Polski</option>
+                <option value="vi">🇻🇳 Tiếng Việt</option>
+                <option value="tl">🇵🇭 Tagalog</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="fa">🇮🇷 فارسی</option>
+                <option value="dar">🇦🇫 دری</option>
+                <option value="ur">🇵🇰 اردو</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+              </select>
+            </div>
+
             <p className="mt-auto text-xs text-muted-foreground">
               {texts.builtFor}
             </p>
