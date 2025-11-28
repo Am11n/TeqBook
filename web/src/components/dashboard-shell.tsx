@@ -190,7 +190,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 />
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold tracking-tight">
-                    Eivo
+                    TeqBook
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {texts.brandSubtitle}
