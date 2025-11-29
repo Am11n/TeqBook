@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -17,15 +16,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-
-type Employee = {
-  id: string;
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-  role: string | null;
-  is_active: boolean;
-};
+import { useCurrentSalon } from "@/components/salon-provider";
+import {
+  getEmployeesWithServicesMap,
+  createEmployee,
+  toggleEmployeeActive,
+  deleteEmployee,
+} from "@/lib/repositories/employees";
+import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
+import type { Employee, Service } from "@/lib/types";
 
 export default function EmployeesPage() {
   const { locale } = useLocale();
@@ -60,107 +59,115 @@ export default function EmployeesPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].employees;
-  const [salonId, setSalonId] = useState<string | null>(null);
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [employeeServicesMap, setEmployeeServicesMap] = useState<Record<string, Service[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState("nb");
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    async function loadInitial() {
-      setLoading(true);
-      setError(null);
+  async function loadEmployees() {
+    setLoading(true);
+    setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(t.mustBeLoggedIn);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("salon_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profileError || !profile?.salon_id) {
-        setError(t.noSalon);
-        setLoading(false);
-        return;
-      }
-
-      setSalonId(profile.salon_id);
-
-      const { data: employeesData, error: employeesError } = await supabase
-        .from("employees")
-        .select("id, full_name, email, phone, role, is_active")
-        .eq("salon_id", profile.salon_id)
-        .order("created_at", { ascending: true });
-
-      if (employeesError) {
-        setError(employeesError.message);
-        setLoading(false);
-        return;
-      }
-
-      setEmployees(employeesData ?? []);
+    if (!salon?.id) {
+      setError(t.noSalon);
       setLoading(false);
+      return;
     }
 
-    loadInitial();
-  }, []);
+    const [
+      { data: employeesData, error: employeesError },
+      { data: servicesData, error: servicesError },
+    ] = await Promise.all([
+      getEmployeesWithServicesMap(salon.id),
+      getActiveServicesForCurrentSalon(salon.id),
+    ]);
+
+    if (employeesError || servicesError) {
+      setError(employeesError ?? servicesError ?? "Kunne ikke laste data");
+      setLoading(false);
+      return;
+    }
+
+    if (!employeesData || !servicesData) {
+      setError("Kunne ikke laste data");
+      setLoading(false);
+      return;
+    }
+
+    setEmployees(employeesData.employees);
+    setServices(servicesData);
+    setEmployeeServicesMap(employeesData.servicesMap);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (!isReady) {
+      if (salonError) {
+        setError(salonError);
+      } else if (salonLoading) {
+        setLoading(true);
+      } else {
+        setError(t.noSalon);
+        setLoading(false);
+      }
+      return;
+    }
+
+    loadEmployees();
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon]);
 
   async function handleAddEmployee(e: FormEvent) {
     e.preventDefault();
-    if (!salonId) return;
+    if (!salon?.id) return;
     if (!fullName.trim()) return;
 
     setSaving(true);
     setError(null);
 
-    const { data, error: insertError } = await supabase
-      .from("employees")
-      .insert({
-        salon_id: salonId,
-        full_name: fullName.trim(),
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-      })
-      .select("id, full_name, email, phone, role, is_active")
-      .maybeSingle();
+    const { data: employeeData, error: insertError } = await createEmployee({
+      salon_id: salon.id,
+      full_name: fullName.trim(),
+      email: email.trim() || null,
+      phone: phone.trim() || null,
+      role: role.trim() || null,
+      preferred_language: preferredLanguage || "nb",
+      service_ids: selectedServices.length > 0 ? selectedServices : undefined,
+    });
 
-    if (insertError || !data) {
-      setError(insertError?.message ?? t.addError);
+    if (insertError || !employeeData) {
+      setError(insertError ?? t.addError);
       setSaving(false);
       return;
     }
 
-    setEmployees((prev) => [...prev, data]);
+    // Reload to get updated services map
+    await loadEmployees();
     setFullName("");
     setEmail("");
     setPhone("");
+    setRole("");
+    setPreferredLanguage("nb");
+    setSelectedServices([]);
     setSaving(false);
   }
 
   async function handleToggleActive(id: string, isActive: boolean) {
-    const { data, error: updateError } = await supabase
-      .from("employees")
-      .update({ is_active: !isActive })
-      .eq("id", id)
-      .select("id, full_name, email, phone, role, is_active")
-      .maybeSingle();
+    if (!salon?.id) return;
+
+    const { data, error: updateError } = await toggleEmployeeActive(salon.id, id, isActive);
 
     if (updateError || !data) {
-      setError(updateError?.message ?? t.updateError);
+      setError(updateError ?? t.updateError);
       return;
     }
 
@@ -168,13 +175,12 @@ export default function EmployeesPage() {
   }
 
   async function handleDelete(id: string) {
-    const { error: deleteError } = await supabase
-      .from("employees")
-      .delete()
-      .eq("id", id);
+    if (!salon?.id) return;
+
+    const { error: deleteError } = await deleteEmployee(salon.id, id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(deleteError);
       return;
     }
 
@@ -238,6 +244,74 @@ export default function EmployeesPage() {
             </div>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 text-sm">
+              <label htmlFor="role" className="font-medium">
+                {t.roleLabel}
+              </label>
+              <input
+                id="role"
+                type="text"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+                placeholder={t.rolePlaceholder}
+              />
+            </div>
+            <div className="space-y-2 text-sm">
+              <label htmlFor="preferred_language" className="font-medium">
+                {t.preferredLanguageLabel}
+              </label>
+              <select
+                id="preferred_language"
+                value={preferredLanguage}
+                onChange={(e) => setPreferredLanguage(e.target.value)}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              >
+                <option value="nb">🇳🇴 Norsk</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="so">🇸🇴 Soomaali</option>
+                <option value="ti">🇪🇷 ትግርኛ</option>
+                <option value="am">🇪🇹 አማርኛ</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="pl">🇵🇱 Polski</option>
+                <option value="vi">🇻🇳 Tiếng Việt</option>
+                <option value="tl">🇵🇭 Tagalog</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="fa">🇮🇷 فارسی</option>
+                <option value="dar">🇦🇫 دری</option>
+                <option value="ur">🇵🇰 اردو</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <label htmlFor="services" className="font-medium">
+              {t.servicesLabel}
+            </label>
+            <select
+              id="services"
+              multiple
+              value={selectedServices}
+              onChange={(e) => {
+                const values = Array.from(e.target.selectedOptions, (option) => option.value);
+                setSelectedServices(values);
+              }}
+              className="h-24 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+            >
+              {services.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {t.servicesPlaceholder} (Hold Ctrl/Cmd for å velge flere)
+            </p>
+          </div>
+
           {error && (
             <p className="text-sm text-red-500" aria-live="polite">
               {error}
@@ -246,7 +320,7 @@ export default function EmployeesPage() {
 
           <button
             type="submit"
-            disabled={saving || !salonId}
+            disabled={saving || !salon?.id}
             className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {saving ? "…" : t.addButton}
@@ -305,6 +379,12 @@ export default function EmployeesPage() {
                     <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                       {employee.email && <div>{employee.email}</div>}
                       {employee.phone && <div>{employee.phone}</div>}
+                      {employeeServicesMap[employee.id]?.length > 0 && (
+                        <div className="mt-1">
+                          <span className="font-medium">Tjenester: </span>
+                          {employeeServicesMap[employee.id].map((s) => s.name).join(", ")}
+                        </div>
+                      )}
                     </div>
                     <div className="mt-2 flex justify-end">
                       <Button
@@ -330,7 +410,13 @@ export default function EmployeesPage() {
                         {t.colName}
                       </TableHead>
                       <TableHead className="pr-4">
+                        {t.colRole}
+                      </TableHead>
+                      <TableHead className="pr-4">
                         {t.colContact}
+                      </TableHead>
+                      <TableHead className="pr-4">
+                        {t.colServices}
                       </TableHead>
                       <TableHead className="pr-4">
                         {t.colStatus}
@@ -347,15 +433,19 @@ export default function EmployeesPage() {
                           <div className="font-medium">
                             {employee.full_name}
                           </div>
-                          {employee.role && (
-                            <div className="text-xs text-muted-foreground">
-                              {employee.role}
-                            </div>
-                          )}
+                        </TableCell>
+                        <TableCell className="pr-4 text-xs text-muted-foreground">
+                          {employee.role || "-"}
                         </TableCell>
                         <TableCell className="pr-4 text-xs text-muted-foreground">
                           {employee.email && <div>{employee.email}</div>}
                           {employee.phone && <div>{employee.phone}</div>}
+                          {!employee.email && !employee.phone && "-"}
+                        </TableCell>
+                        <TableCell className="pr-4 text-xs text-muted-foreground">
+                          {employeeServicesMap[employee.id]?.length > 0
+                            ? employeeServicesMap[employee.id].map((s) => s.name).join(", ")
+                            : "-"}
                         </TableCell>
                         <TableCell className="pr-4 text-xs">
                           <Button

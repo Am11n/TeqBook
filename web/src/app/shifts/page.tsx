@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -17,22 +16,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-
-type Employee = {
-  id: string;
-  full_name: string;
-};
-
-type Shift = {
-  id: string;
-  employee_id: string;
-  weekday: number;
-  start_time: string;
-  end_time: string;
-  employee?: {
-    full_name: string;
-  };
-};
+import { useCurrentSalon } from "@/components/salon-provider";
+import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
+import { getShiftsForCurrentSalon, createShift, deleteShift } from "@/lib/repositories/shifts";
+import type { Shift } from "@/lib/types";
 
 export default function ShiftsPage() {
   const { locale } = useLocale();
@@ -97,8 +84,8 @@ export default function ShiftsPage() {
             { value: 6, label: "Saturday" },
             { value: 0, label: "Sunday" },
           ];
-  const [salonId, setSalonId] = useState<string | null>(null);
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,107 +97,84 @@ export default function ShiftsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!isReady) {
+      if (salonError) {
+        setError(salonError);
+      } else if (salonLoading) {
+        setLoading(true);
+      } else {
+        setError(t.noSalon);
+        setLoading(false);
+      }
+      return;
+    }
+
     async function loadInitial() {
       setLoading(true);
       setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(t.mustBeLoggedIn);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("salon_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profileError || !profile?.salon_id) {
+      if (!salon?.id) {
         setError(t.noSalon);
         setLoading(false);
         return;
       }
 
-      setSalonId(profile.salon_id);
-
-      const [{ data: employeesData, error: employeesError }, { data: shiftsData, error: shiftsError }] =
-        await Promise.all([
-          supabase
-            .from("employees")
-            .select("id, full_name")
-            .eq("salon_id", profile.salon_id)
-            .order("full_name", { ascending: true }),
-          supabase
-            .from("shifts")
-            .select("id, employee_id, weekday, start_time, end_time, employee:employees(full_name)")
-            .eq("salon_id", profile.salon_id)
-            .order("weekday", { ascending: true })
-            .order("start_time", { ascending: true }),
-        ]);
+      const [
+        { data: employeesData, error: employeesError },
+        { data: shiftsData, error: shiftsError },
+      ] = await Promise.all([
+        getEmployeesForCurrentSalon(salon.id),
+        getShiftsForCurrentSalon(salon.id),
+      ]);
 
       if (employeesError || shiftsError) {
-        setError(
-          employeesError?.message ??
-            shiftsError?.message ??
-            t.loadError,
-        );
+        setError(employeesError ?? shiftsError ?? t.loadError);
         setLoading(false);
         return;
       }
 
-      setEmployees((employeesData ?? []) as Employee[]);
-      setShifts((shiftsData as unknown as Shift[]) ?? []);
+      setEmployees(
+        (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
+      );
+      setShifts(shiftsData ?? []);
       setLoading(false);
     }
 
     loadInitial();
-  }, []);
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon, t.loadError]);
 
   async function handleAddShift(e: FormEvent) {
     e.preventDefault();
-    if (!salonId || !employeeId) return;
+    if (!salon?.id || !employeeId) return;
 
     setSaving(true);
     setError(null);
 
-    const { data, error: insertError } = await supabase
-      .from("shifts")
-      .insert({
-        salon_id: salonId,
-        employee_id: employeeId,
-        weekday,
-        start_time: startTime,
-        end_time: endTime,
-      })
-      .select(
-        "id, employee_id, weekday, start_time, end_time, employee:employees(full_name)",
-      )
-      .maybeSingle();
+    const { data, error: insertError } = await createShift({
+      salon_id: salon.id,
+      employee_id: employeeId,
+      weekday,
+      start_time: startTime,
+      end_time: endTime,
+    });
 
     if (insertError || !data) {
-      setError(insertError?.message ?? t.addError);
+      setError(insertError ?? t.addError);
       setSaving(false);
       return;
     }
 
-    setShifts((prev) => [...prev, (data as unknown) as Shift]);
+    setShifts((prev) => [...prev, data]);
     setSaving(false);
   }
 
   async function handleDelete(id: string) {
-    const { error: deleteError } = await supabase
-      .from("shifts")
-      .delete()
-      .eq("id", id);
+    if (!salon?.id) return;
+
+    const { error: deleteError } = await deleteShift(salon.id, id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(deleteError);
       return;
     }
 
@@ -306,7 +270,7 @@ export default function ShiftsPage() {
 
           <button
             type="submit"
-            disabled={saving || !salonId || !employees.length}
+            disabled={saving || !salon?.id || !employees.length}
             className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {saving ? t.saving : t.addButton}

@@ -3,11 +3,13 @@
 import { ReactNode, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { CurrentUserBadge } from "@/components/current-user-badge";
 import { CurrentSalonBadge } from "@/components/current-salon-badge";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
+import { supabase } from "@/lib/supabase-client";
 
 type DashboardShellProps = {
   children: ReactNode;
@@ -15,7 +17,9 @@ type DashboardShellProps = {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
+  const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const appLocale =
     locale === "nb"
@@ -48,6 +52,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
                                 ? "hi"
                                 : "en";
   const texts = translations[appLocale].dashboard;
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      router.push("/landing");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <div className="relative flex min-h-screen w-full overflow-x-hidden">
@@ -152,7 +167,16 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <CurrentSalonBadge />
               <CurrentUserBadge />
             </div>
-            <div className="h-8 w-8 rounded-full bg-muted" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="h-8 text-xs"
+            >
+              {loggingOut ? "..." : texts.logout}
+            </Button>
           </div>
         </header>
 
@@ -253,7 +277,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               />
             </nav>
 
-            {/* Language selector for mobile */}
+            {/* Language selector and logout for mobile */}
             <div className="mt-4 flex flex-col gap-2 border-t pt-4">
               <label className="text-xs font-medium text-muted-foreground">
                 {texts.langLabel}:
@@ -282,6 +306,16 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 <option value="ur">🇵🇰 اردو</option>
                 <option value="hi">🇮🇳 हिन्दी</option>
               </select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="mt-2 w-full text-xs"
+              >
+                {loggingOut ? "..." : texts.logout}
+              </Button>
             </div>
 
             <p className="mt-auto text-xs text-muted-foreground">

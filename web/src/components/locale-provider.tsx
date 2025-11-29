@@ -7,23 +7,10 @@ import {
   useMemo,
   ReactNode,
 } from "react";
+import type { AppLocale } from "@/i18n/translations";
 
-export type Locale =
-  | "nb"
-  | "en"
-  | "ar"
-  | "so"
-  | "ti"
-  | "am"
-  | "tr"
-  | "pl"
-  | "vi"
-  | "tl"
-  | "zh"
-  | "fa"
-  | "dar"
-  | "ur"
-  | "hi";
+// Re-export AppLocale as Locale for backward compatibility
+export type Locale = AppLocale;
 
 type LocaleContextValue = {
   locale: Locale;

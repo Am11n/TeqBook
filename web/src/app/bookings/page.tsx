@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -27,17 +26,15 @@ import {
 } from "@/components/ui/dialog";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-
-type BookingRow = {
-  id: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  notes: string | null;
-  customers: { full_name: string | null } | null;
-  employees: { full_name: string | null } | null;
-  services: { name: string | null } | null;
-};
+import { useCurrentSalon } from "@/components/salon-provider";
+import {
+  getBookingsForCurrentSalon,
+  getAvailableSlots,
+  createBooking,
+} from "@/lib/repositories/bookings";
+import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
+import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
+import type { Booking } from "@/lib/types";
 
 export default function BookingsPage() {
   const { locale } = useLocale();
@@ -72,8 +69,8 @@ export default function BookingsPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].bookings;
-  const [salonId, setSalonId] = useState<string | null>(null);
-  const [bookings, setBookings] = useState<BookingRow[]>([]);
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>(
     [],
   );
@@ -97,119 +94,106 @@ export default function BookingsPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [isWalkIn, setIsWalkIn] = useState(false);
 
   useEffect(() => {
+    if (!isReady) {
+      if (salonError) {
+        setError(salonError);
+      } else if (salonLoading) {
+        setLoading(true);
+      } else {
+        setError(t.noSalon);
+        setLoading(false);
+      }
+      return;
+    }
+
     async function loadBookings() {
       setLoading(true);
       setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(t.mustBeLoggedIn);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("salon_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profileError || !profile?.salon_id) {
+      if (!salon?.id) {
         setError(t.noSalon);
         setLoading(false);
         return;
       }
 
-      setSalonId(profile.salon_id);
-
-      const [{ data: bookingsData, error: bookingsError }, { data: employeesData, error: employeesError }, { data: servicesData, error: servicesError }] =
-        await Promise.all([
-          supabase
-            .from("bookings")
-            .select(
-              "id, start_time, end_time, status, notes, customers(full_name), employees(full_name), services(name)",
-            )
-            .eq("salon_id", profile.salon_id)
-            .order("start_time", { ascending: true }),
-          supabase
-            .from("employees")
-            .select("id, full_name")
-            .eq("salon_id", profile.salon_id)
-            .order("full_name", { ascending: true }),
-          supabase
-            .from("services")
-            .select("id, name")
-            .eq("salon_id", profile.salon_id)
-            .order("name", { ascending: true }),
-        ]);
+      const [
+        { data: bookingsData, error: bookingsError },
+        { data: employeesData, error: employeesError },
+        { data: servicesData, error: servicesError },
+      ] = await Promise.all([
+        getBookingsForCurrentSalon(salon.id),
+        getEmployeesForCurrentSalon(salon.id),
+        getActiveServicesForCurrentSalon(salon.id),
+      ]);
 
       if (bookingsError || employeesError || servicesError) {
-        setError(
-          bookingsError?.message ??
-            employeesError?.message ??
-            servicesError?.message ??
-            t.loadError,
-        );
+        setError(bookingsError ?? employeesError ?? servicesError ?? t.loadError);
         setLoading(false);
         return;
       }
 
-      setBookings((bookingsData as unknown as BookingRow[]) ?? []);
-      setEmployees((employeesData ?? []) as { id: string; full_name: string }[]);
-      setServices((servicesData ?? []) as { id: string; name: string }[]);
+      setBookings(bookingsData ?? []);
+      setEmployees(
+        (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
+      );
+      setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
       setLoading(false);
     }
 
     loadBookings();
-  }, []);
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon, t.loadError]);
 
   const canLoadSlots = useMemo(
-    () => !!(salonId && employeeId && serviceId && date),
-    [salonId, employeeId, serviceId, date],
+    () => !!(salon?.id && employeeId && serviceId && date),
+    [salon?.id, employeeId, serviceId, date],
   );
 
   async function handleLoadSlots() {
-    if (!canLoadSlots || !salonId) return;
+    if (!canLoadSlots || !salon?.id) return;
     setLoadingSlots(true);
     setError(null);
     setSlots([]);
     setSelectedSlot("");
 
-    const { data, error: rpcError } = await supabase.rpc(
-      "generate_availability",
-      {
-        p_salon_id: salonId,
-        p_employee_id: employeeId,
-        p_service_id: serviceId,
-        p_day: date,
-      },
+    const { data, error: rpcError } = await getAvailableSlots(
+      salon.id,
+      employeeId,
+      serviceId,
+      date
     );
 
     if (rpcError) {
-      setError(rpcError.message ?? t.slotsError);
+      setError(rpcError);
       setLoadingSlots(false);
       return;
     }
 
     const mapped =
-      (data as { slot_start: string; slot_end: string }[])?.map((slot) => {
+      (data ?? []).map((slot) => {
+        // Extract time components directly from the ISO string to avoid timezone conversion
+        const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
+        const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
+        
+        if (startMatch && endMatch) {
+          // Use the time directly from the string to avoid timezone conversion
+          const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
+          return { start: slot.slot_start, end: slot.slot_end, label };
+        }
+        
+        // Fallback to local time formatting if regex doesn't match
         const start = new Date(slot.slot_start);
         const end = new Date(slot.slot_end);
-        const label = `${start.toLocaleTimeString("nb-NO", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })} – ${end.toLocaleTimeString("nb-NO", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}`;
+        const startHours = start.getHours().toString().padStart(2, "0");
+        const startMinutes = start.getMinutes().toString().padStart(2, "0");
+        const endHours = end.getHours().toString().padStart(2, "0");
+        const endMinutes = end.getMinutes().toString().padStart(2, "0");
+        
+        const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
         return { start: slot.slot_start, end: slot.slot_end, label };
-      }) ?? [];
+      });
 
     setSlots(mapped);
     setLoadingSlots(false);
@@ -217,7 +201,7 @@ export default function BookingsPage() {
 
   async function handleCreateBooking(e: FormEvent) {
     e.preventDefault();
-    if (!salonId || !employeeId || !serviceId || !selectedSlot) return;
+    if (!salon?.id || !employeeId || !serviceId || !selectedSlot) return;
 
     setSavingBooking(true);
     setError(null);
@@ -229,28 +213,26 @@ export default function BookingsPage() {
       return;
     }
 
-    const { data, error: rpcError } = await supabase.rpc(
-      "create_booking_with_validation",
-      {
-        p_salon_id: salonId,
-        p_employee_id: employeeId,
-        p_service_id: serviceId,
-        p_start_time: slot.start,
-        p_customer_full_name: customerName,
-        p_customer_email: customerEmail,
-        p_customer_phone: customerPhone,
-        p_customer_notes: null,
-      },
-    );
+    const { data: bookingData, error: rpcError } = await createBooking({
+      salon_id: salon.id,
+      employee_id: employeeId,
+      service_id: serviceId,
+      start_time: slot.start,
+      customer_full_name: customerName,
+      customer_email: customerEmail || null,
+      customer_phone: customerPhone || null,
+      customer_notes: null,
+      is_walk_in: isWalkIn,
+    });
 
-    if (rpcError || !data) {
-      setError(rpcError?.message ?? t.createError);
+    if (rpcError || !bookingData) {
+      setError(rpcError ?? t.createError);
       setSavingBooking(false);
       return;
     }
 
     // Legg til i lokal state slik at listen oppdateres
-    setBookings((prev) => [...prev, data as BookingRow]);
+    setBookings((prev) => [...prev, bookingData]);
 
     // Nullstill form og lukk dialog
     setIsDialogOpen(false);
@@ -262,6 +244,7 @@ export default function BookingsPage() {
     setCustomerName("");
     setCustomerEmail("");
     setCustomerPhone("");
+    setIsWalkIn(false);
     setSavingBooking(false);
   }
 
@@ -284,17 +267,30 @@ export default function BookingsPage() {
 
   function statusColor(status: string) {
     switch (status) {
+      case "pending":
+        return "bg-yellow-50 text-yellow-700 border-yellow-200";
+      case "confirmed":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "no-show":
+        return "bg-orange-50 text-orange-700 border-orange-200";
       case "completed":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "cancelled":
         return "bg-red-50 text-red-700 border-red-200";
+      case "scheduled":
       default:
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-gray-50 text-gray-700 border-gray-200";
     }
   }
 
   function statusLabel(status: string) {
     switch (status) {
+      case "pending":
+        return t.statusPending;
+      case "confirmed":
+        return t.statusConfirmed;
+      case "no-show":
+        return t.statusNoShow;
       case "completed":
         return t.statusCompleted;
       case "cancelled":
@@ -369,7 +365,8 @@ export default function BookingsPage() {
                   <div className="mt-2 text-[11px] text-muted-foreground">
                     {formatDate(booking.start_time)} •{" "}
                     {formatTime(booking.start_time)} –{" "}
-                    {formatTime(booking.end_time)}
+                    {formatTime(booking.end_time)} •{" "}
+                    {booking.is_walk_in ? t.typeWalkIn : t.typeOnline}
                   </div>
                   {booking.notes && (
                     <p className="mt-2 text-[11px] text-muted-foreground">
@@ -395,6 +392,7 @@ export default function BookingsPage() {
                         {t.colCustomer}
                       </TableHead>
                       <TableHead className="pr-4">{t.colStatus}</TableHead>
+                      <TableHead className="pr-4">{t.colType}</TableHead>
                       <TableHead className="pr-4">{t.colNotes}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -424,6 +422,9 @@ export default function BookingsPage() {
                         >
                           {statusLabel(booking.status)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="pr-4 text-xs text-muted-foreground">
+                        {booking.is_walk_in ? t.typeWalkIn : t.typeOnline}
                       </TableCell>
                       <TableCell className="pr-4 text-xs text-muted-foreground">
                         {booking.notes}
@@ -572,6 +573,17 @@ export default function BookingsPage() {
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder={t.customerPhonePlaceholder}
                 />
+              </div>
+              <div className="space-y-1 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={isWalkIn}
+                    onChange={(e) => setIsWalkIn(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <span className="font-medium">{t.isWalkInLabel}</span>
+                </label>
               </div>
             </div>
 

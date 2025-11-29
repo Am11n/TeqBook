@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/components/locale-provider";
+import { SalonProvider } from "@/components/salon-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <LocaleProvider>
-          <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top,_rgb(240,240,245),_transparent_55%),linear-gradient(to_bottom,_rgb(250,250,252),_rgb(243,243,247))]">
-        {children}
-          </div>
+          <SalonProvider>
+            <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top,_rgb(240,240,245),_transparent_55%),linear-gradient(to_bottom,_rgb(250,250,252),_rgb(243,243,247))]">
+              {children}
+            </div>
+          </SalonProvider>
         </LocaleProvider>
       </body>
     </html>

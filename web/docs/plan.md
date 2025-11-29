@@ -1,7 +1,7 @@
-# Eivo MVP – AI-Agent Ready Task Tree
+# TeqBook MVP – AI-Agent Ready Task Tree
 
-**Prosjekt:** Eivo MVP
-**Beskrivelse:** Full AI-agent ready roadmap for Eivo, Nordic-inspired salon booking SaaS with physical payment only.
+**Prosjekt:** TeqBook MVP
+**Beskrivelse:** Full AI-agent ready roadmap for TeqBook, Nordic-inspired salon booking SaaS with physical payment only.
 
 ---
 

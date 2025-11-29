@@ -66,10 +66,44 @@ export type OnboardingMessages = {
   title: string;
   description: string;
   footerHint: string;
+  // Step 1: Grunninfo
+  step1Title: string;
+  step1Description: string;
   nameLabel: string;
   namePlaceholder: string;
+  salonTypeLabel: string;
+  salonTypeBarber: string;
+  salonTypeNails: string;
+  salonTypeMassage: string;
+  salonTypeOther: string;
+  paymentMethodLabel: string;
+  paymentMethodPhysicalOnly: string;
+  preferredLanguageLabel: string;
+  nextButton: string;
+  // Step 2: Åpningstider
+  step2Title: string;
+  step2Description: string;
+  onlineBookingLabel: string;
+  onlineBookingYes: string;
+  onlineBookingNo: string;
+  publicBookingLabel: string;
+  publicBookingYes: string;
+  publicBookingNo: string;
+  backButton: string;
+  // Step 3: Bekreft
+  step3Title: string;
+  step3Description: string;
+  summaryLabel: string;
+  summarySalonName: string;
+  summarySalonType: string;
+  summaryPaymentMethod: string;
+  summaryPreferredLanguage: string;
+  summaryOnlineBooking: string;
+  summaryPublicBooking: string;
   createError: string;
   saving: string;
+  createButton: string;
+  // Legacy fields (for backward compatibility)
   saveButton: string;
   step1: string;
   step2: string;
@@ -93,6 +127,7 @@ export type DashboardMessages = {
   closeNav: string;
   dashboardTitle: string;
   login: string;
+  logout: string;
   langLabel: string;
 };
 
@@ -120,6 +155,10 @@ export type CalendarMessages = {
   noSalon: string;
   loadError: string;
   selectedDayLabel: string;
+  viewDay: string;
+  viewWeek: string;
+  filterEmployeeLabel: string;
+  filterEmployeeAll: string;
   prev: string;
   today: string;
   next: string;
@@ -142,6 +181,11 @@ export type EmployeesMessages = {
   nameLabel: string;
   emailLabel: string;
   phoneLabel: string;
+  roleLabel: string;
+  rolePlaceholder: string;
+  preferredLanguageLabel: string;
+  servicesLabel: string;
+  servicesPlaceholder: string;
   namePlaceholder: string;
   emailPlaceholder: string;
   phonePlaceholder: string;
@@ -150,7 +194,9 @@ export type EmployeesMessages = {
   emptyDescription: string;
   tableTitle: string;
   colName: string;
+  colRole: string;
   colContact: string;
+  colServices: string;
   colStatus: string;
   colActions: string;
   active: string;
@@ -170,13 +216,22 @@ export type ServicesMessages = {
   newService: string;
   nameLabel: string;
   namePlaceholder: string;
+  categoryLabel: string;
+  categoryCut: string;
+  categoryBeard: string;
+  categoryColor: string;
+  categoryNails: string;
+  categoryMassage: string;
+  categoryOther: string;
   durationLabel: string;
   priceLabel: string;
+  sortOrderLabel: string;
   loading: string;
   emptyTitle: string;
   emptyDescription: string;
   tableTitle: string;
   colName: string;
+  colCategory: string;
   colDuration: string;
   colPrice: string;
   colStatus: string;
@@ -244,10 +299,16 @@ export type BookingsMessages = {
   colEmployee: string;
   colCustomer: string;
   colStatus: string;
+  colType: string;
   colNotes: string;
-  statusScheduled: string;
+  statusPending: string;
+  statusConfirmed: string;
+  statusNoShow: string;
   statusCompleted: string;
   statusCancelled: string;
+  statusScheduled: string;
+  typeWalkIn: string;
+  typeOnline: string;
   dialogTitle: string;
   dialogDescription: string;
   employeeLabel: string;
@@ -265,6 +326,7 @@ export type BookingsMessages = {
   customerEmailPlaceholder: string;
   customerPhoneLabel: string;
   customerPhonePlaceholder: string;
+  isWalkInLabel: string;
   cancelButton: string;
   createBooking: string;
   creatingBooking: string;

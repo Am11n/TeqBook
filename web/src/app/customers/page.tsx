@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -18,15 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-
-type Customer = {
-  id: string;
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-  notes: string | null;
-  gdpr_consent: boolean;
-};
+import { useCurrentSalon } from "@/components/salon-provider";
+import {
+  getCustomersForCurrentSalon,
+  createCustomer,
+  deleteCustomer,
+} from "@/lib/repositories/customers";
+import type { Customer } from "@/lib/types";
 
 export default function CustomersPage() {
   const { locale } = useLocale();
@@ -61,8 +58,7 @@ export default function CustomersPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].customers;
-
-  const [salonId, setSalonId] = useState<string | null>(null);
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,43 +71,32 @@ export default function CustomersPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadInitial() {
+    if (!isReady) {
+      if (salonError) {
+        setError(salonError);
+      } else if (salonLoading) {
+        setLoading(true);
+      } else {
+        setError(t.noSalon);
+        setLoading(false);
+      }
+      return;
+    }
+
+    async function loadCustomers() {
       setLoading(true);
       setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(t.mustBeLoggedIn);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("salon_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profileError || !profile?.salon_id) {
+      if (!salon?.id) {
         setError(t.noSalon);
         setLoading(false);
         return;
       }
 
-      setSalonId(profile.salon_id);
-
-      const { data: customersData, error: customersError } = await supabase
-        .from("customers")
-        .select("id, full_name, email, phone, notes, gdpr_consent")
-        .eq("salon_id", profile.salon_id)
-        .order("created_at", { ascending: false });
+      const { data: customersData, error: customersError } = await getCustomersForCurrentSalon(salon.id);
 
       if (customersError) {
-        setError(customersError.message ?? t.loadError);
+        setError(customersError);
         setLoading(false);
         return;
       }
@@ -120,32 +105,28 @@ export default function CustomersPage() {
       setLoading(false);
     }
 
-    loadInitial();
-  }, []);
+    loadCustomers();
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon, t.loadError]);
 
   async function handleAddCustomer(e: FormEvent) {
     e.preventDefault();
-    if (!salonId) return;
+    if (!salon?.id) return;
     if (!fullName.trim()) return;
 
     setSaving(true);
     setError(null);
 
-    const { data, error: insertError } = await supabase
-      .from("customers")
-      .insert({
-        salon_id: salonId,
-        full_name: fullName.trim(),
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-        notes: notes.trim() || null,
-        gdpr_consent: gdprConsent,
-      })
-      .select("id, full_name, email, phone, notes, gdpr_consent")
-      .maybeSingle();
+    const { data, error: insertError } = await createCustomer({
+      salon_id: salon.id,
+      full_name: fullName.trim(),
+      email: email.trim() || null,
+      phone: phone.trim() || null,
+      notes: notes.trim() || null,
+      gdpr_consent: gdprConsent,
+    });
 
     if (insertError || !data) {
-      setError(insertError?.message ?? t.addError);
+      setError(insertError ?? t.addError);
       setSaving(false);
       return;
     }
@@ -160,13 +141,12 @@ export default function CustomersPage() {
   }
 
   async function handleDelete(id: string) {
-    const { error: deleteError } = await supabase
-      .from("customers")
-      .delete()
-      .eq("id", id);
+    if (!salon?.id) return;
+
+    const { error: deleteError } = await deleteCustomer(salon.id, id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(deleteError);
       return;
     }
 
@@ -265,7 +245,7 @@ export default function CustomersPage() {
 
           <Button
             type="submit"
-            disabled={saving || !salonId}
+            disabled={saving || !salon?.id}
             className="h-9 w-full sm:w-auto"
           >
             {saving ? t.saving : t.addButton}

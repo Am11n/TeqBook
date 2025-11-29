@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -17,14 +16,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-
-type Service = {
-  id: string;
-  name: string;
-  duration_minutes: number;
-  price_cents: number;
-  is_active: boolean;
-};
+import { useCurrentSalon } from "@/components/salon-provider";
+import {
+  getServicesForCurrentSalon,
+  createService,
+  toggleServiceActive,
+  deleteService,
+} from "@/lib/repositories/services";
+import type { Service } from "@/lib/types";
 
 export default function ServicesPage() {
   const { locale } = useLocale();
@@ -59,55 +58,45 @@ export default function ServicesPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].services;
-
-  const [salonId, setSalonId] = useState<string | null>(null);
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
+  const [category, setCategory] = useState<string>("");
   const [duration, setDuration] = useState(45);
   const [price, setPrice] = useState(800); // NOK, shown as currency
+  const [sortOrder, setSortOrder] = useState(0);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadInitial() {
+    if (!isReady) {
+      if (salonError) {
+        setError(salonError);
+      } else if (salonLoading) {
+        setLoading(true);
+      } else {
+        setError(t.noSalon);
+        setLoading(false);
+      }
+      return;
+    }
+
+    async function loadServices() {
       setLoading(true);
       setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(t.mustBeLoggedIn);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("salon_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profileError || !profile?.salon_id) {
+      if (!salon?.id) {
         setError(t.noSalon);
         setLoading(false);
         return;
       }
 
-      setSalonId(profile.salon_id);
-
-      const { data: servicesData, error: servicesError } = await supabase
-        .from("services")
-        .select("id, name, duration_minutes, price_cents, is_active")
-        .eq("salon_id", profile.salon_id)
-        .order("created_at", { ascending: true });
+      const { data: servicesData, error: servicesError } = await getServicesForCurrentSalon(salon.id);
 
       if (servicesError) {
-        setError(servicesError.message);
+        setError(servicesError);
         setLoading(false);
         return;
       }
@@ -116,51 +105,48 @@ export default function ServicesPage() {
       setLoading(false);
     }
 
-    loadInitial();
-  }, []);
+    loadServices();
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon]);
 
   async function handleAddService(e: FormEvent) {
     e.preventDefault();
-    if (!salonId) return;
+    if (!salon?.id) return;
     if (!name.trim()) return;
 
     setSaving(true);
     setError(null);
 
-    const { data, error: insertError } = await supabase
-      .from("services")
-      .insert({
-        salon_id: salonId,
-        name: name.trim(),
-        duration_minutes: duration,
-        price_cents: price * 100,
-      })
-      .select("id, name, duration_minutes, price_cents, is_active")
-      .maybeSingle();
+    const { data, error: insertError } = await createService({
+      salon_id: salon.id,
+      name: name.trim(),
+      category: category || null,
+      duration_minutes: duration,
+      price_cents: price * 100,
+      sort_order: sortOrder,
+    });
 
     if (insertError || !data) {
-      setError(insertError?.message ?? t.addError);
+      setError(insertError ?? t.addError);
       setSaving(false);
       return;
     }
 
     setServices((prev) => [...prev, data]);
     setName("");
+    setCategory("");
     setDuration(45);
     setPrice(800);
+    setSortOrder(0);
     setSaving(false);
   }
 
   async function handleToggleActive(id: string, isActive: boolean) {
-    const { data, error: updateError } = await supabase
-      .from("services")
-      .update({ is_active: !isActive })
-      .eq("id", id)
-      .select("id, name, duration_minutes, price_cents, is_active")
-      .maybeSingle();
+    if (!salon?.id) return;
+
+    const { data, error: updateError } = await toggleServiceActive(salon.id, id, isActive);
 
     if (updateError || !data) {
-      setError(updateError?.message ?? t.updateError);
+      setError(updateError ?? t.updateError);
       return;
     }
 
@@ -168,13 +154,12 @@ export default function ServicesPage() {
   }
 
   async function handleDelete(id: string) {
-    const { error: deleteError } = await supabase
-      .from("services")
-      .delete()
-      .eq("id", id);
+    if (!salon?.id) return;
+
+    const { error: deleteError } = await deleteService(salon.id, id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(deleteError);
       return;
     }
 
@@ -210,6 +195,25 @@ export default function ServicesPage() {
             />
           </div>
 
+          <div className="space-y-2 text-sm">
+            <label htmlFor="category" className="font-medium">
+              {t.categoryLabel}
+            </label>
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+            >
+              <option value="">{t.categoryOther}</option>
+              <option value="cut">{t.categoryCut}</option>
+              <option value="beard">{t.categoryBeard}</option>
+              <option value="color">{t.categoryColor}</option>
+              <option value="nails">{t.categoryNails}</option>
+              <option value="massage">{t.categoryMassage}</option>
+            </select>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 text-sm">
                 <label htmlFor="duration" className="font-medium">
@@ -243,6 +247,21 @@ export default function ServicesPage() {
             </div>
           </div>
 
+          <div className="space-y-2 text-sm">
+            <label htmlFor="sort_order" className="font-medium">
+              {t.sortOrderLabel}
+            </label>
+            <input
+              id="sort_order"
+              type="number"
+              min={0}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              placeholder="0"
+            />
+          </div>
+
           {error && (
             <p className="text-sm text-red-500" aria-live="polite">
               {error}
@@ -251,7 +270,7 @@ export default function ServicesPage() {
 
           <button
             type="submit"
-            disabled={saving || !salonId}
+            disabled={saving || !salon?.id}
             className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {saving ? "…" : t.newService}
@@ -286,7 +305,12 @@ export default function ServicesPage() {
                           {service.name}
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          {service.duration_minutes} min
+                          {service.category === "cut" ? t.categoryCut :
+                           service.category === "beard" ? t.categoryBeard :
+                           service.category === "color" ? t.categoryColor :
+                           service.category === "nails" ? t.categoryNails :
+                           service.category === "massage" ? t.categoryMassage :
+                           t.categoryOther} • {service.duration_minutes} min
                         </div>
                       </div>
                       <Button
@@ -339,6 +363,7 @@ export default function ServicesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="pr-4">{t.colName}</TableHead>
+                      <TableHead className="pr-4">{t.colCategory}</TableHead>
                       <TableHead className="pr-4">{t.colDuration}</TableHead>
                       <TableHead className="pr-4">{t.colPrice}</TableHead>
                       <TableHead className="pr-4">{t.colStatus}</TableHead>
@@ -352,6 +377,14 @@ export default function ServicesPage() {
                       <TableRow key={service.id}>
                         <TableCell className="pr-4">
                           <div className="font-medium">{service.name}</div>
+                        </TableCell>
+                        <TableCell className="pr-4 text-xs text-muted-foreground">
+                          {service.category === "cut" ? t.categoryCut :
+                           service.category === "beard" ? t.categoryBeard :
+                           service.category === "color" ? t.categoryColor :
+                           service.category === "nails" ? t.categoryNails :
+                           service.category === "massage" ? t.categoryMassage :
+                           t.categoryOther}
                         </TableCell>
                         <TableCell className="pr-4 text-xs text-muted-foreground">
                           {service.duration_minutes} min

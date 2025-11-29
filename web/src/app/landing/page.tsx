@@ -117,7 +117,7 @@ const copy: Record<
       },
       {
         title: "Multi-salong fra dag én",
-        body: "Ett Eivo-login kan eie flere salonger, med datasikker multi-tenancy i Supabase.",
+        body: "Ett TeqBook-login kan eie flere salonger, med datasikker multi-tenancy i Supabase.",
       },
       {
         title: "Klar for videre vekst",
@@ -128,11 +128,11 @@ const copy: Record<
     faq: [
       {
         q: "Må jeg ha kortbetaling på nett?",
-        a: "Nei. Hele Eivo er designet for at betaling skjer fysisk i salong. Du kan fortsatt legge inn notater om betaling, men ingen kort trekkes på nett.",
+        a: "Nei. Hele TeqBook er designet for at betaling skjer fysisk i salong. Du kan fortsatt legge inn notater om betaling, men ingen kort trekkes på nett.",
       },
       {
         q: "Kan jeg ha flere salonger i samme konto?",
-        a: "Ja. Eivo støtter flere salonger per eier, med strenge RLS-regler i databasen slik at data aldri blandes.",
+        a: "Ja. TeqBook støtter flere salonger per eier, med strenge RLS-regler i databasen slik at data aldri blandes.",
       },
       {
         q: "Hva med SMS og e-post?",
@@ -317,11 +317,11 @@ const copy: Record<
     ],
   },
   so: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "Ballansashada Saloonnada – Waxaa loo dhisay lacag bixinta gudaha saloonka",
     heroSubtitle:
-      "Eivo waa nidaam ballansasho fudud oo casri ah oo loogu talagalay timo-jarayaasha iyo saloonnada Waqooyiga Yurub. Macaamiishu waxay ballansadaan online, laakiin mar walba waxay lacagta ku bixiyaan gudaha saloonka.",
+      "TeqBook waa nidaam ballansasho fudud oo casri ah oo loogu talagalay timo-jarayaasha iyo saloonnada Waqooyiga Yurub. Macaamiishu waxay ballansadaan online, laakiin mar walba waxay lacagta ku bixiyaan gudaha saloonka.",
     ctaPrimary: "Bilaaw bilaash",
     ctaSecondary: "Ballan demo",
     badge: "Waxaa loo dhisay saloonnada",
@@ -382,7 +382,7 @@ const copy: Record<
       },
       {
         title: "Saloonno badan laga bilaabo maalinta koowaad",
-        body: "Hal login oo Eivo ah ayaa yeelan kara saloonno badan, iyadoo la adeegsanayo nidaamka multi-tenancy ee Supabase.",
+        body: "Hal login oo TeqBook ah ayaa yeelan kara saloonno badan, iyadoo la adeegsanayo nidaamka multi-tenancy ee Supabase.",
       },
       {
         title: "Diyaar u ah inuu kula koro",
@@ -393,11 +393,11 @@ const copy: Record<
     faq: [
       {
         q: "Ma u baahanahay inaan lacag ku bixiyo kaadh online ah?",
-        a: "Maya. Eivo waxaa si gaar ah loogu talagalay lacag bixinta gudaha saloonka oo keliya. Waxaad weli ku qori kartaa xusuus-qor ku saabsan lacag bixinta, laakiin ma jiro kaadh online ah oo lacag laga qaadayo.",
+        a: "Maya. TeqBook waxaa si gaar ah loogu talagalay lacag bixinta gudaha saloonka oo keliya. Waxaad weli ku qori kartaa xusuus-qor ku saabsan lacag bixinta, laakiin ma jiro kaadh online ah oo lacag laga qaadayo.",
       },
       {
         q: "Ma ku maamuli karaa saloonno badan hal akoon?",
-        a: "Haa. Eivo wuxuu taageeraa saloonno badan oo milkiile kasta, iyadoo la adeegsanayo sharciyo adag oo RLS ah si xogta aanay isugu darsamin.",
+        a: "Haa. TeqBook wuxuu taageeraa saloonno badan oo milkiile kasta, iyadoo la adeegsanayo sharciyo adag oo RLS ah si xogta aanay isugu darsamin.",
       },
       {
         q: "Ka waran SMS iyo email xasuusin?",
@@ -406,11 +406,11 @@ const copy: Record<
     ],
   },
   ti: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "ሳሎን መመዝገቢ – ክፍሊ ገንዘብ ኣብ ሳሎን ውሽጢ ንምግባር ዝተሰርሐ",
     heroSubtitle:
-      "Eivo ቀሊልን ዘመናዊን መስርሒ መመዝገብታት እዩ ንሳሎናት ኣብ ሰሜን ኤውሮጳ። ደኣናት ብመስመር ላይ ይመዝገቡ፣ ገንዘብ ግን ሓደ ግዜ ኣብ ሳሎን ይኸፍሉ።",
+      "TeqBook ቀሊልን ዘመናዊን መስርሒ መመዝገብታት እዩ ንሳሎናት ኣብ ሰሜን ኤውሮጳ። ደኣናት ብመስመር ላይ ይመዝገቡ፣ ገንዘብ ግን ሓደ ግዜ ኣብ ሳሎን ይኸፍሉ።",
     ctaPrimary: "ብነጻ ጀምር",
     ctaSecondary: "Demo ጸዓን ጠይቅ",
     badge: "ንሳሎናት ዝተሰርሐ",
@@ -471,7 +471,7 @@ const copy: Record<
       },
       {
         title: "ካብ መጀመርታ ጀሚሩ ብዙሕ ሳሎናት",
-        body: "ሓደ Eivo login ዝርከብ ብርቱዕ multi-tenancy ኣብ Supabase ዘለዎ ብርክት ብዙሕ ሳሎናት ምምሕዳር ይኽእል።",
+        body: "ሓደ TeqBook login ዝርከብ ብርቱዕ multi-tenancy ኣብ Supabase ዘለዎ ብርክት ብዙሕ ሳሎናት ምምሕዳር ይኽእል።",
       },
       {
         title: "ምስኻ ንምዓት ተዘጋጅቶ ኣሎ",
@@ -482,11 +482,11 @@ const copy: Record<
     faq: [
       {
         q: "Online ካርታ ክፍሊ የድልየን ዶ?",
-        a: "ኣይፋል. Eivo ብፍጹም ንክፍሊ ገንዘብ ኣብ ሳሎን ውሽጢ ጥራሕ ዝተሰርሐ እዩ። ኣብ ማስታወሻ ክፍሊ ገንዘብ ትመዝግብ ትኽእል ኢኻ፣ ግን ካርታታት ብመስመር ላይ ኣይተሰርዙን።",
+        a: "ኣይፋል. TeqBook ብፍጹም ንክፍሊ ገንዘብ ኣብ ሳሎን ውሽጢ ጥራሕ ዝተሰርሐ እዩ። ኣብ ማስታወሻ ክፍሊ ገንዘብ ትመዝግብ ትኽእል ኢኻ፣ ግን ካርታታት ብመስመር ላይ ኣይተሰርዙን።",
       },
       {
         q: "ብሓደ ኣካውንት ውሽጢ ብዙሕ ሳሎናት ክምህርይ ክእየ ዶ?",
-        a: "እወ. Eivo ስለዚ ንባልትራን ሳሎናት ይዕዝብ፣ ናይ ረው-ለቨል ስከውሪቲ (RLS) ብጣዕሚ ዝጥርጥር ተግባር ይጠቕም እዩ ዝህብ ንምንቅስቓስ ውሑድ ውሑድ ውሽጢ እዋን።",
+        a: "እወ. TeqBook ስለዚ ንባልትራን ሳሎናት ይዕዝብ፣ ናይ ረው-ለቨል ስከውሪቲ (RLS) ብጣዕሚ ዝጥርጥር ተግባር ይጠቕም እዩ ዝህብ ንምንቅስቓስ ውሑድ ውሑድ ውሽጢ እዋን።",
       },
       {
         q: "SMSን ኢመይል መዘኻኸሪታትን እንታይ ኢዩ ዝገብር?",
@@ -495,11 +495,11 @@ const copy: Record<
     ],
   },
   am: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "የሳሎን ቀጠሮ – ለበሳሎን ውስጥ ክፍያ የተቀየረ",
     heroSubtitle:
-      "Eivo ለሰሜን አውሮፓ ሳሎኖች ቀላል እና ዘመናዊ የቀጠሮ ስርዓት ነው። ደንበኞች ቀጠሮን በመስመር ላይ ይያዙ፣ ክፍያውን ግን ሁልጊዜ በሳሎኑ ውስጥ ይከፍላሉ።",
+      "TeqBook ለሰሜን አውሮፓ ሳሎኖች ቀላል እና ዘመናዊ የቀጠሮ ስርዓት ነው። ደንበኞች ቀጠሮን በመስመር ላይ ይያዙ፣ ክፍያውን ግን ሁልጊዜ በሳሎኑ ውስጥ ይከፍላሉ።",
     ctaPrimary: "በነጻ ጀምር",
     ctaSecondary: "የዴሞ መግለጫ ይጠይቁ",
     badge: "ለሳሎኖች የተሠራ",
@@ -560,7 +560,7 @@ const copy: Record<
       },
       {
         title: "ከመጀመሪያው ቀን ጀምሮ ብዙ ሳሎን ድጋፍ",
-        body: "አንድ የ Eivo መለያ በ Supabase ውስጥ በጥራት የተከፈለ የውስጥ ደረጃ ደህንነት ጋር ብዙ ሳሎኖችን ማስተዳደር ይችላል።",
+        body: "አንድ የ TeqBook መለያ በ Supabase ውስጥ በጥራት የተከፈለ የውስጥ ደረጃ ደህንነት ጋር ብዙ ሳሎኖችን ማስተዳደር ይችላል።",
       },
       {
         title: "ከእርስዎ ጋር ለመዳበር ዝግጁ",
@@ -571,11 +571,11 @@ const copy: Record<
     faq: [
       {
         q: "በመስመር ላይ የካርታ ክፍያ ያስፈልገኛል?",
-        a: "አይደለም። Eivo በተለይ ለበሳሎን ውስጥ ክፍያ ብቻ ተዘጋጅቷል። ክፍያዎችን በማስታወሻ ላይ መከታተል ትችላለህ፣ ግን በመስመር ላይ ከካርታ ምንም ገንዘብ አይታጠፍም።",
+        a: "አይደለም። TeqBook በተለይ ለበሳሎን ውስጥ ክፍያ ብቻ ተዘጋጅቷል። ክፍያዎችን በማስታወሻ ላይ መከታተል ትችላለህ፣ ግን በመስመር ላይ ከካርታ ምንም ገንዘብ አይታጠፍም።",
       },
       {
         q: "በአንድ መለያ ብዙ ሳሎኖችን መቆጣጠር እችላለሁ?",
-        a: "አዎን። Eivo ለእያንዳንዱ ባለቤት ብዙ ሳሎኖችን ይደግፋል፣ መረጃው በሳሎኖች መካከል እንዳይቀላቀል ጠንካራ የ RLS መመሪያዎችን ይጠቀማል።",
+        a: "አዎን። TeqBook ለእያንዳንዱ ባለቤት ብዙ ሳሎኖችን ይደግፋል፣ መረጃው በሳሎኖች መካከል እንዳይቀላቀል ጠንካራ የ RLS መመሪያዎችን ይጠቀማል።",
       },
       {
         q: "የ SMS እና የኢሜይል አስታዋሽዎች ምንድን ሆነው?",
@@ -584,10 +584,10 @@ const copy: Record<
     ],
   },
   tr: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle: "Kuaför randevusu – salonda ödeme için tasarlandı",
     heroSubtitle:
-      "Eivo, İskandinav ülkelerindeki kuaför ve güzellik salonları için basit ve modern bir randevu sistemidir. Müşteriler online randevu alır, ödemeyi ise her zaman salonda yapar.",
+      "TeqBook, İskandinav ülkelerindeki kuaför ve güzellik salonları için basit ve modern bir randevu sistemidir. Müşteriler online randevu alır, ödemeyi ise her zaman salonda yapar.",
     ctaPrimary: "Ücretsiz başla",
     ctaSecondary: "Demo talep et",
     badge: "Salonlar için üretildi",
@@ -648,7 +648,7 @@ const copy: Record<
       },
       {
         title: "İlk günden itibaren çoklu salon desteği",
-        body: "Tek bir Eivo girişi ile birden fazla salonu yönetebilir, Supabase’te tenant başına satır seviyesi güvenlik ile verileri ayırabilirsin.",
+        body: "Tek bir TeqBook girişi ile birden fazla salonu yönetebilir, Supabase'te tenant başına satır seviyesi güvenlik ile verileri ayırabilirsin.",
       },
       {
         title: "Seninle birlikte büyümeye hazır",
@@ -659,11 +659,11 @@ const copy: Record<
     faq: [
       {
         q: "Online kart ödemesine ihtiyacım var mı?",
-        a: "Hayır. Eivo özellikle sadece salonda ödeme için tasarlanmıştır. Ödemeleri notlar üzerinden takip edebilirsin, ancak kartlardan online çekim yapılmaz.",
+        a: "Hayır. TeqBook özellikle sadece salonda ödeme için tasarlanmıştır. Ödemeleri notlar üzerinden takip edebilirsin, ancak kartlardan online çekim yapılmaz.",
       },
       {
         q: "Tek hesapla birden fazla salon yönetebilir miyim?",
-        a: "Evet. Eivo, her sahip için birden fazla salonu destekler; veriler salonlar arasında karışmasın diye sıkı RLS kuralları kullanılır.",
+        a: "Evet. TeqBook, her sahip için birden fazla salonu destekler; veriler salonlar arasında karışmasın diye sıkı RLS kuralları kullanılır.",
       },
       {
         q: "SMS ve e-posta hatırlatmaları ne durumda?",
@@ -672,10 +672,10 @@ const copy: Record<
     ],
   },
   pl: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle: "Rezerwacje salonowe – stworzone z myślą o płatności w salonie",
     heroSubtitle:
-      "Eivo to prosty i nowoczesny system rezerwacji dla salonów fryzjerskich i kosmetycznych w krajach nordyckich. Klienci rezerwują online, ale płacą zawsze na miejscu.",
+      "TeqBook to prosty i nowoczesny system rezerwacji dla salonów fryzjerskich i kosmetycznych w krajach nordyckich. Klienci rezerwują online, ale płacą zawsze na miejscu.",
     ctaPrimary: "Rozpocznij za darmo",
     ctaSecondary: "Umów demo",
     badge: "Stworzone dla salonów",
@@ -736,7 +736,7 @@ const copy: Record<
       },
       {
         title: "Wiele salonów od pierwszego dnia",
-        body: "Jedno konto Eivo może zarządzać wieloma salonami, z bezpieczną separacją danych dzięki multi‑tenancy w Supabase.",
+        body: "Jedno konto TeqBook może zarządzać wieloma salonami, z bezpieczną separacją danych dzięki multi‑tenancy w Supabase.",
       },
       {
         title: "Gotowe, aby rosnąć razem z Tobą",
@@ -747,11 +747,11 @@ const copy: Record<
     faq: [
       {
         q: "Czy potrzebuję płatności kartą online?",
-        a: "Nie. Eivo jest zaprojektowane wyłącznie pod płatność w salonie. Nadal możesz notować informacje o płatności, ale żadne karty nie są obciążane online.",
+        a: "Nie. TeqBook jest zaprojektowane wyłącznie pod płatność w salonie. Nadal możesz notować informacje o płatności, ale żadne karty nie są obciążane online.",
       },
       {
         q: "Czy mogę zarządzać kilkoma salonami z jednego konta?",
-        a: "Tak. Eivo wspiera wiele salonów na jednego właściciela, z rygorystycznymi zasadami RLS, aby dane nigdy się nie mieszały.",
+        a: "Tak. TeqBook wspiera wiele salonów na jednego właściciela, z rygorystycznymi zasadami RLS, aby dane nigdy się nie mieszały.",
       },
       {
         q: "Co z przypomnieniami SMS i e‑mail?",
@@ -760,11 +760,11 @@ const copy: Record<
     ],
   },
   vi: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "Đặt lịch cho salon – được thiết kế cho thanh toán trực tiếp tại salon",
     heroSubtitle:
-      "Eivo là hệ thống đặt lịch đơn giản, hiện đại cho salon tóc và chăm sóc sắc đẹp ở Bắc Âu. Khách đặt lịch online, nhưng luôn thanh toán tại salon.",
+      "TeqBook là hệ thống đặt lịch đơn giản, hiện đại cho salon tóc và chăm sóc sắc đẹp ở Bắc Âu. Khách đặt lịch online, nhưng luôn thanh toán tại salon.",
     ctaPrimary: "Bắt đầu miễn phí",
     ctaSecondary: "Đặt lịch demo",
     badge: "Thiết kế riêng cho salon",
@@ -825,7 +825,7 @@ const copy: Record<
       },
       {
         title: "Hỗ trợ nhiều salon ngay từ ngày đầu",
-        body: "Một tài khoản Eivo có thể quản lý nhiều salon, với multi‑tenancy an toàn trên Supabase để tách biệt dữ liệu.",
+        body: "Một tài khoản TeqBook có thể quản lý nhiều salon, với multi‑tenancy an toàn trên Supabase để tách biệt dữ liệu.",
       },
       {
         title: "Sẵn sàng phát triển cùng bạn",
@@ -836,11 +836,11 @@ const copy: Record<
     faq: [
       {
         q: "Tôi có cần thanh toán thẻ online không?",
-        a: "Không. Eivo được thiết kế đặc biệt cho thanh toán trực tiếp tại salon. Bạn vẫn có thể ghi chú về thanh toán, nhưng không có giao dịch thẻ online.",
+        a: "Không. TeqBook được thiết kế đặc biệt cho thanh toán trực tiếp tại salon. Bạn vẫn có thể ghi chú về thanh toán, nhưng không có giao dịch thẻ online.",
       },
       {
         q: "Tôi có thể quản lý nhiều salon bằng một tài khoản không?",
-        a: "Có. Eivo hỗ trợ nhiều salon cho mỗi chủ, với các luật RLS nghiêm ngặt để dữ liệu không bị lẫn giữa các salon.",
+        a: "Có. TeqBook hỗ trợ nhiều salon cho mỗi chủ, với các luật RLS nghiêm ngặt để dữ liệu không bị lẫn giữa các salon.",
       },
       {
         q: "Còn nhắc nhở SMS và email thì sao?",
@@ -849,10 +849,10 @@ const copy: Record<
     ],
   },
   zh: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle: "沙龙预约系统——为到店付款而设计",
     heroSubtitle:
-      "Eivo 是专为北欧地区美发和美容沙龙打造的简洁现代预约系统。顾客在线预约，但付款始终在沙龙现场完成。",
+      "TeqBook 是专为北欧地区美发和美容沙龙打造的简洁现代预约系统。顾客在线预约，但付款始终在沙龙现场完成。",
     ctaPrimary: "免费开始使用",
     ctaSecondary: "预约演示",
     badge: "为沙龙打造",
@@ -913,7 +913,7 @@ const copy: Record<
       },
       {
         title: "从第一天起支持多家沙龙",
-        body: "一个 Eivo 登录即可管理多家沙龙，利用 Supabase 的 multi‑tenancy 安全地隔离数据。",
+        body: "一个 TeqBook 登录即可管理多家沙龙，利用 Supabase 的 multi‑tenancy 安全地隔离数据。",
       },
       {
         title: "准备好与你一同成长",
@@ -924,11 +924,11 @@ const copy: Record<
     faq: [
       {
         q: "我需要线上刷卡支付功能吗？",
-        a: "不需要。Eivo 专门为到店付款场景设计。你仍然可以在备注中记录付款信息，但系统不会进行任何线上扣款。",
+        a: "不需要。TeqBook 专门为到店付款场景设计。你仍然可以在备注中记录付款信息，但系统不会进行任何线上扣款。",
       },
       {
         q: "我可以用一个账号管理多家沙龙吗？",
-        a: "可以。Eivo 支持同一拥有者名下的多家沙龙，并通过严格的 RLS 规则确保数据不会在沙龙之间泄露或混用。",
+        a: "可以。TeqBook 支持同一拥有者名下的多家沙龙，并通过严格的 RLS 规则确保数据不会在沙龙之间泄露或混用。",
       },
       {
         q: "短信和邮件提醒怎么办？",
@@ -937,11 +937,11 @@ const copy: Record<
     ],
   },
   tl: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "Booking para sa mga salon – dinisenyo para sa bayad sa mismong salon",
     heroSubtitle:
-      "Ang Eivo ay isang simple at modernong booking system para sa mga salon sa Nordics. Nagbu-book ang mga kliyente online, pero laging sa salon sila nagbabayad.",
+      "Ang TeqBook ay isang simple at modernong booking system para sa mga salon sa Nordics. Nagbu-book ang mga kliyente online, pero laging sa salon sila nagbabayad.",
     ctaPrimary: "Magsimula nang libre",
     ctaSecondary: "Mag-book ng demo",
     badge: "Gawa para sa mga salon",
@@ -1002,7 +1002,7 @@ const copy: Record<
       },
       {
         title: "Multi-salon mula sa unang araw",
-        body: "Isang Eivo login lang, puwede nang humawak ng maraming salon, gamit ang secure na multi‑tenancy sa Supabase.",
+        body: "Isang TeqBook login lang, puwede nang humawak ng maraming salon, gamit ang secure na multi‑tenancy sa Supabase.",
       },
       {
         title: "Handang lumaki kasama mo",
@@ -1013,11 +1013,11 @@ const copy: Record<
     faq: [
       {
         q: "Kailangan ko ba ng online card payment?",
-        a: "Hindi. Ang Eivo ay sadyang ginawa para sa bayad sa mismong salon. Puwede ka pa ring magtala tungkol sa bayad sa notes, pero walang card na icha-charge online.",
+        a: "Hindi. Ang TeqBook ay sadyang ginawa para sa bayad sa mismong salon. Puwede ka pa ring magtala tungkol sa bayad sa notes, pero walang card na icha-charge online.",
       },
       {
         q: "Puwede ba akong mag-manage ng maraming salon sa isang account?",
-        a: "Oo. Sinusuportahan ng Eivo ang maraming salon per owner, na may mahigpit na RLS para hindi magkahalo ang data ng iba’t ibang salon.",
+        a: "Oo. Sinusuportahan ng TeqBook ang maraming salon per owner, na may mahigpit na RLS para hindi magkahalo ang data ng iba't ibang salon.",
       },
       {
         q: "Paano naman ang SMS at email reminders?",
@@ -1026,10 +1026,10 @@ const copy: Record<
     ],
   },
   fa: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle: "سیستم نوبت‌دهی سالن – طراحی‌شده برای پرداخت در خود سالن",
     heroSubtitle:
-      "Eivo یک سیستم نوبت‌دهی ساده و مدرن برای سالن‌های زیبایی در کشورهای شمال اروپا است. مشتریان به صورت آنلاین نوبت می‌گیرند، اما پرداخت همیشه در خود سالن انجام می‌شود.",
+      "TeqBook یک سیستم نوبت‌دهی ساده و مدرن برای سالن‌های زیبایی در کشورهای شمال اروپا است. مشتریان به صورت آنلاین نوبت می‌گیرند، اما پرداخت همیشه در خود سالن انجام می‌شود.",
     ctaPrimary: "رایگان شروع کنید",
     ctaSecondary: "درخواست دمو",
     badge: "ساخته‌شده برای سالن‌ها",
@@ -1090,7 +1090,7 @@ const copy: Record<
       },
       {
         title: "پشتیبانی چند سالن از روز اول",
-        body: "یک ورود به Eivo می‌تواند چندین سالن را مدیریت کند، با جداسازی امن داده‌ها برای هر سالن در Supabase.",
+        body: "یک ورود به TeqBook می‌تواند چندین سالن را مدیریت کند، با جداسازی امن داده‌ها برای هر سالن در Supabase.",
       },
       {
         title: "آماده رشد همراه با شما",
@@ -1101,11 +1101,11 @@ const copy: Record<
     faq: [
       {
         q: "آیا به پرداخت آنلاین با کارت نیاز دارم؟",
-        a: "خیر. Eivo مخصوص سناریوی پرداخت در خود سالن طراحی شده است. همچنان می‌توانید یادداشت‌هایی درباره پرداخت ثبت کنید، اما هیچ کارتی به صورت آنلاین شارژ نمی‌شود.",
+        a: "خیر. TeqBook مخصوص سناریوی پرداخت در خود سالن طراحی شده است. همچنان می‌توانید یادداشت‌هایی درباره پرداخت ثبت کنید، اما هیچ کارتی به صورت آنلاین شارژ نمی‌شود.",
       },
       {
         q: "آیا می‌توانم چند سالن را با یک حساب مدیریت کنم؟",
-        a: "بله. Eivo از چند سالن برای هر صاحب پشتیبانی می‌کند و با قوانین سخت‌گیرانه RLS تضمین می‌کند که داده‌ها بین سالن‌ها مخلوط نشوند.",
+        a: "بله. TeqBook از چند سالن برای هر صاحب پشتیبانی می‌کند و با قوانین سخت‌گیرانه RLS تضمین می‌کند که داده‌ها بین سالن‌ها مخلوط نشوند.",
       },
       {
         q: "وضعیت یادآورهای SMS و ایمیل چگونه است؟",
@@ -1114,10 +1114,10 @@ const copy: Record<
     ],
   },
   dar: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle: "سیستم نوبت‌گیری سالون – ساخته‌شده برای پرداخت در خود سالون",
     heroSubtitle:
-      "Eivo یک سیستم ساده و عصری نوبت‌گیری برای سالون‌های زیبایی در کشورهای شمال اروپا است. مشتریان به طور آنلاین نوبت می‌گیرند، اما همیشه در خود سالون پول می‌پردازند.",
+      "TeqBook یک سیستم ساده و عصری نوبت‌گیری برای سالون‌های زیبایی در کشورهای شمال اروپا است. مشتریان به طور آنلاین نوبت می‌گیرند، اما همیشه در خود سالون پول می‌پردازند.",
     ctaPrimary: "به شکل رایگان شروع کنید",
     ctaSecondary: "درخواست دمو",
     badge: "ساخته‌شده برای سالون‌ها",
@@ -1178,7 +1178,7 @@ const copy: Record<
       },
       {
         title: "پشتیبانی چند سالون از روز اول",
-        body: "یک حساب Eivo می‌تواند چندین سالون را با multi‑tenancy امن در Supabase مدیریت کند.",
+        body: "یک حساب TeqBook می‌تواند چندین سالون را با multi‑tenancy امن در Supabase مدیریت کند.",
       },
       {
         title: "آماده برای رشد همراه با شما",
@@ -1189,11 +1189,11 @@ const copy: Record<
     faq: [
       {
         q: "آیا لازم است پرداخت آنلاین با کارت داشته باشم؟",
-        a: "خیر. Eivo به طور خاص برای سناریوی پرداخت در خود سالون طراحی شده است. شما می‌توانید در یادداشت‌ها در مورد پرداخت بنویسید، اما هیچ کارتی آنلاین چارج نمی‌شود.",
+        a: "خیر. TeqBook به طور خاص برای سناریوی پرداخت در خود سالون طراحی شده است. شما می‌توانید در یادداشت‌ها در مورد پرداخت بنویسید، اما هیچ کارتی آنلاین چارج نمی‌شود.",
       },
       {
         q: "آیا می‌توانم چند سالون را با یک حساب مدیریت کنم؟",
-        a: "بلی. Eivo از چندین سالون برای هر صاحب حمایت می‌کند و با قوانین سختگیرانه RLS تضمین می‌کند که معلومات بین سالون‌ها مخلوط نشود.",
+        a: "بلی. TeqBook از چندین سالون برای هر صاحب حمایت می‌کند و با قوانین سختگیرانه RLS تضمین می‌کند که معلومات بین سالون‌ها مخلوط نشود.",
       },
       {
         q: "حالت یادآورهای SMS و ایمیل چه است؟",
@@ -1202,11 +1202,11 @@ const copy: Record<
     ],
   },
   ur: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "سیلونوں کے لیے بُکنگ سسٹم – جو خاص طور پر سیلون میں فزیکل ادائیگی کے لیے بنایا گیا ہے",
     heroSubtitle:
-      "Eivo نارڈکس کے سیلونز کے لیے ایک سادہ اور جدید بُکنگ سسٹم ہے۔ کسٹمرز آن لائن بُک کرتے ہیں، لیکن ہمیشہ سیلون پر آ کر ادائیگی کرتے ہیں۔",
+      "TeqBook نارڈکس کے سیلونز کے لیے ایک سادہ اور جدید بُکنگ سسٹم ہے۔ کسٹمرز آن لائن بُک کرتے ہیں، لیکن ہمیشہ سیلون پر آ کر ادائیگی کرتے ہیں۔",
     ctaPrimary: "مفت میں شروع کریں",
     ctaSecondary: "ڈیمو بُک کریں",
     badge: "سیلونز کے لیے بنایا گیا",
@@ -1267,7 +1267,7 @@ const copy: Record<
       },
       {
         title: "پہلے دن سے ملٹی سیلون",
-        body: "ایک ہی Eivo لاگ اِن سے آپ کئی سیلونز چلا سکتے ہیں، Supabase کے محفوظ ملٹی ٹیننسی کے ساتھ۔",
+        body: "ایک ہی TeqBook لاگ اِن سے آپ کئی سیلونز چلا سکتے ہیں، Supabase کے محفوظ ملٹی ٹیننسی کے ساتھ۔",
       },
       {
         title: "آپ کے ساتھ بڑھنے کے لیے تیار",
@@ -1278,11 +1278,11 @@ const copy: Record<
     faq: [
       {
         q: "کیا مجھے آن لائن کارڈ پیمنٹ کی ضرورت ہے؟",
-        a: "نہیں۔ Eivo خاص طور پر اس کے لیے بنایا گیا ہے کہ کسٹمر سیلون میں آ کر ادائیگی کرے۔ آپ نوٹس میں ادائیگی کے بارے میں لکھ سکتے ہیں، مگر کوئی کارڈ آن لائن چارج نہیں ہوتا۔",
+        a: "نہیں۔ TeqBook خاص طور پر اس کے لیے بنایا گیا ہے کہ کسٹمر سیلون میں آ کر ادائیگی کرے۔ آپ نوٹس میں ادائیگی کے بارے میں لکھ سکتے ہیں، مگر کوئی کارڈ آن لائن چارج نہیں ہوتا۔",
       },
       {
         q: "کیا میں ایک ہی اکاؤنٹ سے کئی سیلونز مینج کر سکتا ہوں؟",
-        a: "جی ہاں۔ Eivo ایک مالک کے تحت کئی سیلونز کی سپورٹ کرتا ہے، اور سخت RLS رولز کے ذریعے ڈیٹا کو سیلونز کے درمیان ملنے سے روکتا ہے۔",
+        a: "جی ہاں۔ TeqBook ایک مالک کے تحت کئی سیلونز کی سپورٹ کرتا ہے، اور سخت RLS رولز کے ذریعے ڈیٹا کو سیلونز کے درمیان ملنے سے روکتا ہے۔",
       },
       {
         q: "ایس ایم ایس اور ای میل ریمائنڈرز کا کیا ہوگا؟",
@@ -1291,11 +1291,11 @@ const copy: Record<
     ],
   },
   hi: {
-    brand: "Eivo",
+    brand: "TeqBook",
     heroTitle:
       "सैलून के लिए बुकिंग सिस्टम – जो खास तौर पर सैलून में नकद/कार्ड भुगतान के लिए बनाया गया है",
     heroSubtitle:
-      "Eivo नॉर्डिक देशों के सैलून के लिए एक सरल और आधुनिक बुकिंग सिस्टम है। ग्राहक ऑनलाइन समय बुक करते हैं, लेकिन भुगतान हमेशा सैलून पर ही करते हैं।",
+      "TeqBook नॉर्डिक देशों के सैलून के लिए एक सरल और आधुनिक बुकिंग सिस्टम है। ग्राहक ऑनलाइन समय बुक करते हैं, लेकिन भुगतान हमेशा सैलून पर ही करते हैं।",
     ctaPrimary: "फ्री में शुरू करें",
     ctaSecondary: "डेमो बुक करें",
     badge: "सैलून के लिए बनाया गया",
@@ -1356,7 +1356,7 @@ const copy: Record<
       },
       {
         title: "पहले दिन से मल्टी‑सैलून",
-        body: "एक Eivo लॉगिन से आप कई सैलून चला सकते हैं, Supabase की सुरक्षित multi‑tenancy के साथ।",
+        body: "एक TeqBook लॉगिन से आप कई सैलून चला सकते हैं, Supabase की सुरक्षित multi‑tenancy के साथ।",
       },
       {
         title: "आपके साथ बढ़ने के लिए तैयार",
@@ -1367,11 +1367,11 @@ const copy: Record<
     faq: [
       {
         q: "क्या मुझे ऑनलाइन कार्ड पेमेंट की ज़रूरत है?",
-        a: "नहीं। Eivo खास तौर पर इस मॉडल के लिए बनाया गया है जिसमें ग्राहक सैलून पर ही भुगतान करते हैं। आप नोट्स में भुगतान की जानकारी लिख सकते हैं, लेकिन कोई कार्ड ऑनलाइन चार्ज नहीं होगा।",
+        a: "नहीं। TeqBook खास तौर पर इस मॉडल के लिए बनाया गया है जिसमें ग्राहक सैलून पर ही भुगतान करते हैं। आप नोट्स में भुगतान की जानकारी लिख सकते हैं, लेकिन कोई कार्ड ऑनलाइन चार्ज नहीं होगा।",
       },
       {
         q: "क्या मैं एक अकाउंट से कई सैलून मैनेज कर सकता हूँ?",
-        a: "हाँ। Eivo एक मालिक के तहत कई सैलून सपोर्ट करता है, और सख्त RLS नियमों से डेटा को सैलून के बीच मिलाने से रोकता है।",
+        a: "हाँ। TeqBook एक मालिक के तहत कई सैलून सपोर्ट करता है, और सख्त RLS नियमों से डेटा को सैलून के बीच मिलाने से रोकता है।",
       },
       {
         q: "SMS और ई‑मेल रिमाइंडर का क्या?",
@@ -1548,14 +1548,14 @@ export default function LandingPage() {
                     : locale === "ar"
                       ? "كيف ينسجم إيفو مع طريقة عمل صالونك"
                       : locale === "so"
-                        ? "Sida Eivo ugu habboon yahay saloonkaaga"
+                        ? "Sida TeqBook ugu habboon yahay saloonkaaga"
                         : locale === "ti"
-                          ? "Eivo ከመይ እዩ ኣብ ሳሎንኻ ዝሓተት?"
+                          ? "TeqBook ከመይ እዩ ኣብ ሳሎንኻ ዝሓተት?"
                           : locale === "am"
-                            ? "Eivo በሳሎንህ ውስጥ እንዴት እንደሚስማማ"
+                            ? "TeqBook በሳሎንህ ውስጥ እንዴት እንደሚስማማ"
                             : locale === "tr"
-                              ? "Eivo, salonunun işleyişine nasıl uyum sağlar"
-                              : "How Eivo fits into your salon"}
+                              ? "TeqBook, salonunun işleyişine nasıl uyum sağlar"
+                              : "How TeqBook fits into your salon"}
                 </p>
                 <div className="mt-3 space-y-2 text-xs text-muted-foreground">
                   <p>
@@ -1585,14 +1585,14 @@ export default function LandingPage() {
                       : locale === "ar"
                         ? "تدير جميع الحجوزات في تقويم إيفو"
                         : locale === "so"
-                          ? "Waxaad arki kartaa dhammaan ballamaha kalandarka Eivo"
+                          ? "Waxaad arki kartaa dhammaan ballamaha kalandarka TeqBook"
                           : locale === "ti"
-                            ? "ኩሉ መመዝገብታት ኣብ ካለንደር Eivo ትመልከታለካ"
+                            ? "ኩሉ መመዝገብታት ኣብ ካለንደር TeqBook ትመልከታለካ"
                             : locale === "am"
-                              ? "ሁሉንም ቀጠሮዎች በ Eivo ቀን መቁጠሪያ ውስጥ ታቆጣጠራለህ"
+                              ? "ሁሉንም ቀጠሮዎች በ TeqBook ቀን መቁጠሪያ ውስጥ ታቆጣጠራለህ"
                               : locale === "tr"
-                                ? "Tüm randevuları Eivo takviminden yönetirsin"
-                                : "You manage all bookings in the Eivo calendar"}
+                                ? "Tüm randevuları TeqBook takviminden yönetirsin"
+                                : "You manage all bookings in the TeqBook calendar"}
                     .
                   </p>
                   <p>
@@ -1618,7 +1618,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stats / hvorfor Eivo */}
+        {/* Stats / hvorfor TeqBook */}
         <section className="border-b bg-background">
           <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
             <Section>
@@ -1765,7 +1765,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t bg-card/60">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-4 text-[11px] text-muted-foreground sm:flex-row sm:px-6">
-          <span>© {new Date().getFullYear()} Eivo.</span>
+          <span>© {new Date().getFullYear()} TeqBook.</span>
           <span>
             {locale === "nb"
               ? "Bygget med Supabase + Next.js, designet for salonger i Norden."
