@@ -1388,7 +1388,21 @@ export default function LandingPage() {
   const [locale, setLocale] = useState<Locale>("en");
   const [scrolled, setScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const t = copy[locale];
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    // Check on mount and use a small delay to ensure window is available
+    if (typeof window !== 'undefined') {
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
+      return () => window.removeEventListener("resize", checkMobile);
+    }
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1452,11 +1466,11 @@ export default function LandingPage() {
             : "border-b border-transparent bg-transparent backdrop-blur-none backdrop-saturate-100"
         }`}
       >
-        <div className={`mx-auto flex max-w-5xl items-center justify-between px-4 transition-all duration-300 sm:px-6 ${headerHeight}`}>
+        <div className={`mx-auto flex max-w-5xl items-center justify-between pl-4 pr-4 transition-all duration-300 sm:px-6 ${headerHeight}`}>
           <motion.div 
-            className="flex items-center gap-4"
+            className="flex items-center gap-0.5 sm:gap-0.5 md:gap-0.5 min-w-0"
             animate={{
-              scale: logoScale,
+              scale: isMobile ? 1 : logoScale, // No scale animation on mobile/tablet
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
@@ -1465,23 +1479,21 @@ export default function LandingPage() {
               alt={t.brand}
               width={150}
               height={40}
-              className="h-9 w-auto"
+              className="h-11 w-auto sm:h-13 flex-shrink-0"
               priority
-              style={{
-                transform: `scale(${logoScale})`,
-              }}
             />
             <span 
-              className="font-semibold tracking-tight transition-all duration-300"
+              className="font-semibold tracking-tight transition-all duration-300 text-sm sm:text-base truncate"
               style={{
-                fontSize: `${logoTextSize}rem`,
+                fontSize: isMobile ? '0.875rem' : `${logoTextSize}rem`,
               }}
             >
               {t.brand}
             </span>
           </motion.div>
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex">
+            {/* Desktop: Language selector and buttons */}
+            <div className="hidden sm:flex items-center gap-2">
               <select
                 value={locale}
                 onChange={(e) => setLocale(e.target.value as Locale)}
@@ -1503,8 +1515,6 @@ export default function LandingPage() {
                 <option value="ur">🇵🇰 اردو</option>
                 <option value="hi">🇮🇳 हिन्दी</option>
               </select>
-            </div>
-            <div className="flex items-center gap-2">
               <Link href="/signup">
                 <Button size="sm">
                   {locale === "nb"
@@ -1560,9 +1570,171 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Mobile: Hamburger menu button */}
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 rounded-lg sm:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <span className="flex flex-col gap-1.5">
+                <span className="block h-0.5 w-5 rounded bg-current" />
+                <span className="block h-0.5 w-5 rounded bg-current" />
+                <span className="block h-0.5 w-5 rounded bg-current" />
+              </span>
+            </Button>
           </div>
         </div>
       </header>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm sm:hidden">
+          {/* Clickable backdrop */}
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="absolute inset-0 h-full w-full cursor-default"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Sliding panel */}
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col gap-6 border-r bg-white px-5 py-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="Favikon.svg"
+                  alt={t.brand}
+                  width={120}
+                  height={32}
+                  className="h-8 w-auto"
+                  priority
+                />
+                <span className="text-sm font-semibold tracking-tight text-slate-900">
+                  {t.brand}
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <span className="relative block h-5 w-5">
+                  <span className="absolute top-1/2 left-1/2 block h-0.5 w-4 rotate-45 rounded bg-slate-700 -translate-x-1/2 -translate-y-1/2" />
+                  <span className="absolute top-1/2 left-1/2 block h-0.5 w-4 -rotate-45 rounded bg-slate-700 -translate-x-1/2 -translate-y-1/2" />
+                </span>
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Language selector */}
+              <div>
+                <label className="mb-2 block text-xs font-medium text-slate-600">
+                  {locale === "nb" ? "Språk" : "Language"}
+                </label>
+                <select
+                  value={locale}
+                  onChange={(e) => {
+                    setLocale(e.target.value as Locale);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="nb">🇳🇴 Norsk</option>
+                  <option value="en">🇬🇧 English</option>
+                  <option value="ar">🇸🇦 العربية</option>
+                  <option value="so">🇸🇴 Soomaali</option>
+                  <option value="ti">🇪🇷 ትግርኛ</option>
+                  <option value="am">🇪🇹 አማርኛ</option>
+                  <option value="tr">🇹🇷 Türkçe</option>
+                  <option value="pl">🇵🇱 Polski</option>
+                  <option value="vi">🇻🇳 Tiếng Việt</option>
+                  <option value="tl">🇵🇭 Tagalog</option>
+                  <option value="zh">🇨🇳 中文</option>
+                  <option value="fa">🇮🇷 فارسی</option>
+                  <option value="dar">🇦🇫 دری</option>
+                  <option value="ur">🇵🇰 اردو</option>
+                  <option value="hi">🇮🇳 हिन्दी</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col gap-2">
+                <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full" size="sm">
+                    {locale === "nb"
+                      ? "Opprett konto"
+                      : locale === "ar"
+                        ? "إنشاء حساب"
+                        : locale === "so"
+                          ? "Samee akoon"
+                          : locale === "ti"
+                            ? "ኣካውንት ፍጠር"
+                            : locale === "am"
+                              ? "መለያ ፍጠር"
+                              : locale === "tr"
+                                ? "Hesap oluştur"
+                                : locale === "pl"
+                                  ? "Utwórz konto"
+                                  : locale === "vi"
+                                    ? "Tạo tài khoản"
+                                    : locale === "zh"
+                                      ? "注册"
+                                      : locale === "tl"
+                                        ? "Gumawa ng account"
+                                        : locale === "fa" || locale === "dar"
+                                          ? "ایجاد حساب"
+                                          : "Sign up"}
+                  </Button>
+                </Link>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full" size="sm">
+                    {locale === "nb"
+                      ? "Logg inn"
+                      : locale === "ar"
+                        ? "تسجيل الدخول"
+                        : locale === "so"
+                          ? "Soo gal"
+                          : locale === "ti"
+                            ? "ናብ መንነት ኣብ ግባ"
+                            : locale === "am"
+                              ? "ግባ"
+                              : locale === "tr"
+                                ? "Giriş yap"
+                                : locale === "pl"
+                                  ? "Zaloguj się"
+                                  : locale === "vi"
+                                    ? "Đăng nhập"
+                                    : locale === "zh"
+                                      ? "登录"
+                                      : locale === "tl"
+                                        ? "Mag-log in"
+                                        : locale === "fa" || locale === "dar"
+                                          ? "ورود"
+                                          : locale === "ur"
+                                            ? "لاگ ان"
+                                            : locale === "hi"
+                                              ? "लॉग इन करें"
+                                              : "Log in"}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Hero */}
       <main className="flex-1 relative">
@@ -1742,7 +1914,7 @@ export default function LandingPage() {
             >
               {/* Card 1: Booking Example */}
               <motion.div
-                className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-6"
+                className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6"
                 animate={{
                   y: [0, -8, 0],
                 }}
@@ -1788,7 +1960,7 @@ export default function LandingPage() {
 
               {/* Card 2: Calendar View */}
               <motion.div
-                className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-5"
+                className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5"
                 animate={{
                   y: [0, 6, 0],
                 }}
@@ -2050,7 +2222,7 @@ export default function LandingPage() {
                   return (
                     <motion.div
                       key={idx}
-                      className="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-white via-indigo-50/30 to-blue-50/20 p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8"
+                      className="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-white via-indigo-50/30 to-blue-50/20 p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8 min-h-[160px]"
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
@@ -2105,7 +2277,7 @@ export default function LandingPage() {
                                 return (
                                   <div
                                     key={staffIdx}
-                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 transition-transform hover:scale-110"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 via-indigo-50/80 to-blue-100 text-indigo-600 transition-transform hover:scale-110"
                                     title={staff.label}
                                   >
                                     <StaffIcon className="h-5 w-5" />
