@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StatsGrid } from "@/components/stats-grid";
 import { Section, SectionCard } from "@/components/section";
+import { Check, Sparkles, Calendar, Users, Shield, Zap, Clock, User } from "lucide-react";
 
 type Locale =
   | "nb"
@@ -1388,9 +1390,16 @@ export default function LandingPage() {
   const pricingPlans = t.tiers;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-blue-50/30 to-blue-50/20">
+      {/* Gradient background layers */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-300/10 blur-3xl" />
+      </div>
+
       {/* Top nav */}
-      <header className="sticky top-0 z-20 border-b bg-background/70 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-blue-200/50 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             <Image
@@ -1516,34 +1525,132 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-1">
-        <section className="border-b bg-card/60">
-          <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:flex-row lg:items-center">
-            <div className="flex-1 space-y-4">
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-emerald-800">
+      <main className="flex-1 relative">
+        <section className="relative border-b border-blue-200/30 overflow-hidden bg-[#EEF3FF]">
+          {/* Abstract gradient background layers */}
+          <div className="pointer-events-none absolute inset-0">
+            {/* Base gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#EEF3FF] via-[#DBE4FF] to-[#E0E7FF]" />
+            
+            {/* Large blurred blobs for depth */}
+            <motion.div
+              className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.4, 0.3],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl"
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.25, 0.35, 0.25],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5,
+              }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[#6366F1]/8 blur-3xl" />
+            
+            {/* Subtle diagonal grid pattern */}
+            <div className="absolute inset-0 opacity-[0.08]">
+              <svg
+                className="h-full w-full"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <pattern
+                    id="grid-pattern"
+                    x="0"
+                    y="0"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      d="M 40 0 L 0 0 0 40"
+                      fill="none"
+                      stroke="#4F46E5"
+                      strokeWidth="1"
+                    />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-8 px-4 py-20 sm:px-6 sm:py-24 md:py-28 lg:flex-row lg:items-center lg:gap-16">
+            <motion.div
+              className="flex-1 space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.span
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-white/70 px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-blue-700 shadow-sm backdrop-blur-md"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-blue-600" />
                 {t.badge}
-              </span>
-              <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
+              </motion.span>
+              <motion.h1
+                className="text-balance bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-4xl font-semibold leading-tight tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
                 {t.heroTitle}
-              </h1>
-              <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
+              </motion.h1>
+              <motion.p
+                className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
                 {t.heroSubtitle}
-              </p>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+              </motion.p>
+              
+              {/* CTA Buttons */}
+              <motion.div
+                className="flex flex-col gap-4 sm:flex-row"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+              >
                 <Link href="/signup" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto">
-                    {t.ctaPrimary}
+                  <Button
+                    size="lg"
+                    className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/40 sm:w-auto"
+                  >
+                    <span className="relative z-10">{t.ctaPrimary}</span>
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  size="lg"
+                  className="group w-full rounded-xl border-2 border-slate-200 bg-white px-8 py-6 text-base font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md sm:w-auto"
                   type="button"
                 >
                   {t.ctaSecondary}
                 </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
+              </motion.div>
+              <motion.p
+                className="text-xs text-slate-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+              >
                 {locale === "nb"
                   ? "Ingen kredittkort nødvendig. Betaling settes opp når du er klar."
                   : locale === "ar"
@@ -1562,93 +1669,112 @@ export default function LandingPage() {
                                 ? "Không cần thẻ tín dụng. Bạn có thể cấu hình thanh toán sau khi sẵn sàng."
                                 : locale === "zh"
                                   ? "无需信用卡。你可以在准备好之后再配置付款方式。"
-                    : locale === "tl"
-                      ? "Hindi kailangan ng credit card. Maaari mong i-set up ang bayad kapag handa ka na."
-                      : locale === "fa" || locale === "dar" || locale === "ur"
-                        ? "نیازی به کارت اعتباری نیست. می‌توانید تنظیمات پرداخت را وقتی آماده بودید انجام دهید."
-                        : "No credit card required. Payments are configured when you’re ready."}
-              </p>
-            </div>
-            <div className="flex-1">
-              <div className="mt-4 rounded-2xl border bg-background p-4 shadow-sm sm:p-5">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {locale === "nb"
-                        ? "Hvordan TeqBook passer inn i salongen din"
-                    : locale === "ar"
-                      ? "كيف ينسجم إيفو مع طريقة عمل صالونك"
-                      : locale === "so"
-                        ? "Sida TeqBook ugu habboon yahay saloonkaaga"
-                        : locale === "ti"
-                          ? "TeqBook ከመይ እዩ ኣብ ሳሎንኻ ዝሓተት?"
-                          : locale === "am"
-                            ? "TeqBook በሳሎንህ ውስጥ እንዴት እንደሚስማማ"
-                            : locale === "tr"
-                              ? "TeqBook, salonunun işleyişine nasıl uyum sağlar"
-                              : "How TeqBook fits into your salon"}
-                </p>
-                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
-                  <p>
-                        1.{" "}
-                        {locale === "nb"
-                          ? "Kundene booker på nett"
-                      : locale === "ar"
-                        ? "العملاء يحجزون عبر الإنترنت"
-                        : locale === "so"
-                          ? "Macaamiishu waxay ballansadaan online"
-                          : locale === "ti"
-                            ? "ገበሬታት ብመስመር ላይ ይመዝገቡ"
-                            : locale === "am"
-                              ? "ደንበኞች ቀጠሮዎችን በመስመር ላይ ያዘዙ"
-                              : locale === "tr"
-                                ? "Müşteriler online randevu alır"
-                                : "Clients book online"}{" "}
-                    <code className="rounded bg-muted px-1 py-0.5 text-[10px]">
-                      /book/[slug]
-                    </code>
-                    ).
-                  </p>
-                  <p>
-                        2.{" "}
-                        {locale === "nb"
-                          ? "Du ser alle bookinger i TeqBook-kalenderen"
-                      : locale === "ar"
-                        ? "تدير جميع الحجوزات في تقويم إيفو"
-                        : locale === "so"
-                          ? "Waxaad arki kartaa dhammaan ballamaha kalandarka TeqBook"
-                          : locale === "ti"
-                            ? "ኩሉ መመዝገብታት ኣብ ካለንደር TeqBook ትመልከታለካ"
-                            : locale === "am"
-                              ? "ሁሉንም ቀጠሮዎች በ TeqBook ቀን መቁጠሪያ ውስጥ ታቆጣጠራለህ"
-                              : locale === "tr"
-                                ? "Tüm randevuları TeqBook takviminden yönetirsin"
-                                : "You manage all bookings in the TeqBook calendar"}
-                    .
-                  </p>
-                  <p>
-                        3.{" "}
-                        {locale === "nb"
-                      ? "Kunden betaler fysisk i salong – akkurat som før"
-                      : locale === "ar"
-                        ? "العميل يدفع داخل الصالون – تمامًا كما هو الحال اليوم"
-                        : locale === "so"
-                          ? "Macmiilku wuxuu lacagta ku bixinayaa gudaha saloonka – sidii hore oo kale"
-                          : locale === "ti"
-                            ? "ደኣንነት ገንዘቡን ብቀጥታ ኣብ ሳሎን ይኸፍል – ከም ሕጂ እዩ"
-                            : locale === "am"
-                              ? "ደንበኛው ክፍያውን በቀጥታ በሳሎኑ ውስጥ ይከፍላል – እንደ ዛሬው ጊዜ"
-                              : locale === "tr"
-                                ? "Müşteri ödemeyi salonda yapar – bugün olduğu gibi"
-                                : "Clients pay in-salon – just like today"}
-                    .
-                  </p>
+                      : locale === "tl"
+                        ? "Hindi kailangan ng credit card. Maaari mong i-set up ang bayad kapag handa ka na."
+                        : locale === "fa" || locale === "dar" || locale === "ur"
+                          ? "نیازی به کارت اعتباری نیست. می‌توانید تنظیمات پرداخت را وقتی آماده بودید انجام دهید."
+                          : "No credit card required. Payments are configured when you're ready."}
+              </motion.p>
+            </motion.div>
+
+            {/* Floating UI Cards */}
+            <motion.div
+              className="relative flex-1 lg:min-h-[500px] flex items-center justify-center"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              {/* Card 1: Booking Example */}
+              <motion.div
+                className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-6"
+                animate={{
+                  y: [0, -8, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <div className="relative">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      <span className="text-xs font-medium text-slate-600">
+                        {locale === "nb" ? "Ny booking" : "New booking"}
+                      </span>
+                    </div>
+                    <Calendar className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {locale === "nb" ? "Maria Hansen" : "Maria Hansen"}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {locale === "nb" ? "Klipp & styling" : "Cut & styling"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <Clock className="h-3.5 w-3.5 text-indigo-600" />
+                      <span>
+                        {locale === "nb" ? "15. mars, 14:00" : "March 15, 2:00 PM"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+
+              {/* Card 2: Calendar View */}
+              <motion.div
+                className="absolute -bottom-6 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-5"
+                animate={{
+                  y: [0, 6, 0],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
+              >
+                <div className="relative">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {locale === "nb" ? "I dag" : "Today"}
+                    </h3>
+                    <span className="text-xs text-slate-500">
+                      {locale === "nb" ? "3 bookinger" : "3 bookings"}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 rounded-lg bg-indigo-50/50 px-2 py-1.5"
+                      >
+                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                        <span className="text-xs text-slate-700">
+                          {locale === "nb"
+                            ? `${9 + i * 2}:00 - ${locale === "nb" ? "Klipp" : "Cut"}`
+                            : `${9 + i * 2}:00 - Cut`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         {/* Stats / hvorfor TeqBook */}
-        <section className="border-b bg-background">
+        <section className="relative border-b border-blue-200/30 bg-white/40 backdrop-blur-sm">
           <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
             <Section>
               <StatsGrid>
@@ -1663,136 +1789,230 @@ export default function LandingPage() {
         </section>
 
         {/* Pricing */}
-        <section className="border-b bg-card/40">
-          <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-            <Section
-              title={t.pricingTitle}
-              description={t.pricingSubtitle}
+        <section className="relative border-b border-blue-200/30 bg-gradient-to-b from-white/60 via-blue-50/20 to-blue-50/20 backdrop-blur-sm">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
-              <p className="mb-6 text-center text-xs font-medium uppercase tracking-wide text-emerald-700">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+                {t.pricingTitle}
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 sm:text-lg">
+                {t.pricingSubtitle}
+              </p>
+              <p className="mt-6 text-center text-sm font-semibold uppercase tracking-wide text-blue-600">
                 {locale === "nb"
                   ? "Rimelig. Enkelt. Bygget for internasjonale salonger."
                   : "Affordable. Simple. Built for international salons."}
               </p>
-              <div className="grid gap-4 md:grid-cols-3">
-                {pricingPlans.map((plan) => (
-                  <div
+            </motion.div>
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {pricingPlans.map((plan, index) => {
+                const isHighlighted = (plan as any).highlighted;
+                const iconMap: Record<string, any> = {
+                  starter: Calendar,
+                  pro: Zap,
+                  business: Shield,
+                };
+                const Icon = iconMap[plan.id] || Calendar;
+
+                return (
+                  <motion.div
                     key={plan.id}
-                    className={`flex flex-col rounded-2xl border bg-background p-4 shadow-sm sm:p-5 ${
-                      (plan as any).highlighted
-                        ? "border-foreground shadow-md"
-                        : ""
+                    className={`group relative flex flex-col overflow-hidden rounded-3xl border-2 p-6 shadow-lg transition-all duration-300 sm:p-8 ${
+                      isHighlighted
+                        ? "border-blue-500 bg-gradient-to-br from-white via-blue-50/50 to-blue-50/50 shadow-2xl shadow-blue-500/20 ring-2 ring-blue-500/20"
+                        : "border-blue-200/50 bg-white/80 backdrop-blur-sm hover:border-blue-300 hover:shadow-xl"
                     }`}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                   >
-                    <div className="mb-3 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold tracking-tight">
-                          {plan.name}
-                        </h3>
+                    {isHighlighted && (
+                      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br from-blue-400/30 to-blue-500/30 blur-2xl" />
+                    )}
+                    <div className="relative">
+                      <div className="mb-4 flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                              isHighlighted
+                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/50"
+                                : "bg-blue-100 text-blue-600"
+                            }`}
+                          >
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900">
+                              {plan.name}
+                            </h3>
+                          </div>
+                        </div>
                         {plan.badge && (
-                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              isHighlighted
+                                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
                             {plan.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="mb-4 text-sm text-slate-600">
                         {plan.description}
                       </p>
+                      <div className="mb-6">
+                        <span className="text-3xl font-bold text-slate-900">
+                          {plan.price.split(" /")[0]}
+                        </span>
+                        <span className="text-sm text-slate-500">
+                          {" /" + plan.price.split(" /")[1]}
+                        </span>
+                      </div>
+                      <ul className="mb-6 flex-1 space-y-3 text-sm">
+                        {plan.features.map((f) => (
+                          <li key={f} className="flex items-start gap-3">
+                            <Check
+                              className={`mt-0.5 h-5 w-5 shrink-0 ${
+                                isHighlighted
+                                  ? "text-blue-600"
+                                  : "text-blue-500"
+                              }`}
+                            />
+                            <span className="text-slate-700">{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button
+                        className={`w-full ${
+                          isHighlighted
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40"
+                            : "bg-slate-900 text-white hover:bg-slate-800"
+                        }`}
+                        size="lg"
+                      >
+                        {locale === "nb"
+                          ? "Start gratis prøveperiode"
+                          : "Start free trial"}
+                      </Button>
                     </div>
-                    <p className="text-lg font-semibold">{plan.price}</p>
-                    <ul className="mt-3 flex-1 space-y-1.5 text-xs text-muted-foreground">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex gap-1.5">
-                          <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-foreground/60" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button className="mt-4 w-full">
-                      {locale === "nb"
-                        ? "Start gratis prøveperiode"
-                        : "Start free trial"}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  </motion.div>
+                );
+              })}
+            </div>
 
-              <div className="mt-8 rounded-2xl border bg-background/80 p-4 text-xs text-muted-foreground sm:p-5">
-                <h3 className="text-sm font-semibold tracking-tight">
+            <motion.div
+              className="mt-12 overflow-hidden rounded-3xl border border-blue-200/50 bg-white/60 p-6 backdrop-blur-xl sm:p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-blue-50/30" />
+              <div className="relative">
+                <h3 className="text-xl font-bold text-slate-900">
                   {locale === "nb" ? "Add-ons" : "Add-ons"}
                 </h3>
-                <p className="mt-1 text-[11px]">
+                <p className="mt-2 text-sm text-slate-600">
                   {locale === "nb"
                     ? "Bygg din egen TeqBook-pakke etter behov. Perfekt for salonger drevet av innvandrere som vil starte enkelt og vokse trygt."
                     : "Build the TeqBook setup that fits your salon. Ideal for international salon owners who want to start simple and grow safely."}
                 </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-xl border bg-card px-3 py-3">
-                    <p className="text-xs font-semibold">
-                      {locale === "nb"
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                  {[
+                    {
+                      title: locale === "nb"
                         ? "99 kr/mnd – Flerspråklig bookingside"
-                        : "99 NOK / month – Multilingual booking page"}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {locale === "nb"
+                        : "99 NOK / month – Multilingual booking page",
+                      desc: locale === "nb"
                         ? "Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl."
-                        : "Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more."}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border bg-card px-3 py-3">
-                    <p className="text-xs font-semibold">
-                      {locale === "nb"
+                        : "Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
+                    },
+                    {
+                      title: locale === "nb"
                         ? "49 kr/mnd per ekstra ansatt"
-                        : "49 NOK / month per extra staff member"}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {locale === "nb"
+                        : "49 NOK / month per extra staff member",
+                      desc: locale === "nb"
                         ? "Skaler trygt når salongen vokser, uten store hopp i pris."
-                        : "Scale your team as you grow, without big pricing jumps."}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border bg-card px-3 py-3">
-                    <p className="text-xs font-semibold">
-                      {locale === "nb"
+                        : "Scale your team as you grow, without big pricing jumps.",
+                    },
+                    {
+                      title: locale === "nb"
                         ? "0,5–0,9 kr per SMS"
-                        : "0.5–0.9 NOK per SMS"}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {locale === "nb"
+                        : "0.5–0.9 NOK per SMS",
+                      desc: locale === "nb"
                         ? "Du betaler kun for SMS du faktisk sender – ingen skjulte gebyrer."
-                        : "Only pay for the SMS messages you actually send – no hidden fees."}
-                    </p>
-                  </div>
+                        : "Only pay for the SMS messages you actually send – no hidden fees.",
+                    },
+                  ].map((addon, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="rounded-2xl border border-blue-100 bg-white/80 p-4 backdrop-blur-sm transition-all hover:border-blue-200 hover:shadow-md"
+                      whileHover={{ scale: 1.02, y: -2 }}
+                    >
+                      <p className="text-sm font-semibold text-slate-900">
+                        {addon.title}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-600">
+                        {addon.desc}
+                      </p>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
-            </Section>
+            </motion.div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="bg-background">
-          <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-12">
-            <Section title={t.faqTitle}>
-              <div className="space-y-4">
-                    {t.faq.map((item: { q: string; a: string }) => (
-                  <div
-                    key={item.q}
-                    className="rounded-lg border bg-card px-4 py-3 text-sm"
-                  >
-                    <p className="font-medium">{item.q}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {item.a}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Section>
+        <section className="relative bg-gradient-to-b from-white/60 to-slate-50/40 backdrop-blur-sm">
+          <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20">
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                {t.faqTitle}
+              </h2>
+            </motion.div>
+            <div className="mt-12 space-y-4">
+              {t.faq.map((item: { q: string; a: string }, index) => (
+              <motion.div
+                key={item.q}
+                className="group overflow-hidden rounded-2xl border border-blue-100 bg-white/80 p-6 backdrop-blur-sm transition-all hover:border-blue-200 hover:shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                whileHover={{ scale: 1.01 }}
+              >
+                  <p className="text-base font-semibold text-slate-900">
+                    {item.q}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                    {item.a}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-card/60">
+      <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-4 text-[11px] text-muted-foreground sm:flex-row sm:px-6">
           <span>© {new Date().getFullYear()} TeqBook.</span>
           <span>
