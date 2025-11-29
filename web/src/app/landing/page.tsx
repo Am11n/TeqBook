@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StatsGrid } from "@/components/stats-grid";
 import { Section, SectionCard } from "@/components/section";
-import { Check, Sparkles, Calendar, Users, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, MessageSquare } from "lucide-react";
+import { Check, Sparkles, Calendar, Users, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, Waves, Hand, Paintbrush } from "lucide-react";
+import { LogoLoop } from "@/components/ui/logo-loop";
 
 type Locale =
   | "nb"
@@ -1414,6 +1415,26 @@ export default function LandingPage() {
 
   const pricingPlans = t.tiers;
 
+  // Language flags for logo loop in Multilingual booking page add-on
+  // All languages supported by TeqBook
+  const languageLogos = [
+    { emoji: "🇳🇴", alt: "Norwegian" },
+    { emoji: "🇬🇧", alt: "English" },
+    { emoji: "🇸🇦", alt: "Arabic" },
+    { emoji: "🇸🇴", alt: "Somali" },
+    { emoji: "🇪🇷", alt: "Tigrinya" },
+    { emoji: "🇪🇹", alt: "Amharic" },
+    { emoji: "🇹🇷", alt: "Turkish" },
+    { emoji: "🇵🇱", alt: "Polish" },
+    { emoji: "🇻🇳", alt: "Vietnamese" },
+    { emoji: "🇵🇭", alt: "Tagalog" },
+    { emoji: "🇨🇳", alt: "Chinese" },
+    { emoji: "🇮🇷", alt: "Persian" },
+    { emoji: "🇦🇫", alt: "Dari" },
+    { emoji: "🇵🇰", alt: "Urdu" },
+    { emoji: "🇮🇳", alt: "Hindi" },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-blue-50/30 to-blue-50/20">
       {/* Gradient background layers */}
@@ -1995,7 +2016,7 @@ export default function LandingPage() {
                     : "Build the TeqBook setup that fits your salon. Ideal for international salon owners who want to start simple and grow safely."}
                 </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {[
                   {
                     icon: Globe,
@@ -2005,6 +2026,7 @@ export default function LandingPage() {
                     desc: locale === "nb"
                       ? "Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl."
                       : "99 NOK / month — Let clients book in Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
+                    isMultilingual: true,
                   },
                   {
                     icon: UserPlus,
@@ -2014,15 +2036,13 @@ export default function LandingPage() {
                     desc: locale === "nb"
                       ? "Skaler trygt når salongen vokser, uten store hopp i pris."
                       : "49 NOK / month per additional staff — Scale your team without big jumps in pricing.",
-                  },
-                  {
-                    icon: MessageSquare,
-                    title: locale === "nb"
-                      ? "0,5–0,9 kr per SMS"
-                      : "SMS messages",
-                    desc: locale === "nb"
-                      ? "Du betaler kun for SMS du faktisk sender – ingen skjulte gebyrer."
-                      : "0.5–0.9 NOK per SMS — Only pay for the messages you actually send — no hidden fees.",
+                    isMultilingual: false,
+                    staffAvatars: [
+                      { icon: Scissors, label: "Barber" },
+                      { icon: Waves, label: "Massage therapist" },
+                      { icon: Hand, label: "Nail technician" },
+                      { icon: Paintbrush, label: "Makeup artist" },
+                    ],
                   },
                 ].map((addon, idx) => {
                   const Icon = addon.icon;
@@ -2030,7 +2050,7 @@ export default function LandingPage() {
                   return (
                     <motion.div
                       key={idx}
-                      className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white via-indigo-50/30 to-blue-50/20 p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8"
+                      className="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-white via-indigo-50/30 to-blue-50/20 p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8"
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
@@ -2051,7 +2071,7 @@ export default function LandingPage() {
                           maskComposite: "exclude",
                         }}
                       />
-                      <div className="relative">
+                      <div className="relative flex flex-col flex-1">
                         <div className="mb-4 flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 text-indigo-600">
                             <Icon className="h-5 w-5" />
@@ -2060,9 +2080,41 @@ export default function LandingPage() {
                             {addon.title}
                           </h4>
                         </div>
-                        <p className="text-sm leading-relaxed text-slate-600">
+                        <p className="text-sm leading-relaxed text-slate-600 mb-4">
                           {addon.desc}
                         </p>
+                        <div className="mt-auto">
+                          {addon.isMultilingual && (
+                            <div className="h-12 relative">
+                              <LogoLoop
+                                logos={languageLogos}
+                                speed={40}
+                                direction="left"
+                                logoHeight={24}
+                                gap={24}
+                                fadeOut
+                                fadeOutColor="#F3F4FF"
+                                className="h-full"
+                              />
+                            </div>
+                          )}
+                          {addon.staffAvatars && (
+                            <div className="flex items-center justify-center gap-3 pt-2">
+                              {addon.staffAvatars.map((staff, staffIdx) => {
+                                const StaffIcon = staff.icon;
+                                return (
+                                  <div
+                                    key={staffIdx}
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 transition-transform hover:scale-110"
+                                    title={staff.label}
+                                  >
+                                    <StaffIcon className="h-5 w-5" />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   );
