@@ -8,7 +8,9 @@ import { CurrentUserBadge } from "@/components/current-user-badge";
 import { CurrentSalonBadge } from "@/components/current-salon-badge";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
+import type { AppLocale } from "@/i18n/translations";
 import { supabase } from "@/lib/supabase-client";
 
 type DashboardShellProps = {
@@ -17,6 +19,7 @@ type DashboardShellProps = {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
+  const { salon } = useCurrentSalon();
   const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -68,7 +71,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <div className="relative flex min-h-screen w-full overflow-x-hidden">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 border-r bg-sidebar px-6 py-6 md:flex md:flex-col md:gap-8">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <Image
             src="Favikon.svg"
             alt="TeqBook logo"
@@ -88,7 +91,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </Link>
 
         <nav className="mt-4 flex flex-1 flex-col gap-1 text-sm">
-          <NavLink href="/" label={texts.overview} />
+          <NavLink href="/dashboard" label={texts.overview} />
           <NavLink href="/calendar" label={texts.calendar} />
           <NavLink href="/employees" label={texts.employees} />
           <NavLink href="/services" label={texts.services} />
@@ -143,7 +146,18 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <span>{texts.langLabel}:</span>
               <select
                 value={locale}
-                onChange={(e) => setLocale(e.target.value as any)}
+                onChange={async (e) => {
+                  const newLocale = e.target.value as AppLocale;
+                  setLocale(newLocale);
+                  
+                  // Update salon's preferred_language in Supabase
+                  if (salon?.id) {
+                    await supabase
+                      .from("salons")
+                      .update({ preferred_language: newLocale })
+                      .eq("id", salon.id);
+                  }
+                }}
                 className="h-6 rounded-full border-none bg-transparent px-1 text-[10px] outline-none focus-visible:ring-0"
               >
                 <option value="nb">🇳🇴 Norsk</option>
@@ -200,7 +214,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <div className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col gap-6 border-r bg-sidebar px-5 py-5">
             <div className="flex items-center justify-between gap-2">
               <Link
-                href="/"
+                href="/dashboard"
                 className="flex items-center gap-2"
                 onClick={() => setMobileNavOpen(false)}
               >
@@ -236,7 +250,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <nav className="flex flex-1 flex-col gap-1 text-sm">
               <MobileNavLink
-                href="/"
+                href="/dashboard"
                 label={texts.overview}
                 onNavigate={() => setMobileNavOpen(false)}
               />

@@ -118,11 +118,11 @@ export default function CustomersPage() {
 
     const { data, error: insertError } = await createCustomer({
       salon_id: salon.id,
-      full_name: fullName.trim(),
-      email: email.trim() || null,
-      phone: phone.trim() || null,
-      notes: notes.trim() || null,
-      gdpr_consent: gdprConsent,
+        full_name: fullName.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        notes: notes.trim() || null,
+        gdpr_consent: gdprConsent,
     });
 
     if (insertError || !data) {

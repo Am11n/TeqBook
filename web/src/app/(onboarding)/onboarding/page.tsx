@@ -14,7 +14,7 @@ type SalonType = "barber" | "nails" | "massage" | "other";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
   const appLocale = locale as AppLocale;
   const t = translations[appLocale].onboarding;
 
@@ -27,7 +27,10 @@ export default function OnboardingPage() {
   // Step 1: Grunninfo
   const [name, setName] = useState("");
   const [salonType, setSalonType] = useState<SalonType>("barber");
-  const [preferredLanguage, setPreferredLanguage] = useState<AppLocale>("nb");
+  // Initialize preferredLanguage from current locale
+  const [preferredLanguage, setPreferredLanguage] = useState<AppLocale>(
+    appLocale
+  );
 
   // Step 2: Innstillinger
   const [onlineBooking, setOnlineBooking] = useState(false);
@@ -56,8 +59,11 @@ export default function OnboardingPage() {
       return;
     }
 
+    // Set the locale to the preferred language before redirecting
+    setLocale(preferredLanguage);
+
     setStatus("success");
-    router.push("/");
+    router.push("/dashboard");
   }
 
   function handleNext() {
@@ -170,9 +176,12 @@ export default function OnboardingPage() {
                   <select
                     id="preferredLanguage"
                     value={preferredLanguage}
-                    onChange={(e) =>
-                      setPreferredLanguage(e.target.value as AppLocale)
-                    }
+                    onChange={(e) => {
+                      const newLang = e.target.value as AppLocale;
+                      setPreferredLanguage(newLang);
+                      // Update the global locale immediately so the UI updates
+                      setLocale(newLang);
+                    }}
                     className="h-10 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                   >
                     <option value="nb">🇳🇴 Norsk</option>

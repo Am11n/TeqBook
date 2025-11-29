@@ -9,7 +9,9 @@ import {
   ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabase-client";
+import { useLocale } from "@/components/locale-provider";
 import type { User } from "@supabase/supabase-js";
+import type { AppLocale } from "@/i18n/translations";
 
 type Profile = {
   user_id: string;
@@ -21,6 +23,7 @@ type Salon = {
   name: string;
   slug: string | null;
   is_public: boolean;
+  preferred_language: string | null;
 };
 
 type SalonContextValue =
@@ -52,6 +55,7 @@ type SalonProviderProps = {
 };
 
 export function SalonProvider({ children }: SalonProviderProps) {
+  const { setLocale } = useLocale();
   const [state, setState] = useState<SalonContextValue>({
     status: "loading",
   });
@@ -86,7 +90,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
       // 3. Get salon data
       const { data: salon, error: salonError } = await supabase
         .from("salons")
-        .select("id, name, slug, is_public")
+        .select("id, name, slug, is_public, preferred_language")
         .eq("id", profile.salon_id)
         .maybeSingle();
 
@@ -96,6 +100,30 @@ export function SalonProvider({ children }: SalonProviderProps) {
           error: salonError?.message ?? "Could not load salon data.",
         });
         return;
+      }
+
+      // 4. Set locale from salon's preferred_language if available
+      if (salon.preferred_language) {
+        const validLocales: AppLocale[] = [
+          "nb",
+          "en",
+          "ar",
+          "so",
+          "ti",
+          "am",
+          "tr",
+          "pl",
+          "vi",
+          "zh",
+          "tl",
+          "fa",
+          "dar",
+          "ur",
+          "hi",
+        ];
+        if (validLocales.includes(salon.preferred_language as AppLocale)) {
+          setLocale(salon.preferred_language as AppLocale);
+        }
       }
 
       setState({
@@ -118,7 +146,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setLocale]);
 
   const value = useMemo<SalonContextType>(() => {
     if (state.status === "ready") {

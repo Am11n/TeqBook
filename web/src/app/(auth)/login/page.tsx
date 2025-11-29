@@ -64,7 +64,20 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    // Check if user has a salon
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("salon_id")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+
+    if (profileError || !profile?.salon_id) {
+      // No salon, redirect to onboarding
+      router.push("/onboarding");
+    } else {
+      // Has salon, redirect to dashboard overview
+      router.push("/dashboard");
+    }
   }
 
   return (

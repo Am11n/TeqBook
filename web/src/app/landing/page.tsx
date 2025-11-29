@@ -1382,7 +1382,7 @@ const copy: Record<
 } as const;
 
 export default function LandingPage() {
-  const [locale, setLocale] = useState<Locale>("nb");
+  const [locale, setLocale] = useState<Locale>("en");
   const t = copy[locale];
 
   const pricingPlans = t.tiers;

@@ -24,7 +24,12 @@ type LocaleProviderProps = {
 };
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
-  const [locale, setLocale] = useState<Locale>("nb");
+  // Default to "en", will be set by SalonProvider when salon data loads
+  const [locale, setLocaleState] = useState<Locale>("en");
+
+  const setLocale = (value: Locale) => {
+    setLocaleState(value);
+  };
 
   const value = useMemo(
     () => ({

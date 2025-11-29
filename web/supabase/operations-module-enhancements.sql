@@ -55,7 +55,7 @@ BEGIN
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'employees' AND column_name = 'preferred_language'
   ) THEN
-    ALTER TABLE employees ADD COLUMN preferred_language TEXT DEFAULT 'nb';
+    ALTER TABLE employees ADD COLUMN preferred_language TEXT DEFAULT 'en';
   END IF;
   
   -- Add constraint if it doesn't exist

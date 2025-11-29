@@ -127,7 +127,7 @@ export default function BookingsPage() {
         getBookingsForCurrentSalon(salon.id),
         getEmployeesForCurrentSalon(salon.id),
         getActiveServicesForCurrentSalon(salon.id),
-      ]);
+        ]);
 
       if (bookingsError || employeesError || servicesError) {
         setError(bookingsError ?? employeesError ?? servicesError ?? t.loadError);

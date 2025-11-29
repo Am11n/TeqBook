@@ -31,15 +31,16 @@ BEGIN
   END IF;
 END $$;
 
--- Add preferred_language column (text, nullable, default 'nb')
+-- Add preferred_language column (text, nullable, default 'en')
 -- This should match the AppLocale type from translations.ts
+-- Note: Default changed from 'nb' to 'en' to match application default
 DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'salons' AND column_name = 'preferred_language'
   ) THEN
-    ALTER TABLE salons ADD COLUMN preferred_language TEXT DEFAULT 'nb';
+    ALTER TABLE salons ADD COLUMN preferred_language TEXT DEFAULT 'en';
   END IF;
   
   -- Add constraint if it doesn't exist
@@ -77,11 +78,35 @@ BEGIN
   END IF;
 END $$;
 
+-- Add updated_at column to salons table if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'salons' AND column_name = 'updated_at'
+  ) THEN
+    ALTER TABLE salons ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+END $$;
+
+-- Add updated_at column to profiles table if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'profiles' AND column_name = 'updated_at'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+END $$;
+
 -- Add comments to columns for documentation
 COMMENT ON COLUMN salons.salon_type IS 'Type of salon: barber, nails, massage, or other';
 COMMENT ON COLUMN salons.preferred_language IS 'Preferred language for staff interface (matches AppLocale)';
 COMMENT ON COLUMN salons.online_booking_enabled IS 'Whether online booking is enabled for this salon';
 COMMENT ON COLUMN salons.is_public IS 'Whether the public booking page is active for this salon';
+COMMENT ON COLUMN salons.updated_at IS 'Timestamp when the salon was last updated';
+COMMENT ON COLUMN profiles.updated_at IS 'Timestamp when the profile was last updated';
 
 -- =====================================================
 -- Step 2: Update create_salon_for_current_user function
@@ -95,7 +120,7 @@ DROP FUNCTION IF EXISTS create_salon_for_current_user(TEXT, TEXT, TEXT, BOOLEAN,
 CREATE OR REPLACE FUNCTION create_salon_for_current_user(
   salon_name TEXT,
   salon_type_param TEXT DEFAULT 'barber',
-  preferred_language_param TEXT DEFAULT 'nb',
+  preferred_language_param TEXT DEFAULT 'en',
   online_booking_enabled_param BOOLEAN DEFAULT false,
   is_public_param BOOLEAN DEFAULT true
 )
@@ -171,7 +196,34 @@ $$;
 GRANT EXECUTE ON FUNCTION create_salon_for_current_user(TEXT, TEXT, TEXT, BOOLEAN, BOOLEAN) TO authenticated;
 
 -- =====================================================
--- Step 3: Update RLS policies if needed
+-- Step 3: Create trigger to auto-update updated_at
+-- =====================================================
+
+-- Create a function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for salons table
+DROP TRIGGER IF EXISTS update_salons_updated_at ON salons;
+CREATE TRIGGER update_salons_updated_at
+  BEFORE UPDATE ON salons
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Create trigger for profiles table
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- Step 4: Update RLS policies if needed
 -- =====================================================
 -- The existing RLS policies should still work, but we ensure
 -- that users can read the new columns on their own salon

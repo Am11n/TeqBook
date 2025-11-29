@@ -70,19 +70,19 @@ export default function EmployeesPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
-  const [preferredLanguage, setPreferredLanguage] = useState("nb");
+  const [preferredLanguage, setPreferredLanguage] = useState("en");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   async function loadEmployees() {
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
     if (!salon?.id) {
       setError(t.noSalon);
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
 
     const [
       { data: employeesData, error: employeesError },
@@ -94,21 +94,21 @@ export default function EmployeesPage() {
 
     if (employeesError || servicesError) {
       setError(employeesError ?? servicesError ?? "Kunne ikke laste data");
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
 
     if (!employeesData || !servicesData) {
       setError("Kunne ikke laste data");
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
 
     setEmployees(employeesData.employees);
     setServices(servicesData);
     setEmployeeServicesMap(employeesData.servicesMap);
-    setLoading(false);
-  }
+      setLoading(false);
+    }
 
   useEffect(() => {
     if (!isReady) {
@@ -136,9 +136,9 @@ export default function EmployeesPage() {
 
     const { data: employeeData, error: insertError } = await createEmployee({
       salon_id: salon.id,
-      full_name: fullName.trim(),
-      email: email.trim() || null,
-      phone: phone.trim() || null,
+        full_name: fullName.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
       role: role.trim() || null,
       preferred_language: preferredLanguage || "nb",
       service_ids: selectedServices.length > 0 ? selectedServices : undefined,

@@ -118,10 +118,10 @@ export default function ServicesPage() {
 
     const { data, error: insertError } = await createService({
       salon_id: salon.id,
-      name: name.trim(),
+        name: name.trim(),
       category: category || null,
-      duration_minutes: duration,
-      price_cents: price * 100,
+        duration_minutes: duration,
+        price_cents: price * 100,
       sort_order: sortOrder,
     });
 
