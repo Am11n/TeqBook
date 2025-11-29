@@ -42,7 +42,7 @@ export const so: TranslationNamespaces = {
       "Salonkan ma jiro ama looma dejin in uu yahay mid dadweyne.",
   },
   login: {
-    title: "Soo gal TeqBook",
+    title: "Soo gal",
     description:
       "Horumarinta maxalliga ah: ka abuur isticmaale email iyo password gudaha Supabase dashboard-ka, ka dibna halkaan kaga soo gal adiga oo aan u baahnayn xaqiijin email.",
     emailLabel: "Email",
@@ -53,6 +53,15 @@ export const so: TranslationNamespaces = {
     loggingIn: "Waxaa socda soo galid…",
     loginButton: "Soo gal",
     tip: "Talo: Gudaha Supabase waxaad ku meel gaar uga joojin kartaa xaqiijinta email-ka hoosta Auth > Authentication > Email si isticmaalayaal cusub ay si toos ah u soo geli karaan.",
+    welcomeBackTitle: "Soo dhawoow TeqBook",
+    welcomeBackDescription: "Ku hay kalendarkaaga saloonka, shaqaalaha iyo macaamiisha oo dhammaan nidaam fudud.",
+    bullet1: "Ballansasho degdeg ah iyo dib-u-ballansasho macaamiil joogto ah",
+    bullet2: "Waxay u shaqeysaa milkiilayaasha saloonka hal iyo kuwo badan",
+    bullet3: "Waxaa loo dhisay ganacsiga bixinta gudaha saloonka",
+    formSubtitle: "Isticmaal akoonkaaga TeqBook si aad u hesho dashboard-ka saloonkaaga.",
+    forgotPassword: "Ma ilowday password-ka?",
+    dontHaveAccount: "Ma haysatid akoon?",
+    createOne: "Samee akoon",
   },
   signup: {
     title: "Samee akoon",
@@ -65,6 +74,12 @@ export const so: TranslationNamespaces = {
     alreadyHaveAccount: "Ma haysaa akoon hore?",
     loginLink: "Soo gal",
     passwordMismatch: "Erayga sirta ah ma qancin",
+    createAccountTitle: "Samee akoonkaaga TeqBook",
+    createAccountDescription: "Bilow free trial-kaaga. Ma baahnaa kaar. Waxaad horey u darsan kartaa shaqaalaha iyo saloonnada.",
+    bullet1: "Bilow ballansashada online-ka daqiiqado",
+    bullet2: "Kor u qaad marka saloonkaagu koraayo",
+    bullet3: "Bogga ballansashada luuqadaha badan waa la heli karaa",
+    formSubtitle: "Bilow free trial-kaaga. Ma baahnaa kaar.",
   },
   onboarding: {
     title: "Samee saloonkaagii ugu horreeyay",

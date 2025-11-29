@@ -40,7 +40,7 @@ export const ti: TranslationNamespaces = {
       "እዚ ሳሎን የብሉን እዩ ወይ እቲ ናይ ሕዝቢ ሳሎን ዝብል ምልክት ኣይተሰናከለን።",
   },
   login: {
-    title: "ናብ TeqBook መግቢ",
+    title: "መግቢ",
     description:
       "ናይ ልምዓት ልክዕ ሕክምና: ብኢመይልን ቃል-ዓለምን ዝተፈጠረ ተጠቃሚ ኣብ Supabase dashboard ፍጠር፣ እዚ'ውን ዘይኮነ ምርግጋጽ ኢመይል ኣብ ዚ ክፍል ኣብ ግባ።",
     emailLabel: "ኢመይል",
@@ -51,6 +51,15 @@ export const ti: TranslationNamespaces = {
     loggingIn: "ኣብ መግቢ ኣሎ…",
     loginButton: "መግቢ",
     tip: "ምክር: ኣብ Supabase ግዜውን ምርግጋጽ ኢመይል ካብ Auth > Authentication > Email ንምቁራጽ ትኽእል ኢኻ እሞ ሓድሽ ተጠቃሚ ብቀጥታ ክውሰብ ይኽእል።",
+    welcomeBackTitle: "ናብ TeqBook እንቋዕ ብደሓን መጻእኩም",
+    welcomeBackDescription: "ናይ ሳሎን ካሌንዳር፣ ሰራዊትን ክሊዕንትን ኣብ ሓደ ቀሊል ስርዓት ኣደምድም።",
+    bullet1: "ንተወሳስዩ ክሊዕንት ቀልጢፍ ቦኪንግን ዳግማይ ቦኪንግን",
+    bullet2: "ንሓደ እና ብዙሕ ሳሎን ወንጌላውያን ይሰርሕ",
+    bullet3: "ንናይ ኣብ ሳሎን ክፍሊት ንግዲ ተሃንጺ",
+    formSubtitle: "ናይ TeqBook ኣካውንትኩም ተጠቐምሉ ንናይ ሳሎን ዳሽቦርድ ንምድላይ።",
+    forgotPassword: "ፓስዎርድ ረሲዕኩም?",
+    dontHaveAccount: "ኣካውንት የብልኩምን?",
+    createOne: "ኣካውንት ፍጠር",
   },
   signup: {
     title: "ኣካውንት ፍጠር",
@@ -63,6 +72,12 @@ export const ti: TranslationNamespaces = {
     alreadyHaveAccount: "ቀደም ኣካውንት ኣሎካ?",
     loginLink: "እቶ",
     passwordMismatch: "ሚስጥር ቃላት አይጣጣሙም",
+    createAccountTitle: "ናይ TeqBook ኣካውንትኩም ፍጠሩ",
+    createAccountDescription: "ናይ ነጻ ሙከራኩም ጀምሩ። ናይ ክሬድት ካርድ ኣየድልየን። ሰራዊትን ሳሎናትን ድሕሪኡ ክትወስኹ ትኽእሉ።",
+    bullet1: "ኣብ ደቂቕ ብኢንተርነት ቦኪንግ ጀምሩ",
+    bullet2: "ሳሎንኩም ምስ ዝዓብይ ዳግማይ ኣሻልኦ",
+    bullet3: "ናይ ብዙሕ ቋንቋ ቦኪንግ ገጽ ተገልጺ",
+    formSubtitle: "ናይ ነጻ ሙከራኩም ጀምሩ። ናይ ክሬድት ካርድ ኣየድልየን።",
   },
   onboarding: {
     title: "መጀመርታዊ ሳሎንካ ፍጠር",

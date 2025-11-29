@@ -38,6 +38,23 @@ const copy: Record<
     badge: string;
     pricingTitle: string;
     pricingSubtitle: string;
+    affordableSimple: string;
+    startFreeTrial: string;
+    addOnsTitle: string;
+    newBooking: string;
+    exampleCustomerName: string;
+    exampleService: string;
+    exampleDate: string;
+    today: string;
+    bookingsCount: string;
+    cutService: string;
+    signUpButton: string;
+    logInButton: string;
+    addOnsDescription: string;
+    multilingualBookingTitle: string;
+    multilingualBookingDescription: string;
+    extraStaffTitle: string;
+    extraStaffDescription: string;
     tiers: {
       id: string;
       name: string;
@@ -67,7 +84,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / måned",
+        price: "$25 / month",
         badge: "For små salonger",
         description:
           "Perfekt for barber, frisør, negler eller massasje med 1–2 ansatte.",
@@ -83,7 +100,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / måned",
+        price: "$50 / month",
         badge: "Mest valgt",
         description:
           "For salonger med 3–6 ansatte som vil ha mer kontroll og færre no-shows.",
@@ -101,7 +118,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / måned",
+        price: "$75 / month",
         badge: "For voksende kjeder",
         description:
           "For større og mer travle salonger som trenger struktur, roller og bedre rapportering.",
@@ -127,6 +144,23 @@ const copy: Record<
         body: "MVP-en er bygget med tydelig roadmap for notifikasjoner, rapportering og kassasystem.",
       },
     ],
+    affordableSimple: "Rimelig. Enkelt. Bygget for internasjonale salonger.",
+    startFreeTrial: "Start gratis prøveperiode",
+    addOnsTitle: "Add-ons",
+    newBooking: "Ny booking",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Klipp & styling",
+    exampleDate: "15. mars, 14:00",
+    today: "I dag",
+    bookingsCount: "3 bookinger",
+    cutService: "Klipp",
+    signUpButton: "Opprett konto",
+    logInButton: "Logg inn",
+    addOnsDescription: "Bygg din egen TeqBook-pakke etter behov. Perfekt for salonger drevet av innvandrere som vil starte enkelt og vokse trygt.",
+    multilingualBookingTitle: "Flerspråklig bookingside",
+    multilingualBookingDescription: "$10 / month — Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl.",
+    extraStaffTitle: "Ekstra ansatt",
+    extraStaffDescription: "$5 / month per ekstra ansatt — Skaler trygt når salongen vokser, uten store hopp i pris.",
     faqTitle: "Ofte stilte spørsmål",
     faq: [
       {
@@ -158,7 +192,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 NOK / month",
+        price: "$25 / month",
         description:
           "Perfect for 1–2 person salons.",
         features: [
@@ -173,7 +207,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 NOK / month",
+        price: "$50 / month",
         description:
           "For salons with 3–6 staff who want more control and fewer no-shows.",
         features: [
@@ -190,7 +224,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 NOK / month",
+        price: "$75 / month",
         description:
           "For larger salons that need structure, roles and full reporting.",
         features: [
@@ -215,6 +249,23 @@ const copy: Record<
         body: "Add staff, manage multiple locations, and keep your business organized as you expand.",
       },
     ],
+    affordableSimple: "Affordable. Simple. Built for international salons.",
+    startFreeTrial: "Start free trial",
+    addOnsTitle: "Add-ons",
+    newBooking: "New booking",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Cut & styling",
+    exampleDate: "March 15, 2:00 PM",
+    today: "Today",
+    bookingsCount: "3 bookings",
+    cutService: "Cut",
+    signUpButton: "Sign up",
+    logInButton: "Log in",
+    addOnsDescription: "Build the TeqBook setup that fits your salon. Ideal for international salon owners who want to start simple and grow safely.",
+    multilingualBookingTitle: "Multilingual booking page",
+    multilingualBookingDescription: "$10 / month — Let clients book in Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
+    extraStaffTitle: "Extra staff member",
+    extraStaffDescription: "$5 / month per additional staff — Scale your team without big jumps in pricing.",
     faqTitle: "Frequently asked questions",
     faq: [
       {
@@ -232,10 +283,10 @@ const copy: Record<
     ],
   },
   ar: {
-    brand: "إيفو",
+    brand: "TeqBook",
     heroTitle: "حجوزات للصالونات – مصمَّمة للدفع داخل الصالون",
     heroSubtitle:
-      "إيفو هو نظام حجز بسيط وحديث لصالونات التجميل في الشمال الأوروبي. يحجز العملاء عبر الإنترنت، لكن الدفع يتم دائمًا في الصالون.",
+      "TeqBook هو نظام حجز بسيط وحديث لصالونات التجميل في الشمال الأوروبي. يحجز العملاء عبر الإنترنت، لكن الدفع يتم دائمًا في الصالون.",
     ctaPrimary: "ابدأ مجانًا",
     ctaSecondary: "احجز عرضًا توضيحيًا",
     badge: "مصمَّم للصالونات",
@@ -246,7 +297,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 كرونة / شهريًا",
+        price: "$25 / month",
         description:
           "مثالي للحلاقين وصالونات الشعر والأظافر والتدليك التي لديها 1–2 موظفين.",
         features: [
@@ -261,7 +312,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 كرونة / شهريًا",
+        price: "$50 / month",
         description:
           "مناسب للصالونات التي لديها 3–6 موظفين وتريد تحكمًا أفضل وتقليل الغياب عن المواعيد.",
         features: [
@@ -278,7 +329,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 كرونة / شهريًا",
+        price: "$75 / month",
         description:
           "للصالونات الأكبر والأكثر ازدحامًا التي تحتاج إلى أدوار واضحة وتقارير أفضل.",
         features: [
@@ -296,22 +347,39 @@ const copy: Record<
       },
       {
         title: "متعدد الصالونات من اليوم الأول",
-        body: "يمكن لاسم مستخدم واحد في إيفو إدارة عدة صالونات مع عزل صارم للبيانات لكل صالون في Supabase.",
+        body: "يمكن لاسم مستخدم واحد في TeqBook إدارة عدة صالونات مع عزل صارم للبيانات لكل صالون في Supabase.",
       },
       {
         title: "جاهز للنمو معك",
         body: "تم بناء الـ MVP مع خارطة طريق واضحة: تنبيهات، تقارير وتكاملات مع أنظمة نقاط البيع.",
       },
     ],
+    affordableSimple: "بأسعار معقولة. بسيط. مصمم للصالونات الدولية.",
+    startFreeTrial: "ابدأ التجربة المجانية",
+    addOnsTitle: "الإضافات",
+    newBooking: "حجز جديد",
+    exampleCustomerName: "ماريا هانسن",
+    exampleService: "قص وتصفيف",
+    exampleDate: "15 مارس، 2:00 مساءً",
+    today: "اليوم",
+    bookingsCount: "3 حجوزات",
+    cutService: "قص",
+    signUpButton: "إنشاء حساب",
+    logInButton: "تسجيل الدخول",
+    addOnsDescription: "قم ببناء إعداد TeqBook الذي يناسب صالونك. مثالي لأصحاب الصالونات الدولية الذين يريدون البدء ببساطة والنمو بأمان.",
+    multilingualBookingTitle: "صفحة حجز متعددة اللغات",
+    multilingualBookingDescription: "$10 / month — دع العملاء يحجزون بالصومالية والتغرينية والأردية والفيتنامية والعربية والتركية والمزيد.",
+    extraStaffTitle: "عضو فريق إضافي",
+    extraStaffDescription: "$5 / month لكل موظف إضافي — قم بتوسيع فريقك دون قفزات كبيرة في الأسعار.",
     faqTitle: "الأسئلة الشائعة",
     faq: [
       {
         q: "هل أحتاج إلى دفع بالبطاقة عبر الإنترنت؟",
-        a: "لا. إيفو مصمم صراحة للدفع داخل الصالون فقط. يمكنك مع ذلك تدوين ملاحظات عن المدفوعات، لكن لا يتم سحب أي بطاقات عبر الإنترنت.",
+        a: "لا. TeqBook مصمم صراحة للدفع داخل الصالون فقط. يمكنك مع ذلك تدوين ملاحظات عن المدفوعات، لكن لا يتم سحب أي بطاقات عبر الإنترنت.",
       },
       {
         q: "هل يمكنني إدارة عدة صالونات في حساب واحد؟",
-        a: "نعم. يدعم إيفو عدة صالونات لكل مالك، مع قواعد RLS صارمة لضمان عدم اختلاط البيانات بين الصالونات.",
+        a: "نعم. يدعم TeqBook عدة صالونات لكل مالك، مع قواعد RLS صارمة لضمان عدم اختلاط البيانات بين الصالونات.",
       },
       {
         q: "ماذا عن التذكير عبر الرسائل القصيرة والبريد الإلكتروني؟",
@@ -335,7 +403,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / bishii",
+        price: "$25 / month",
         description:
           "Ku habboon timo‑jarayaasha, saloonka timaha, ciddiyaha ama duugista ee leh 1–2 shaqaale.",
         features: [
@@ -350,7 +418,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / bishii",
+        price: "$50 / month",
         description:
           "Saloonnada leh 3–6 shaqaale oo rabta xakameyn fiican iyo ballamo yara baxa.",
         features: [
@@ -367,7 +435,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / bishii",
+        price: "$75 / month",
         description:
           "Loogu talagalay saloonnada waaweyn ee mashquulka ah ee u baahan qaab‑dhismeed, doorar iyo warbixin fiican.",
         features: [
@@ -392,6 +460,23 @@ const copy: Record<
         body: "MVP-ga waxaa lagu dhisay qorshe cad: ogeysiisyada, warbixinnada iyo isku-dhafka nidaamka lacag bixinta.",
       },
     ],
+    affordableSimple: "Qiimo jaban. Fudud. Loo dhisay saloonnada caalamiga ah.",
+    startFreeTrial: "Bilow free trial",
+    addOnsTitle: "Ku-darid",
+    newBooking: "Ballansasho cusub",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Goos & qaabayn",
+    exampleDate: "Maarso 15, 2:00 PM",
+    today: "Maanta",
+    bookingsCount: "3 ballanshado",
+    cutService: "Goos",
+    signUpButton: "Samee akoon",
+    logInButton: "Soo gal",
+    addOnsDescription: "Dhis qaabka TeqBook ee u habboon saloonkaaga. Wanaagsan milkiilayaasha saloonnada caalamiga ah ee doonaya inay si fudud u bilowaan oo si amaan ah u koraan.",
+    multilingualBookingTitle: "Bogga ballansashada luuqadaha badan",
+    multilingualBookingDescription: "$10 / month — U ogolow macaamiisha inay ballanshaadaan Soomaali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish iyo kuwo kale.",
+    extraStaffTitle: "Shaqaale dheeraad ah",
+    extraStaffDescription: "$5 / month shaqaale kasta oo dheeraad ah — Kor u qaad kooxdaada iyadoon qiimo weyn u kordhin.",
     faqTitle: "Su'aalaha inta badan la isweydiiyo",
     faq: [
       {
@@ -424,7 +509,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / ወርሒ",
+        price: "$25 / month",
         description:
           "ጽቡቕ እዩ ንባርበር፣ ጸጉሪ ሳሎን፣ ጥፍሪ ኣዕላማ ወይ ማሳጅ ን1–2 ሰራሕተኛታት ዝርከቡ።",
         features: [
@@ -439,7 +524,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / ወርሒ",
+        price: "$50 / month",
         description:
           "ን3–6 ሰራሕተኛታት ዝርከቡ ሳሎናት ምርጫ፣ ናይ ኣፍታ መቆጣጠርን ትሕቲ መዝገብ ምቕራብን ዝፈልጡ።",
         features: [
@@ -456,7 +541,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / ወርሒ",
+        price: "$75 / month",
         description:
           "ንሳሎናት ከቢድን ብዙሕ ግዜ ዝርከቡን ዝፈልጡ መዋቅር፣ ሚናታትን ላሕላይ ሪፖርትን።",
         features: [
@@ -481,6 +566,23 @@ const copy: Record<
         body: "MVP ግልጺ ሮድማፕ ኣብ ዝሃበ እዩ ተሰሪሑ፦ መግለጺ ምኽንያታት፣ ሪፖርታትን ንምሕላፍ ኣብ ኣቕሓ ክፍሊ ስርዓታትን።",
       },
     ],
+    affordableSimple: "ዋጋ ዝተመዝነን። ቀሊል። ንዓለምለኻዊ ሳሎናት ዝተሃንጸ።",
+    startFreeTrial: "ናይ ነጻ ሙከራ ጀምር",
+    addOnsTitle: "ወሳኒታት",
+    newBooking: "ሓድሽ ቦኪንግ",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "ጭራር & ስታይሊንግ",
+    exampleDate: "15 መጋቢት፣ 2:00 PM",
+    today: "ሎሚ",
+    bookingsCount: "3 ቦኪንግ",
+    cutService: "ጭራር",
+    signUpButton: "ኣካውንት ፍጠር",
+    logInButton: "መግቢ",
+    addOnsDescription: "ናይ TeqBook ምድላይ ንሳሎንኩም ዝሰማማዕ ስርዓት ስርዑ። ንዓለምለኻዊ ሳሎን ወንጌላውያን ንኽጅምሩ ቀሊልን ብድሕነት ንኽዓብዩን ዝደሊ ዝተሓሰበ።",
+    multilingualBookingTitle: "ብዙ ቋንቋ ቦኪንግ ገጽ",
+    multilingualBookingDescription: "$10 / month — ክሊዕንት ብ Soomaali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish ከምኡውን ካልኦት ቋንቋታት ንኽቦክኑ ፍቓድ ሃቦም።",
+    extraStaffTitle: "ተወሳኺ ሰራዊት",
+    extraStaffDescription: "$5 / month ንነፍሲ ወከፍ ተወሳኺ ሰራዊት — ንክሓብት ብዓቢ ዋጋ ዘይምልዓል ንክሓብት ንኽሓብት።",
     faqTitle: "ብተዓዘብ ዝሕተቱ ሕቶታት",
     faq: [
       {
@@ -513,7 +615,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / ወር",
+        price: "$25 / month",
         description:
           "1–2 ሰራተኞች ያሉ ማሳሌ፣ ባርበር፣ የፀጉር ሳሎን፣ ጥፍር ወይም ማሳጅ ሳሎኖች ለመጀመር ተስማሚ ነው።",
         features: [
@@ -528,7 +630,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / ወር",
+        price: "$50 / month",
         description:
           "3–6 ሰራተኞች ያሉ እና የቀጠሮ መቆጣጠር እና no‑shows መቀነስ የሚፈልጉ ሳሎኖች ለመቀጠል ይሻላል።",
         features: [
@@ -545,7 +647,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / ወር",
+        price: "$75 / month",
         description:
           "ከፍተኛ ግብዣ ያላቸውና ትልቅ የሆኑ ሳሎኖች የአዋጭ መዋቅር፣ ሚናዎች እና ጥራት ያለው ሪፖርት ሲፈልጉ ይጠቅማል።",
         features: [
@@ -570,6 +672,23 @@ const copy: Record<
         body: "MVP ለማስታወቂያዎች፣ ሪፖርትና የክፍያ ስርዓት ኢንተግሬሽኖች ግልጽ የሆነ መንገድ ካርታ ጋር ተገንብቷል።",
       },
     ],
+    affordableSimple: "ተመጣጣኝ ዋጋ። ቀላል። ለዓለም አቀፍ ሳሎኖች የተገነባ።",
+    startFreeTrial: "ነጻ ሙከራ ይጀምሩ",
+    addOnsTitle: "ተጨማሪዎች",
+    newBooking: "አዲስ ማስቀመጥ",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "መቁረጥ እና ስታይሊንግ",
+    exampleDate: "ማርች 15፣ 2:00 PM",
+    today: "ዛሬ",
+    bookingsCount: "3 ማስቀመጥ",
+    cutService: "መቁረጥ",
+    signUpButton: "መለያ ፍጠር",
+    logInButton: "ይግቡ",
+    addOnsDescription: "ለሳሎንዎ የሚስማማውን TeqBook ማዋቀር ይገንቡ። ቀላል ለመጀመር እና በደህንነት ለመድብር ለሚፈልጉ ዓለም አቀፍ ሳሎን ባለቤቶች ተስማሚ።",
+    multilingualBookingTitle: "በብዙ ቋንቋዎች የመዘዝ ገጽ",
+    multilingualBookingDescription: "$10 / month — ደንበኞች በ Soomaali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish እና ሌሎች ቋንቋዎች እንዲዘዙ ያድርጉ።",
+    extraStaffTitle: "ተጨማሪ ሰራዊት",
+    extraStaffDescription: "$5 / month ለእያንዳንዱ ተጨማሪ ሰራዊት — በዋጋ ትልቅ ዝለው ሳይሆን ቡድንዎን ያሳድጉ።",
     faqTitle: "ብዙ ጊዜ የሚጠየቁ ጥያቄዎች",
     faq: [
       {
@@ -601,7 +720,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / ay",
+        price: "$25 / month",
         description:
           "1–2 çalışanı olan berber, kuaför, tırnak ya da masaj salonları için ideal.",
         features: [
@@ -616,7 +735,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / ay",
+        price: "$50 / month",
         description:
           "3–6 çalışanı olan ve daha fazla kontrol ile daha az no‑show isteyen salonlar için.",
         features: [
@@ -633,7 +752,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / ay",
+        price: "$75 / month",
         description:
           "Daha büyük ve yoğun salonlar için; rol yapısı, yetki yönetimi ve güçlü raporlama isteyenler için.",
         features: [
@@ -658,6 +777,23 @@ const copy: Record<
         body: "MVP; bildirimler, raporlama ve ödeme sistemleri entegrasyonları için net bir yol haritasıyla inşa edildi.",
       },
     ],
+    affordableSimple: "Uygun fiyatlı. Basit. Uluslararası salonlar için yapılmış.",
+    startFreeTrial: "Ücretsiz denemeyi başlat",
+    addOnsTitle: "Eklentiler",
+    newBooking: "Yeni rezervasyon",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Kesim & şekillendirme",
+    exampleDate: "15 Mart, 14:00",
+    today: "Bugün",
+    bookingsCount: "3 rezervasyon",
+    cutService: "Kesim",
+    signUpButton: "Hesap oluştur",
+    logInButton: "Giriş yap",
+    addOnsDescription: "Salonunuza uygun TeqBook kurulumunu oluşturun. Basit başlamak ve güvenle büyümek isteyen uluslararası salon sahipleri için ideal.",
+    multilingualBookingTitle: "Çok dilli rezervasyon sayfası",
+    multilingualBookingDescription: "$10 / month — Müşterilerin Somali, Tigrinya, Urdu, Vietnamca, Arapça, Türkçe ve daha fazlasıyla rezervasyon yapmasına izin verin.",
+    extraStaffTitle: "Ekstra personel",
+    extraStaffDescription: "$5 / month per ekstra personel — Fiyatlarda büyük artışlar olmadan ekibinizi ölçeklendirin.",
     faqTitle: "Sık sorulan sorular",
     faq: [
       {
@@ -689,7 +825,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / miesiąc",
+        price: "$25 / month",
         description:
           "Idealny start dla barberów, fryzjerów, salonów paznokci lub masażu z 1–2 pracownikami.",
         features: [
@@ -704,7 +840,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / miesiąc",
+        price: "$50 / month",
         description:
           "Dla salonów z 3–6 pracownikami, które chcą mieć więcej kontroli i mniej nieobecnych klientów.",
         features: [
@@ -721,7 +857,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / miesiąc",
+        price: "$75 / month",
         description:
           "Dla większych, bardziej obciążonych salonów potrzebujących ról, uprawnień i lepszego raportowania.",
         features: [
@@ -746,6 +882,23 @@ const copy: Record<
         body: "MVP zostało zbudowane z jasną mapą rozwoju: powiadomienia, raportowanie i integracje z systemami płatności.",
       },
     ],
+    affordableSimple: "Przystępne. Proste. Zbudowane dla międzynarodowych salonów.",
+    startFreeTrial: "Rozpocznij bezpłatny okres próbny",
+    addOnsTitle: "Dodatki",
+    newBooking: "Nowa rezerwacja",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Strzyżenie i stylizacja",
+    exampleDate: "15 marca, 14:00",
+    today: "Dzisiaj",
+    bookingsCount: "3 rezerwacje",
+    cutService: "Strzyżenie",
+    signUpButton: "Utwórz konto",
+    logInButton: "Zaloguj się",
+    addOnsDescription: "Zbuduj konfigurację TeqBook, która pasuje do Twojego salonu. Idealne dla międzynarodowych właścicieli salonów, którzy chcą zacząć prosto i bezpiecznie rosnąć.",
+    multilingualBookingTitle: "Wielojęzyczna strona rezerwacji",
+    multilingualBookingDescription: "$10 / month — Pozwól klientom rezerwować w języku somalijskim, tigrinia, urdu, wietnamskim, arabskim, tureckim i innych.",
+    extraStaffTitle: "Dodatkowy personel",
+    extraStaffDescription: "$5 / month za każdego dodatkowego pracownika — Skaluj swój zespół bez dużych skoków w cenach.",
     faqTitle: "Najczęściej zadawane pytania",
     faq: [
       {
@@ -778,7 +931,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / tháng",
+        price: "$25 / month",
         description:
           "Phù hợp cho barber, salon tóc, nails hoặc massage với 1–2 nhân viên.",
         features: [
@@ -793,7 +946,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / tháng",
+        price: "$50 / month",
         description:
           "Dành cho salon có 3–6 nhân viên, muốn kiểm soát tốt hơn và giảm no‑show.",
         features: [
@@ -810,7 +963,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / tháng",
+        price: "$75 / month",
         description:
           "Dành cho các salon lớn, đông khách cần cấu trúc rõ ràng, phân quyền và báo cáo tốt hơn.",
         features: [
@@ -835,6 +988,23 @@ const copy: Record<
         body: "MVP được xây dựng với lộ trình rõ ràng: thông báo, báo cáo và tích hợp hệ thống thanh toán.",
       },
     ],
+    affordableSimple: "Giá cả phải chăng. Đơn giản. Được xây dựng cho các salon quốc tế.",
+    startFreeTrial: "Bắt đầu dùng thử miễn phí",
+    addOnsTitle: "Tiện ích bổ sung",
+    newBooking: "Đặt chỗ mới",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Cắt & tạo kiểu",
+    exampleDate: "15 tháng 3, 2:00 PM",
+    today: "Hôm nay",
+    bookingsCount: "3 đặt chỗ",
+    cutService: "Cắt",
+    signUpButton: "Tạo tài khoản",
+    logInButton: "Đăng nhập",
+    addOnsDescription: "Xây dựng thiết lập TeqBook phù hợp với salon của bạn. Lý tưởng cho chủ salon quốc tế muốn bắt đầu đơn giản và phát triển an toàn.",
+    multilingualBookingTitle: "Trang đặt chỗ đa ngôn ngữ",
+    multilingualBookingDescription: "$10 / month — Cho phép khách hàng đặt chỗ bằng tiếng Somali, Tigrinya, Urdu, Việt Nam, Ả Rập, Thổ Nhĩ Kỳ và nhiều hơn nữa.",
+    extraStaffTitle: "Nhân viên bổ sung",
+    extraStaffDescription: "$5 / month cho mỗi nhân viên bổ sung — Mở rộng nhóm của bạn mà không có sự tăng giá lớn.",
     faqTitle: "Câu hỏi thường gặp",
     faq: [
       {
@@ -866,7 +1036,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook 入门版",
-        price: "299 kr / 月",
+        price: "$25 / month",
         description:
           "非常适合 1–2 名员工的小型理发店、美发店、美甲或按摩工作室。",
         features: [
@@ -881,7 +1051,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook 专业版",
-        price: "499 kr / 月",
+        price: "$50 / month",
         description:
           "适合 3–6 名员工的沙龙，希望更好掌控预约并减少爽约情况。",
         features: [
@@ -898,7 +1068,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook 商业版",
-        price: "799 kr / 月",
+        price: "$75 / month",
         description:
           "为规模更大、客流更高的沙龙打造，需要更清晰的角色分工与更强报表能力。",
         features: [
@@ -923,6 +1093,23 @@ const copy: Record<
         body: "MVP 基于清晰的路线图构建：通知、报表以及支付系统集成。",
       },
     ],
+    affordableSimple: "价格实惠。简单。专为国际沙龙打造。",
+    startFreeTrial: "开始免费试用",
+    addOnsTitle: "附加功能",
+    newBooking: "新预订",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "剪发和造型",
+    exampleDate: "3月15日，下午2:00",
+    today: "今天",
+    bookingsCount: "3个预订",
+    cutService: "剪发",
+    signUpButton: "创建账户",
+    logInButton: "登录",
+    addOnsDescription: "构建适合您沙龙的 TeqBook 设置。适合希望简单开始并安全发展的国际沙龙所有者。",
+    multilingualBookingTitle: "多语言预订页面",
+    multilingualBookingDescription: "$10 / month — 让客户使用索马里语、提格雷语、乌尔都语、越南语、阿拉伯语、土耳其语等语言进行预订。",
+    extraStaffTitle: "额外员工",
+    extraStaffDescription: "$5 / month 每位额外员工 — 在不大幅涨价的情况下扩展您的团队。",
     faqTitle: "常见问题",
     faq: [
       {
@@ -955,7 +1142,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / buwan",
+        price: "$25 / month",
         description:
           "Sakto para sa barber, hair, nails o massage na may 1–2 empleyado.",
         features: [
@@ -970,7 +1157,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / buwan",
+        price: "$50 / month",
         description:
           "Para sa mga salon na may 3–6 empleyado na gustong mas kaunting no‑show at mas malinaw na kontrol.",
         features: [
@@ -987,7 +1174,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / buwan",
+        price: "$75 / month",
         description:
           "Para sa mas malalaki at mas busy na salon na kailangan ng roles, access control at mas malalim na reporting.",
         features: [
@@ -1012,6 +1199,23 @@ const copy: Record<
         body: "Ang MVP ay ginawa na may malinaw na roadmap: notifications, reporting, at POS integrations.",
       },
     ],
+    affordableSimple: "Abot-kaya. Simple. Ginawa para sa international na salon.",
+    startFreeTrial: "Simulan ang libreng trial",
+    addOnsTitle: "Mga add-on",
+    newBooking: "Bagong booking",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "Gupit & styling",
+    exampleDate: "Marso 15, 2:00 PM",
+    today: "Ngayon",
+    bookingsCount: "3 booking",
+    cutService: "Gupit",
+    signUpButton: "Gumawa ng account",
+    logInButton: "Mag-log in",
+    addOnsDescription: "Bumuo ng TeqBook setup na akma sa iyong salon. Perpekto para sa international na salon owners na gustong magsimula nang simple at lumaki nang ligtas.",
+    multilingualBookingTitle: "Multi-language booking page",
+    multilingualBookingDescription: "$10 / month — Hayaan ang mga client na mag-book sa Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish at iba pa.",
+    extraStaffTitle: "Extra staff member",
+    extraStaffDescription: "$5 / month bawat karagdagang staff — Palakihin ang iyong team nang walang malaking pagtaas sa presyo.",
     faqTitle: "Mga madalas itanong",
     faq: [
       {
@@ -1043,7 +1247,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 کرون / ماه",
+        price: "$25 / month",
         description:
           "مناسب برای آرایشگاه‌ها، سالن‌های مو، ناخن یا ماساژ با ۱ تا ۲ نفر پرسنل.",
         features: [
@@ -1058,7 +1262,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 کرون / ماه",
+        price: "$50 / month",
         description:
           "برای سالن‌هایی با ۳ تا ۶ کارمند که دنبال کنترل بیشتر و no‑show کمتر هستند.",
         features: [
@@ -1075,7 +1279,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 کرون / ماه",
+        price: "$75 / month",
         description:
           "برای سالن‌های بزرگ‌تر و شلوغ‌تر که به ساختار، نقش‌ها و گزارش‌دهی قوی‌تر نیاز دارند.",
         features: [
@@ -1100,6 +1304,23 @@ const copy: Record<
         body: "MVP با نقشه‌راه شفاف برای نوتیفیکیشن‌ها، گزارش‌گیری و یکپارچه‌سازی با سیستم‌های پرداخت ساخته شده است.",
       },
     ],
+    affordableSimple: "مقرون به صرفه. ساده. ساخته شده برای سالن‌های بین‌المللی.",
+    startFreeTrial: "شروع دوره آزمایشی رایگان",
+    addOnsTitle: "افزونه‌ها",
+    newBooking: "رزرو جدید",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "اصلاح و استایل",
+    exampleDate: "۱۵ مارس، ۲:۰۰ بعدازظهر",
+    today: "امروز",
+    bookingsCount: "۳ رزرو",
+    cutService: "اصلاح",
+    signUpButton: "ایجاد حساب",
+    logInButton: "ورود",
+    addOnsDescription: "پیکربندی TeqBook را بسازید که با سالن شما سازگار باشد. ایده‌آل برای صاحبان سالن‌های بین‌المللی که می‌خواهند ساده شروع کنند و با امنیت رشد کنند.",
+    multilingualBookingTitle: "صفحه رزرو چند زبانه",
+    multilingualBookingDescription: "$10 / month — به مشتریان اجازه دهید به زبان‌های صومالی، تیگرینیا، اردو، ویتنامی، عربی، ترکی و بیشتر رزرو کنند.",
+    extraStaffTitle: "عضو تیم اضافی",
+    extraStaffDescription: "$5 / month برای هر کارمند اضافی — تیم خود را بدون افزایش زیاد قیمت گسترش دهید.",
     faqTitle: "سؤالات متداول",
     faq: [
       {
@@ -1131,7 +1352,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 کرون / ماه",
+        price: "$25 / month",
         description:
           "مناسب برای نر سالون‌های برُبر، مو، ناخن یا ماساژ که ۱–۲ کارمند دارند.",
         features: [
@@ -1146,7 +1367,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 کرون / ماه",
+        price: "$50 / month",
         description:
           "برای سالون‌هایی با ۳–۶ کارمند که می‌خواهند کنترول بیشتر و no‑show کمتر داشته باشند.",
         features: [
@@ -1163,7 +1384,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 کرون / ماه",
+        price: "$75 / month",
         description:
           "برای سالون‌های کلان و مصروف که به ساختار، رول‌ها و گزارش‌دهی قوی ضرورت دارند.",
         features: [
@@ -1188,6 +1409,23 @@ const copy: Record<
         body: "MVP با یک نقشه‌راه واضح برای نوتیفیکیشن‌ها، گزارش‌گیری و ادغام با سیستم‌های پرداخت ساخته شده است.",
       },
     ],
+    affordableSimple: "مقرون به صرفه. ساده. ساخته شده برای سالون‌های بین‌المللی.",
+    startFreeTrial: "شروع دوره آزمایشی رایگان",
+    addOnsTitle: "افزونه‌ها",
+    newBooking: "رزرو جدید",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "اصلاح و استایل",
+    exampleDate: "۱۵ مارس، ۲:۰۰ بعدازظهر",
+    today: "امروز",
+    bookingsCount: "۳ رزرو",
+    cutService: "اصلاح",
+    signUpButton: "ایجاد حساب",
+    logInButton: "ورود",
+    addOnsDescription: "پیکربندی TeqBook را بسازید که با سالون شما سازگار باشد. ایده‌آل برای صاحبان سالون‌های بین‌المللی که می‌خواهند ساده شروع کنند و با امنیت رشد کنند.",
+    multilingualBookingTitle: "صفحه رزرو چند زبانه",
+    multilingualBookingDescription: "$10 / month — به مشتریان اجازه دهید به زبان‌های صومالی، تیگرینیا، اردو، ویتنامی، عربی، ترکی و بیشتر رزرو کنند.",
+    extraStaffTitle: "عضو تیم اضافی",
+    extraStaffDescription: "$5 / month برای هر کارمند اضافی — تیم خود را بدون افزایش زیاد قیمت گسترش دهید.",
     faqTitle: "سوالات مکرر",
     faq: [
       {
@@ -1220,7 +1458,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 کرون / مہینہ",
+        price: "$25 / month",
         description:
           "۱–۲ اسٹاف والے باربر، ہیئر، نیلز یا مساج سیلون کے لیے بہترین آغاز۔",
         features: [
@@ -1235,7 +1473,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 کرون / مہینہ",
+        price: "$50 / month",
         description:
           "۳–۶ ملازمین والے سیلونز کے لیے جو زیادہ کنٹرول اور کم no‑show چاہتے ہیں۔",
         features: [
@@ -1252,7 +1490,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 کرون / مہینہ",
+        price: "$75 / month",
         description:
           "بڑے اور مصروف سیلونز کے لیے جنہیں اسٹرکچر، رولز اور مزید طاقتور رپورٹنگ چاہیے۔",
         features: [
@@ -1277,6 +1515,23 @@ const copy: Record<
         body: "MVP ایک واضح روڈ میپ کے ساتھ بنایا گیا ہے: نوٹیفکیشنز، رپورٹنگ اور POS انٹیگریشنز۔",
       },
     ],
+    affordableSimple: "قابلِ برداشت۔ سادہ۔ بین الاقوامی سالنوں کے لیے بنایا گیا۔",
+    startFreeTrial: "مفت آزمائش شروع کریں",
+    addOnsTitle: "اضافی خصوصیات",
+    newBooking: "نیا بکنگ",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "کٹنگ اور اسٹائلنگ",
+    exampleDate: "15 مارچ، 2:00 PM",
+    today: "آج",
+    bookingsCount: "3 بکنگ",
+    cutService: "کٹنگ",
+    signUpButton: "اکاؤنٹ بنائیں",
+    logInButton: "لاگ اِن",
+    addOnsDescription: "TeqBook سیٹ اپ بنائیں جو آپ کے سالن کے لیے موزوں ہو۔ بین الاقوامی سالن مالکان کے لیے مثالی جو سادہ شروع کرنا چاہتے ہیں اور محفوظ طریقے سے بڑھنا چاہتے ہیں۔",
+    multilingualBookingTitle: "کثیر لسانی بکنگ پیج",
+    multilingualBookingDescription: "$10 / month — کلائنٹس کو Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish اور مزید زبانوں میں بکنگ کرنے دیں۔",
+    extraStaffTitle: "اضافی عملہ",
+    extraStaffDescription: "$5 / month ہر اضافی عملے کے لیے — قیمتوں میں بڑی چھلانگ کے بغیر اپنی ٹیم کو بڑھائیں۔",
     faqTitle: "اکثر پوچھے جانے والے سوالات",
     faq: [
       {
@@ -1309,7 +1564,7 @@ const copy: Record<
       {
         id: "starter",
         name: "TeqBook Starter",
-        price: "299 kr / महीना",
+        price: "$25 / month",
         description:
           "1–2 कर्मचारियों वाले छोटे barber, hair, nails या massage सैलून के लिए बेहतरीन शुरुआत।",
         features: [
@@ -1324,7 +1579,7 @@ const copy: Record<
       {
         id: "pro",
         name: "TeqBook Pro",
-        price: "499 kr / महीना",
+        price: "$50 / month",
         description:
           "3–6 स्टाफ वाले सैलून के लिए, जहाँ ज़्यादा कंट्रोल और कम no‑show की ज़रूरत है।",
         features: [
@@ -1341,7 +1596,7 @@ const copy: Record<
       {
         id: "business",
         name: "TeqBook Business",
-        price: "799 kr / महीना",
+        price: "$75 / month",
         description:
           "बड़े और busy सैलून के लिए, जिन्हें strong structure, roles और बेहतर reporting चाहिए।",
         features: [
@@ -1366,6 +1621,23 @@ const copy: Record<
         body: "MVP एक स्पष्ट रोडमैप के साथ बनाया गया है: नोटिफिकेशन, रिपोर्टिंग और POS इंटीग्रेशन।",
       },
     ],
+    affordableSimple: "सस्ती। सरल। अंतर्राष्ट्रीय सैलून के लिए बनाया गया।",
+    startFreeTrial: "मुफ्त परीक्षण शुरू करें",
+    addOnsTitle: "एड-ऑन",
+    newBooking: "नई बुकिंग",
+    exampleCustomerName: "Maria Hansen",
+    exampleService: "कटिंग और स्टाइलिंग",
+    exampleDate: "15 मार्च, 2:00 PM",
+    today: "आज",
+    bookingsCount: "3 बुकिंग",
+    cutService: "कटिंग",
+    signUpButton: "खाता बनाएँ",
+    logInButton: "लॉग इन करें",
+    addOnsDescription: "अपने सैलून के अनुरूप TeqBook सेटअप बनाएं। अंतर्राष्ट्रीय सैलून मालिकों के लिए आदर्श जो सरल शुरुआत करना चाहते हैं और सुरक्षित रूप से बढ़ना चाहते हैं।",
+    multilingualBookingTitle: "बहुभाषी बुकिंग पेज",
+    multilingualBookingDescription: "$10 / month — ग्राहकों को Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish और अधिक भाषाओं में बुकिंग करने दें।",
+    extraStaffTitle: "अतिरिक्त स्टाफ सदस्य",
+    extraStaffDescription: "$5 / month प्रत्येक अतिरिक्त स्टाफ के लिए — मूल्य में बड़ी वृद्धि के बिना अपनी टीम को बढ़ाएं।",
     faqTitle: "अक्सर पूछे जाने वाले प्रश्न",
     faq: [
       {
@@ -1517,56 +1789,12 @@ export default function LandingPage() {
               </select>
               <Link href="/signup">
                 <Button size="sm">
-                  {locale === "nb"
-                    ? "Opprett konto"
-                    : locale === "ar"
-                      ? "إنشاء حساب"
-                      : locale === "so"
-                        ? "Samee akoon"
-                        : locale === "ti"
-                          ? "ኣካውንት ፍጠር"
-                          : locale === "am"
-                            ? "መለያ ፍጠር"
-                            : locale === "tr"
-                              ? "Hesap oluştur"
-                              : locale === "pl"
-                                ? "Utwórz konto"
-                                : locale === "vi"
-                                  ? "Tạo tài khoản"
-                                  : locale === "zh"
-                                    ? "注册"
-                                    : locale === "tl"
-                                      ? "Gumawa ng account"
-                                      : locale === "fa" || locale === "dar"
-                                        ? "ایجاد حساب"
-                                        : "Sign up"}
+                  {t.signUpButton}
                 </Button>
               </Link>
               <Link href="/login">
                 <Button variant="outline" size="sm">
-                  {locale === "nb"
-                    ? "Logg inn"
-                    : locale === "ar"
-                      ? "تسجيل الدخول"
-                      : locale === "so"
-                        ? "Soo gal"
-                        : locale === "ti"
-                          ? "ናብ መንነት ኣብ ግባ"
-                          : locale === "am"
-                            ? "ግባ"
-                            : locale === "tr"
-                              ? "Giriş yap"
-                              : locale === "pl"
-                                ? "Zaloguj się"
-                                : locale === "vi"
-                                  ? "Đăng nhập"
-                                  : locale === "zh"
-                                    ? "登录"
-                                    : locale === "tl"
-                                      ? "Mag-log in"
-                                      : locale === "fa" || locale === "dar"
-                                        ? "ورود"
-                                        : "Log in"}
+                  {t.logInButton}
                 </Button>
               </Link>
             </div>
@@ -1674,60 +1902,12 @@ export default function LandingPage() {
               <div className="flex flex-col gap-2">
                 <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
                   <Button className="w-full" size="sm">
-                    {locale === "nb"
-                      ? "Opprett konto"
-                      : locale === "ar"
-                        ? "إنشاء حساب"
-                        : locale === "so"
-                          ? "Samee akoon"
-                          : locale === "ti"
-                            ? "ኣካውንት ፍጠር"
-                            : locale === "am"
-                              ? "መለያ ፍጠር"
-                              : locale === "tr"
-                                ? "Hesap oluştur"
-                                : locale === "pl"
-                                  ? "Utwórz konto"
-                                  : locale === "vi"
-                                    ? "Tạo tài khoản"
-                                    : locale === "zh"
-                                      ? "注册"
-                                      : locale === "tl"
-                                        ? "Gumawa ng account"
-                                        : locale === "fa" || locale === "dar"
-                                          ? "ایجاد حساب"
-                                          : "Sign up"}
+                    {t.signUpButton}
                   </Button>
                 </Link>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full" size="sm">
-                    {locale === "nb"
-                      ? "Logg inn"
-                      : locale === "ar"
-                        ? "تسجيل الدخول"
-                        : locale === "so"
-                          ? "Soo gal"
-                          : locale === "ti"
-                            ? "ናብ መንነት ኣብ ግባ"
-                            : locale === "am"
-                              ? "ግባ"
-                              : locale === "tr"
-                                ? "Giriş yap"
-                                : locale === "pl"
-                                  ? "Zaloguj się"
-                                  : locale === "vi"
-                                    ? "Đăng nhập"
-                                    : locale === "zh"
-                                      ? "登录"
-                                      : locale === "tl"
-                                        ? "Mag-log in"
-                                        : locale === "fa" || locale === "dar"
-                                          ? "ورود"
-                                          : locale === "ur"
-                                            ? "لاگ ان"
-                                            : locale === "hi"
-                                              ? "लॉग इन करें"
-                                              : "Log in"}
+                    {t.logInButton}
                   </Button>
                 </Link>
               </div>
@@ -1929,7 +2109,7 @@ export default function LandingPage() {
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-green-500" />
                       <span className="text-xs font-medium text-slate-600">
-                        {locale === "nb" ? "Ny booking" : "New booking"}
+                        {t.newBooking}
                       </span>
                     </div>
                     <Calendar className="h-4 w-4 text-indigo-600" />
@@ -1941,17 +2121,17 @@ export default function LandingPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-900">
-                          {locale === "nb" ? "Maria Hansen" : "Maria Hansen"}
+                          {t.exampleCustomerName}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {locale === "nb" ? "Klipp & styling" : "Cut & styling"}
+                          {t.exampleService}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-slate-600">
                       <Clock className="h-3.5 w-3.5 text-indigo-600" />
                       <span>
-                        {locale === "nb" ? "15. mars, 14:00" : "March 15, 2:00 PM"}
+                        {t.exampleDate}
                       </span>
                     </div>
                   </div>
@@ -1974,10 +2154,10 @@ export default function LandingPage() {
                 <div className="relative">
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-900">
-                      {locale === "nb" ? "I dag" : "Today"}
+                      {t.today}
                     </h3>
                     <span className="text-xs text-slate-500">
-                      {locale === "nb" ? "3 bookinger" : "3 bookings"}
+                      {t.bookingsCount}
                     </span>
                   </div>
                   <div className="space-y-2">
@@ -1988,9 +2168,7 @@ export default function LandingPage() {
                       >
                         <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
                         <span className="text-xs text-slate-700">
-                          {locale === "nb"
-                            ? `${9 + i * 2}:00 - ${locale === "nb" ? "Klipp" : "Cut"}`
-                            : `${9 + i * 2}:00 - Cut`}
+                          {`${9 + i * 2}:00 - ${t.cutService}`}
                         </span>
                       </div>
                     ))}
@@ -2072,9 +2250,7 @@ export default function LandingPage() {
                 {t.pricingSubtitle}
               </p>
               <p className="mt-6 text-center text-sm font-semibold uppercase tracking-wide text-blue-600">
-                {locale === "nb"
-                  ? "Rimelig. Enkelt. Bygget for internasjonale salonger."
-                  : "Affordable. Simple. Built for international salons."}
+                {t.affordableSimple}
               </p>
             </motion.div>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -2161,9 +2337,7 @@ export default function LandingPage() {
                         }`}
                         size="lg"
                       >
-                        {locale === "nb"
-                          ? "Start gratis prøveperiode"
-                          : "Start free trial"}
+                        {t.startFreeTrial}
                       </Button>
                     </div>
                   </motion.div>
@@ -2180,34 +2354,24 @@ export default function LandingPage() {
             >
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-slate-900">
-                  {locale === "nb" ? "Add-ons" : "Add-ons"}
+                  {t.addOnsTitle}
                 </h3>
                 <p className="mt-2 text-sm text-slate-600">
-                  {locale === "nb"
-                    ? "Bygg din egen TeqBook-pakke etter behov. Perfekt for salonger drevet av innvandrere som vil starte enkelt og vokse trygt."
-                    : "Build the TeqBook setup that fits your salon. Ideal for international salon owners who want to start simple and grow safely."}
+                  {t.addOnsDescription}
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
                   {
                     icon: Globe,
-                    title: locale === "nb"
-                      ? "99 kr/mnd – Flerspråklig bookingside"
-                      : "Multilingual booking page",
-                    desc: locale === "nb"
-                      ? "Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl."
-                      : "99 NOK / month — Let clients book in Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
+                    title: t.multilingualBookingTitle,
+                    desc: t.multilingualBookingDescription,
                     isMultilingual: true,
                   },
                   {
                     icon: UserPlus,
-                    title: locale === "nb"
-                      ? "49 kr/mnd per ekstra ansatt"
-                      : "Extra staff member",
-                    desc: locale === "nb"
-                      ? "Skaler trygt når salongen vokser, uten store hopp i pris."
-                      : "49 NOK / month per additional staff — Scale your team without big jumps in pricing.",
+                    title: t.extraStaffTitle,
+                    desc: t.extraStaffDescription,
                     isMultilingual: false,
                     staffAvatars: [
                       { icon: Scissors, label: "Barber" },
@@ -2257,7 +2421,7 @@ export default function LandingPage() {
                         </p>
                         <div className="mt-auto">
                           {addon.isMultilingual && (
-                            <div className="h-12 relative">
+                            <div className="h-12 relative overflow-hidden w-full">
                               <LogoLoop
                                 logos={languageLogos}
                                 speed={40}
@@ -2265,8 +2429,8 @@ export default function LandingPage() {
                                 logoHeight={24}
                                 gap={24}
                                 fadeOut
-                                fadeOutColor="#F3F4FF"
-                                className="h-full"
+                                fadeOutColor="rgba(255, 255, 255, 0.9)"
+                                className="h-full w-full"
                               />
                             </div>
                           )}

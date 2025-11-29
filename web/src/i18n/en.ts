@@ -40,7 +40,7 @@ export const en: TranslationNamespaces = {
       "This salon does not exist or is not marked as public.",
   },
   login: {
-    title: "Log in to TeqBook",
+    title: "Log in",
     description:
       "For local development: create a user with email and password in the Supabase dashboard, and log in here without email verification.",
     emailLabel: "Email",
@@ -51,6 +51,15 @@ export const en: TranslationNamespaces = {
     loggingIn: "Logging in...",
     loginButton: "Log in",
     tip: "Tip: In Supabase you can temporarily disable email confirmation under Auth > Authentication > Email so new users can log in directly.",
+    welcomeBackTitle: "Welcome back to TeqBook",
+    welcomeBackDescription: "Keep your salon calendar, staff and clients organized in one simple system.",
+    bullet1: "Fast booking and rebooking for regular clients",
+    bullet2: "Works for single and multi-salon owners",
+    bullet3: "Built for pay-in-salon businesses",
+    formSubtitle: "Use your TeqBook account to access your salon dashboard.",
+    forgotPassword: "Forgot password?",
+    dontHaveAccount: "Don't have an account?",
+    createOne: "Create one",
   },
   signup: {
     title: "Create account",
@@ -63,6 +72,12 @@ export const en: TranslationNamespaces = {
     alreadyHaveAccount: "Already have an account?",
     loginLink: "Log in",
     passwordMismatch: "Passwords do not match",
+    createAccountTitle: "Create your TeqBook account",
+    createAccountDescription: "Start your free trial. No credit card required. You'll be able to add staff and salons later.",
+    bullet1: "Start with online booking in minutes",
+    bullet2: "Upgrade later as your salon grows",
+    bullet3: "Multi-language booking page available",
+    formSubtitle: "Start your free trial. No credit card required.",
   },
   onboarding: {
     title: "Create your first salon",

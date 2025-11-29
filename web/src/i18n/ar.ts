@@ -40,7 +40,7 @@ export const ar: TranslationNamespaces = {
       "هذا الصالون غير موجود أو غير مفعَّل كصالون عام.",
   },
   login: {
-    title: "تسجيل الدخول إلى TeqBook",
+    title: "تسجيل الدخول",
     description:
       "للاستخدام في التطوير المحلي: أنشئ مستخدمًا ببريد إلكتروني وكلمة مرور في لوحة تحكم Supabase، ثم سجّل الدخول هنا بدون تأكيد بريد.",
     emailLabel: "البريد الإلكتروني",
@@ -51,6 +51,15 @@ export const ar: TranslationNamespaces = {
     loggingIn: "جارٍ تسجيل الدخول…",
     loginButton: "تسجيل الدخول",
     tip: "ملاحظة: في Supabase يمكنك مؤقتًا إيقاف خاصية تأكيد البريد من خلال Auth > Authentication > Email حتى يتمكن المستخدمون الجدد من تسجيل الدخول مباشرة.",
+    welcomeBackTitle: "مرحبًا بعودتك إلى TeqBook",
+    welcomeBackDescription: "احتفظ بتقويم الصالون والموظفين والعملاء منظمين في نظام بسيط واحد.",
+    bullet1: "حجز سريع وإعادة حجز للعملاء المنتظمين",
+    bullet2: "يعمل لأصحاب الصالونات الفردية والمتعددة",
+    bullet3: "مبني لشركات الدفع داخل الصالون",
+    formSubtitle: "استخدم حساب TeqBook الخاص بك للوصول إلى لوحة تحكم الصالون.",
+    forgotPassword: "نسيت كلمة المرور؟",
+    dontHaveAccount: "ليس لديك حساب؟",
+    createOne: "إنشاء حساب",
   },
   signup: {
     title: "إنشاء حساب",
@@ -63,6 +72,12 @@ export const ar: TranslationNamespaces = {
     alreadyHaveAccount: "هل لديك حساب بالفعل؟",
     loginLink: "تسجيل الدخول",
     passwordMismatch: "كلمات المرور غير متطابقة",
+    createAccountTitle: "إنشاء حساب TeqBook الخاص بك",
+    createAccountDescription: "ابدأ تجربتك المجانية. لا حاجة لبطاقة ائتمان. ستتمكن من إضافة الموظفين والصالونات لاحقًا.",
+    bullet1: "ابدأ بالحجز عبر الإنترنت في دقائق",
+    bullet2: "قم بالترقية لاحقًا مع نمو صالونك",
+    bullet3: "صفحة حجز متعددة اللغات متاحة",
+    formSubtitle: "ابدأ تجربتك المجانية. لا حاجة لبطاقة ائتمان.",
   },
   onboarding: {
     title: "إنشاء أول صالون لك",

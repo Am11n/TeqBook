@@ -122,37 +122,23 @@ export default function LoginPage() {
             </span>
           </div>
           <h1 className="text-3xl font-semibold text-slate-900">
-            {locale === "nb" ? "Velkommen tilbake til TeqBook" : "Welcome back to TeqBook"}
+            {t.welcomeBackTitle}
           </h1>
           <p className="mt-3 max-w-md text-sm text-slate-600">
-            {locale === "nb"
-              ? "Hold salongkalenderen, ansatte og kunder organisert i ett enkelt system."
-              : "Keep your salon calendar, staff and clients organized in one simple system."}
+            {t.welcomeBackDescription}
           </p>
           <ul className="mt-6 space-y-2 text-sm text-slate-600">
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Rask booking og gjenbooking for faste kunder"
-                  : "Fast booking and rebooking for regular clients"}
-              </span>
+              <span>{t.bullet1}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Fungerer for enkelt- og flersalong-eiere"
-                  : "Works for single and multi-salon owners"}
-              </span>
+              <span>{t.bullet2}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Bygget for betaling-i-salong-bedrifter"
-                  : "Built for pay-in-salon businesses"}
-              </span>
+              <span>{t.bullet3}</span>
             </li>
           </ul>
         </div>
@@ -162,9 +148,7 @@ export default function LoginPage() {
           <div className="mx-auto w-full rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-xl shadow-sky-900/5">
             <h2 className="text-xl font-semibold text-slate-900">{t.title}</h2>
             <p className="mt-1 text-sm text-slate-600">
-              {locale === "nb"
-                ? "Bruk TeqBook-kontoen din for å få tilgang til salongdashbordet."
-                : "Use your TeqBook account to access your salon dashboard."}
+              {t.formSubtitle}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -226,7 +210,7 @@ export default function LoginPage() {
                   href="#"
                   className="text-slate-600 hover:text-slate-900 hover:underline"
                 >
-                  {locale === "nb" ? "Glemt passord?" : "Forgot password?"}
+                  {t.forgotPassword}
                 </Link>
               </div>
 
@@ -248,12 +232,12 @@ export default function LoginPage() {
             </form>
 
             <p className="mt-4 text-center text-xs text-slate-500">
-              {locale === "nb" ? "Har du ikke konto?" : "Don't have an account?"}{" "}
+              {t.dontHaveAccount}{" "}
               <Link
                 href="/signup"
                 className="font-medium text-slate-900 hover:underline"
               >
-                {locale === "nb" ? "Opprett en" : "Create one"}
+                {t.createOne}
               </Link>
             </p>
           </div>

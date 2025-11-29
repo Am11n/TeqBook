@@ -40,7 +40,7 @@ export const nb: TranslationNamespaces = {
       "Denne salongen finnes ikke, eller er ikke satt som offentlig.",
   },
   login: {
-    title: "Logg inn til TeqBook",
+    title: "Logg inn",
     description:
       "For lokal utvikling: opprett en bruker med e-post og passord i Supabase-dashboardet, og logg inn her uten verifiserings-epost.",
     emailLabel: "E-post",
@@ -51,6 +51,15 @@ export const nb: TranslationNamespaces = {
     loggingIn: "Logger inn...",
     loginButton: "Logg inn",
     tip: "Tips: I Supabase kan du midlertidig skru av e-postbekreftelse under Auth > Authentication > Email, slik at nye brukere kan logge inn direkte.",
+    welcomeBackTitle: "Velkommen tilbake til TeqBook",
+    welcomeBackDescription: "Hold salongkalenderen, ansatte og kunder organisert i ett enkelt system.",
+    bullet1: "Rask booking og gjenbooking for faste kunder",
+    bullet2: "Fungerer for enkelt- og flersalong-eiere",
+    bullet3: "Bygget for betaling-i-salong-bedrifter",
+    formSubtitle: "Bruk TeqBook-kontoen din for å få tilgang til salongdashbordet.",
+    forgotPassword: "Glemt passord?",
+    dontHaveAccount: "Har du ikke konto?",
+    createOne: "Opprett en",
   },
   signup: {
     title: "Opprett konto",
@@ -63,6 +72,12 @@ export const nb: TranslationNamespaces = {
     alreadyHaveAccount: "Har du allerede en konto?",
     loginLink: "Logg inn",
     passwordMismatch: "Passordene matcher ikke",
+    createAccountTitle: "Opprett din TeqBook-konto",
+    createAccountDescription: "Start gratis prøveperiode. Ingen kredittkort påkrevd. Du kan legge til ansatte og salonger senere.",
+    bullet1: "Start med online booking på minutter",
+    bullet2: "Oppgrader senere når salongen vokser",
+    bullet3: "Flerspråklig bookingside tilgjengelig",
+    formSubtitle: "Start gratis prøveperiode. Ingen kredittkort påkrevd.",
   },
   onboarding: {
     title: "Opprett din første salong",

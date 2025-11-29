@@ -127,37 +127,23 @@ export default function SignUpPage() {
             </span>
           </div>
           <h1 className="text-3xl font-semibold text-slate-900">
-            {locale === "nb" ? "Opprett din TeqBook-konto" : "Create your TeqBook account"}
+            {signupT.createAccountTitle}
           </h1>
           <p className="mt-3 max-w-md text-sm text-slate-600">
-            {locale === "nb"
-              ? "Start gratis prøveperiode. Ingen kredittkort påkrevd. Du kan legge til ansatte og salonger senere."
-              : "Start your free trial. No credit card required. You'll be able to add staff and salons later."}
+            {signupT.createAccountDescription}
           </p>
           <ul className="mt-6 space-y-2 text-sm text-slate-600">
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Start med online booking på minutter"
-                  : "Start with online booking in minutes"}
-              </span>
+              <span>{signupT.bullet1}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Oppgrader senere når salongen vokser"
-                  : "Upgrade later as your salon grows"}
-              </span>
+              <span>{signupT.bullet2}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-slate-400">•</span>
-              <span>
-                {locale === "nb"
-                  ? "Flerspråklig bookingside tilgjengelig"
-                  : "Multi-language booking page available"}
-              </span>
+              <span>{signupT.bullet3}</span>
             </li>
           </ul>
         </div>
@@ -167,9 +153,7 @@ export default function SignUpPage() {
           <div className="mx-auto w-full rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-xl shadow-sky-900/5">
             <h2 className="text-xl font-semibold text-slate-900">{signupT.title}</h2>
             <p className="mt-1 text-sm text-slate-600">
-              {locale === "nb"
-                ? "Start gratis prøveperiode. Ingen kredittkort påkrevd."
-                : "Start your free trial. No credit card required."}
+              {signupT.formSubtitle}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">

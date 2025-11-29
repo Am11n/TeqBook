@@ -60,6 +60,15 @@ export type LoginMessages = {
   loggingIn: string;
   loginButton: string;
   tip: string;
+  welcomeBackTitle: string;
+  welcomeBackDescription: string;
+  bullet1: string;
+  bullet2: string;
+  bullet3: string;
+  formSubtitle: string;
+  forgotPassword: string;
+  dontHaveAccount: string;
+  createOne: string;
 };
 
 export type SignUpMessages = {
@@ -73,6 +82,12 @@ export type SignUpMessages = {
   alreadyHaveAccount: string;
   loginLink: string;
   passwordMismatch: string;
+  createAccountTitle: string;
+  createAccountDescription: string;
+  bullet1: string;
+  bullet2: string;
+  bullet3: string;
+  formSubtitle: string;
 };
 
 export type OnboardingMessages = {
