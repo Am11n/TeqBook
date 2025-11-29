@@ -96,6 +96,20 @@ export type OnboardingMessages = {
   // Step 2: Åpningstider
   step2Title: string;
   step2Description: string;
+  openingHoursLabel: string;
+  openingHoursDescription: string;
+  dayLabel: string;
+  closedLabel: string;
+  openLabel: string;
+  fromLabel: string;
+  toLabel: string;
+  monday: string;
+  tuesday: string;
+  wednesday: string;
+  thursday: string;
+  friday: string;
+  saturday: string;
+  sunday: string;
   onlineBookingLabel: string;
   onlineBookingYes: string;
   onlineBookingNo: string;
@@ -111,6 +125,7 @@ export type OnboardingMessages = {
   summarySalonType: string;
   summaryPaymentMethod: string;
   summaryPreferredLanguage: string;
+  summaryOpeningHours: string;
   summaryOnlineBooking: string;
   summaryPublicBooking: string;
   createError: string;

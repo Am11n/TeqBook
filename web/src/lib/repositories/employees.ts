@@ -80,7 +80,7 @@ export async function getEmployeeWithServices(
       servicesData
         ?.map((es) => {
           if (es.services && typeof es.services === "object" && "id" in es.services && "name" in es.services) {
-            return es.services as Service;
+            return es.services as unknown as Service;
           }
           return null;
         })
@@ -138,7 +138,7 @@ export async function getEmployeesWithServicesMap(
           servicesMap[es.employee_id] = [];
         }
         if (es.services && typeof es.services === "object" && "id" in es.services && "name" in es.services) {
-          servicesMap[es.employee_id].push(es.services as Service);
+          servicesMap[es.employee_id].push(es.services as unknown as Service);
         }
       }
     }

@@ -12,6 +12,23 @@ type OnboardingStep = 1 | 2 | 3;
 
 type SalonType = "barber" | "nails" | "massage" | "other";
 
+type OpeningHours = {
+  day: number; // 0 = Monday, 6 = Sunday
+  isOpen: boolean;
+  openTime: string; // HH:mm format
+  closeTime: string; // HH:mm format
+};
+
+const DEFAULT_OPENING_HOURS: OpeningHours[] = [
+  { day: 0, isOpen: true, openTime: "09:00", closeTime: "17:00" }, // Monday
+  { day: 1, isOpen: true, openTime: "09:00", closeTime: "17:00" }, // Tuesday
+  { day: 2, isOpen: true, openTime: "09:00", closeTime: "17:00" }, // Wednesday
+  { day: 3, isOpen: true, openTime: "09:00", closeTime: "17:00" }, // Thursday
+  { day: 4, isOpen: true, openTime: "09:00", closeTime: "17:00" }, // Friday
+  { day: 5, isOpen: false, openTime: "09:00", closeTime: "17:00" }, // Saturday
+  { day: 6, isOpen: false, openTime: "09:00", closeTime: "17:00" }, // Sunday
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { locale, setLocale } = useLocale();
@@ -32,7 +49,10 @@ export default function OnboardingPage() {
     appLocale
   );
 
-  // Step 2: Innstillinger
+  // Step 2: Åpningstider & Innstillinger
+  const [openingHours, setOpeningHours] = useState<OpeningHours[]>(
+    DEFAULT_OPENING_HOURS
+  );
   const [onlineBooking, setOnlineBooking] = useState(false);
   const [publicBooking, setPublicBooking] = useState(true);
 
@@ -41,8 +61,8 @@ export default function OnboardingPage() {
     setStatus("loading");
     setError(null);
 
-    // Call RPC function with all onboarding fields
-    const { data, error: rpcError } = await supabase.rpc(
+    // First create the salon
+    const { data: salonData, error: rpcError } = await supabase.rpc(
       "create_salon_for_current_user",
       {
         salon_name: name,
@@ -53,11 +73,35 @@ export default function OnboardingPage() {
       },
     );
 
-    if (rpcError || !data) {
+    if (rpcError || !salonData) {
       setError(rpcError?.message ?? t.createError);
       setStatus("error");
       return;
     }
+
+    // Then create opening hours
+    const openingHoursToInsert = openingHours
+      .filter((oh) => oh.isOpen)
+      .map((oh) => ({
+        salon_id: salonData,
+        day_of_week: oh.day,
+        open_time: oh.openTime,
+        close_time: oh.closeTime,
+      }));
+
+    if (openingHoursToInsert.length > 0) {
+      const { error: hoursError } = await supabase
+        .from("opening_hours")
+        .insert(openingHoursToInsert);
+
+      if (hoursError) {
+        setError(hoursError.message ?? t.createError);
+        setStatus("error");
+        return;
+      }
+    }
+
+    const data = salonData;
 
     // Set the locale to the preferred language before redirecting
     setLocale(preferredLanguage);
@@ -214,7 +258,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 2: Innstillinger */}
+            {/* Step 2: Åpningstider & Innstillinger */}
             {currentStep === 2 && (
               <div className="space-y-4">
                 <div>
@@ -222,6 +266,90 @@ export default function OnboardingPage() {
                   <p className="text-sm text-muted-foreground">
                     {t.step2Description}
                   </p>
+                </div>
+
+                {/* Opening Hours */}
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <label className="font-medium">{t.openingHoursLabel}</label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t.openingHoursDescription}
+                    </p>
+                  </div>
+                  <div className="space-y-2 rounded-lg border bg-card p-3">
+                    {openingHours.map((dayHours, index) => {
+                      const dayNames = [
+                        t.monday,
+                        t.tuesday,
+                        t.wednesday,
+                        t.thursday,
+                        t.friday,
+                        t.saturday,
+                        t.sunday,
+                      ];
+                      return (
+                        <div
+                          key={dayHours.day}
+                          className="flex items-center gap-3 border-b pb-2 last:border-0 last:pb-0"
+                        >
+                          <div className="w-24 font-medium">
+                            {dayNames[dayHours.day]}
+                          </div>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={dayHours.isOpen}
+                              onChange={(e) => {
+                                const updated = [...openingHours];
+                                updated[index] = {
+                                  ...dayHours,
+                                  isOpen: e.target.checked,
+                                };
+                                setOpeningHours(updated);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-xs">
+                              {dayHours.isOpen ? t.openLabel : t.closedLabel}
+                            </span>
+                          </label>
+                          {dayHours.isOpen && (
+                            <div className="flex items-center gap-2 ml-auto">
+                              <input
+                                type="time"
+                                value={dayHours.openTime}
+                                onChange={(e) => {
+                                  const updated = [...openingHours];
+                                  updated[index] = {
+                                    ...dayHours,
+                                    openTime: e.target.value,
+                                  };
+                                  setOpeningHours(updated);
+                                }}
+                                className="h-8 w-24 rounded border bg-background px-2 text-xs"
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                {t.toLabel}
+                              </span>
+                              <input
+                                type="time"
+                                value={dayHours.closeTime}
+                                onChange={(e) => {
+                                  const updated = [...openingHours];
+                                  updated[index] = {
+                                    ...dayHours,
+                                    closeTime: e.target.value,
+                                  };
+                                  setOpeningHours(updated);
+                                }}
+                                className="h-8 w-24 rounded border bg-background px-2 text-xs"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
