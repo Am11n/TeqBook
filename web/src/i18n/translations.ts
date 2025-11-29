@@ -62,6 +62,19 @@ export type LoginMessages = {
   tip: string;
 };
 
+export type SignUpMessages = {
+  title: string;
+  description: string;
+  confirmPasswordLabel: string;
+  confirmPasswordPlaceholder: string;
+  signupButton: string;
+  signingUp: string;
+  signupError: string;
+  alreadyHaveAccount: string;
+  loginLink: string;
+  passwordMismatch: string;
+};
+
 export type OnboardingMessages = {
   title: string;
   description: string;
@@ -364,6 +377,7 @@ export type ShiftsMessages = {
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
+  signup: SignUpMessages;
   onboarding: OnboardingMessages;
   dashboard: DashboardMessages;
   home: HomeMessages;

@@ -52,6 +52,18 @@ export const ar: TranslationNamespaces = {
     loginButton: "تسجيل الدخول",
     tip: "ملاحظة: في Supabase يمكنك مؤقتًا إيقاف خاصية تأكيد البريد من خلال Auth > Authentication > Email حتى يتمكن المستخدمون الجدد من تسجيل الدخول مباشرة.",
   },
+  signup: {
+    title: "إنشاء حساب",
+    description: "أنشئ حسابًا للبدء مع TeqBook.",
+    confirmPasswordLabel: "تأكيد كلمة المرور",
+    confirmPasswordPlaceholder: "أعد إدخال كلمة المرور",
+    signupButton: "إنشاء حساب",
+    signingUp: "جارٍ إنشاء الحساب...",
+    signupError: "تعذر إنشاء الحساب",
+    alreadyHaveAccount: "هل لديك حساب بالفعل؟",
+    loginLink: "تسجيل الدخول",
+    passwordMismatch: "كلمات المرور غير متطابقة",
+  },
   onboarding: {
     title: "إنشاء أول صالون لك",
     description:

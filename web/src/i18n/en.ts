@@ -52,6 +52,18 @@ export const en: TranslationNamespaces = {
     loginButton: "Log in",
     tip: "Tip: In Supabase you can temporarily disable email confirmation under Auth > Authentication > Email so new users can log in directly.",
   },
+  signup: {
+    title: "Create account",
+    description: "Create an account to get started with TeqBook.",
+    confirmPasswordLabel: "Confirm password",
+    confirmPasswordPlaceholder: "Re-enter password",
+    signupButton: "Create account",
+    signingUp: "Creating account...",
+    signupError: "Could not create account",
+    alreadyHaveAccount: "Already have an account?",
+    loginLink: "Log in",
+    passwordMismatch: "Passwords do not match",
+  },
   onboarding: {
     title: "Create your first salon",
     description:

@@ -1455,33 +1455,62 @@ export default function LandingPage() {
                 <option value="hi">🇮🇳 हिन्दी</option>
               </select>
             </div>
-            <Link href="/login">
-              <Button variant="outline" size="sm">
-                {locale === "nb"
-                  ? "Logg inn"
-                  : locale === "ar"
-                    ? "تسجيل الدخول"
-                    : locale === "so"
-                      ? "Soo gal"
-                      : locale === "ti"
-                        ? "ናብ መንነት ኣብ ግባ"
-                        : locale === "am"
-                          ? "ግባ"
-                          : locale === "tr"
-                            ? "Giriş yap"
-                            : locale === "pl"
-                              ? "Zaloguj się"
-                              : locale === "vi"
-                                ? "Đăng nhập"
-                                : locale === "zh"
-                                  ? "登录"
-                                  : locale === "tl"
-                                    ? "Mag-log in"
-                                    : locale === "fa" || locale === "dar"
-                                      ? "ورود"
-                                      : "Log in"}
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/signup">
+                <Button size="sm">
+                  {locale === "nb"
+                    ? "Opprett konto"
+                    : locale === "ar"
+                      ? "إنشاء حساب"
+                      : locale === "so"
+                        ? "Samee akoon"
+                        : locale === "ti"
+                          ? "ኣካውንት ፍጠር"
+                          : locale === "am"
+                            ? "መለያ ፍጠር"
+                            : locale === "tr"
+                              ? "Hesap oluştur"
+                              : locale === "pl"
+                                ? "Utwórz konto"
+                                : locale === "vi"
+                                  ? "Tạo tài khoản"
+                                  : locale === "zh"
+                                    ? "注册"
+                                    : locale === "tl"
+                                      ? "Gumawa ng account"
+                                      : locale === "fa" || locale === "dar"
+                                        ? "ایجاد حساب"
+                                        : "Sign up"}
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" size="sm">
+                  {locale === "nb"
+                    ? "Logg inn"
+                    : locale === "ar"
+                      ? "تسجيل الدخول"
+                      : locale === "so"
+                        ? "Soo gal"
+                        : locale === "ti"
+                          ? "ናብ መንነት ኣብ ግባ"
+                          : locale === "am"
+                            ? "ግባ"
+                            : locale === "tr"
+                              ? "Giriş yap"
+                              : locale === "pl"
+                                ? "Zaloguj się"
+                                : locale === "vi"
+                                  ? "Đăng nhập"
+                                  : locale === "zh"
+                                    ? "登录"
+                                    : locale === "tl"
+                                      ? "Mag-log in"
+                                      : locale === "fa" || locale === "dar"
+                                        ? "ورود"
+                                        : "Log in"}
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -1501,7 +1530,7 @@ export default function LandingPage() {
                 {t.heroSubtitle}
               </p>
               <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Link href="/login" className="w-full sm:w-auto">
+                <Link href="/signup" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto">
                     {t.ctaPrimary}
                   </Button>

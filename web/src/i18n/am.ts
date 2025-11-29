@@ -52,6 +52,18 @@ export const am: TranslationNamespaces = {
     loginButton: "ይግቡ",
     tip: "ምክር፡ በ Supabase ውስጥ Auth > Authentication > Email ላይ ጊዜያዊ ኢሜይል ማረጋገጥ መስቀል ትችላለህ፣ እንዲሁም አዲስ ተጠቃሚዎች መለያቸውን በቀጥታ ሊጠቀሙበት ይችላሉ።",
   },
+  signup: {
+    title: "መለያ ፍጠር",
+    description: "ከ TeqBook ለመጀመር መለያ ፍጠር።",
+    confirmPasswordLabel: "ሚስጥር ቃል ያረጋግጡ",
+    confirmPasswordPlaceholder: "ሚስጥር ቃል እንደገና ያስገቡ",
+    signupButton: "መለያ ፍጠር",
+    signingUp: "መለያ በመፍጠር ላይ...",
+    signupError: "መለያ መፍጠር አልተቻለም",
+    alreadyHaveAccount: "አስቀድመው መለያ አሎት?",
+    loginLink: "ይግቡ",
+    passwordMismatch: "ሚስጥር ቃላት አይጣጣሙም",
+  },
   onboarding: {
     title: "የመጀመሪያውን ሳሎንዎን ይፍጠሩ",
     description:

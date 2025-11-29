@@ -52,6 +52,18 @@ export const nb: TranslationNamespaces = {
     loginButton: "Logg inn",
     tip: "Tips: I Supabase kan du midlertidig skru av e-postbekreftelse under Auth > Authentication > Email, slik at nye brukere kan logge inn direkte.",
   },
+  signup: {
+    title: "Opprett konto",
+    description: "Opprett en konto for å komme i gang med TeqBook.",
+    confirmPasswordLabel: "Bekreft passord",
+    confirmPasswordPlaceholder: "Skriv passordet igjen",
+    signupButton: "Opprett konto",
+    signingUp: "Oppretter konto...",
+    signupError: "Kunne ikke opprette konto",
+    alreadyHaveAccount: "Har du allerede en konto?",
+    loginLink: "Logg inn",
+    passwordMismatch: "Passordene matcher ikke",
+  },
   onboarding: {
     title: "Opprett din første salong",
     description:

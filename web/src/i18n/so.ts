@@ -54,6 +54,18 @@ export const so: TranslationNamespaces = {
     loginButton: "Soo gal",
     tip: "Talo: Gudaha Supabase waxaad ku meel gaar uga joojin kartaa xaqiijinta email-ka hoosta Auth > Authentication > Email si isticmaalayaal cusub ay si toos ah u soo geli karaan.",
   },
+  signup: {
+    title: "Samee akoon",
+    description: "Samee akoon si aad u bilowdo TeqBook.",
+    confirmPasswordLabel: "Xaqiiji erayga sirta ah",
+    confirmPasswordPlaceholder: "Dib u geli erayga sirta ah",
+    signupButton: "Samee akoon",
+    signingUp: "Waxaa la sameeyay akoon...",
+    signupError: "Lama sameyn karo akoon",
+    alreadyHaveAccount: "Ma haysaa akoon hore?",
+    loginLink: "Soo gal",
+    passwordMismatch: "Erayga sirta ah ma qancin",
+  },
   onboarding: {
     title: "Samee saloonkaagii ugu horreeyay",
     description:
