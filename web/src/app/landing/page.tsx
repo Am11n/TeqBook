@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StatsGrid } from "@/components/stats-grid";
 import { Section, SectionCard } from "@/components/section";
-import { Check, Sparkles, Calendar, Users, Shield, Zap, Clock, User } from "lucide-react";
+import { Check, Sparkles, Calendar, Users, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, MessageSquare } from "lucide-react";
 
 type Locale =
   | "nb"
@@ -144,28 +144,28 @@ const copy: Record<
   },
   en: {
     brand: "TeqBook",
-    heroTitle: "Salon booking – built for pay-in-salon",
+    heroTitle: "Finally, a booking system that understands how real salons work.",
     heroSubtitle:
-      "TeqBook is a simple, modern booking system for salons in the Nordics. Clients book online, but always pay on-site.",
+      "TeqBook keeps your day organized, your customers happy, and your business running smoothly — without complicated software or online payment requirements.",
     ctaPrimary: "Get started for free",
     ctaSecondary: "Book a demo",
     badge: "Built for salons",
     pricingTitle: "Choose your TeqBook plan",
     pricingSubtitle:
-      "Built for international salons – start simple, then upgrade as your business grows.",
+      "Built for salons of all sizes — start simple, then upgrade anytime.",
     tiers: [
       {
         id: "starter",
         name: "TeqBook Starter",
         price: "299 NOK / month",
         description:
-          "Perfect for barbers, hair, nails or massage with 1–2 staff.",
+          "Perfect for 1–2 person salons.",
         features: [
           "Online booking and calendar",
           "Customer list and service management",
-          "Pay in-salon without complex payment integrations",
-          "WhatsApp support from people who understand international salons",
-          "English + one additional language pack",
+          "Pay-in-salon flow",
+          "WhatsApp support",
+          "One additional language pack",
           "SMS reminders at cost price",
         ],
       },
@@ -174,15 +174,15 @@ const copy: Record<
         name: "TeqBook Pro",
         price: "499 NOK / month",
         description:
-          "For salons with 3–6 staff who want more control and fewer no‑shows.",
+          "For salons with 3–6 staff who want more control and fewer no-shows.",
         features: [
-          "Everything in Starter",
-          "Fully multilingual UI for both staff and clients",
-          "Advanced reports on revenue, capacity and no‑shows",
+          "Includes everything in Starter, plus:",
+          "Fully multilingual interface for staff and clients",
+          "Advanced reports on revenue and capacity",
           "Automatic reminders and notifications",
-          "Support for more staff and simple shift planning",
-          "Lightweight inventory for products you sell in the salon",
-          "Branded booking page with your logo and colours",
+          "Shift planning and staff scheduling",
+          "Lightweight inventory for products you sell",
+          "Branded booking page with your logo and colors",
         ],
         highlighted: true,
       },
@@ -191,42 +191,42 @@ const copy: Record<
         name: "TeqBook Business",
         price: "799 NOK / month",
         description:
-          "For larger and busier salons that need structure, roles and better reporting.",
+          "For larger salons that need structure, roles and full reporting.",
         features: [
-          "Everything in Pro",
-          "Roles and access control (owner, manager, reception, staff)",
-          "Deeper statistics and export for accounting and reporting",
-          "Priority support when something is urgent",
+          "Includes everything in Pro, plus:",
+          "Roles and access control (owner, manager, staff)",
+          "Deeper statistics and export for accounting",
+          "Priority support",
         ],
       },
     ],
     stats: [
       {
-        title: "Designed for offline payments",
-        body: "All copy and flows are optimized for pay-in-salon, not online card payments.",
+        title: "Designed for real salons",
+        body: "Simple, practical workflows built for barbers, hairdressers, nail and beauty salons.",
       },
       {
-        title: "Multi-salon from day one",
-        body: "One TeqBook login can own multiple salons, with strict row-level security per tenant.",
+        title: "Perfect for pay-in-salon businesses",
+        body: "No forced online payments or extra fees. Just a clean booking flow that fits how real salons operate.",
       },
       {
-        title: "Ready to grow with you",
-        body: "The MVP is built with a clear roadmap: notifications, reporting and POS integrations.",
+        title: "Grows with your salon",
+        body: "Add staff, manage multiple locations, and keep your business organized as you expand.",
       },
     ],
     faqTitle: "Frequently asked questions",
     faq: [
       {
         q: "Do I need online card payments?",
-        a: "No. TeqBook is explicitly designed for pay-in-salon only. You can still keep track of payments in notes, but no cards are charged online.",
+        a: "No. TeqBook is built for pay-in-salon workflows. You can still track payments, but nothing is charged online.",
       },
       {
         q: "Can I manage multiple salons under one account?",
-        a: "Yes. TeqBook supports multiple salons per owner, with strict RLS so data never leaks between tenants.",
+        a: "Yes. You can manage several locations safely and securely in one place.",
       },
       {
         q: "What about SMS and email reminders?",
-        a: "This is coming in Phase 5. The data model is already in place so we can easily plug in notifications later.",
+        a: "Yes — reminders are fully supported so clients never forget their appointments.",
       },
     ],
   },
@@ -1385,7 +1385,32 @@ const copy: Record<
 
 export default function LandingPage() {
   const [locale, setLocale] = useState<Locale>("en");
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const t = copy[locale];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const isScrolled = currentScrollY > 20;
+      setScrolled(isScrolled);
+      setScrollY(currentScrollY);
+    };
+
+    // Check initial scroll position
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Calculate scroll progress for smooth animations (0 to 1)
+  const scrollProgress = Math.min(scrollY / 100, 1);
+  
+  // Logo size: large at top (1.8x), normal when scrolled (1x)
+  const logoScale = 1.8 - (scrollProgress * 0.8);
+  const headerHeight = scrolled ? "py-3" : "pt-12 pb-6";
+  const logoTextSize = 1.8 - (scrollProgress * 0.8); // rem units
 
   const pricingPlans = t.tiers;
 
@@ -1399,53 +1424,47 @@ export default function LandingPage() {
       </div>
 
       {/* Top nav */}
-      <header className="sticky top-0 z-20 border-b border-blue-200/50 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2">
+      <header 
+        className={`sticky top-0 z-20 transition-all duration-300 ${
+          scrolled 
+            ? "border-b border-blue-200/50 bg-white/70 backdrop-blur-xl backdrop-saturate-150" 
+            : "border-b border-transparent bg-transparent backdrop-blur-none backdrop-saturate-100"
+        }`}
+      >
+        <div className={`mx-auto flex max-w-5xl items-center justify-between px-4 transition-all duration-300 sm:px-6 ${headerHeight}`}>
+          <motion.div 
+            className="flex items-center gap-4"
+            animate={{
+              scale: logoScale,
+            }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
             <Image
               src="Favikon.svg"
               alt={t.brand}
-              width={120}
-              height={32}
-              className="h-7 w-auto"
+              width={150}
+              height={40}
+              className="h-9 w-auto"
               priority
+              style={{
+                transform: `scale(${logoScale})`,
+              }}
             />
-            <span className="text-sm font-semibold tracking-tight">
+            <span 
+              className="font-semibold tracking-tight transition-all duration-300"
+              style={{
+                fontSize: `${logoTextSize}rem`,
+              }}
+            >
               {t.brand}
             </span>
-          </div>
+          </motion.div>
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-1 rounded-full border bg-card px-2 py-1 text-[10px] font-medium text-muted-foreground sm:flex">
-              <span>
-                {locale === "nb"
-                  ? "Språk"
-                  : locale === "ar"
-                    ? "اللغة"
-                    : locale === "so"
-                      ? "Luuqad"
-                      : locale === "ti"
-                        ? "ቋንቋ"
-                        : locale === "am"
-                          ? "ቋንቋ"
-                          : locale === "tr"
-                            ? "Dil"
-                            : locale === "pl"
-                              ? "Język"
-                              : locale === "vi"
-                                ? "Ngôn ngữ"
-                                : locale === "zh"
-                                  ? "语言"
-                                  : locale === "tl"
-                                    ? "Wika"
-                                    : locale === "fa" || locale === "dar"
-                                      ? "زبان"
-                                      : "Language"}
-                :
-              </span>
+            <div className="hidden sm:flex">
               <select
                 value={locale}
                 onChange={(e) => setLocale(e.target.value as Locale)}
-                className="h-6 rounded-full border-none bg-transparent px-1 text-[10px] outline-none focus-visible:ring-0"
+                className="h-8 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="nb">🇳🇴 Norsk</option>
                 <option value="en">🇬🇧 English</option>
@@ -1526,9 +1545,9 @@ export default function LandingPage() {
 
       {/* Hero */}
       <main className="flex-1 relative">
-        <section className="relative border-b border-blue-200/30 overflow-hidden bg-[#EEF3FF]">
+        <section className="relative -mt-[120px] pt-[120px] border-b border-blue-200/30 overflow-hidden bg-[#EEF3FF] min-h-[calc(100vh-120px)]">
           {/* Abstract gradient background layers */}
-          <div className="pointer-events-none absolute inset-0">
+          <div className="pointer-events-none absolute inset-0 top-0">
             {/* Base gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#EEF3FF] via-[#DBE4FF] to-[#E0E7FF]" />
             
@@ -1560,6 +1579,19 @@ export default function LandingPage() {
             />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[#6366F1]/8 blur-3xl" />
             
+            {/* Ghost watermark logo */}
+            <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <Image
+                src="/Favikon.svg"
+                alt=""
+                width={1000}
+                height={1000}
+                className="w-[1000px] h-[1000px] opacity-[0.04] blur-[1.5px] select-none"
+                priority
+                aria-hidden="true"
+              />
+            </div>
+            
             {/* Subtle diagonal grid pattern */}
             <div className="absolute inset-0 opacity-[0.08]">
               <svg
@@ -1588,7 +1620,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-8 px-4 py-20 sm:px-6 sm:py-24 md:py-28 lg:flex-row lg:items-center lg:gap-16">
+          <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12 md:py-16 lg:flex-row lg:items-center lg:gap-16">
             <motion.div
               className="flex-1 space-y-6"
               initial={{ opacity: 0, y: 20 }}
@@ -1631,7 +1663,10 @@ export default function LandingPage() {
                 <Link href="/signup" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/40 sm:w-auto"
+                    className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-10 py-7 text-base font-semibold text-white transition-all duration-300 hover:scale-[1.02] sm:w-auto"
+                    style={{
+                      boxShadow: "0 10px 40px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.05), 0 0 60px rgba(99, 102, 241, 0.06)",
+                    }}
                   >
                     <span className="relative z-10">{t.ctaPrimary}</span>
                   </Button>
@@ -1651,35 +1686,35 @@ export default function LandingPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
               >
-                {locale === "nb"
-                  ? "Ingen kredittkort nødvendig. Betaling settes opp når du er klar."
-                  : locale === "ar"
-                    ? "لا حاجة لبطاقة ائتمان الآن. يتم إعداد الدفع عندما تكون مستعدًا."
-                    : locale === "so"
-                      ? "Kaararka deynta looma baahna. Lacag bixinta waxaa la dejinayaa marka aad diyaar noqoto."
-                      : locale === "ti"
-                        ? "ክሬዲት ካርታ ኣይድልየን። ክፍሊ ገንዘብ እንተዘይብሉ ኣብ ዝሓለፈ ግዜ ክተዘጋጅ እዩ።"
-                        : locale === "am"
-                          ? "የክሬዲት ካርድ መረጃ አያስፈልግም። ክፍያዎች ሲያስፈልጉ በኋላ ይዘጋጃሉ።"
-                          : locale === "tr"
-                            ? "Kredi kartı gerekmez. Ödemeler, hazır olduğunda yapılandırılır."
-                            : locale === "pl"
-                              ? "Karta kredytowa nie jest wymagana. Płatności skonfigurujesz, gdy będziesz gotowy."
-                              : locale === "vi"
-                                ? "Không cần thẻ tín dụng. Bạn có thể cấu hình thanh toán sau khi sẵn sàng."
-                                : locale === "zh"
-                                  ? "无需信用卡。你可以在准备好之后再配置付款方式。"
-                      : locale === "tl"
-                        ? "Hindi kailangan ng credit card. Maaari mong i-set up ang bayad kapag handa ka na."
-                        : locale === "fa" || locale === "dar" || locale === "ur"
-                          ? "نیازی به کارت اعتباری نیست. می‌توانید تنظیمات پرداخت را وقتی آماده بودید انجام دهید."
-                          : "No credit card required. Payments are configured when you're ready."}
+                  {locale === "nb"
+                    ? "Ingen kredittkort nødvendig."
+                    : locale === "ar"
+                      ? "لا حاجة لبطاقة ائتمان."
+                      : locale === "so"
+                        ? "Kaararka deynta looma baahna."
+                        : locale === "ti"
+                          ? "ክሬዲት ካርታ ኣይድልየን።"
+                          : locale === "am"
+                            ? "የክሬዲት ካርድ መረጃ አያስፈልግም።"
+                            : locale === "tr"
+                              ? "Kredi kartı gerekmez."
+                              : locale === "pl"
+                                ? "Karta kredytowa nie jest wymagana."
+                                : locale === "vi"
+                                  ? "Không cần thẻ tín dụng."
+                                  : locale === "zh"
+                                    ? "无需信用卡。"
+                        : locale === "tl"
+                          ? "Hindi kailangan ng credit card."
+                          : locale === "fa" || locale === "dar" || locale === "ur"
+                            ? "نیازی به کارت اعتباری نیست."
+                            : "No credit card required."}
               </motion.p>
             </motion.div>
 
             {/* Floating UI Cards */}
             <motion.div
-              className="relative flex-1 lg:min-h-[500px] flex items-center justify-center"
+              className="relative flex-1 lg:min-h-[500px] flex items-start justify-center pt-4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -1732,7 +1767,7 @@ export default function LandingPage() {
 
               {/* Card 2: Calendar View */}
               <motion.div
-                className="absolute -bottom-6 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-5"
+                className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.12)] backdrop-blur-md sm:p-5"
                 animate={{
                   y: [0, 6, 0],
                 }}
@@ -1778,11 +1813,50 @@ export default function LandingPage() {
           <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
             <Section>
               <StatsGrid>
-                {t.stats.map((s: { title: string; body: string }) => (
-                  <SectionCard key={s.title} title={s.title}>
-                    <p className="text-sm text-muted-foreground">{s.body}</p>
-                  </SectionCard>
-                ))}
+                {t.stats.map((s: { title: string; body: string }, index: number) => {
+                  const icons = [Scissors, CreditCard, TrendingUp];
+                  const Icon = icons[index] || Scissors;
+                  
+                  return (
+                    <motion.div
+                      key={s.title}
+                      className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      style={{
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                      }}
+                    >
+                      {/* Gradient border */}
+                      <div 
+                        className="absolute inset-0 rounded-xl"
+                        style={{
+                          padding: "1px",
+                          background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1))",
+                          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                          WebkitMaskComposite: "xor",
+                          maskComposite: "exclude",
+                        }}
+                      />
+                      <div className="relative">
+                        <div className="mb-4 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 text-indigo-600">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
+                            {s.title}
+                          </h3>
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-600">
+                          {s.body}
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </StatsGrid>
             </Section>
           </div>
@@ -1813,12 +1887,6 @@ export default function LandingPage() {
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               {pricingPlans.map((plan, index) => {
                 const isHighlighted = (plan as any).highlighted;
-                const iconMap: Record<string, any> = {
-                  starter: Calendar,
-                  pro: Zap,
-                  business: Shield,
-                };
-                const Icon = iconMap[plan.id] || Calendar;
 
                 return (
                   <motion.div
@@ -1840,14 +1908,14 @@ export default function LandingPage() {
                     <div className="relative">
                       <div className="mb-4 flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                              isHighlighted
-                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/50"
-                                : "bg-blue-100 text-blue-600"
-                            }`}
-                          >
-                            <Icon className="h-6 w-6" />
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 shadow-lg shadow-blue-500/20">
+                            <Image
+                              src="Favikon.svg"
+                              alt="TeqBook"
+                              width={24}
+                              height={24}
+                              className="h-6 w-6"
+                            />
                           </div>
                           <div>
                             <h3 className="text-lg font-bold text-slate-900">
@@ -1911,14 +1979,13 @@ export default function LandingPage() {
             </div>
 
             <motion.div
-              className="mt-12 overflow-hidden rounded-3xl border border-blue-200/50 bg-white/60 p-6 backdrop-blur-xl sm:p-8"
+              className="mt-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-blue-50/30" />
-              <div className="relative">
+              <div className="mb-6">
                 <h3 className="text-xl font-bold text-slate-900">
                   {locale === "nb" ? "Add-ons" : "Add-ons"}
                 </h3>
@@ -1927,54 +1994,86 @@ export default function LandingPage() {
                     ? "Bygg din egen TeqBook-pakke etter behov. Perfekt for salonger drevet av innvandrere som vil starte enkelt og vokse trygt."
                     : "Build the TeqBook setup that fits your salon. Ideal for international salon owners who want to start simple and grow safely."}
                 </p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                  {[
-                    {
-                      title: locale === "nb"
-                        ? "99 kr/mnd – Flerspråklig bookingside"
-                        : "99 NOK / month – Multilingual booking page",
-                      desc: locale === "nb"
-                        ? "Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl."
-                        : "Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
-                    },
-                    {
-                      title: locale === "nb"
-                        ? "49 kr/mnd per ekstra ansatt"
-                        : "49 NOK / month per extra staff member",
-                      desc: locale === "nb"
-                        ? "Skaler trygt når salongen vokser, uten store hopp i pris."
-                        : "Scale your team as you grow, without big pricing jumps.",
-                    },
-                    {
-                      title: locale === "nb"
-                        ? "0,5–0,9 kr per SMS"
-                        : "0.5–0.9 NOK per SMS",
-                      desc: locale === "nb"
-                        ? "Du betaler kun for SMS du faktisk sender – ingen skjulte gebyrer."
-                        : "Only pay for the SMS messages you actually send – no hidden fees.",
-                    },
-                  ].map((addon, idx) => (
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {[
+                  {
+                    icon: Globe,
+                    title: locale === "nb"
+                      ? "99 kr/mnd – Flerspråklig bookingside"
+                      : "Multilingual booking page",
+                    desc: locale === "nb"
+                      ? "Somali, Tigrinja, Urdu, Vietnamesisk, Arabisk, Tyrkisk m.fl."
+                      : "99 NOK / month — Let clients book in Somali, Tigrinya, Urdu, Vietnamese, Arabic, Turkish and more.",
+                  },
+                  {
+                    icon: UserPlus,
+                    title: locale === "nb"
+                      ? "49 kr/mnd per ekstra ansatt"
+                      : "Extra staff member",
+                    desc: locale === "nb"
+                      ? "Skaler trygt når salongen vokser, uten store hopp i pris."
+                      : "49 NOK / month per additional staff — Scale your team without big jumps in pricing.",
+                  },
+                  {
+                    icon: MessageSquare,
+                    title: locale === "nb"
+                      ? "0,5–0,9 kr per SMS"
+                      : "SMS messages",
+                    desc: locale === "nb"
+                      ? "Du betaler kun for SMS du faktisk sender – ingen skjulte gebyrer."
+                      : "0.5–0.9 NOK per SMS — Only pay for the messages you actually send — no hidden fees.",
+                  },
+                ].map((addon, idx) => {
+                  const Icon = addon.icon;
+                  
+                  return (
                     <motion.div
                       key={idx}
-                      className="rounded-2xl border border-blue-100 bg-white/80 p-4 backdrop-blur-sm transition-all hover:border-blue-200 hover:shadow-md"
+                      className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white via-indigo-50/30 to-blue-50/20 p-6 shadow-md transition-all duration-300 hover:shadow-lg sm:p-8"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1, duration: 0.5 }}
                       whileHover={{ scale: 1.02, y: -2 }}
+                      style={{
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                      }}
                     >
-                      <p className="text-sm font-semibold text-slate-900">
-                        {addon.title}
-                      </p>
-                      <p className="mt-2 text-xs text-slate-600">
-                        {addon.desc}
-                      </p>
+                      {/* Gradient border */}
+                      <div 
+                        className="absolute inset-0 rounded-xl"
+                        style={{
+                          padding: "1px",
+                          background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1))",
+                          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                          WebkitMaskComposite: "xor",
+                          maskComposite: "exclude",
+                        }}
+                      />
+                      <div className="relative">
+                        <div className="mb-4 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 text-indigo-600">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <h4 className="text-sm font-semibold text-slate-900 sm:text-base">
+                            {addon.title}
+                          </h4>
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-600">
+                          {addon.desc}
+                        </p>
+                      </div>
                     </motion.div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </motion.div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="relative bg-gradient-to-b from-white/60 to-slate-50/40 backdrop-blur-sm">
+        <section className="relative overflow-hidden bg-gradient-to-b from-white/60 to-slate-50/40 backdrop-blur-sm">
           <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20">
             <motion.div
               className="text-center"
@@ -1987,21 +2086,21 @@ export default function LandingPage() {
                 {t.faqTitle}
               </h2>
             </motion.div>
-            <div className="mt-12 space-y-4">
+            <div className="mt-12 space-y-6">
               {t.faq.map((item: { q: string; a: string }, index) => (
               <motion.div
                 key={item.q}
-                className="group overflow-hidden rounded-2xl border border-blue-100 bg-white/80 p-6 backdrop-blur-sm transition-all hover:border-blue-200 hover:shadow-lg"
+                className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:p-8"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.4 }}
                 whileHover={{ scale: 1.01 }}
               >
-                  <p className="text-base font-semibold text-slate-900">
+                  <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
                     {item.q}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  </h3>
+                  <p className="mt-5 text-base leading-relaxed text-slate-600">
                     {item.a}
                   </p>
                 </motion.div>
@@ -2013,32 +2112,32 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-4 text-[11px] text-muted-foreground sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:px-6 sm:text-base">
           <span>© {new Date().getFullYear()} TeqBook.</span>
           <span>
             {locale === "nb"
-              ? "Bygget med Supabase + Next.js, designet for salonger i Norden."
+              ? "Hjelper salonger med å holde seg organisert, selvsikre og fullt booket — globalt."
               : locale === "ar"
-                ? "مبني باستخدام Supabase و Next.js، ومصمَّم خصيصًا لصالونات الشمال الأوروبي."
+                ? "مساعدة الصالونات على البقاء منظمة وواثقة ومحجوزة بالكامل — عالميًا."
                 : locale === "so"
-                  ? "Waxaa lagu dhisay Supabase + Next.js, waxaana loo qaabeeyey saloonnada Waqooyiga Yurub."
+                  ? "Waxaan ka caawinaynaa saloonnada inay sii wadaan oo ay u noqdaan mid habaysan, kalsooni leh oo buuxa — adduunka oo dhan."
                   : locale === "ti"
-                    ? "ብ Supabase + Next.js ተስሪሑ እዮም፣ ንሳሎናት ናብ ሰሜን ኤውሮፓ ዝተሰርሑ እዮም።"
+                    ? "ንሳሎናት ንኽሳለሉ፣ ንኽርእዩ ከምኡውን ንኽምሉኡ ዝሕግዙ — ኣብ ምሉእ ዓለም።"
                     : locale === "am"
-                      ? "በ Supabase + Next.js ተገንብቶ ለሰሜን አውሮፓ ሳሎኖች ተዘጋጅቷል።"
+                      ? "ሳሎኖች የተደራጁ፣ በራስ የሚታመኑ እና ሙሉ በሙሉ የተዘጋጁ እንዲሆኑ ማገዝ — በዓለም አቀፍ ደረጃ።"
                       : locale === "tr"
-                        ? "Supabase + Next.js ile geliştirildi, İskandinav salonları için tasarlandı."
+                        ? "Salonların organize, kendinden emin ve tamamen rezerve kalmasına yardımcı oluyoruz — küresel olarak."
                         : locale === "pl"
-                          ? "Zbudowane w oparciu o Supabase + Next.js, zaprojektowane dla salonów w krajach nordyckich."
+                          ? "Pomagamy salonom pozostać zorganizowanym, pewnym siebie i w pełni zarezerwowanym — globalnie."
                           : locale === "vi"
-                            ? "Xây dựng với Supabase + Next.js, được thiết kế cho các salon ở Bắc Âu."
+                            ? "Giúp các salon luôn có tổ chức, tự tin và được đặt đầy đủ — trên toàn cầu."
                             : locale === "zh"
-                              ? "基于 Supabase + Next.js 构建，专为北欧地区的沙龙设计。"
+                              ? "帮助沙龙保持有序、自信和完全预订 — 全球。"
                               : locale === "tl"
-                        ? "Gawa gamit ang Supabase + Next.js, dinisenyo para sa mga salon sa Nordics."
+                        ? "Tumutulong sa mga salon na manatiling organisado, kumpiyansa at ganap na naka-book — sa buong mundo."
                         : locale === "fa" || locale === "dar" || locale === "ur"
-                          ? "با استفاده از Supabase + Next.js ساخته شده، مخصوص سالن‌های کشورهای شمال اروپا."
-                          : "Built with Supabase + Next.js, designed for Nordic salons."}
+                          ? "کمک به سالن‌ها برای منظم، مطمئن و کاملاً رزرو شده ماندن — در سطح جهانی."
+                          : "Helping salons stay organized, confident and fully booked — globally."}
           </span>
         </div>
       </footer>
