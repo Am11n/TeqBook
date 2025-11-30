@@ -1,20 +1,17 @@
 import type { NextConfig } from "next";
 
-const isGitHubPages = process.env.GITHUB_PAGES === "true";
 const isDev = process.env.NODE_ENV === "development";
-const repoName = "TeqBook";
 
 const nextConfig: NextConfig = {
-  // Static export for GitHub Pages (only in production/build)
+  // Static export for deployment at root of custom domain
   // In dev mode, we don't use static export to allow dynamic routes
   ...(isDev ? {} : { output: "export" }),
   images: {
-    // GitHub Pages does not support the default image optimizer
+    // Static export does not support the default image optimizer
     unoptimized: true,
   },
-  // Serve app under /TeqBook when deployed on GitHub Pages
-  basePath: isGitHubPages ? `/${repoName}` : undefined,
-  assetPrefix: isGitHubPages ? `/${repoName}/` : undefined,
+  // No basePath or assetPrefix - site is served at root of domain
+  trailingSlash: true,
 };
 
 export default nextConfig;
