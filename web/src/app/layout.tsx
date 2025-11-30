@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TeqBook – Salon Dashboard",
-  description: "Nordic-inspired salon booking SaaS.",
+  description: "International salon booking system.",
   // Use relative paths so favicon works correctly.
   icons: {
     icon: "/Favikon.svg",
