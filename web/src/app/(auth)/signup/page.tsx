@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase-client";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import { Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -50,6 +50,7 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -90,187 +91,247 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EEF3FF]">
-      {/* Background gradient layers */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-300/10 blur-3xl" />
-      </div>
+    <main className="min-h-screen bg-[#eef3ff] flex items-center justify-center px-4 py-6 sm:py-10">
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-[#d4e0ff] via-[#e3ebff] to-[#f5f7ff] shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+        {/* Bakgrunns-sirkler - nøyaktig samme som login */}
+        <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#c7d7ff]/30 blur-3xl" />
 
-      {/* Watermark */}
-      <div className="pointer-events-none fixed inset-0 -z-0 flex items-center justify-center">
-        <Image
-          src="/Favikon.svg"
-          alt=""
-          width={800}
-          height={800}
-          className="h-[800px] w-[800px] opacity-[0.03] blur-[1.5px]"
-          aria-hidden="true"
-        />
-      </div>
+        <div className="relative grid gap-8 sm:gap-12 p-8 md:p-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-16">
+          {/* Left side */}
+          <section className="flex flex-col justify-center">
+            {/* Logo row */}
+            <Link href="/" className="flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity">
+              <Image
+                src="/Favikon.svg"
+                alt="TeqBook logo"
+                width={40}
+                height={40}
+                className="drop-shadow-[0_2px_8px_rgba(15,23,42,0.15)]"
+              />
+              <span className="text-xl font-semibold tracking-tight text-slate-900">
+                TeqBook
+              </span>
+            </Link>
 
-      <div className="relative mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 md:px-6">
-        {/* Left side - Branding */}
-        <div className="relative hidden flex-1 flex-col pr-10 md:flex">
-          <div className="mb-8 flex items-center gap-3">
-            <Image
-              src="/Favikon.svg"
-              alt="TeqBook"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
-              priority
-            />
-            <span className="text-2xl font-semibold tracking-tight text-slate-900">
-              TeqBook
-            </span>
-          </div>
-          <h1 className="text-3xl font-semibold text-slate-900">
-            {signupT.createAccountTitle}
-          </h1>
-          <p className="mt-3 max-w-md text-sm text-slate-600">
-            {signupT.createAccountDescription}
-          </p>
-          <ul className="mt-6 space-y-2 text-sm text-slate-600">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{signupT.bullet1}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{signupT.bullet2}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{signupT.bullet3}</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Right side - Form */}
-        <div className="relative w-full flex-1 md:max-w-md">
-          <div className="mx-auto w-full rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-xl shadow-sky-900/5">
-            <h2 className="text-xl font-semibold text-slate-900">{signupT.title}</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              {signupT.formSubtitle}
-            </p>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="text-xs font-medium text-slate-700"
-                >
-                  {t.emailLabel}
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm outline-none ring-0 transition-colors focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200"
-                  placeholder={t.emailPlaceholder}
-                />
-              </div>
-
-              {/* Password with show/hide */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="text-xs font-medium text-slate-700"
-                >
-                  {t.passwordLabel}
-                </label>
-                <div className="mt-1 flex items-center rounded-xl border border-slate-200 bg-slate-50/80 transition-colors focus-within:border-sky-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl bg-transparent px-3 py-2 text-sm outline-none"
-                    placeholder={t.passwordPlaceholder}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="pr-3 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirm Password with show/hide */}
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="text-xs font-medium text-slate-700"
-                >
-                  {signupT.confirmPasswordLabel}
-                </label>
-                <div className="mt-1 flex items-center rounded-xl border border-slate-200 bg-slate-50/80 transition-colors focus-within:border-sky-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200">
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-xl bg-transparent px-3 py-2 text-sm outline-none"
-                    placeholder={signupT.confirmPasswordPlaceholder}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="pr-3 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Error message */}
-              {error && (
-                <p className="text-sm text-red-500" aria-live="polite">
-                  {error}
-                </p>
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-slate-900">
+              {signupT.createAccountTitle.includes("TeqBook") ? (
+                <>
+                  {signupT.createAccountTitle.split("TeqBook")[0]}
+                  <span className="text-[#1d4ed8]">TeqBook</span>
+                  {signupT.createAccountTitle.split("TeqBook")[1]?.trim() && (
+                    <>
+                      <br />
+                      {signupT.createAccountTitle.split("TeqBook")[1].trim()}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {signupT.createAccountTitle.split(" ").slice(0, -1).join(" ")}{" "}
+                  <span className="text-[#1d4ed8]">TeqBook</span>
+                  <br />
+                  {signupT.createAccountTitle.split(" ").slice(-1)[0]}
+                </>
               )}
+            </h1>
 
-              {/* Submit button */}
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="mt-2 w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {status === "loading" ? signupT.signingUp : signupT.signupButton}
-              </button>
-            </form>
-
-            <p className="mt-4 text-center text-xs text-slate-500">
-              {signupT.alreadyHaveAccount}{" "}
-              <Link
-                href="/login"
-                className="font-medium text-slate-900 hover:underline"
-              >
-                {signupT.loginLink}
-              </Link>
+            {/* Description */}
+            <p className="mt-4 max-w-xl text-sm sm:text-base text-slate-600">
+              {signupT.createAccountDescription}
             </p>
-          </div>
+
+            {/* Bullets */}
+            <ul className="mt-6 space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{signupT.bullet1}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{signupT.bullet2}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{signupT.bullet3}</span>
+              </li>
+            </ul>
+
+            {/* Trust line */}
+            <p className="mt-8 text-xs text-slate-500">
+              {signupT.trustLine}
+            </p>
+          </section>
+
+          {/* Right side - signup card */}
+          <section className="flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full max-w-[420px] rounded-3xl bg-white/90 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-sm border border-slate-100"
+            >
+              {/* Progress indicator */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                    Step 1 of 2
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Create account
+                  </span>
+                </div>
+                <div className="h-[2.5px] w-full bg-slate-100/80 rounded-full overflow-hidden">
+                  <div className="h-full w-1/2 bg-gradient-to-r from-[#2563eb] to-[#3b82f6] rounded-full" />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">
+                  {signupT.title}
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  {signupT.formSubtitle}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {t.emailLabel}
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.emailPlaceholder}
+                    className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {t.passwordLabel}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={signupT.passwordPlaceholder}
+                      className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500/80">
+                    {signupT.passwordHint}
+                  </p>
+                </div>
+
+                {/* Confirm password */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {signupT.confirmPasswordLabel}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder={signupT.confirmPasswordPlaceholder}
+                      className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {error && (
+                  <p className="text-sm text-red-500" aria-live="polite">
+                    {error}
+                  </p>
+                )}
+
+                {/* Terms agreement */}
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreeToTerms}
+                      onChange={(e) => setAgreeToTerms(e.target.checked)}
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-sky-600 focus:ring-2 focus:ring-sky-200"
+                    />
+                    <span className="text-slate-600">{signupT.termsAgreement}</span>
+                  </label>
+                </div>
+
+                {/* Error message */}
+                {error && (
+                  <p className="text-sm text-red-500" aria-live="polite">
+                    {error}
+                  </p>
+                )}
+
+                {/* Button */}
+                <button
+                  type="submit"
+                  disabled={status === "loading" || !agreeToTerms}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {status === "loading" ? signupT.signingUp : signupT.signupButton}
+                </button>
+              </form>
+
+              <div className="mt-4 text-center text-xs text-slate-600">
+                {signupT.alreadyHaveAccount}{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-[#2563eb] hover:underline"
+                >
+                  {signupT.loginLink}
+                </Link>
+              </div>
+
+              <p className="mt-4 text-[11px] text-center text-slate-400">
+                {signupT.secureLoginLine}
+              </p>
+            </motion.div>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

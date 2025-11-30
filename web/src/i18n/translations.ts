@@ -65,10 +65,13 @@ export type LoginMessages = {
   bullet1: string;
   bullet2: string;
   bullet3: string;
+  trustLine: string;
   formSubtitle: string;
   forgotPassword: string;
+  keepMeLoggedIn: string;
   dontHaveAccount: string;
   createOne: string;
+  secureLoginLine: string;
 };
 
 export type SignUpMessages = {
@@ -88,6 +91,11 @@ export type SignUpMessages = {
   bullet2: string;
   bullet3: string;
   formSubtitle: string;
+  trustLine: string;
+  passwordPlaceholder: string;
+  passwordHint: string;
+  termsAgreement: string;
+  secureLoginLine: string;
 };
 
 export type OnboardingMessages = {

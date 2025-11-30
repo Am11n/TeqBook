@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase-client";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import { Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,6 +47,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -85,161 +86,185 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EEF3FF]">
-      {/* Background gradient layers */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-300/10 blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-[#eef3ff] flex items-center justify-center px-4 py-10">
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-[#d4e0ff] via-[#e3ebff] to-[#f5f7ff] shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+        {/* Bakgrunns-sirkler */}
+        <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#c7d7ff]/30 blur-3xl" />
 
-      {/* Watermark */}
-      <div className="pointer-events-none fixed inset-0 -z-0 flex items-center justify-center">
-        <Image
-          src="/Favikon.svg"
-          alt=""
-          width={800}
-          height={800}
-          className="h-[800px] w-[800px] opacity-[0.03] blur-[1.5px]"
-          aria-hidden="true"
-        />
-      </div>
+        <div className="relative grid gap-10 p-6 md:p-10 lg:grid-cols-[1.1fr_1.1fr] lg:p-12">
+          {/* Venstre side: Brand / pitch */}
+          <div className="flex flex-col justify-center">
+            <Link href="/" className="flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity">
+              <Image
+                src="/Favikon.svg"
+                alt="TeqBook logo"
+                width={40}
+                height={40}
+                className="drop-shadow-[0_2px_8px_rgba(15,23,42,0.15)]"
+              />
+              <span className="text-xl font-semibold tracking-tight text-slate-900">
+                TeqBook
+              </span>
+            </Link>
 
-      <div className="relative mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 md:px-6">
-        {/* Left side - Branding */}
-        <div className="relative hidden flex-1 flex-col pr-10 md:flex">
-          <div className="mb-8 flex items-center gap-3">
-            <Image
-              src="/Favikon.svg"
-              alt="TeqBook"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
-              priority
-            />
-            <span className="text-2xl font-semibold tracking-tight text-slate-900">
-              TeqBook
-            </span>
-          </div>
-          <h1 className="text-3xl font-semibold text-slate-900">
-            {t.welcomeBackTitle}
-          </h1>
-          <p className="mt-3 max-w-md text-sm text-slate-600">
-            {t.welcomeBackDescription}
-          </p>
-          <ul className="mt-6 space-y-2 text-sm text-slate-600">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{t.bullet1}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{t.bullet2}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              <span>{t.bullet3}</span>
-            </li>
-          </ul>
-        </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-slate-900">
+              {t.welcomeBackTitle.includes("TeqBook") ? (
+                <>
+                  {t.welcomeBackTitle.split("TeqBook")[0]}
+                  <span className="text-[#1d4ed8]">TeqBook</span>
+                  {t.welcomeBackTitle.split("TeqBook")[1] || ""}
+                </>
+              ) : (
+                <>
+                  {t.welcomeBackTitle.split(" ").slice(0, -1).join(" ")}{" "}
+                  <span className="text-[#1d4ed8]">TeqBook</span>
+                </>
+              )}
+            </h1>
 
-        {/* Right side - Form */}
-        <div className="relative w-full flex-1 md:max-w-md">
-          <div className="mx-auto w-full rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-xl shadow-sky-900/5">
-            <h2 className="text-xl font-semibold text-slate-900">{t.title}</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              {t.formSubtitle}
+            <p className="mt-4 max-w-xl text-sm sm:text-base text-slate-600">
+              {t.welcomeBackDescription}
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="text-xs font-medium text-slate-700"
-                >
-                  {t.emailLabel}
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm outline-none ring-0 transition-colors focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-200"
-                  placeholder={t.emailPlaceholder}
-                />
+            <ul className="mt-6 space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{t.bullet1}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{t.bullet2}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span>{t.bullet3}</span>
+              </li>
+            </ul>
+
+            <p className="mt-8 text-xs text-slate-500">
+              {t.trustLine}
+            </p>
+          </div>
+
+          {/* Høyre side: Login card */}
+          <div className="flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full max-w-md rounded-3xl bg-white/90 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-sm border border-slate-100"
+            >
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">
+                  {t.title}
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  {t.formSubtitle}
+                </p>
               </div>
 
-              {/* Password with show/hide */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="text-xs font-medium text-slate-700"
-                >
-                  {t.passwordLabel}
-                </label>
-                <div className="mt-1 flex items-center rounded-xl border border-slate-200 bg-slate-50/80 transition-colors focus-within:border-sky-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl bg-transparent px-3 py-2 text-sm outline-none"
-                    placeholder={t.passwordPlaceholder}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="pr-3 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-800"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
+                    {t.emailLabel}
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.emailPlaceholder}
+                    className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                  />
                 </div>
-              </div>
 
-              {/* Forgot password */}
-              <div className="flex items-center justify-end text-xs">
-                <Link
-                  href="#"
-                  className="text-slate-600 hover:text-slate-900 hover:underline"
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {t.passwordLabel}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t.passwordPlaceholder}
+                      className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {error && (
+                  <p className="text-sm text-red-500" aria-live="polite">
+                    {error}
+                  </p>
+                )}
+
+                {/* Options row */}
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={keepLoggedIn}
+                      onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-[#2563eb] focus:ring-[#2563eb]/40"
+                    />
+                    <span>{t.keepMeLoggedIn}</span>
+                  </label>
+                  <Link
+                    href="#"
+                    className="font-medium text-[#2563eb] hover:underline"
+                  >
+                    {t.forgotPassword}
+                  </Link>
+                </div>
+
+                {/* Button */}
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {t.forgotPassword}
+                  {status === "loading" ? t.loggingIn : t.loginButton}
+                </button>
+              </form>
+
+              {/* Bottom text */}
+              <div className="mt-4 text-center text-xs text-slate-600">
+                {t.dontHaveAccount}{" "}
+                <Link
+                  href="/signup"
+                  className="font-semibold text-[#2563eb] hover:underline"
+                >
+                  {t.createOne}
                 </Link>
               </div>
 
-              {/* Error message */}
-              {error && (
-                <p className="text-sm text-red-500" aria-live="polite">
-                  {error}
-                </p>
-              )}
-
-              {/* Submit button */}
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="mt-2 w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {status === "loading" ? t.loggingIn : t.loginButton}
-              </button>
-            </form>
-
-            <p className="mt-4 text-center text-xs text-slate-500">
-              {t.dontHaveAccount}{" "}
-              <Link
-                href="/signup"
-                className="font-medium text-slate-900 hover:underline"
-              >
-                {t.createOne}
-              </Link>
-            </p>
+              <p className="mt-4 text-[11px] text-center text-slate-400">
+                {t.secureLoginLine}
+              </p>
+            </motion.div>
           </div>
         </div>
       </div>

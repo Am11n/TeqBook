@@ -1740,11 +1740,14 @@ export default function LandingPage() {
       >
         <div className={`mx-auto flex max-w-5xl items-center justify-between pl-4 pr-4 transition-all duration-300 sm:px-6 ${headerHeight}`}>
           <motion.div 
-            className="flex items-center gap-0.5 sm:gap-0.5 md:gap-0.5 min-w-0"
+            className="flex items-center gap-0.5 sm:gap-0.5 md:gap-0.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
             animate={{
               scale: isMobile ? 1 : logoScale, // No scale animation on mobile/tablet
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           >
             <Image
               src="/Favikon.svg"
@@ -2329,16 +2332,18 @@ export default function LandingPage() {
                           </li>
                         ))}
                       </ul>
-                      <Button
-                        className={`w-full ${
-                          isHighlighted
-                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40"
-                            : "bg-slate-900 text-white hover:bg-slate-800"
-                        }`}
-                        size="lg"
-                      >
-                        {t.startFreeTrial}
-                      </Button>
+                      <Link href="/signup" className="w-full">
+                        <Button
+                          className={`w-full ${
+                            isHighlighted
+                              ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40"
+                              : "bg-slate-900 text-white hover:bg-slate-800"
+                          }`}
+                          size="lg"
+                        >
+                          {t.startFreeTrial}
+                        </Button>
+                      </Link>
                     </div>
                   </motion.div>
                 );
