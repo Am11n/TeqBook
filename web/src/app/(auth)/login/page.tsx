@@ -96,7 +96,7 @@ export default function LoginPage() {
       {/* Watermark */}
       <div className="pointer-events-none fixed inset-0 -z-0 flex items-center justify-center">
         <Image
-          src="Favikon.svg"
+          src="/Favikon.svg"
           alt=""
           width={800}
           height={800}
@@ -110,7 +110,7 @@ export default function LoginPage() {
         <div className="relative hidden flex-1 flex-col pr-10 md:flex">
           <div className="mb-8 flex items-center gap-3">
             <Image
-              src="Favikon.svg"
+              src="/Favikon.svg"
               alt="TeqBook"
               width={120}
               height={32}

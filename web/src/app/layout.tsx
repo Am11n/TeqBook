@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   description: "Nordic-inspired salon booking SaaS.",
   // Use relative paths so favicon works correctly.
   icons: {
-    icon: "Favikon.svg",
-    shortcut: "Favikon.svg",
-    apple: "Favikon.svg",
+    icon: "/Favikon.svg",
+    shortcut: "/Favikon.svg",
+    apple: "/Favikon.svg",
   },
 };
 

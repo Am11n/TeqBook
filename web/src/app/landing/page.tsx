@@ -1747,7 +1747,7 @@ export default function LandingPage() {
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <Image
-              src="Favikon.svg"
+              src="/Favikon.svg"
               alt={t.brand}
               width={150}
               height={40}
@@ -1840,7 +1840,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3">
                 <Image
-                  src="Favikon.svg"
+                  src="/Favikon.svg"
                   alt={t.brand}
                   width={120}
                   height={32}
@@ -2279,7 +2279,7 @@ export default function LandingPage() {
                         <div className="flex items-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 shadow-lg shadow-blue-500/20">
                             <Image
-                              src="Favikon.svg"
+                              src="/Favikon.svg"
                               alt="TeqBook"
                               width={24}
                               height={24}
