@@ -39,6 +39,7 @@ export const tr: TranslationNamespaces = {
     unavailableDescription:
       "Bu salon mevcut değil ya da herkese açık olarak işaretlenmemiş.",
   },
+  
   login: {
     title: "TeqBook’a giriş yap",
     description:
@@ -64,6 +65,7 @@ export const tr: TranslationNamespaces = {
     createOne: "Bir tane oluşturun",
     secureLoginLine: "Güvenli giriş. Şifreniz asla düz metin olarak saklanmaz.",
   },
+  
   signup: {
     title: "Hesap oluştur",
     description: "TeqBook'a başlamak için bir hesap oluşturun.",
@@ -86,7 +88,8 @@ export const tr: TranslationNamespaces = {
     passwordHint: "En az 8 karakter kullanın. Bunu daha sonra değiştirebilirsiniz.",
     termsAgreement: "Şartları ve Gizlilik Politikasını kabul ediyorum.",
     secureLoginLine: "Güvenli giriş. Şifreniz asla düz metin olarak saklanmaz.",
-  },
+   },
+  
   onboarding: {
     title: "İlk salonunu oluştur",
     description:
@@ -150,6 +153,7 @@ export const tr: TranslationNamespaces = {
     step3:
       "3. Her şey kaydedildiğinde dashboard'a yönlendirilirsin.",
   },
+  
   dashboard: {
     brandSubtitle: "Salon kontrol paneli",
     overview: "Genel bakış",
@@ -160,6 +164,7 @@ export const tr: TranslationNamespaces = {
     customers: "Müşteriler",
     bookings: "Randevular",
     onboarding: "Başlangıç",
+    settings: "Settings",
     tagline:
       "Salonlarını, çalışanlarını, hizmetlerini ve çalışma saatlerini tek yerden yönet.",
     builtFor:
@@ -172,6 +177,7 @@ export const tr: TranslationNamespaces = {
     logout: "Çıkış yap",
     langLabel: "Dil",
   },
+  
   home: {
     title: "Genel bakış",
     description:
@@ -192,6 +198,7 @@ export const tr: TranslationNamespaces = {
     bookingBodyText:
       "Bu kart daha sonra gerçek randevu verileriyle değiştirilecek.",
   },
+  
   calendar: {
     title: "Takvim",
     description:
@@ -217,6 +224,7 @@ export const tr: TranslationNamespaces = {
     unknownService: "Bilinmeyen hizmet",
     unknownCustomer: "Bilinmeyen müşteri / yürüyen",
   },
+  
   employees: {
     title: "Çalışanlar",
     description:
@@ -254,6 +262,7 @@ export const tr: TranslationNamespaces = {
     delete: "Sil",
     addButton: "Çalışan ekle",
   },
+  
   services: {
     title: "Hizmetler",
     description:
@@ -291,6 +300,7 @@ export const tr: TranslationNamespaces = {
     inactive: "Pasif",
     delete: "Sil",
   },
+  
   customers: {
     title: "Müşteriler",
     description:
@@ -330,6 +340,7 @@ export const tr: TranslationNamespaces = {
     consentYes: "Evet",
     consentNo: "Hayır",
   },
+  
   bookings: {
     title: "Randevular",
     description:
@@ -387,6 +398,7 @@ export const tr: TranslationNamespaces = {
     createBooking: "Randevu oluştur",
     creatingBooking: "Oluşturuluyor…",
   },
+  
   shifts: {
     title: "Vardiyalar & çalışma saatleri",
     description:
@@ -418,6 +430,39 @@ export const tr: TranslationNamespaces = {
     colTime: "Saat",
     colActions: "İşlemler",
     delete: "Sil",
+  },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
   },
 };
 

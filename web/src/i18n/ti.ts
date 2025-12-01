@@ -39,6 +39,7 @@ export const ti: TranslationNamespaces = {
     unavailableDescription:
       "እዚ ሳሎን የብሉን እዩ ወይ እቲ ናይ ሕዝቢ ሳሎን ዝብል ምልክት ኣይተሰናከለን።",
   },
+  
   login: {
     title: "መግቢ",
     description:
@@ -64,6 +65,7 @@ export const ti: TranslationNamespaces = {
     createOne: "ኣካውንት ፍጠር",
     secureLoginLine: "ኣረጋዊ መግቢ። ፓስዎርድኩም ብጽሑፍ ኣይትከሓን።",
   },
+  
   signup: {
     title: "ኣካውንት ፍጠር",
     description: "ኣካውንት ፍጠር ን TeqBook ንምጅማር።",
@@ -86,7 +88,8 @@ export const ti: TranslationNamespaces = {
     passwordHint: "እንተወሰነ 8 ፊደላት ተጠቐም። እዚ ድሕሪኡ ክትቀይሮ ትኽእል።",
     termsAgreement: "ነቲ ሸርሕታትን ፖሊሲ ምስጢርን እተቀበልኩ።",
     secureLoginLine: "ኣረጋዊ መግቢ። ፓስዎርድኩም ብጽሑፍ ኣይትከሓን።",
-  },
+   },
+  
   onboarding: {
     title: "መጀመርታዊ ሳሎንካ ፍጠር",
     description:
@@ -149,6 +152,7 @@ export const ti: TranslationNamespaces = {
     step3:
       "3. ኩሉ ግዜ ዝተዓቀበ ድሕሪኡ ናብ dashboard ትርከብ።",
   },
+  
   dashboard: {
     brandSubtitle: "ዳሽቦርድ ሳሎን",
     overview: "ኣጠቓቕማ ስነ ሁናት",
@@ -159,6 +163,7 @@ export const ti: TranslationNamespaces = {
     customers: "ደኣንነት",
     bookings: "መመዝገብታት",
     onboarding: "ጀማሪ ምድላይ",
+    settings: "Settings",
     tagline:
       "ሳሎንካ፣ ሰራሕተኛታትካ፣ ኣገልግሎታትካን ሰዓታት መኽፈትካን ብሓደ ቦታ ኣስተዳድር።",
     builtFor:
@@ -171,6 +176,7 @@ export const ti: TranslationNamespaces = {
     logout: "ወጻኢ",
     langLabel: "ቋንቋ",
   },
+  
   home: {
     title: "ኣጠቓቕማ ስነ ሁናት",
     description:
@@ -191,6 +197,7 @@ export const ti: TranslationNamespaces = {
     bookingBodyText:
       "እዚ ካርድ ብድሕሪ ቁጽሪ እቲ ናይ እዋናዊ መመዝገብታት ብግልጺ ዝሃበ መረጃ ንኽረክብ ይተካል።",
   },
+  
   calendar: {
     title: "ካለንደር",
     description:
@@ -216,6 +223,7 @@ export const ti: TranslationNamespaces = {
     unknownService: "ኣገልግሎት ዘይተፈለጠ",
     unknownCustomer: "ዘይተመዝገበ ገብርሂ / ዘይታወቀ",
   },
+  
   employees: {
     title: "ሰራሕተኛታት",
     description:
@@ -253,6 +261,7 @@ export const ti: TranslationNamespaces = {
     delete: "ሰርዝ",
     addButton: "ሰራሕተኛ ጨምር",
   },
+  
   services: {
     title: "ኣገልግሎታት",
     description:
@@ -290,6 +299,7 @@ export const ti: TranslationNamespaces = {
     inactive: "ዘይኣንቀሳቃሲ",
     delete: "ሰርዝ",
   },
+  
   customers: {
     title: "ደኣንነት",
     description:
@@ -329,6 +339,7 @@ export const ti: TranslationNamespaces = {
     consentYes: "እወ",
     consentNo: "ኣይኮነን",
   },
+  
   bookings: {
     title: "መመዝገብታት",
     description:
@@ -386,6 +397,7 @@ export const ti: TranslationNamespaces = {
     createBooking: "መመዝገብቲ ፍጠር",
     creatingBooking: "መመዝገብቲ ኣብ ምፍጣር ኣሎ…",
   },
+  
   shifts: {
     title: "ስርሒታት ስራሕን ሰዓታት መኽፈትን",
     description:
@@ -417,6 +429,39 @@ export const ti: TranslationNamespaces = {
     colTime: "ጊዜ",
     colActions: "ተግባር",
     delete: "ሰርዝ",
+  },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
   },
 };
 

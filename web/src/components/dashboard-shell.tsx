@@ -99,8 +99,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <NavLink href="/customers" label={texts.customers} />
           <NavLink href="/bookings" label={texts.bookings} />
           <NavLink
-            href="/onboarding"
-            label={texts.onboarding}
+            href="/settings/general"
+            label={translations[appLocale].settings.title}
             className="mt-4"
           />
         </nav>

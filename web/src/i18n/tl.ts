@@ -40,6 +40,7 @@ export const tl: TranslationNamespaces = {
     unavailableDescription:
       "Hindi umiiral ang salon na ito o hindi ito naka-set bilang pampubliko.",
   },
+  
   login: {
     title: "Mag-log in sa TeqBook",
     description:
@@ -65,6 +66,7 @@ export const tl: TranslationNamespaces = {
     createOne: "Gumawa ng isa",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
   },
+  
   signup: {
     title: "Gumawa ng account",
     description: "Gumawa ng account para makapagsimula sa TeqBook.",
@@ -87,7 +89,8 @@ export const tl: TranslationNamespaces = {
     passwordHint: "Gumamit ng hindi bababa sa 8 na karakter. Maaari mong baguhin ito mamaya.",
     termsAgreement: "Sumasang-ayon ako sa Terms at Privacy Policy.",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
-  },
+   },
+  
   onboarding: {
     title: "Gumawa ng unang salon mo",
     description:
@@ -151,6 +154,7 @@ export const tl: TranslationNamespaces = {
     step3:
       "3. Kapag matagumpay na na-save, ire-redirect ka sa dashboard.",
   },
+  
   dashboard: {
     brandSubtitle: "Salon dashboard",
     overview: "Pangkalahatang ideya",
@@ -161,6 +165,7 @@ export const tl: TranslationNamespaces = {
     customers: "Mga customer",
     bookings: "Mga booking",
     onboarding: "Onboarding",
+    settings: "Settings",
     tagline:
       "Pamamahala ng salon, empleyado, serbisyo, at oras ng bukas sa iisang lugar.",
     builtFor:
@@ -173,6 +178,7 @@ export const tl: TranslationNamespaces = {
     logout: "Mag-logout",
     langLabel: "Wika",
   },
+  
   home: {
     title: "Pangkalahatang ideya",
     description:
@@ -193,6 +199,7 @@ export const tl: TranslationNamespaces = {
     bookingBodyText:
       "Mapapalitan ang card na ito ng totoong booking data mula sa system.",
   },
+  
   calendar: {
     title: "Kalendaryo",
     description:
@@ -218,6 +225,7 @@ export const tl: TranslationNamespaces = {
     unknownService: "Hindi kilalang serbisyo",
     unknownCustomer: "Walk-in / hindi kilalang customer",
   },
+  
   employees: {
     title: "Mga empleyado",
     description:
@@ -255,6 +263,7 @@ export const tl: TranslationNamespaces = {
     delete: "Tanggalin",
     addButton: "Magdagdag ng empleyado",
   },
+  
   services: {
     title: "Mga serbisyo",
     description:
@@ -292,6 +301,7 @@ export const tl: TranslationNamespaces = {
     inactive: "Hindi aktibo",
     delete: "Tanggalin",
   },
+  
   customers: {
     title: "Mga customer",
     description:
@@ -331,6 +341,7 @@ export const tl: TranslationNamespaces = {
     consentYes: "Oo",
     consentNo: "Hindi",
   },
+  
   bookings: {
     title: "Mga booking",
     description:
@@ -388,6 +399,7 @@ export const tl: TranslationNamespaces = {
     createBooking: "Gumawa ng booking",
     creatingBooking: "Gumagawa…",
   },
+  
   shifts: {
     title: "Mga shift at oras ng bukas",
     description:
@@ -419,6 +431,39 @@ export const tl: TranslationNamespaces = {
     colTime: "Oras",
     colActions: "Mga aksyon",
     delete: "Tanggalin",
+  },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
   },
 };
 

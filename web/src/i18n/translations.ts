@@ -171,6 +171,7 @@ export type DashboardMessages = {
   customers: string;
   bookings: string;
   onboarding: string;
+  settings: string;
   tagline: string;
   builtFor: string;
   openNav: string;
@@ -412,6 +413,44 @@ export type ShiftsMessages = {
   delete: string;
 };
 
+export type SettingsMessages = {
+  title: string;
+  description: string;
+  generalTab: string;
+  notificationsTab: string;
+  billingTab: string;
+  brandingTab: string;
+  // General settings
+  generalTitle: string;
+  generalDescription: string;
+  salonNameLabel: string;
+  salonTypeLabel: string;
+  whatsappNumberLabel: string;
+  whatsappNumberPlaceholder: string;
+  whatsappNumberHint: string;
+  saveButton: string;
+  saving: string;
+  saved: string;
+  error: string;
+  // Notifications settings
+  notificationsTitle: string;
+  notificationsDescription: string;
+  emailRemindersEnabled: string;
+  emailRemindersHint: string;
+  // Billing settings
+  billingTitle: string;
+  billingDescription: string;
+  currentPlan: string;
+  planStarter: string;
+  planPro: string;
+  planBusiness: string;
+  addOns: string;
+  // Branding settings
+  brandingTitle: string;
+  brandingDescription: string;
+  comingSoon: string;
+};
+
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
@@ -425,6 +464,7 @@ export type TranslationNamespaces = {
   customers: CustomersMessages;
   bookings: BookingsMessages;
   shifts: ShiftsMessages;
+  settings: SettingsMessages;
 };
 
 import { nb } from "./nb";

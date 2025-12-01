@@ -39,6 +39,39 @@ export const pl: TranslationNamespaces = {
     unavailableDescription:
       "Ten salon nie istnieje lub nie jest oznaczony jako publiczny.",
   },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
+  },
   login: {
     title: "Zaloguj się do TeqBook",
     description:
@@ -86,7 +119,7 @@ export const pl: TranslationNamespaces = {
     passwordHint: "Użyj co najmniej 8 znaków. Możesz to zmienić później.",
     termsAgreement: "Akceptuję Warunki i Politykę prywatności.",
     secureLoginLine: "Bezpieczne logowanie. Twoje hasło nigdy nie jest przechowywane w postaci zwykłego tekstu.",
-  },
+   },
   onboarding: {
     title: "Utwórz swój pierwszy salon",
     description:
@@ -150,6 +183,7 @@ export const pl: TranslationNamespaces = {
     step3:
       "3. Po poprawnym zapisaniu danych zostaniesz przekierowany do panelu.",
   },
+  
   dashboard: {
     brandSubtitle: "Panel salonu",
     overview: "Przegląd",
@@ -160,6 +194,7 @@ export const pl: TranslationNamespaces = {
     customers: "Klienci",
     bookings: "Rezerwacje",
     onboarding: "Onboarding",
+    settings: "Settings",
     tagline:
       "Zarządzaj salonami, pracownikami, usługami i godzinami otwarcia w jednym miejscu.",
     builtFor:
@@ -172,6 +207,7 @@ export const pl: TranslationNamespaces = {
     logout: "Wyloguj się",
     langLabel: "Język",
   },
+  
   home: {
     title: "Przegląd",
     description:
@@ -192,6 +228,7 @@ export const pl: TranslationNamespaces = {
     bookingBodyText:
       "Ta karta zostanie później zastąpiona prawdziwymi danymi o rezerwacjach.",
   },
+  
   calendar: {
     title: "Kalendarz",
     description:
@@ -217,6 +254,7 @@ export const pl: TranslationNamespaces = {
     unknownService: "Nieznana usługa",
     unknownCustomer: "Klient niezidentyfikowany / z ulicy",
   },
+  
   employees: {
     title: "Pracownicy",
     description:
@@ -254,6 +292,7 @@ export const pl: TranslationNamespaces = {
     delete: "Usuń",
     addButton: "Dodaj pracownika",
   },
+  
   services: {
     title: "Usługi",
     description:
@@ -290,6 +329,7 @@ export const pl: TranslationNamespaces = {
     inactive: "Nieaktywna",
     delete: "Usuń",
   },
+  
   customers: {
     title: "Klienci",
     description:
@@ -329,6 +369,7 @@ export const pl: TranslationNamespaces = {
     consentYes: "Tak",
     consentNo: "Nie",
   },
+  
   bookings: {
     title: "Rezerwacje",
     description:
@@ -387,6 +428,7 @@ export const pl: TranslationNamespaces = {
     createBooking: "Utwórz rezerwację",
     creatingBooking: "Tworzenie…",
   },
+  
   shifts: {
     title: "Zmiany i godziny otwarcia",
     description:
@@ -419,6 +461,7 @@ export const pl: TranslationNamespaces = {
     colActions: "Akcje",
     delete: "Usuń",
   },
+  
 };
 
 

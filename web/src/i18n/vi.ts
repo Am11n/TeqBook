@@ -40,6 +40,7 @@ export const vi: TranslationNamespaces = {
     unavailableDescription:
       "Salon này không tồn tại hoặc chưa được bật chế độ công khai.",
   },
+  
   login: {
     title: "Đăng nhập vào TeqBook",
     description:
@@ -65,6 +66,7 @@ export const vi: TranslationNamespaces = {
     createOne: "Tạo một tài khoản",
     secureLoginLine: "Đăng nhập an toàn. Mật khẩu của bạn không bao giờ được lưu dưới dạng văn bản thuần túy.",
   },
+  
   signup: {
     title: "Tạo tài khoản",
     description: "Tạo tài khoản để bắt đầu với TeqBook.",
@@ -87,7 +89,8 @@ export const vi: TranslationNamespaces = {
     passwordHint: "Sử dụng ít nhất 8 ký tự. Bạn có thể thay đổi điều này sau.",
     termsAgreement: "Tôi đồng ý với Điều khoản và Chính sách bảo mật.",
     secureLoginLine: "Đăng nhập an toàn. Mật khẩu của bạn không bao giờ được lưu dưới dạng văn bản thuần túy.",
-  },
+   },
+  
   onboarding: {
     title: "Tạo salon đầu tiên của bạn",
     description:
@@ -151,6 +154,7 @@ export const vi: TranslationNamespaces = {
     step3:
       "3. Khi lưu thành công, bạn sẽ được chuyển tiếp vào dashboard.",
   },
+  
   dashboard: {
     brandSubtitle: "Bảng điều khiển salon",
     overview: "Tổng quan",
@@ -161,6 +165,7 @@ export const vi: TranslationNamespaces = {
     customers: "Khách hàng",
     bookings: "Đặt lịch",
     onboarding: "Onboarding",
+    settings: "Settings",
     tagline:
       "Quản lý salon, nhân viên, dịch vụ và giờ mở cửa trong một hệ thống.",
     builtFor:
@@ -173,6 +178,7 @@ export const vi: TranslationNamespaces = {
     logout: "Đăng xuất",
     langLabel: "Ngôn ngữ",
   },
+  
   home: {
     title: "Tổng quan",
     description:
@@ -193,6 +199,7 @@ export const vi: TranslationNamespaces = {
     bookingBodyText:
       "Card này sau đó sẽ được thay bằng số liệu thật từ hệ thống đặt lịch.",
   },
+  
   calendar: {
     title: "Lịch",
     description:
@@ -218,6 +225,7 @@ export const vi: TranslationNamespaces = {
     unknownService: "Dịch vụ không rõ",
     unknownCustomer: "Khách vãng lai / không xác định",
   },
+  
   employees: {
     title: "Nhân viên",
     description:
@@ -255,6 +263,7 @@ export const vi: TranslationNamespaces = {
     delete: "Xóa",
     addButton: "Thêm nhân viên",
   },
+  
   services: {
     title: "Dịch vụ",
     description:
@@ -292,6 +301,7 @@ export const vi: TranslationNamespaces = {
     inactive: "Tạm dừng",
     delete: "Xóa",
   },
+  
   customers: {
     title: "Khách hàng",
     description:
@@ -331,6 +341,7 @@ export const vi: TranslationNamespaces = {
     consentYes: "Có",
     consentNo: "Không",
   },
+  
   bookings: {
     title: "Đặt lịch",
     description:
@@ -389,6 +400,7 @@ export const vi: TranslationNamespaces = {
     createBooking: "Tạo đặt lịch",
     creatingBooking: "Đang tạo…",
   },
+  
   shifts: {
     title: "Ca làm và giờ mở cửa",
     description:
@@ -420,6 +432,39 @@ export const vi: TranslationNamespaces = {
     colTime: "Giờ",
     colActions: "Hành động",
     delete: "Xóa",
+  },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
   },
 };
 

@@ -41,6 +41,7 @@ export const so: TranslationNamespaces = {
     unavailableDescription:
       "Salonkan ma jiro ama looma dejin in uu yahay mid dadweyne.",
   },
+  
   login: {
     title: "Soo gal",
     description:
@@ -66,6 +67,7 @@ export const so: TranslationNamespaces = {
     createOne: "Samee akoon",
     secureLoginLine: "Soo gal amaan ah. Password-kaaga marna ma lagu keydin qoraal cad.",
   },
+  
   signup: {
     title: "Samee akoon",
     description: "Samee akoon si aad u bilowdo TeqBook.",
@@ -88,7 +90,8 @@ export const so: TranslationNamespaces = {
     passwordHint: "Isticmaal ugu yaraan 8 xaraf. Waxaad beddeli kartaa tan marka dambe.",
     termsAgreement: "Waxaan aqbalayaa shuruudaha iyo siyaasadda qarsoonaanta.",
     secureLoginLine: "Soo gal amaan ah. Password-kaaga marna ma lagu keydin qoraal cad.",
-  },
+   },
+  
   onboarding: {
     title: "Samee saloonkaagii ugu horreeyay",
     description:
@@ -151,6 +154,7 @@ export const so: TranslationNamespaces = {
     step3:
       "3. Marka wax walba la kaydiyo, waxaa laguu leexin doonaa dashboard-ka.",
   },
+  
   dashboard: {
     brandSubtitle: "Dashboard saloon",
     overview: "Guudmar",
@@ -161,6 +165,7 @@ export const so: TranslationNamespaces = {
     customers: "Macaamiisha",
     bookings: "Ballamaha",
     onboarding: "Onboarding",
+    settings: "Settings",
     tagline:
       "Maamul saloonkaaga, shaqaalaha, adeegyada iyo saacadaha furitaanka hal meel.",
     builtFor:
@@ -173,6 +178,7 @@ export const so: TranslationNamespaces = {
     logout: "Ka bax",
     langLabel: "Luuqad",
   },
+  
   home: {
     title: "Guudmar",
     description:
@@ -193,6 +199,7 @@ export const so: TranslationNamespaces = {
     bookingBodyText:
       "Kaarkaan waxaa mustaqbalka lagu beddeli doonaa xog ballansasho dhab ah.",
   },
+  
   calendar: {
     title: "Kalandar",
     description:
@@ -219,6 +226,7 @@ export const so: TranslationNamespaces = {
     unknownService: "Adeeg aan la aqoon",
     unknownCustomer: "Walk-in / aan la aqoon",
   },
+  
   employees: {
     title: "Shaqaalaha",
     description:
@@ -256,6 +264,7 @@ export const so: TranslationNamespaces = {
     delete: "Tirtir",
     addButton: "Ku dar shaqaale",
   },
+  
   services: {
     title: "Adeegyada",
     description:
@@ -293,6 +302,7 @@ export const so: TranslationNamespaces = {
     inactive: "Aan firfircoonayn",
     delete: "Tirtir",
   },
+  
   customers: {
     title: "Macaamiisha",
     description:
@@ -332,6 +342,7 @@ export const so: TranslationNamespaces = {
     consentYes: "Haa",
     consentNo: "Maya",
   },
+  
   bookings: {
     title: "Ballamaha",
     description:
@@ -391,6 +402,7 @@ export const so: TranslationNamespaces = {
     createBooking: "Abuur ballan",
     creatingBooking: "Waxaa socda abuurista…",
   },
+  
   shifts: {
     title: "Shifts & saacadaha furitaanka",
     description:
@@ -422,6 +434,39 @@ export const so: TranslationNamespaces = {
     colTime: "Waqti",
     colActions: "Falal",
     delete: "Tirtir",
+  },
+  settings: {
+    title: "Settings",
+    description: "Manage your salon settings and preferences.",
+    generalTab: "General",
+    notificationsTab: "Notifications",
+    billingTab: "Billing",
+    brandingTab: "Branding",
+    generalTitle: "General Settings",
+    generalDescription: "Manage your salon's basic information and contact details.",
+    salonNameLabel: "Salon Name",
+    salonTypeLabel: "Salon Type",
+    whatsappNumberLabel: "WhatsApp Number",
+    whatsappNumberPlaceholder: "+47 99 99 99 99",
+    whatsappNumberHint: "Include country code. This number will be shown on your public booking page.",
+    saveButton: "Save Changes",
+    saving: "Saving…",
+    saved: "Settings saved successfully",
+    error: "Failed to save settings",
+    notificationsTitle: "Notification Preferences",
+    notificationsDescription: "Configure how you receive booking reminders and updates.",
+    emailRemindersEnabled: "Enable email reminders",
+    emailRemindersHint: "Send email reminders to customers before their appointments.",
+    billingTitle: "Billing & Subscription",
+    billingDescription: "Manage your subscription plan and add-ons.",
+    currentPlan: "Current Plan",
+    planStarter: "Starter",
+    planPro: "Pro",
+    planBusiness: "Business",
+    addOns: "Add-ons",
+    brandingTitle: "Branding & Theme",
+    brandingDescription: "Customize your salon's appearance and booking page theme.",
+    comingSoon: "Coming soon",
   },
 };
 

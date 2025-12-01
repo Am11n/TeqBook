@@ -24,6 +24,8 @@ type Salon = {
   slug: string | null;
   is_public: boolean;
   preferred_language: string | null;
+  salon_type?: string | null;
+  whatsapp_number?: string | null;
 };
 
 type SalonContextValue =
@@ -90,7 +92,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
       // 3. Get salon data
       const { data: salon, error: salonError } = await supabase
         .from("salons")
-        .select("id, name, slug, is_public, preferred_language")
+        .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number")
         .eq("id", profile.salon_id)
         .maybeSingle();
 
