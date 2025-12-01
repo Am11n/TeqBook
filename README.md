@@ -24,18 +24,21 @@ This repository contains:
   - A `salons` table, owned by a Supabase user.
   - A `profiles` table, linking Supabase auth users to a current `salon_id`.
   - RLS policies that ensure every query is automatically scoped to the current salon.
+  - `SalonProvider` context (`web/src/components/salon-provider.tsx`) centralizes salon data fetching.
 - **Domain model (MVP):**
-  - `salons` – the core tenant entity.
+  - `salons` – the core tenant entity (includes `preferred_language`, `salon_type`, `online_booking_enabled`, etc.).
   - `profiles` – per‑user profile and salon linkage.
-  - `employees`
-  - `services`
-  - `shifts` – staff availability and opening hours.
-  - `customers`
-  - `bookings`
+  - `opening_hours` – salon opening hours per day of week.
+  - `employees` – staff with roles, languages, and service assignments.
+  - `services` – services with categories, estimated time, and sort order.
+  - `shifts` – staff availability and opening hours (linked to employees).
+  - `customers` – customer profiles with notes.
+  - `bookings` – bookings with status, walk-in flag, and employee/service linkage.
 - **Business logic:** Implemented in Postgres functions (called via Supabase RPC), e.g.:
-  - `create_salon_for_current_user`
-  - `generate_availability`
-  - `create_booking_with_validation`
+  - `create_salon_for_current_user` – creates salon with opening hours, preferred language, salon type, etc.
+  - `generate_availability` – generates available time slots for booking.
+  - `create_booking_with_validation` – creates booking with validation logic.
+- **Data access:** Repository pattern (`web/src/lib/repositories/`) abstracts Supabase calls from UI components, enabling future migration to Edge Functions, caching, and logging.
 
 The frontend talks directly to Supabase using the shared client in `web/src/lib/supabase-client.ts`.
 
@@ -47,45 +50,62 @@ The frontend talks directly to Supabase using the shared client in `web/src/lib/
 
 Public marketing site describing TeqBook, built as `web/src/app/landing/page.tsx`:
 
+- Serves as the root route (`/`) of the application.
+- Premium SaaS design with modern gradients, glassmorphism, and smooth animations.
 - Clear positioning around **pay‑in‑salon** booking.
-- Modern, mobile‑first layout using shared layout primitives (`Section`, `SectionCard`, `StatsGrid`).
-- **Pricing section** with three plans:
-  - **TeqBook Starter** – for very small salons (1–2 staff).
-  - **TeqBook Pro** – for salons with 3–6 staff that need more control and fewer no‑shows.
-  - **TeqBook Business** – for larger/multi‑chair salons that need roles and reporting.
-- Pricing copy and plan features are fully translated into all supported languages.
+- Modern, mobile‑first layout with responsive hamburger menu.
+- **Pricing section** with three plans (USD pricing):
+  - **TeqBook Starter** – $25/month for very small salons (1–2 staff).
+  - **TeqBook Pro** – $50/month for salons with 3–6 staff that need more control and fewer no‑shows.
+  - **TeqBook Business** – $75/month for larger/multi‑chair salons that need roles and reporting.
+- **Add-ons section** with multilingual booking page ($10/month) and extra staff members ($5/month).
+- Pricing copy and plan features are fully translated into all 15 supported languages.
 - FAQ and stats sections tied to the same `copy` object per locale.
 - Language selector with flags and translations for the entire page.
+- Animated header that scales logo/text based on scroll position.
+- Clickable logo that scrolls to top when on landing page.
 
 ### Dashboard (Internal App)
 
 The authenticated salon owner & staff experience, built around a reusable layout:
 
 - `DashboardShell` (`web/src/components/dashboard-shell.tsx`):
-  - Desktop sidebar with navigation (Overview, Calendar, Employees, Services, Shifts, Customers, Bookings, Onboarding).
+  - Desktop sidebar with navigation (Overview, Calendar, Employees, Services, Shifts, Customers, Bookings).
   - Mobile nav with slide‑in panel.
-  - Integrated language selector with country flags.
+  - Integrated language selector with country flags (saves to `salons.preferred_language`).
   - Brand area showing the TeqBook logo (`Favikon.svg`) and translated tagline.
+  - Logout button in header and mobile menu (redirects to landing page).
   - `CurrentUserBadge` and `CurrentSalonBadge` components show context for the current user/salon.
 
 Per‑feature pages:
 
-- `Overview` (`web/src/app/page.tsx`)
-  - High‑level metrics (placeholder in MVP) and “next steps” explaining setup.
+- `Dashboard Overview` (`web/src/app/dashboard/page.tsx`)
+  - High‑level metrics (placeholder in MVP) and "next steps" explaining setup.
 - `Employees` CRUD (`web/src/app/employees/page.tsx`)
-  - Add/edit/delete staff, responsive table + card layout.
+  - Add/edit/delete staff with roles, languages, active status, and service assignments.
+  - Responsive table + card layout using `employees` repository.
 - `Services` CRUD (`web/src/app/services/page.tsx`)
-  - Manage services, duration, and price.
+  - Manage services with categories, estimated time, sort order, duration, and price.
+  - Uses `services` repository.
 - `Shifts & Opening Hours` (`web/src/app/shifts/page.tsx`)
   - Define per‑employee weekly availability using localized weekday labels.
+  - Shifts are linked to employees for availability logic.
+  - Uses `shifts` and `employees` repositories.
 - `Customers` CRUD (`web/src/app/customers/page.tsx`)
   - Manage customer profiles with notes.
+  - Uses `customers` repository.
 - `Bookings` (`web/src/app/bookings/page.tsx`)
-  - Internal list of bookings, statuses and a “new booking” flow that calls Supabase functions:
+  - Internal list of bookings with statuses (pending, confirmed, no-show, completed, cancelled).
+  - Walk-in vs online booking flag.
+  - "New booking" flow that calls Supabase functions:
     - `generate_availability`
     - `create_booking_with_validation`
+  - Uses `bookings`, `employees`, and `services` repositories.
 - `Calendar` (`web/src/app/calendar/page.tsx`)
+  - Day and week view with status colors.
+  - Filter per employee.
   - Internal, per‑employee calendar view for bookings, localized date/time formatting.
+  - Uses `employees` and `bookings` repositories.
 
 Every page is mobile‑first and uses shared building blocks:
 
@@ -113,35 +133,41 @@ TeqBook is intentionally built for multi‑lingual salons.
 The i18n system is centralized and strongly typed:
 
 - **Locale context**: `web/src/components/locale-provider.tsx`
-  - `Locale` union type:
+  - `Locale` union type supporting 15 languages:
     - `"nb" | "en" | "ar" | "so" | "ti" | "am" | "tr" | "pl" | "vi" | "tl" | "zh" | "fa" | "dar" | "ur" | "hi"`
   - `useLocale()` hook providing `locale` and `setLocale`.
+  - Default locale is `"en"` (English).
 
 - **Translation namespaces**: `web/src/i18n/translations.ts`
   - `AppLocale` type matches the locales above.
   - Strongly typed namespaces:
-    - `publicBooking`, `login`, `onboarding`, `dashboard`, `home`,
+    - `publicBooking`, `login`, `signup`, `onboarding`, `dashboard`, `home`,
       `calendar`, `employees`, `services`, `customers`, `bookings`, `shifts`.
+  - All namespaces are fully typed and enforced across all language files.
 
 - **Per‑language files** (one file per locale):
   - `nb.ts`, `en.ts`, `ar.ts`, `so.ts`, `ti.ts`, `am.ts`, `tr.ts`,
     `pl.ts`, `vi.ts`, `zh.ts`, `tl.ts`, `fa.ts`, `dar.ts`, `ur.ts`, `hi.ts`.
   - Each exports a `TranslationNamespaces` object for that locale.
-  - All login/onboarding/dashboard/home/calendar/CRUD texts are localized.
+  - All login/signup/onboarding/dashboard/home/calendar/CRUD texts are localized.
 
 - **Usage pattern in pages/components**:
-  - Derive an `appLocale` from the global `locale`.
+  - Derive an `appLocale` from the global `locale` (defaults to `"en"`).
   - Access translations via `translations[appLocale].<namespace>`.
   - Example (dashboard home):
     - `const t = translations[appLocale].home;`
+  - The `SalonProvider` automatically sets the global locale based on `salons.preferred_language` when a salon is loaded.
 
-The landing page uses its own `copy` object keyed by locale, but mirrors the same set of languages and includes full translations for:
+The landing page uses its own `copy` object keyed by locale, but mirrors the same set of 15 languages and includes full translations for:
 
-- Hero section
+- Hero section (title, subtitle, CTAs, badge)
+- Feature strip
 - Pricing (plans, features, add‑ons, tagline)
+- Add-ons section (multilingual booking, extra staff)
 - Stats
 - FAQ
 - Footer messaging
+- Header navigation (Sign up, Log in buttons)
 
 ---
 
@@ -164,12 +190,16 @@ The landing page uses its own `copy` object keyed by locale, but mirrors the sam
 - **Node.js** 18+ (or the version used by your environment).
 - **npm** (or `pnpm`/`yarn`, but the repo ships with `package-lock.json`).
 - **Supabase project** with:
-  - Database tables and RLS policies as defined during setup (see `web/docs/plan.md`).
+  - Database tables and RLS policies as defined during setup (see `web/supabase/` for SQL scripts).
   - Auth configured for email/password sign‑in.
   - Required Postgres functions created:
-    - `create_salon_for_current_user`
+    - `create_salon_for_current_user` (accepts salon type, preferred language, opening hours, etc.)
     - `generate_availability`
     - `create_booking_with_validation`
+  - SQL scripts in `web/supabase/`:
+    - `onboarding-schema-update.sql` – salon fields, opening hours table
+    - `operations-module-enhancements.sql` – enhanced fields for employees, services, bookings
+    - `opening-hours-schema.sql` – opening hours table structure
 
 ### Environment Variables
 
@@ -202,10 +232,11 @@ Then open `http://localhost:3000` in your browser.
 
 The default routes include:
 
-- Landing page: `/landing`
-- Login: `/auth/login`
+- Landing page: `/` (root route)
+- Login: `/login`
+- Sign up: `/signup`
 - Onboarding: `/onboarding`
-- Dashboard overview: `/`
+- Dashboard overview: `/dashboard`
 - Employees: `/employees`
 - Services: `/services`
 - Shifts: `/shifts`
@@ -223,20 +254,23 @@ The default routes include:
 Key directories under `web/src`:
 
 - `app/`
-  - `layout.tsx` – global layout, fonts, `LocaleProvider`, background, metadata + icons.
-  - `page.tsx` – dashboard overview (requires login + correct Supabase setup).
-  - `(auth)/login/page.tsx` – login page driven by `translations[appLocale].login`.
-  - `(onboarding)/onboarding/page.tsx` – onboarding flow that calls `create_salon_for_current_user`.
+  - `layout.tsx` – global layout, fonts, `LocaleProvider`, `SalonProvider`, background, metadata + icons.
+  - `page.tsx` – re-exports landing page (root route).
   - `landing/page.tsx` – public marketing/landing page with pricing and multi‑language copy.
+  - `(auth)/login/page.tsx` – login page with premium design matching landing page.
+  - `(auth)/signup/page.tsx` – sign up page with premium design matching landing page.
+  - `(onboarding)/onboarding/page.tsx` – 3-step onboarding wizard with opening hours configuration.
+  - `dashboard/page.tsx` – dashboard overview (requires login + correct Supabase setup).
   - Feature routes: `employees`, `services`, `shifts`, `customers`, `bookings`, `calendar`.
   - Public booking: `book/[salon_slug]/page.tsx`.
 
 - `components/`
-  - `dashboard-shell.tsx` – main app shell (sidebar, header, language selector).
-  - `public-booking-page.tsx` – full public booking UI and RPC integration.
+  - `dashboard-shell.tsx` – main app shell (sidebar, header, language selector, logout).
+  - `salon-provider.tsx` – salon context & `useCurrentSalon()` hook for centralized salon data.
   - `locale-provider.tsx` – global locale context & hook.
+  - `public-booking-page.tsx` – full public booking UI and RPC integration.
   - `page-header.tsx`, `empty-state.tsx`, `section.tsx`, `stats-grid.tsx`, `table-toolbar.tsx`, `form-layout.tsx`.
-  - `ui/` – shadcn/ui primitive wrappers (button, card, table, dialog, input, etc.).
+  - `ui/` – shadcn/ui primitive wrappers (button, card, table, dialog, input, etc.) + custom components like `logo-loop.tsx`.
 
 - `i18n/`
   - `translations.ts` – types and central export of the `translations` map.
@@ -244,6 +278,13 @@ Key directories under `web/src`:
 
 - `lib/`
   - `supabase-client.ts` – shared Supabase client.
+  - `types.ts` – TypeScript types for entities (Employee, Service, Booking, Customer, Shift).
+  - `repositories/` – repository layer abstracting data access:
+    - `employees.ts` – CRUD operations for employees.
+    - `services.ts` – CRUD operations for services.
+    - `bookings.ts` – CRUD operations for bookings.
+    - `customers.ts` – CRUD operations for customers.
+    - `shifts.ts` – CRUD operations for shifts.
   - `utils.ts` – generic helpers.
 
 ---
