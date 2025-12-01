@@ -143,7 +143,12 @@ export default function OnboardingPage() {
 
         <div className="relative grid gap-8 sm:gap-12 p-8 md:p-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-16">
           {/* Left side - Branding */}
-          <section className="flex flex-col justify-center">
+          <motion.section 
+            className="flex flex-col justify-center"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             {/* Logo row */}
             <Link href="/" className="flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity">
               <Image
@@ -159,13 +164,13 @@ export default function OnboardingPage() {
             </Link>
 
             {/* Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-slate-900">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.2] tracking-tight text-slate-900 max-w-[460px]">
               Set up your{" "}
               <span className="text-[#1d4ed8]">TeqBook</span> salon
             </h1>
 
             {/* Description */}
-            <p className="mt-4 max-w-xl text-sm sm:text-base text-slate-600">
+            <p className="mt-4 max-w-[460px] text-sm sm:text-base text-slate-600">
               We'll help you set up your salon so you can start accepting bookings in minutes.
             </p>
 
@@ -189,7 +194,7 @@ export default function OnboardingPage() {
             <p className="mt-8 text-xs text-slate-500">
               Trusted by salons that want simple, clean scheduling – not bloated software.
             </p>
-          </section>
+          </motion.section>
 
           {/* Right side - Form card */}
           <section className="flex items-center justify-center">
@@ -197,11 +202,11 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="w-full max-w-[420px] rounded-3xl bg-white/90 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-sm border border-slate-100"
+              className="w-full max-w-[420px] rounded-3xl bg-white/90 px-5 pt-5 pb-6 shadow-[0_8px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl border border-slate-100 overflow-hidden"
             >
               {/* Progress indicator */}
               <div className="mb-5">
-                <div className="flex items-center justify-between mb-3.5">
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
                     Step {currentStep} of 3
                   </span>
@@ -209,11 +214,48 @@ export default function OnboardingPage() {
                     {stepLabels[currentStep - 1]}
                   </span>
                 </div>
-                <div className="h-[2.5px] w-full bg-slate-100/80 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#2563eb] to-[#3b82f6] rounded-full transition-all duration-300"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+                {/* Step indicators with circles and connectors */}
+                <div className="flex items-center">
+                  {[1, 2, 3].map((step) => {
+                    const isActive = currentStep === step;
+                    const isCompleted = currentStep > step;
+                    return (
+                      <div key={step} className="flex items-center flex-1 last:flex-none">
+                        {/* Circle indicator */}
+                        <motion.div 
+                          className="relative z-10"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.3, delay: step * 0.1 }}
+                        >
+                          <div
+                            className={`h-3 w-3 rounded-full transition-all duration-300 ${
+                              isActive
+                                ? "bg-[#1d4ed8] ring-2 ring-[#1d4ed8]/30 ring-offset-2 ring-offset-white"
+                                : isCompleted
+                                ? "bg-slate-300"
+                                : "bg-slate-200"
+                            }`}
+                          />
+                        </motion.div>
+                        {/* Connector line */}
+                        {step < 3 && (
+                          <div className="flex-1 h-[2px] mx-2 relative -z-0">
+                            <motion.div
+                              className={`h-full rounded-full ${
+                                isCompleted || currentStep > step
+                                  ? "bg-slate-300"
+                                  : "bg-slate-200"
+                              }`}
+                              initial={{ width: 0 }}
+                              animate={{ width: "100%" }}
+                              transition={{ duration: 0.4, delay: step * 0.1 + 0.2 }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -222,16 +264,21 @@ export default function OnboardingPage() {
                   {stepLabels[currentStep - 1]}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  {currentStep === 1 && (t.step1Description || "Enter your salon's basic information to get started.")}
-                  {currentStep === 2 && (t.step2Description || "Configure your opening hours and booking preferences.")}
-                  {currentStep === 3 && (t.step3Description || "Review your information and create your salon.")}
+                  {currentStep === 1 && "Add your core salon info so we can tailor bookings to your business."}
+                  {currentStep === 2 && "Configure your opening hours and booking preferences."}
+                  {currentStep === 3 && "Review your settings before creating your salon."}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-5">
                 {/* Step 1: Salon Information */}
                 {currentStep === 1 && (
-                  <div className="space-y-5">
+                  <motion.div 
+                    className="space-y-5"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
                     <div className="space-y-1.5">
                       <label htmlFor="name" className="text-sm font-medium text-slate-800">
                         {t.nameLabel}
@@ -310,28 +357,33 @@ export default function OnboardingPage() {
                         type="button"
                         onClick={handleNext}
                         disabled={!canProceedStep1}
-                        className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center h-11 rounded-xl bg-slate-900 px-6 text-sm font-semibold tracking-tight text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {t.nextButton}
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Step 2: Opening Hours & Settings */}
                 {currentStep === 2 && (
-                  <div className="space-y-5">
-                    {/* Opening Hours */}
-                    <div className="space-y-3">
+                  <motion.div 
+                    className="space-y-5"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
+                    {/* Opening Hours Section */}
+                    <div>
                       <div>
-                        <label className="text-sm font-medium text-slate-800">
+                        <h3 className="text-sm font-semibold text-slate-900">
                           {t.openingHoursLabel}
-                        </label>
+                        </h3>
                         <p className="mt-1 text-xs text-slate-500/80">
                           {t.openingHoursDescription}
                         </p>
                       </div>
-                      <div className="space-y-2 rounded-xl border border-slate-200/60 bg-[#edf2ff]/40 backdrop-blur-md p-4">
+                      <div className="mt-3 w-full space-y-1.5">
                         {openingHours.map((dayHours, index) => {
                           const dayNames = [
                             t.monday,
@@ -343,33 +395,32 @@ export default function OnboardingPage() {
                             t.sunday,
                           ];
                           return (
-                            <div
-                              key={dayHours.day}
-                              className="flex items-center gap-3 border-b border-slate-200/40 pb-3 last:border-0 last:pb-0"
-                            >
-                              <div className="w-24 text-sm font-medium text-slate-700">
-                                {dayNames[dayHours.day]}
-                              </div>
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  checked={dayHours.isOpen}
-                                  onChange={(e) => {
-                                    const updated = [...openingHours];
-                                    updated[index] = {
-                                      ...dayHours,
-                                      isOpen: e.target.checked,
-                                    };
-                                    setOpeningHours(updated);
-                                  }}
-                                  className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
-                                />
-                                <span className="text-xs text-slate-600">
-                                  {dayHours.isOpen ? t.openLabel : t.closedLabel}
-                                </span>
-                              </label>
-                              {dayHours.isOpen && (
-                                <div className="flex items-center gap-2 ml-auto">
+                            <div key={dayHours.day}>
+                              {dayHours.isOpen ? (
+                                <div className="grid grid-cols-[20px_90px_1fr_18px_1fr] items-center gap-2 rounded-xl px-3 py-1.5 hover:bg-slate-50/50 transition-colors">
+                                  {/* Checkbox */}
+                                  <label className="flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={dayHours.isOpen}
+                                      onChange={(e) => {
+                                        const updated = [...openingHours];
+                                        updated[index] = {
+                                          ...dayHours,
+                                          isOpen: e.target.checked,
+                                        };
+                                        setOpeningHours(updated);
+                                      }}
+                                      className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    />
+                                  </label>
+                                  
+                                  {/* Day name */}
+                                  <span className="text-sm font-medium text-slate-700">
+                                    {dayNames[dayHours.day]}
+                                  </span>
+                                  
+                                  {/* Start time */}
                                   <input
                                     type="time"
                                     value={dayHours.openTime}
@@ -381,11 +432,13 @@ export default function OnboardingPage() {
                                       };
                                       setOpeningHours(updated);
                                     }}
-                                    className="h-8 w-24 rounded-xl border border-slate-200/60 bg-white/90 px-2 text-xs outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
                                   />
-                                  <span className="text-xs text-slate-500">
-                                    {t.toLabel}
-                                  </span>
+                                  
+                                  {/* Arrow separator */}
+                                  <span className="text-center text-sm text-slate-400">→</span>
+                                  
+                                  {/* End time */}
                                   <input
                                     type="time"
                                     value={dayHours.closeTime}
@@ -397,8 +450,37 @@ export default function OnboardingPage() {
                                       };
                                       setOpeningHours(updated);
                                     }}
-                                    className="h-8 w-24 rounded-xl border border-slate-200/60 bg-white/90 px-2 text-xs outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
                                   />
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-[20px_90px_1fr_18px_1fr] items-center gap-2 rounded-xl px-3 py-1.5 opacity-50 hover:bg-slate-50/50 transition-colors">
+                                  {/* Checkbox */}
+                                  <label className="flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={false}
+                                      onChange={(e) => {
+                                        const updated = [...openingHours];
+                                        updated[index] = {
+                                          ...dayHours,
+                                          isOpen: e.target.checked,
+                                        };
+                                        setOpeningHours(updated);
+                                      }}
+                                      className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    />
+                                  </label>
+                                  
+                                  {/* Day name */}
+                                  <span className="text-sm font-medium text-slate-700">
+                                    {dayNames[dayHours.day]}
+                                  </span>
+                                  
+                                  {/* Closed text spanning remaining columns */}
+                                  <span className="col-span-3 text-right text-sm text-slate-400">
+                                    {t.closedLabel}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -407,59 +489,69 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-800">
-                        {t.onlineBookingLabel}
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="onlineBooking"
-                            checked={onlineBooking === true}
-                            onChange={() => setOnlineBooking(true)}
-                            className="h-4 w-4 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
-                          />
-                          <span className="text-sm text-slate-700">{t.onlineBookingYes}</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="onlineBooking"
-                            checked={onlineBooking === false}
-                            onChange={() => setOnlineBooking(false)}
-                            className="h-4 w-4 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
-                          />
-                          <span className="text-sm text-slate-700">{t.onlineBookingNo}</span>
-                        </label>
+                    {/* Booking Settings Section */}
+                    <div className="mt-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          Booking settings
+                        </h3>
                       </div>
-                    </div>
+                      <div className="mt-3 grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-slate-700">
+                            {t.onlineBookingLabel}
+                          </label>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="onlineBooking"
+                                checked={onlineBooking === true}
+                                onChange={() => setOnlineBooking(true)}
+                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                              />
+                              <span className="text-sm text-slate-700">{t.onlineBookingYes}</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="onlineBooking"
+                                checked={onlineBooking === false}
+                                onChange={() => setOnlineBooking(false)}
+                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                              />
+                              <span className="text-sm text-slate-700">{t.onlineBookingNo}</span>
+                            </label>
+                          </div>
+                        </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-800">
-                        {t.publicBookingLabel}
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="publicBooking"
-                            checked={publicBooking === true}
-                            onChange={() => setPublicBooking(true)}
-                            className="h-4 w-4 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
-                          />
-                          <span className="text-sm text-slate-700">{t.publicBookingYes}</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="publicBooking"
-                            checked={publicBooking === false}
-                            onChange={() => setPublicBooking(false)}
-                            className="h-4 w-4 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
-                          />
-                          <span className="text-sm text-slate-700">{t.publicBookingNo}</span>
-                        </label>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-slate-700">
+                            {t.publicBookingLabel}
+                          </label>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="publicBooking"
+                                checked={publicBooking === true}
+                                onChange={() => setPublicBooking(true)}
+                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                              />
+                              <span className="text-sm text-slate-700">{t.publicBookingYes}</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="publicBooking"
+                                checked={publicBooking === false}
+                                onChange={() => setPublicBooking(false)}
+                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                              />
+                              <span className="text-sm text-slate-700">{t.publicBookingNo}</span>
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -475,17 +567,22 @@ export default function OnboardingPage() {
                         type="button"
                         onClick={handleNext}
                         disabled={!canProceedStep2}
-                        className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center h-11 rounded-xl bg-slate-900 px-6 text-sm font-semibold tracking-tight text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {t.nextButton}
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Step 3: Confirm & Create */}
                 {currentStep === 3 && (
-                  <div className="space-y-5">
+                  <motion.div 
+                    className="space-y-5"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
                     <div className="rounded-xl border border-slate-200/60 bg-[#edf2ff]/40 backdrop-blur-md p-4">
                       <h3 className="mb-4 text-sm font-semibold text-slate-900">
                         {t.summaryLabel}
@@ -572,12 +669,12 @@ export default function OnboardingPage() {
                       <button
                         type="submit"
                         disabled={status === "loading"}
-                        className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center h-11 rounded-xl bg-slate-900 px-6 text-sm font-semibold tracking-tight text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {status === "loading" ? t.saving : t.createButton}
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </form>
 
