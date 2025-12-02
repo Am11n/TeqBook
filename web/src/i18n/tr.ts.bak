@@ -187,8 +187,7 @@ export const tr: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -207,19 +206,7 @@ export const tr: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "Bu hafta toplam rezervasyonlar",
-    returningCustomers: "Dönen müşteriler",
-    revenueEstimate: "Gelir tahmini (manuel ödemeler)",
-    // Staff empty state
-    manageStaffPermissions: "Personel izinlerini ve rollerini yönetin",
-    // Announcements
-    // Announcements
-    announcements: "Duyurular",
-    announcementWalkIn: "Artık walk-in rezervasyonları kabul edebilirsiniz.",
-    announcementLanguages: "Yeni diller mevcut: Türkçe, Arapça",
-    announcementDashboardUpdate: "Yeni dashboard güncellemesi yayınlandı.",
-    viewAllUpdates: "Tüm güncellemeleri görüntüle",
+    // Legacy (deprecated)
     // Legacy (deprecated)
     nextStepTitle: "Sonraki adım",
     nextStepDescription: "Teknik kurulum",

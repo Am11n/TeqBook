@@ -241,8 +241,7 @@ export const pl: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -261,13 +260,6 @@ export const pl: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "Łączne rezerwacje w tym tygodniu",
-    returningCustomers: "Powracający klienci",
-    revenueEstimate: "Szacunek przychodów (płatności ręczne)",
-    // Staff empty state
-    manageStaffPermissions: "Zarządzaj uprawnieniami i rolami personelu",
-    // Announcements
     // Announcements
     announcements: "Ogłoszenia",
     announcementWalkIn: "Możesz teraz akceptować rezerwacje walk-in.",

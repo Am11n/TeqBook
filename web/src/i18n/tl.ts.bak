@@ -188,8 +188,7 @@ export const tl: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -208,19 +207,7 @@ export const tl: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "Kabuuang bookings sa linggong ito",
-    returningCustomers: "Bumalik na mga customer",
-    revenueEstimate: "Tinatayang kita (manual na pagbabayad)",
-    // Staff empty state
-    manageStaffPermissions: "Pamahalaan ang mga pahintulot at tungkulin ng staff",
-    // Announcements
-    // Announcements
-    announcements: "Mga Anunsyo",
-    announcementWalkIn: "Maaari mo nang tanggapin ang walk-in bookings.",
-    announcementLanguages: "Mga bagong wika na available: Turkish, Arabic",
-    announcementDashboardUpdate: "Bagong dashboard update na inilabas.",
-    viewAllUpdates: "Tingnan ang lahat ng updates",
+    // Legacy (deprecated)
     // Legacy (deprecated)
     nextStepTitle: "Susunod na hakbang",
     nextStepDescription: "Tech setup",

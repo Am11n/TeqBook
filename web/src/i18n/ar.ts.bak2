@@ -182,8 +182,7 @@ export const ar: TranslationNamespaces = {
       "إليك نظرة عامة على صالونك – الموظفون، المواعيد، العملاء والأداء.",
     todaysBookings: "حجوزات اليوم",
     viewCalendar: "عرض التقويم",
-    noBookingsYet: "لا توجد حجوزات بعد.",
-    noBookingsYetSubtitle: "ستظهر المواعيد الجديدة هنا.",
+    noBookingsYet: "لا توجد حجوزات بعد. ستظهر المواعيد الجديدة هنا.",
     createFirstBooking: "أنشئ أول حجز لك",
     yourStaff: "موظفوك",
     manageStaff: "إدارة الموظفين",
@@ -202,12 +201,6 @@ export const ar: TranslationNamespaces = {
     mostBookedStaffLabel: "أكثر موظف محجوز",
     noInsightsYet:
       "ستظهر رؤى الصالون هنا بمجرد بدء وصول الحجوزات.",
-    // KPI labels
-    totalBookingsThisWeek: "إجمالي الحجوزات هذا الأسبوع",
-    returningCustomers: "العملاء العائدون",
-    revenueEstimate: "تقدير الإيرادات (المدفوعات اليدوية)",
-    // Staff empty state
-    manageStaffPermissions: "إدارة صلاحيات و أدوار الموظفين",
     // Announcements
     announcements: "الإعلانات",
     announcementWalkIn: "يمكنك الآن قبول الحجوزات الفورية.",

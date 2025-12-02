@@ -186,8 +186,7 @@ export const ur: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -206,13 +205,6 @@ export const ur: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "اس ہفتے کل بُکنگز",
-    returningCustomers: "واپس آنے والے گاہک",
-    revenueEstimate: "آمدنی کا تخمینہ (دستی ادائیگیاں)",
-    // Staff empty state
-    manageStaffPermissions: "عملے کی اجازتوں اور کرداروں کا انتظام کریں",
-    // Announcements
     // Announcements
     announcements: "اعلانات",
     announcementWalkIn: "اب آپ walk-in بُکنگز قبول کر سکتے ہیں۔",

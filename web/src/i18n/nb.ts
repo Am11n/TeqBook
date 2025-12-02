@@ -181,6 +181,44 @@ export const nb: TranslationNamespaces = {
     title: "Oversikt",
     description:
       "En rask status for salongen din. Tallene her vil etter hvert komme fra booking-motoren.",
+    welcomeBack: "Velkommen tilbake, {name}.",
+    welcomeSubtitle:
+      "Her er en oversikt over salongen din – ansatte, avtaler, kunder og ytelse.",
+    todaysBookings: "Dagens bookinger",
+    viewCalendar: "Se kalender",
+    noBookingsYet: "Ingen bookinger ennå.",
+    noBookingsYetSubtitle: "Nye avtaler vil vises her.",
+    createFirstBooking: "Opprett din første booking",
+    yourStaff: "Dine ansatte",
+    manageStaff: "Administrer ansatte",
+    online: "Online",
+    offline: "Offline",
+    quickActions: "Hurtighandlinger",
+    addNewBooking: "Legg til ny booking",
+    addNewCustomer: "Legg til ny kunde",
+    addNewService: "Legg til ny tjeneste",
+    inviteNewStaff: "Inviter ny ansatt",
+    // Performance snapshot
+    thisWeek: "Denne uken",
+    bookingsLabel: "Bookinger",
+    newCustomersLabel: "Nye kunder",
+    topServiceLabel: "Mest booket tjeneste",
+    mostBookedStaffLabel: "Mest booket ansatt",
+    noInsightsYet:
+      "Salongens innsikt vil vises her når bookinger begynner å komme inn.",
+    // KPI labels
+    totalBookingsThisWeek: "Totale bookinger denne uken",
+    returningCustomers: "Tilbakevendende kunder",
+    revenueEstimate: "Omsetningsestimat (manuelle betalinger)",
+    // Staff empty state
+    manageStaffPermissions: "Administrer ansattes tillatelser og roller",
+    // Announcements
+    announcements: "Kunngjøringer",
+    announcementWalkIn: "Du kan nå ta imot walk-in bookinger.",
+    announcementLanguages: "Nye språk tilgjengelig: Tyrkisk, Arabisk",
+    announcementDashboardUpdate: "Ny dashboard-oppdatering utgitt.",
+    viewAllUpdates: "Se alle oppdateringer",
+    // Legacy (deprecated)
     nextStepTitle: "Neste steg",
     nextStepDescription: "Teknisk oppsett",
     nextStepBodyTitle: "Koble til Supabase",

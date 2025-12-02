@@ -174,8 +174,7 @@ export const zh: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -194,19 +193,7 @@ export const zh: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "本周总预约",
-    returningCustomers: "回头客",
-    revenueEstimate: "收入估算（手动付款）",
-    // Staff empty state
-    manageStaffPermissions: "管理员工权限和角色",
-    // Announcements
-    // Announcements
-    announcements: "公告",
-    announcementWalkIn: "您现在可以接受临时预约了。",
-    announcementLanguages: "新语言可用：土耳其语、阿拉伯语",
-    announcementDashboardUpdate: "新的仪表板更新已发布。",
-    viewAllUpdates: "查看所有更新",
+    // Legacy (deprecated)
     // Legacy (deprecated)
     nextStepTitle: "下一步",
     nextStepDescription: "技术配置",

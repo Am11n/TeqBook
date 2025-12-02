@@ -188,8 +188,7 @@ export const so: TranslationNamespaces = {
       "Halkan waa isku xirka saloonkaaga – shaqaalaha, ballamada, macaamiisha iyo waxqabadka.",
     todaysBookings: "Ballamada maanta",
     viewCalendar: "Eeg kalendarka",
-    noBookingsYet: "Weli ma jiraan ballamo.",
-    noBookingsYetSubtitle: "Ballamo cusub ayaa halkan ku soo bixi doona.",
+    noBookingsYet: "Weli ma jiraan ballamo. Ballamo cusub ayaa halkan ku soo bixi doona.",
     createFirstBooking: "Abuur ballankaaga ugu horreeya",
     yourStaff: "Shaqaalahaaga",
     manageStaff: "Maamul shaqaalaha",
@@ -208,12 +207,6 @@ export const so: TranslationNamespaces = {
     mostBookedStaffLabel: "Shaqaalaha ugu badan ee la ballanshay",
     noInsightsYet:
       "Fahamka saloonkaaga ayaa halkan ku soo bixi doona marka ballamada bilaabaan inay soo galaan.",
-    // KPI labels
-    totalBookingsThisWeek: "Wadarta ballamada usbuucan",
-    returningCustomers: "Macmiilada soo noqda",
-    revenueEstimate: "Qiyaasta dakhliga (lacagaha gacanta)",
-    // Staff empty state
-    manageStaffPermissions: "Maamul ogolaanshaha iyo doorkaha shaqaalaha",
     // Announcements
     announcements: "Dhaqdhaqaaqyada",
     announcementWalkIn: "Waxaad hadda awood u leedahay inaad aqbasho ballamada soo galaya.",

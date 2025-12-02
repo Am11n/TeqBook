@@ -182,8 +182,7 @@ export const am: TranslationNamespaces = {
       "የሳሎንዎ አጠቃላይ እይታ - ሰራተኞች፣ ቀጠሮዎች፣ ደንበኞች እና አፈጻጸም።",
     todaysBookings: "የዛሬ ቀጠሮዎች",
     viewCalendar: "ቀን መቁጠሪያ ይመልከቱ",
-    noBookingsYet: "እስካሁን ምንም ቀጠሮዎች የሉም።",
-    noBookingsYetSubtitle: "አዲስ ቀጠሮዎች እዚህ ይታያሉ።",
+    noBookingsYet: "እስካሁን ምንም ቀጠሮዎች የሉም። አዲስ ቀጠሮዎች እዚህ ይታያሉ።",
     createFirstBooking: "መጀመሪያውን ቀጠሮዎን ይፍጠሩ",
     yourStaff: "ሰራተኞችዎ",
     manageStaff: "ሰራተኞችን ያቅዱ",
@@ -202,13 +201,6 @@ export const am: TranslationNamespaces = {
     mostBookedStaffLabel: "በጣም የተዘጋጁ ሰራተኞች",
     noInsightsYet:
       "የሳሎንዎ ግንዛቤዎች ቀጠሮዎች መምጣት ሲጀምሩ እዚህ ይታያሉ።",
-    // KPI labels
-    totalBookingsThisWeek: "የዚህ ሳምንት ጠቅላላ ቀጠሮዎች",
-    returningCustomers: "የሚመለሱ ደንበኞች",
-    revenueEstimate: "የገቢ ግምት (እጅ ክፍያዎች)",
-    // Staff empty state
-    manageStaffPermissions: "የሰራተኞች ፍቃዶችን እና ሚናዎችን ያቅዱ",
-    // Announcements
     // Announcements
     announcements: "ማስታወቂያዎች",
     announcementWalkIn: "አሁን walk-in ቀጠሮዎችን መቀበል ይችላሉ።",

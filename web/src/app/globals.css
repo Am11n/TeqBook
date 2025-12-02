@@ -119,4 +119,56 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Remove default dropdown arrow from select elements */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none;
+  }
+  
+  /* Remove dropdown arrow for IE */
+  select::-ms-expand {
+    display: none;
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 0%,
+      #e2e8f0 20%,
+      #f1f5f9 40%,
+      #f1f5f9 100%
+    );
+    background-size: 2000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s ease-out forwards;
+    opacity: 0;
+  }
 }

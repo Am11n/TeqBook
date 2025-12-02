@@ -188,8 +188,7 @@ export const vi: TranslationNamespaces = {
       "Here's an overview of your salon – staff, appointments, customers and performance.",
     todaysBookings: "Today's bookings",
     viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
+    noBookingsYet: "No bookings yet. New appointments will appear here.",
     createFirstBooking: "Create your first booking",
     yourStaff: "Your staff",
     manageStaff: "Manage staff",
@@ -208,19 +207,7 @@ export const vi: TranslationNamespaces = {
     mostBookedStaffLabel: "Most booked staff",
     noInsightsYet:
       "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "Tổng đặt chỗ tuần này",
-    returningCustomers: "Khách hàng quay lại",
-    revenueEstimate: "Ước tính doanh thu (thanh toán thủ công)",
-    // Staff empty state
-    manageStaffPermissions: "Quản lý quyền và vai trò nhân viên",
-    // Announcements
-    // Announcements
-    announcements: "Thông báo",
-    announcementWalkIn: "Bây giờ bạn có thể chấp nhận đặt chỗ walk-in.",
-    announcementLanguages: "Ngôn ngữ mới có sẵn: Tiếng Thổ Nhĩ Kỳ, Tiếng Ả Rập",
-    announcementDashboardUpdate: "Bản cập nhật dashboard mới đã được phát hành.",
-    viewAllUpdates: "Xem tất cả cập nhật",
+    // Legacy (deprecated)
     // Legacy (deprecated)
     nextStepTitle: "Bước tiếp theo",
     nextStepDescription: "Thiết lập kỹ thuật",
