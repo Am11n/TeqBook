@@ -8,23 +8,30 @@ import { supabase } from "@/lib/supabase-client";
 import type { Customer, CreateCustomerInput } from "@/lib/types";
 
 /**
- * Get all customers for the current salon
+ * Get all customers for the current salon with pagination
  */
 export async function getCustomersForCurrentSalon(
-  salonId: string
-): Promise<{ data: Customer[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Customer[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
       .from("customers")
-      .select("id, full_name, email, phone, notes, gdpr_consent")
+      .select("id, full_name, email, phone, notes, gdpr_consent", { count: "exact" })
       .eq("salon_id", salonId)
-      .order("full_name", { ascending: true });
+      .order("full_name", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as Customer[], error: null };
+    return { data: data as Customer[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,

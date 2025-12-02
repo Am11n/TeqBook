@@ -451,6 +451,31 @@ export type SettingsMessages = {
   comingSoon: string;
 };
 
+export type AdminMessages = {
+  title: string;
+  description: string;
+  mustBeSuperAdmin: string;
+  salonsTitle: string;
+  salonsDescription: string;
+  usersTitle: string;
+  usersDescription: string;
+  loading: string;
+  loadError: string;
+  colSalonName: string;
+  colSalonType: string;
+  colOwner: string;
+  colCreatedAt: string;
+  colActions: string;
+  colUserName: string;
+  colUserEmail: string;
+  colIsSuperAdmin: string;
+  colSalon: string;
+  yes: string;
+  no: string;
+  emptySalons: string;
+  emptyUsers: string;
+};
+
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
@@ -465,6 +490,7 @@ export type TranslationNamespaces = {
   bookings: BookingsMessages;
   shifts: ShiftsMessages;
   settings: SettingsMessages;
+  admin: AdminMessages;
 };
 
 import { nb } from "./nb";

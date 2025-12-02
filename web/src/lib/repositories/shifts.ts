@@ -8,24 +8,31 @@ import { supabase } from "@/lib/supabase-client";
 import type { Shift, CreateShiftInput } from "@/lib/types";
 
 /**
- * Get all shifts for the current salon
+ * Get all shifts for the current salon with pagination
  */
 export async function getShiftsForCurrentSalon(
-  salonId: string
-): Promise<{ data: Shift[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Shift[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
       .from("shifts")
-      .select("id, employee_id, weekday, start_time, end_time, employee:employees(full_name)")
+      .select("id, employee_id, weekday, start_time, end_time, employee:employees(full_name)", { count: "exact" })
       .eq("salon_id", salonId)
       .order("weekday", { ascending: true })
-      .order("start_time", { ascending: true });
+      .order("start_time", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as unknown as Shift[], error: null };
+    return { data: data as unknown as Shift[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,

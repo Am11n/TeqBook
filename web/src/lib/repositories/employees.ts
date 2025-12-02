@@ -14,23 +14,32 @@ import type {
 } from "@/lib/types";
 
 /**
- * Get all employees for the current salon
+ * Get all employees for the current salon with pagination
  */
 export async function getEmployeesForCurrentSalon(
-  salonId: string
-): Promise<{ data: Employee[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Employee[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
       .from("employees")
-      .select("id, full_name, email, phone, role, preferred_language, is_active")
+      .select("id, full_name, email, phone, role, preferred_language, is_active", { count: "exact" })
       .eq("salon_id", salonId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as Employee[], error: null };
+    return { data: data as Employee[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,
@@ -99,24 +108,32 @@ export async function getEmployeeWithServices(
 }
 
 /**
- * Get all employees with their services mapped
+ * Get all employees with their services mapped (with pagination)
  */
 export async function getEmployeesWithServicesMap(
-  salonId: string
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
 ): Promise<{
   data: { employees: Employee[]; servicesMap: Record<string, Service[]> } | null;
   error: string | null;
+  total?: number;
 }> {
   try {
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
     const [
-      { data: employeesData, error: employeesError },
+      { data: employeesData, error: employeesError, count },
       { data: employeeServicesData, error: employeeServicesError },
     ] = await Promise.all([
       supabase
         .from("employees")
-        .select("id, full_name, email, phone, role, preferred_language, is_active")
+        .select("id, full_name, email, phone, role, preferred_language, is_active", { count: "exact" })
         .eq("salon_id", salonId)
-        .order("created_at", { ascending: true }),
+        .order("created_at", { ascending: true })
+        .range(from, to),
       supabase
         .from("employee_services")
         .select("employee_id, service_id, services(id, name)")
@@ -149,6 +166,7 @@ export async function getEmployeesWithServicesMap(
         servicesMap,
       },
       error: null,
+      total: count ?? undefined,
     };
   } catch (err) {
     return {

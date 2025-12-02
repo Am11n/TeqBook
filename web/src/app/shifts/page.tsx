@@ -125,7 +125,7 @@ export default function ShiftsPage() {
       ] = await Promise.all([
         getEmployeesForCurrentSalon(salon.id),
         getShiftsForCurrentSalon(salon.id),
-      ]);
+        ]);
 
       if (employeesError || shiftsError) {
         setError(employeesError ?? shiftsError ?? t.loadError);
@@ -152,10 +152,10 @@ export default function ShiftsPage() {
 
     const { data, error: insertError } = await createShift({
       salon_id: salon.id,
-      employee_id: employeeId,
-      weekday,
-      start_time: startTime,
-      end_time: endTime,
+        employee_id: employeeId,
+        weekday,
+        start_time: startTime,
+        end_time: endTime,
     });
 
     if (insertError || !data) {

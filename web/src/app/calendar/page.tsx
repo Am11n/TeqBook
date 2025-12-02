@@ -86,7 +86,7 @@ export default function CalendarPage() {
       ] = await Promise.all([
         getEmployeesForCurrentSalon(salon.id),
         getBookingsForCalendar(salon.id),
-      ]);
+        ]);
 
       if (employeesError || bookingsError) {
         setError(employeesError ?? bookingsError ?? t.loadError);
@@ -361,38 +361,38 @@ export default function CalendarPage() {
 
             {/* Desktop: dag- eller ukevisning */}
             {viewMode === "day" ? (
-              <div className="mt-3 hidden gap-3 md:grid md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-                {employees.map((employee) => {
-                  const list = bookingsForDayByEmployee[employee.id] ?? [];
-                  if (!list.length) return null;
-                  return (
-                    <div
-                      key={employee.id}
-                      className="flex flex-col rounded-lg border bg-background p-3"
-                    >
-                      <p className="text-sm font-medium">{employee.full_name}</p>
-                      <div className="mt-2 flex-1 space-y-2">
-                        {list.map((b) => (
-                          <div
-                            key={b.id}
+            <div className="mt-3 hidden gap-3 md:grid md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+              {employees.map((employee) => {
+                const list = bookingsForDayByEmployee[employee.id] ?? [];
+                if (!list.length) return null;
+                return (
+                  <div
+                    key={employee.id}
+                    className="flex flex-col rounded-lg border bg-background p-3"
+                  >
+                    <p className="text-sm font-medium">{employee.full_name}</p>
+                    <div className="mt-2 flex-1 space-y-2">
+                      {list.map((b) => (
+                        <div
+                          key={b.id}
                             className={`rounded-md border px-2 py-2 text-xs shadow-sm ${getStatusColor(b.status)}`}
-                          >
-                            <p className="font-medium">
-                              {b.services?.name ?? t.unknownService}
-                            </p>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">
-                              {formatTimeRange(b)}
-                            </p>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">
-                              {b.customers?.full_name ?? t.unknownCustomer}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
+                        >
+                          <p className="font-medium">
+                            {b.services?.name ?? t.unknownService}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
+                            {formatTimeRange(b)}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
+                            {b.customers?.full_name ?? t.unknownCustomer}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+            </div>
             ) : (
               <div className="mt-3 hidden overflow-x-auto md:block">
                 <div className="grid min-w-full grid-cols-7 gap-2">

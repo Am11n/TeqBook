@@ -281,18 +281,18 @@ export default function OnboardingPage() {
                   >
                     <div className="space-y-1.5">
                       <label htmlFor="name" className="text-sm font-medium text-slate-800">
-                        {t.nameLabel}
-                      </label>
-                      <input
-                        id="name"
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                {t.nameLabel}
+              </label>
+              <input
+                id="name"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                         className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
-                        placeholder={t.namePlaceholder}
-                      />
-                    </div>
+                placeholder={t.namePlaceholder}
+              />
+            </div>
 
                     <div className="space-y-1.5">
                       <label htmlFor="salonType" className="text-sm font-medium text-slate-800">
@@ -652,11 +652,11 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    {error && (
-                      <p className="text-sm text-red-500" aria-live="polite">
-                        {error}
-                      </p>
-                    )}
+            {error && (
+              <p className="text-sm text-red-500" aria-live="polite">
+                {error}
+              </p>
+            )}
 
                     <div className="flex justify-between pt-2">
                       <button
@@ -666,24 +666,24 @@ export default function OnboardingPage() {
                       >
                         {t.backButton}
                       </button>
-                      <button
-                        type="submit"
-                        disabled={status === "loading"}
+            <button
+              type="submit"
+              disabled={status === "loading"}
                         className="inline-flex items-center justify-center h-11 rounded-xl bg-slate-900 px-6 text-sm font-semibold tracking-tight text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
-                      >
+            >
                         {status === "loading" ? t.saving : t.createButton}
-                      </button>
+            </button>
                     </div>
                   </motion.div>
                 )}
-              </form>
+          </form>
 
               <p className="mt-6 text-[11px] text-center text-slate-400">
                 Your salon information is securely stored. You can update these settings anytime from your dashboard.
               </p>
             </motion.div>
           </section>
-        </div>
+          </div>
       </div>
     </main>
   );

@@ -19,7 +19,7 @@ type DashboardShellProps = {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon } = useCurrentSalon();
+  const { salon, isSuperAdmin } = useCurrentSalon();
   const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -103,6 +103,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
             label={translations[appLocale].settings.title}
             className="mt-4"
           />
+          {isSuperAdmin && (
+            <NavLink
+              href="/admin"
+              label={translations[appLocale].admin.title}
+              className="mt-4"
+            />
+          )}
         </nav>
 
         <p className="mt-auto text-xs text-muted-foreground">
@@ -285,10 +292,19 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 onNavigate={() => setMobileNavOpen(false)}
               />
               <MobileNavLink
-                href="/onboarding"
-                label={texts.onboarding}
+                href="/settings/general"
+                label={translations[appLocale].settings.title}
                 onNavigate={() => setMobileNavOpen(false)}
+                className="mt-4"
               />
+              {isSuperAdmin && (
+                <MobileNavLink
+                  href="/admin"
+                  label={translations[appLocale].admin.title}
+                  onNavigate={() => setMobileNavOpen(false)}
+                  className="mt-4"
+                />
+              )}
             </nav>
 
             {/* Language selector and logout for mobile */}

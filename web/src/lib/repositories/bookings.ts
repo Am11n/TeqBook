@@ -8,25 +8,33 @@ import { supabase } from "@/lib/supabase-client";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
 
 /**
- * Get all bookings for the current salon
+ * Get all bookings for the current salon with pagination
  */
 export async function getBookingsForCurrentSalon(
-  salonId: string
-): Promise<{ data: Booking[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Booking[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)"
+        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)",
+        { count: "exact" }
       )
       .eq("salon_id", salonId)
-      .order("start_time", { ascending: true });
+      .order("start_time", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as unknown as Booking[], error: null };
+    return { data: data as unknown as Booking[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,
@@ -36,25 +44,43 @@ export async function getBookingsForCurrentSalon(
 }
 
 /**
- * Get bookings for calendar view (includes employee id)
+ * Get bookings for calendar view (includes employee id) with pagination
  */
 export async function getBookingsForCalendar(
-  salonId: string
-): Promise<{ data: CalendarBooking[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number; startDate?: string; endDate?: string }
+): Promise<{ data: CalendarBooking[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 100; // Calendar might need more items
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, customers(full_name), employees(id, full_name), services(name)"
+        "id, start_time, end_time, status, is_walk_in, customers(full_name), employees(id, full_name), services(name)",
+        { count: "exact" }
       )
-      .eq("salon_id", salonId)
-      .order("start_time", { ascending: true });
+      .eq("salon_id", salonId);
+
+    // Add date filters if provided
+    if (options?.startDate) {
+      query = query.gte("start_time", options.startDate);
+    }
+    if (options?.endDate) {
+      query = query.lte("start_time", options.endDate);
+    }
+
+    const { data, error, count } = await query
+      .order("start_time", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as unknown as CalendarBooking[], error: null };
+    return { data: data as unknown as CalendarBooking[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,

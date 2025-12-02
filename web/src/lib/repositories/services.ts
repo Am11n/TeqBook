@@ -8,24 +8,31 @@ import { supabase } from "@/lib/supabase-client";
 import type { Service, CreateServiceInput, UpdateServiceInput } from "@/lib/types";
 
 /**
- * Get all services for the current salon
+ * Get all services for the current salon with pagination
  */
 export async function getServicesForCurrentSalon(
-  salonId: string
-): Promise<{ data: Service[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Service[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
       .from("services")
-      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active")
+      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active", { count: "exact" })
       .eq("salon_id", salonId)
       .order("sort_order", { ascending: true, nullsFirst: false })
-      .order("name", { ascending: true });
+      .order("name", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as Service[], error: null };
+    return { data: data as Service[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,
@@ -35,25 +42,32 @@ export async function getServicesForCurrentSalon(
 }
 
 /**
- * Get active services only
+ * Get active services only (with pagination)
  */
 export async function getActiveServicesForCurrentSalon(
-  salonId: string
-): Promise<{ data: Service[] | null; error: string | null }> {
+  salonId: string,
+  options?: { page?: number; pageSize?: number }
+): Promise<{ data: Service[] | null; error: string | null; total?: number }> {
   try {
-    const { data, error } = await supabase
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 50;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
       .from("services")
-      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active")
+      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active", { count: "exact" })
       .eq("salon_id", salonId)
       .eq("is_active", true)
       .order("sort_order", { ascending: true, nullsFirst: false })
-      .order("name", { ascending: true });
+      .order("name", { ascending: true })
+      .range(from, to);
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as Service[], error: null };
+    return { data: data as Service[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,

@@ -63,26 +63,57 @@ export default function LoginPage() {
       },
     );
 
-    if (signInError || !data?.user) {
-      setError(signInError?.message ?? t.loginError);
+    if (signInError) {
+      // Provide more specific error messages
+      let errorMessage = signInError.message;
+      
+      if (signInError.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please check your credentials.";
+      } else if (signInError.message.includes("Email not confirmed")) {
+        errorMessage = "Please confirm your email address before logging in. Check your inbox for a confirmation email.";
+      } else if (signInError.message.includes("User not found")) {
+        errorMessage = "No account found with this email address.";
+      }
+      
+      setError(errorMessage);
+      setStatus("error");
+      console.error("Login error:", signInError);
+      return;
+    }
+
+    if (!data?.user) {
+      setError("Login failed. Please try again.");
       setStatus("error");
       return;
     }
 
-    // Check if user has a salon
+    // Check if user has a profile and check if they're superadmin
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("salon_id")
+      .select("salon_id, is_superadmin")
       .eq("user_id", data.user.id)
       .maybeSingle();
 
-    if (profileError || !profile?.salon_id) {
-      // No salon, redirect to onboarding
-      router.push("/onboarding");
-    } else {
-      // Has salon, redirect to dashboard overview
-      router.push("/dashboard");
+    if (profileError) {
+      setError("Could not load user profile.");
+      setStatus("error");
+      return;
     }
+
+    // If user is superadmin, redirect to admin dashboard
+    if (profile?.is_superadmin) {
+      router.push("/admin");
+      return;
+    }
+
+    // If user has a salon, redirect to dashboard
+    if (profile?.salon_id) {
+      router.push("/dashboard");
+      return;
+    }
+
+    // No salon and not superadmin, redirect to onboarding
+    router.push("/onboarding");
   }
 
   return (
