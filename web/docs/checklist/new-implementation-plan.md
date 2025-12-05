@@ -10,7 +10,7 @@ All vedvarende state (språk, preferanser osv.) skal lagres i Supabase, ikke i l
 
 ## SaaS Admin Framework
 - [ ] Legg til `is_superadmin` i `profiles`.
-- [ ] Opprett `/admin` dashboard.
+- [x] Opprett `/admin` dashboard.
 - [ ] Vis alle salonger, brukere og planer.
 - [ ] Gi superadmin full tilgang til alle funksjoner i TeqBook.
 
