@@ -4,7 +4,12 @@
 // Business logic layer for search operations
 // Provides unified search across multiple entities
 
-import { supabase } from "@/lib/supabase-client";
+import {
+  searchCustomers,
+  searchEmployees,
+  searchServices,
+  searchBookings,
+} from "@/lib/repositories/search";
 
 export type SearchResult = {
   id: string;
@@ -36,13 +41,7 @@ export async function searchSalonEntities(
 
   try {
     // Search customers
-    const { data: customers } = await supabase
-      .from("customers")
-      .select("id, full_name, email, phone")
-      .eq("salon_id", salonId)
-      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`)
-      .limit(limit);
-
+    const { data: customers } = await searchCustomers(salonId, query, limit);
     if (customers) {
       customers.forEach((customer) => {
         allResults.push({
@@ -56,13 +55,7 @@ export async function searchSalonEntities(
     }
 
     // Search employees
-    const { data: employees } = await supabase
-      .from("employees")
-      .select("id, full_name, email")
-      .eq("salon_id", salonId)
-      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`)
-      .limit(limit);
-
+    const { data: employees } = await searchEmployees(salonId, query, limit);
     if (employees) {
       employees.forEach((employee) => {
         allResults.push({
@@ -76,13 +69,7 @@ export async function searchSalonEntities(
     }
 
     // Search services
-    const { data: services } = await supabase
-      .from("services")
-      .select("id, name, duration_minutes, price_cents")
-      .eq("salon_id", salonId)
-      .ilike("name", `%${term}%`)
-      .limit(limit);
-
+    const { data: services } = await searchServices(salonId, query, limit);
     if (services) {
       services.forEach((service) => {
         const price = service.price_cents
@@ -102,16 +89,9 @@ export async function searchSalonEntities(
     }
 
     // Search bookings
-    const { data: bookings } = await supabase
-      .from("bookings")
-      .select(
-        "id, start_time, customers(full_name), employees(full_name), services(name)"
-      )
-      .eq("salon_id", salonId)
-      .limit(limit);
-
+    const { data: bookings } = await searchBookings(salonId, limit);
     if (bookings) {
-      bookings.forEach((booking: any) => {
+      bookings.forEach((booking) => {
         const date = new Date(booking.start_time);
         const timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {
           hour: "2-digit",

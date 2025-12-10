@@ -128,11 +128,11 @@ export default function OnboardingPage() {
   const progressPercentage = ((currentStep - 1) / 2) * 100;
 
   return (
-    <main className="min-h-screen bg-[#eef3ff] flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
-      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-[#d4e0ff] via-[#e3ebff] to-[#f5f7ff] shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+    <main className="min-h-screen bg-blue-50 flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-blue-100 via-blue-50 to-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
         {/* Bakgrunns-sirkler - nøyaktig samme som login/signup */}
         <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#c7d7ff]/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-blue-200/30 blur-3xl" />
 
         <div className="relative grid gap-8 sm:gap-12 p-8 md:p-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-16">
           {/* Left side - Branding */}
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
             {/* Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.2] tracking-tight text-slate-900 max-w-[460px]">
               Set up your{" "}
-              <span className="text-[#1d4ed8]">TeqBook</span> salon
+              <span className="text-blue-700">TeqBook</span> salon
             </h1>
 
             {/* Description */}
@@ -170,15 +170,15 @@ export default function OnboardingPage() {
             {/* Bullets */}
             <ul className="mt-6 space-y-2 text-sm text-slate-700">
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>Add your salon details</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>Customize your booking settings</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>Invite staff when you're ready</span>
               </li>
             </ul>
@@ -224,7 +224,7 @@ export default function OnboardingPage() {
                           <div
                             className={`h-3 w-3 rounded-full transition-all duration-300 ${
                               isActive
-                                ? "bg-[#1d4ed8] ring-2 ring-[#1d4ed8]/30 ring-offset-2 ring-offset-white"
+                                ? "bg-blue-700 ring-2 ring-blue-700/30 ring-offset-2 ring-offset-white"
                                 : isCompleted
                                 ? "bg-slate-300"
                                 : "bg-slate-200"
@@ -282,7 +282,7 @@ export default function OnboardingPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                        className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                 placeholder={t.namePlaceholder}
               />
             </div>
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                         id="salonType"
                         value={salonType}
                         onChange={(e) => setSalonType(e.target.value as SalonType)}
-                        className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                        className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                       >
                         <option value="barber">{t.salonTypeBarber}</option>
                         <option value="nails">{t.salonTypeNails}</option>
@@ -308,7 +308,7 @@ export default function OnboardingPage() {
                       <label className="text-sm font-medium text-slate-800">
                         {t.paymentMethodLabel}
                       </label>
-                      <div className="rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-600">
+                      <div className="rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-600">
                         {t.paymentMethodPhysicalOnly}
                       </div>
                     </div>
@@ -325,7 +325,7 @@ export default function OnboardingPage() {
                           setPreferredLanguage(newLang);
                           setLocale(newLang);
                         }}
-                        className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                        className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                       >
                         <option value="nb">🇳🇴 Norsk</option>
                         <option value="en">🇬🇧 English</option>
@@ -404,7 +404,7 @@ export default function OnboardingPage() {
                                         };
                                         setOpeningHours(updated);
                                       }}
-                                      className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                                     />
                                   </label>
                                   
@@ -425,7 +425,7 @@ export default function OnboardingPage() {
                                       };
                                       setOpeningHours(updated);
                                     }}
-                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/30"
                                   />
                                   
                                   {/* Arrow separator */}
@@ -443,7 +443,7 @@ export default function OnboardingPage() {
                                       };
                                       setOpeningHours(updated);
                                     }}
-                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                    className="h-9 rounded-xl border border-slate-200/60 bg-white/90 px-3 text-sm outline-none ring-0 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/30"
                                   />
                                 </div>
                               ) : (
@@ -461,7 +461,7 @@ export default function OnboardingPage() {
                                         };
                                         setOpeningHours(updated);
                                       }}
-                                      className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                                     />
                                   </label>
                                   
@@ -501,7 +501,7 @@ export default function OnboardingPage() {
                                 name="onlineBooking"
                                 checked={onlineBooking === true}
                                 onChange={() => setOnlineBooking(true)}
-                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                className="h-3.5 w-3.5 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                               />
                               <span className="text-sm text-slate-700">{t.onlineBookingYes}</span>
                             </label>
@@ -511,7 +511,7 @@ export default function OnboardingPage() {
                                 name="onlineBooking"
                                 checked={onlineBooking === false}
                                 onChange={() => setOnlineBooking(false)}
-                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                className="h-3.5 w-3.5 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                               />
                               <span className="text-sm text-slate-700">{t.onlineBookingNo}</span>
                             </label>
@@ -529,7 +529,7 @@ export default function OnboardingPage() {
                                 name="publicBooking"
                                 checked={publicBooking === true}
                                 onChange={() => setPublicBooking(true)}
-                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                className="h-3.5 w-3.5 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                               />
                               <span className="text-sm text-slate-700">{t.publicBookingYes}</span>
                             </label>
@@ -539,7 +539,7 @@ export default function OnboardingPage() {
                                 name="publicBooking"
                                 checked={publicBooking === false}
                                 onChange={() => setPublicBooking(false)}
-                                className="h-3.5 w-3.5 border-slate-300 text-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/30"
+                                className="h-3.5 w-3.5 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-600/30"
                               />
                               <span className="text-sm text-slate-700">{t.publicBookingNo}</span>
                             </label>
@@ -576,7 +576,7 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
                   >
-                    <div className="rounded-xl border border-slate-200/60 bg-[#edf2ff]/40 backdrop-blur-md p-4">
+                    <div className="rounded-xl border border-slate-200/60 bg-blue-50/40 backdrop-blur-md p-4">
                       <h3 className="mb-4 text-sm font-semibold text-slate-900">
                         {t.summaryLabel}
                       </h3>

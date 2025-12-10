@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, FormEvent } from "react";
-import { DashboardShell } from "@/components/dashboard-shell";
-import { PageHeader } from "@/components/page-header";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import {

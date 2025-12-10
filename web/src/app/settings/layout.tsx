@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardShell } from "@/components/dashboard-shell";
-import { PageHeader } from "@/components/page-header";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";

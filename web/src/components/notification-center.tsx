@@ -91,7 +91,7 @@ export function NotificationCenter() {
           className="relative h-9 w-9 rounded-lg transition-all hover:scale-105 hover:bg-slate-100/60 flex items-center justify-center"
           aria-label="Notifications"
         >
-          <Bell className="h-5 w-5 text-[#1d4ed8]" />
+          <Bell className="h-5 w-5 text-blue-700" />
           {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 p-0 text-[10px] font-bold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -149,7 +149,7 @@ export function NotificationCenter() {
                             {notification.title}
                           </p>
                           {!notification.read && (
-                            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-[#3068FF]" />
+                            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600" />
                           )}
                         </div>
                         <p className="mt-1 text-xs text-slate-600 line-clamp-2">

@@ -84,62 +84,96 @@ Oppgave: Gå gjennom hele prosjektet og implementer hver punktliste nøyaktig.
 
 ---
 
-## 4. Testing & Kvalitetssikring
-- [ ] Opprett `tests/` rotmappe.
-- [ ] Legg til:
-  - [ ] Repository-tester (mock Supabase).
-  - [ ] Minst 1–2 e2e-tests (Playwright eller Cypress).
-  - [ ] Scripts i `package.json` for `test`, `lint`, `format`.
-- [ ] Lag GitHub Actions workflow:
-  - [ ] Installer dependencies.
-  - [ ] Kjør lint.
-  - [ ] Kjør tester.
+## 4. Testing & Kvalitetssikring ✅
+- [x] Opprett `tests/` rotmappe. ✅
+  - [x] `tests/unit/repositories/` - Repository-tester
+  - [x] `tests/unit/services/` - Service-tester
+  - [x] `tests/e2e/` - E2E-tester
+  - [x] `tests/setup.ts` - Test setup
+- [x] Legg til:
+  - [x] Repository-tester (mock Supabase). ✅ (Eksempel: `bookings.test.ts`)
+  - [x] Service-tester (mock repositories). ✅ (Eksempel: `bookings-service.test.ts`)
+  - [x] Minst 1–2 e2e-tests (Playwright). ✅ (`landing.spec.ts`, `onboarding.spec.ts`)
+  - [x] Scripts i `package.json` for `test`, `lint`, `format`. ✅
+- [x] Lag GitHub Actions workflow: ✅
+  - [x] Installer dependencies. ✅
+  - [x] Kjør lint. ✅
+  - [x] Kjør type check. ✅
+  - [x] Kjør unit tests. ✅
+  - [x] Kjør E2E tests. ✅
+  - [x] Upload test results. ✅
+
+**Note:** Se `tests/README.md` for testing guide.
 
 ---
 
-## 5. Design System & UI-struktur
-- [ ] Opprett `docs/frontend/ui-system.md`  
+## 5. Design System & UI-struktur ✅
+- [x] Opprett `docs/frontend/ui-system.md` ✅
   Innhold:
-  - [ ] Regler for `components/ui` (shadcn).
-  - [ ] Regler for domenekomponenter i `components/*`.
-  - [ ] Farger, spacing, typografi, tokens.
-- [ ] Dokumenter alle komponenter i `components/`:
-  - [ ] Hensikt.
-  - [ ] Hvordan bruke komponenten.
-  - [ ] Kodeeksempler.
+  - [x] Regler for `components/ui` (shadcn). ✅
+  - [x] Regler for domenekomponenter i `components/*`. ✅
+  - [x] Farger, spacing, typografi, tokens. ✅
+  - [x] Button API og varianter. ✅
+  - [x] Konsistente bakgrunner. ✅
+  - [x] Best practices. ✅
+- [x] Dokumenter alle komponenter i `components/`: ✅
+  - [x] Opprett `docs/frontend/components.md` ✅
+  - [x] Hensikt for hver komponent. ✅
+  - [x] Hvordan bruke komponenten. ✅
+  - [x] Kodeeksempler. ✅
+  - [x] Props dokumentasjon. ✅
 
 ---
 
-## 6. Supabase / Backend
-- [ ] Oppdater `supabase/README.md`  
+## 6. Supabase / Backend ✅
+- [x] Oppdater `supabase/README.md` ✅
   Innhold:
-  - [ ] Når man kjører SQL-filer.
-  - [ ] Forklaring på admin-scripts.
-  - [ ] Multi-tenant policy-detaljer.
-- [ ] Legg til om nødvendig:
-  - [ ] `supabase/migrations/` mappe.
-  - [ ] Dokumentasjon på Supabase Sync-prosessen.
+  - [x] Når man kjører SQL-filer. ✅
+  - [x] Forklaring på admin-scripts. ✅
+  - [x] Multi-tenant policy-detaljer. ✅
+  - [x] RLS policy eksempler. ✅
+  - [x] Superadmin access dokumentasjon. ✅
+  - [x] Migration strategy. ✅
+  - [x] Supabase Sync-prosess dokumentasjon. ✅
+- [x] Dokumentasjon på Supabase Sync-prosessen. ✅
+  - [x] Nåværende tilnærming dokumentert. ✅
+  - [x] Best practices lagt til. ✅
+  - [x] Fremtidige forbedringer notert. ✅
 
 ---
 
-## 7. Public Booking Flow
-- [ ] Opprett `docs/features/public-booking.md`  
+## 7. Public Booking Flow ✅
+- [x] Opprett `docs/features/public-booking.md` ✅
   Innhold:
-  - [ ] Hvilke API-endpoints som brukes.
-  - [ ] Hvilken data som er tilgjengelig uten auth.
-  - [ ] Hvordan calendar/time-slots genereres.
-  - [ ] UX-regler (mobil først, minimal friksjon).
+  - [x] Hvilke API-endpoints som brukes. ✅
+  - [x] Hvilken data som er tilgjengelig uten auth. ✅
+  - [x] Hvordan calendar/time-slots genereres. ✅
+  - [x] UX-regler (mobil først, minimal friksjon). ✅
+  - [x] Booking flow steg-for-steg. ✅
+  - [x] Feilhåndtering. ✅
+  - [x] Sikkerhet og RLS policies. ✅
 
 ---
 
-## 8. Overlevering til utviklere
-- [ ] Opprett `CONTRIBUTING.md`  
+## 8. Overlevering til utviklere ✅
+- [x] Oppdater `CONTRIBUTING.md` ✅
   Innhold:
-  - [ ] Branch-strategi.
-  - [ ] Pull request-regler.
-  - [ ] Code-review krav.
-  - [ ] Deployment-instruksjoner.
-- [ ] Opprett `docs/architecture/diagram.md`
-  - [ ] Lag mermaid-diagram eller tekstbasert systemdiagram.
+  - [x] Branch-strategi. ✅
+  - [x] Pull request-regler. ✅
+  - [x] Code-review krav. ✅
+  - [x] Deployment-instruksjoner. ✅
+  - [x] PR-template og checklist. ✅
+  - [x] Review-kommentarer format. ✅
+- [x] Opprett `docs/architecture/diagram.md` ✅
+  - [x] Lag mermaid-diagram eller tekstbasert systemdiagram. ✅
+  - [x] Høy-nivå arkitektur. ✅
+  - [x] Lagdelt arkitektur. ✅
+  - [x] Data flow diagrammer. ✅
+  - [x] Multi-tenant isolasjon. ✅
+  - [x] Authentication flow. ✅
+  - [x] Public booking flow. ✅
+  - [x] Database schema. ✅
+  - [x] Component hierarchy. ✅
+  - [x] Deployment architecture. ✅
 
 ---

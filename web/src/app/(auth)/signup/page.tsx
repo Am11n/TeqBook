@@ -88,11 +88,11 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#eef3ff] flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
-      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-[#d4e0ff] via-[#e3ebff] to-[#f5f7ff] shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+    <main className="min-h-screen bg-blue-50 flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-blue-100 via-blue-50 to-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
         {/* Bakgrunns-sirkler - nøyaktig samme som login */}
         <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#c7d7ff]/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-blue-200/30 blur-3xl" />
 
         <div className="relative grid gap-8 sm:gap-12 p-8 md:p-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-16">
           {/* Left side */}
@@ -116,7 +116,7 @@ export default function SignUpPage() {
               {signupT.createAccountTitle.includes("TeqBook") ? (
                 <>
                   {signupT.createAccountTitle.split("TeqBook")[0]}
-                  <span className="text-[#1d4ed8]">TeqBook</span>
+                  <span className="text-blue-700">TeqBook</span>
                   {signupT.createAccountTitle.split("TeqBook")[1]?.trim() && (
                     <>
                       <br />
@@ -127,7 +127,7 @@ export default function SignUpPage() {
               ) : (
                 <>
                   {signupT.createAccountTitle.split(" ").slice(0, -1).join(" ")}{" "}
-                  <span className="text-[#1d4ed8]">TeqBook</span>
+                  <span className="text-blue-700">TeqBook</span>
                   <br />
                   {signupT.createAccountTitle.split(" ").slice(-1)[0]}
                 </>
@@ -142,15 +142,15 @@ export default function SignUpPage() {
             {/* Bullets */}
             <ul className="mt-6 space-y-2 text-sm text-slate-700">
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>{signupT.bullet1}</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>{signupT.bullet2}</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
                 <span>{signupT.bullet3}</span>
               </li>
             </ul>
@@ -180,7 +180,7 @@ export default function SignUpPage() {
                   </span>
                 </div>
                 <div className="h-[2.5px] w-full bg-slate-100/80 rounded-full overflow-hidden">
-                  <div className="h-full w-1/2 bg-gradient-to-r from-[#2563eb] to-[#3b82f6] rounded-full" />
+                  <div className="h-full w-1/2 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full" />
                 </div>
               </div>
 
@@ -210,7 +210,7 @@ export default function SignUpPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.emailPlaceholder}
-                    className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                    className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                   />
                 </div>
 
@@ -231,7 +231,7 @@ export default function SignUpPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={signupT.passwordPlaceholder}
-                      className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                      className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                     />
                     <button
                       type="button"
@@ -263,7 +263,7 @@ export default function SignUpPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={signupT.confirmPasswordPlaceholder}
-                      className="w-full rounded-xl border border-slate-200/60 bg-[#edf2ff]/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#2563eb] focus:bg-white/90 focus:ring-2 focus:ring-[#2563eb]/30"
+                      className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                     />
                     <button
                       type="button"
@@ -316,7 +316,7 @@ export default function SignUpPage() {
                 {signupT.alreadyHaveAccount}{" "}
                 <Link
                   href="/login"
-                  className="font-semibold text-[#2563eb] hover:underline"
+                  className="font-semibold text-blue-600 hover:underline"
                 >
                   {signupT.loginLink}
                 </Link>

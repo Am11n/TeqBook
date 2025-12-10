@@ -47,7 +47,284 @@ const { data } = await supabase.from("bookings").select("*");
 
 ---
 
-## Utviklingsprosess
+## Branch-strategi
+
+TeqBook bruker **Git Flow** med følgende branch-typer:
+
+### Main Branch
+
+- `main` - Produksjonsklar kode
+- **Beskytter:** Require pull request reviews
+- **Deployment:** Automatisk til GitHub Pages ved push
+
+### Feature Branches
+
+**Format:** `feature/description` eller `fix/description`
+
+**Eksempler:**
+- `feature/add-whatsapp-integration`
+- `feature/multilingual-booking`
+- `fix/booking-timezone-issue`
+- `fix/profile-rls-policy`
+
+**Regler:**
+- Branches skal være korte og beskrivende
+- En branch = én feature eller bugfix
+- Branches skal merges til `main` via Pull Request
+
+### Hotfix Branches
+
+**Format:** `hotfix/description`
+
+**Brukes for:** Kritiske bugfixes som må til produksjon umiddelbart
+
+**Prosess:**
+1. Opprett branch fra `main`
+2. Fix buggen
+3. Merge til `main` via Pull Request
+4. Tag release
+
+---
+
+## Pull Request-regler
+
+### Før du oppretter en PR
+
+1. **Sørg for at koden kompilerer:**
+   ```bash
+   npm run build
+   ```
+
+2. **Kjør lint:**
+   ```bash
+   npm run lint
+   ```
+
+3. **Kjør type check:**
+   ```bash
+   npm run type-check
+   ```
+
+4. **Test funksjonaliteten:**
+   - Test manuelt i dev-server
+   - Sjekk at alle edge cases er håndtert
+
+5. **Oppdater dokumentasjon:**
+   - Hvis du legger til nye features → Oppdater relevante docs
+   - Hvis du endrer arkitektur → Oppdater `docs/architecture/`
+
+### PR-tittel
+
+Bruk konvensjonelle commit-format:
+
+```
+feat: add WhatsApp integration
+fix: resolve booking timezone issue
+docs: update architecture diagram
+refactor: simplify service layer
+test: add unit tests for bookings service
+```
+
+### PR-beskrivelse
+
+**Template:**
+
+```markdown
+## Beskrivelse
+Kort beskrivelse av endringene.
+
+## Type endring
+- [ ] Ny feature
+- [ ] Bugfix
+- [ ] Dokumentasjon
+- [ ] Refaktorering
+- [ ] Test
+
+## Testing
+Hvordan har du testet endringene?
+
+## Screenshots (hvis relevant)
+Legg til screenshots for UI-endringer.
+
+## Checklist
+- [ ] Koden kompilerer uten feil
+- [ ] Ingen ESLint-feil
+- [ ] Type check passerer
+- [ ] Dokumentasjon er oppdatert
+- [ ] Jeg har testet endringene manuelt
+```
+
+### PR-review prosess
+
+1. **Automatisk checks:**
+   - CI pipeline kjører automatisk (lint, type check, tests)
+   - Alle checks må passere før merge
+
+2. **Code review:**
+   - Minst **én approver** kreves
+   - Reviewer sjekker:
+     - Kodekvalitet
+     - Arkitektur-følgelse
+     - Test-dekning
+     - Dokumentasjon
+
+3. **Merge:**
+   - **Squash and merge** anbefales for feature branches
+   - **Merge commit** for hotfixes
+   - **Rebase and merge** for små endringer
+
+---
+
+## Code Review Krav
+
+### Hva skal reviewers sjekke?
+
+#### 1. Arkitektur-følgelse
+
+- ✅ Bruker services i stedet for direkte Supabase-kall
+- ✅ Følger lagdelt arkitektur (UI → Services → Repositories)
+- ✅ Ingen direkte Supabase-imports i UI-komponenter
+
+#### 2. Kodekvalitet
+
+- ✅ TypeScript-typer er korrekte
+- ✅ Error-håndtering er på plass
+- ✅ Ingen hardkodede verdier
+- ✅ Kode er lesbar og vedlikeholdbar
+
+#### 3. Testing
+
+- ✅ Nye features har tester (hvis relevant)
+- ✅ Eksisterende tester passerer
+- ✅ Edge cases er håndtert
+
+#### 4. Dokumentasjon
+
+- ✅ Kode er dokumentert (hvis kompleks)
+- ✅ README/docs er oppdatert (hvis relevant)
+- ✅ Commit-meldinger er tydelige
+
+#### 5. Sikkerhet
+
+- ✅ Ingen sensitive data i kode
+- ✅ RLS policies er korrekte (hvis database-endringer)
+- ✅ Input-validering er på plass
+
+### Review-kommentarer
+
+**Format:**
+- **Must fix:** Blokkerer merge
+- **Should fix:** Anbefalt, men ikke blokkerende
+- **Nice to have:** Forbedringsforslag
+
+**Eksempler:**
+
+```typescript
+// ❌ Must fix: Direkte Supabase-kall i komponent
+const { data } = await supabase.from("bookings").select("*");
+
+// ✅ Should fix: Bruk service i stedet
+const { data } = await getBookingsForSalon(salonId);
+
+// 💡 Nice to have: Legg til loading state
+```
+
+---
+
+## Deployment-instruksjoner
+
+### Automatisk Deployment
+
+TeqBook deployes automatisk til **GitHub Pages** når kode pushes til `main` branch.
+
+**Workflow:** `.github/workflows/nextjs.yml`
+
+**Prosess:**
+1. Push til `main` branch
+2. GitHub Actions bygger Next.js-appen
+3. Static export genereres (`web/out/`)
+4. Deployes til GitHub Pages
+
+### Manuell Deployment
+
+Hvis du trenger å deploye manuelt:
+
+#### 1. Bygg appen
+
+```bash
+cd web
+npm run build
+```
+
+Dette genererer `web/out/` mappen med static files.
+
+#### 2. Deploy til GitHub Pages
+
+**Via GitHub Actions:**
+1. Gå til **Actions** tab
+2. Velg **Deploy Next.js site to Pages**
+3. Klikk **Run workflow**
+
+**Via Git:**
+```bash
+# Push til main branch
+git push origin main
+```
+
+#### 3. Verifiser deployment
+
+1. Gå til repository **Settings** → **Pages**
+2. Sjekk at deployment er vellykket
+3. Test live URL
+
+### Environment Variables
+
+**For GitHub Pages deployment:**
+
+Legg til secrets i repository **Settings** → **Secrets and variables** → **Actions**:
+
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
+
+**For lokal utvikling:**
+
+Opprett `.env.local` i `web/` mappen:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Pre-deployment Checklist
+
+Før du deployer til produksjon:
+
+- [ ] Alle tests passerer
+- [ ] Lint passerer
+- [ ] Type check passerer
+- [ ] Build er vellykket
+- [ ] Environment variables er satt
+- [ ] Dokumentasjon er oppdatert
+- [ ] Breaking changes er dokumentert
+
+### Rollback
+
+Hvis noe går galt:
+
+1. **Revert commit:**
+   ```bash
+   git revert <commit-hash>
+   git push origin main
+   ```
+
+2. **Eller deploy forrige versjon:**
+   - Gå til **Actions** tab
+   - Finn forrige vellykkede deployment
+   - Re-run workflow
+
+---
+
+## Utviklingsprosess (Oppsummert)
 
 ### 1. Opprett en branch
 
@@ -62,8 +339,9 @@ Følg kodestandardene i `docs/coding-style.md`.
 ### 3. Test endringene
 
 Sørg for at:
-- Koden kompilerer uten feil
-- Ingen ESLint-feil
+- Koden kompilerer uten feil (`npm run build`)
+- Ingen ESLint-feil (`npm run lint`)
+- Type check passerer (`npm run type-check`)
 - Funksjonaliteten fungerer som forventet
 
 ### 4. Commit endringene
@@ -78,12 +356,20 @@ Bruk konvensjonelle commit-meldinger:
 - `docs:` - Dokumentasjon
 - `refactor:` - Refaktorering
 - `test:` - Tester
+- `chore:` - Maintenance tasks
 
 ### 5. Push og opprett Pull Request
 
 ```bash
 git push origin feature/your-feature-name
 ```
+
+Deretter:
+1. Gå til GitHub
+2. Opprett Pull Request
+3. Fyll ut PR-beskrivelse
+4. Vent på code review
+5. Merge når godkjent
 
 ---
 

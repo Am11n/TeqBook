@@ -271,7 +271,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     onClick={() => handleSelect(result)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all ${
                       isSelected
-                        ? "bg-gradient-to-r from-[#2C6FF8] to-[#6BA8FF] text-white shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
+                        ? "bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
                         : "hover:bg-slate-50"
                     }`}
                   >

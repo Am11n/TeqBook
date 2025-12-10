@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StatsGrid } from "@/components/stats-grid";
-import { Section, SectionCard } from "@/components/section";
+import { Section, SectionCard } from "@/components/layout/section";
 import { Check, Sparkles, Calendar, Users, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, Waves, Hand, Paintbrush } from "lucide-react";
 import { LogoLoop } from "@/components/ui/logo-loop";
 
@@ -1921,11 +1921,11 @@ export default function LandingPage() {
 
       {/* Hero */}
       <main className="flex-1 relative">
-        <section className="relative -mt-[120px] pt-[120px] border-b border-blue-200/30 overflow-hidden bg-[#EEF3FF] min-h-[calc(100vh-120px)]">
+        <section className="relative -mt-[120px] pt-[120px] border-b border-blue-200/30 overflow-hidden bg-blue-50 min-h-[calc(100vh-120px)]">
           {/* Abstract gradient background layers */}
           <div className="pointer-events-none absolute inset-0 top-0">
             {/* Base gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#EEF3FF] via-[#DBE4FF] to-[#E0E7FF]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-100" />
             
             {/* Large blurred blobs for depth */}
             <motion.div
@@ -1953,7 +1953,7 @@ export default function LandingPage() {
                 delay: 0.5,
               }}
             />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[#6366F1]/8 blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-indigo-500/8 blur-3xl" />
             
             {/* Ghost watermark logo */}
             <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -1986,7 +1986,8 @@ export default function LandingPage() {
                     <path
                       d="M 40 0 L 0 0 0 40"
                       fill="none"
-                      stroke="#4F46E5"
+                      stroke="currentColor"
+                      className="text-indigo-600"
                       strokeWidth="1"
                     />
                   </pattern>
@@ -2210,7 +2211,7 @@ export default function LandingPage() {
                         style={{
                           padding: "1px",
                           background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1))",
-                          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                          WebkitMask: "linear-gradient(white 0 0) content-box, linear-gradient(white 0 0)",
                           WebkitMaskComposite: "xor",
                           maskComposite: "exclude",
                         }}
@@ -2407,7 +2408,7 @@ export default function LandingPage() {
                         style={{
                           padding: "1px",
                           background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1))",
-                          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                          WebkitMask: "linear-gradient(white 0 0) content-box, linear-gradient(white 0 0)",
                           WebkitMaskComposite: "xor",
                           maskComposite: "exclude",
                         }}

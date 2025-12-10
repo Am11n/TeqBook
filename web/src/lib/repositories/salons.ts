@@ -78,6 +78,44 @@ export async function getSalonById(
 }
 
 /**
+ * Create salon for current user (RPC)
+ */
+export async function createSalonForCurrentUser(
+  input: {
+    salon_name: string;
+    salon_type: string;
+    preferred_language: string;
+    online_booking_enabled: boolean;
+    is_public: boolean;
+  }
+): Promise<{ data: string | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase.rpc("create_salon_for_current_user", {
+      salon_name: input.salon_name,
+      salon_type_param: input.salon_type,
+      preferred_language_param: input.preferred_language,
+      online_booking_enabled_param: input.online_booking_enabled,
+      is_public_param: input.is_public,
+    });
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!data) {
+      return { data: null, error: "Failed to create salon" };
+    }
+
+    return { data: data as string, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Update salon
  */
 export async function updateSalon(

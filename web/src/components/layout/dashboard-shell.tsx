@@ -227,7 +227,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   ];
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-[#eef3ff] via-[#f5f7ff] to-white">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-white">
       {/* Header - Full width at top */}
         <header className="sticky top-0 z-[50] flex h-[72px] w-full items-center justify-between border-b border-white/10 bg-gradient-to-r from-white/95 via-blue-50/30 to-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
         {/* Left: Logo + TeqBook (Desktop) / Hamburger (Mobile) */}
@@ -285,9 +285,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <div className="hidden flex-1 items-center justify-center px-4 md:flex">
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="group flex w-full max-w-[600px] items-center gap-3 rounded-full bg-white/60 backdrop-blur-sm px-4 h-10 text-left transition-all duration-150 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-[#1d4ed8]/20 focus-within:bg-white/80 hover:bg-white/70 hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]"
-          >
-            <Search className="h-4 w-4 text-slate-400 transition-colors group-hover:text-[#1d4ed8]" />
+            className="group flex w-full max-w-[600px] items-center gap-3 rounded-full bg-white/60 backdrop-blur-sm px-4 h-10 text-left transition-all duration-150 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-blue-700/20 focus-within:bg-white/80 hover:bg-white/70 hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]"
+            >
+            <Search className="h-4 w-4 text-slate-400 transition-colors group-hover:text-blue-700" />
             <span className="flex-1 text-sm text-slate-500 group-hover:text-slate-700">
               Search bookings, customers, services...
             </span>
@@ -343,7 +343,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <DropdownMenuTrigger asChild>
               <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
                 <Avatar className="h-9 w-9 border-2 border-white shadow-sm transition-all hover:shadow-md">
-                  <AvatarFallback className="bg-gradient-to-br from-[#3068FF] to-[#6BA8FF] text-xs font-semibold text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                     {getInitials(userEmail)}
                   </AvatarFallback>
                 </Avatar>
@@ -391,7 +391,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center sm:hidden">
                 <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                  <AvatarFallback className="bg-gradient-to-br from-[#3068FF] to-[#6BA8FF] text-xs font-semibold text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                     {getInitials(userEmail)}
                   </AvatarFallback>
                 </Avatar>
@@ -727,7 +727,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   setLocale(e.target.value as any);
                   setMobileNavOpen(false);
                 }}
-                className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#3068FF]/20"
+                className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600/20"
               >
                 <option value="nb">🇳🇴 Norsk</option>
                 <option value="en">🇬🇧 English</option>
@@ -782,8 +782,8 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
       href={href}
       className={`group relative flex items-center rounded-xl text-[15px] font-medium transition-all duration-150 ease-out ${
         isActive
-          ? "bg-blue-50 text-[#1d4ed8]"
-          : "bg-transparent text-slate-600 hover:bg-blue-50/50 hover:text-[#1d4ed8]"
+          ? "bg-blue-50 text-blue-700"
+          : "bg-transparent text-slate-600 hover:bg-blue-50/50 hover:text-blue-700"
       } ${collapsed ? "justify-center px-3 py-3" : "gap-2 px-4 py-3"} ${className ?? ""} ${
         !isActive ? "hover:-translate-y-[1px]" : ""
       }`}
@@ -795,19 +795,19 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
     >
       {/* Active indicator pill */}
       {isActive && !collapsed && (
-        <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#1d4ed8]" />
+        <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-blue-700" />
       )}
       
       {/* Collapsed active indicator - circular glow */}
       {isActive && collapsed && (
-        <div className="absolute inset-0 rounded-xl bg-[#1d4ed8]/10" />
+        <div className="absolute inset-0 rounded-xl bg-blue-700/10" />
       )}
       
       <Icon
         className={`h-5 w-5 flex-shrink-0 transition-all duration-150 ${
           isActive
-            ? "text-[#1d4ed8]"
-            : "text-slate-500 group-hover:text-[#1d4ed8] group-hover:opacity-100"
+            ? "text-blue-700"
+            : "text-slate-500 group-hover:text-blue-700 group-hover:opacity-100"
         } ${!isActive ? "opacity-70 group-hover:opacity-100" : ""}`}
       />
       {!collapsed && (
@@ -851,7 +851,7 @@ function MobileNavLink({
       href={href}
       className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-all ${
         isActive
-          ? "bg-gradient-to-r from-[#2C6FF8] to-[#6BA8FF] text-white shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
+          ? "bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
           : "text-slate-600 hover:bg-black/5"
       } ${className ?? ""}`}
       onClick={onNavigate}

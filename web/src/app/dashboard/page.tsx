@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import "framer-motion";
 import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/components/dashboard-shell";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
@@ -237,8 +237,8 @@ export default function DashboardPage() {
         {/* Card 1: Today's Bookings */}
         <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '0ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1d4ed8]/10 transition-transform group-hover:scale-110">
-              <Calendar className="h-5 w-5 text-[#1d4ed8] transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
+              <Calendar className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
             </div>
             <h2 className="text-lg font-semibold text-slate-900">
               {t.todaysBookings}
@@ -257,7 +257,7 @@ export default function DashboardPage() {
           ) : bookingsCount === 0 ? (
             <div className="mb-6">
               <div className="mb-4 flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1d4ed8]/10 text-2xl font-semibold text-[#1d4ed8]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-700/10 text-2xl font-semibold text-blue-700">
                   <Calendar className="h-8 w-8" />
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
               </p>
               <Button
                 asChild
-                className="h-9 w-full bg-[#0B122A] text-white transition-transform active:scale-95 hover:bg-[#0B122A]/90"
+                className="h-9 w-full bg-slate-900 text-white transition-transform active:scale-95 hover:bg-slate-900/90"
               >
                 <Link href="/bookings">{t.createFirstBooking}</Link>
               </Button>
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                     key={booking.id}
                     className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1d4ed8]/10 text-xs font-semibold text-[#1d4ed8]">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-700/10 text-xs font-semibold text-blue-700">
                       <Clock className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -317,8 +317,8 @@ export default function DashboardPage() {
         {/* Card 2: Staff Overview */}
         <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1d4ed8]/10 transition-transform group-hover:scale-110">
-              <Users className="h-5 w-5 text-[#1d4ed8] transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
+              <Users className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
             </div>
             <h2 className="text-lg font-semibold text-slate-900">
               {t.yourStaff}
@@ -337,7 +337,7 @@ export default function DashboardPage() {
           ) : employees.length === 0 ? (
             <div className="mb-6">
               <div className="mb-4 flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1d4ed8]/10 text-2xl font-semibold text-[#1d4ed8]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-700/10 text-2xl font-semibold text-blue-700">
                   <Users className="h-8 w-8" />
                 </div>
               </div>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
               </p>
               <Button
                 asChild
-                className="h-9 w-full bg-[#0B122A] text-white transition-transform active:scale-95 hover:bg-[#0B122A]/90"
+                className="h-9 w-full bg-slate-900 text-white transition-transform active:scale-95 hover:bg-slate-900/90"
               >
                 <Link href="/employees">{t.inviteNewStaff}</Link>
               </Button>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                     key={employee.id}
                     className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1d4ed8]/10 text-xs font-semibold text-[#1d4ed8]">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-700/10 text-xs font-semibold text-blue-700">
                       {getInitials(employee.full_name)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -406,8 +406,8 @@ export default function DashboardPage() {
         {/* Card 3: Quick Actions */}
         <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1d4ed8]/10 transition-transform group-hover:scale-110">
-              <Zap className="h-5 w-5 text-[#1d4ed8] transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
+              <Zap className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
             </div>
             <h2 className="text-lg font-semibold text-slate-900">
               {t.quickActions}
@@ -417,10 +417,10 @@ export default function DashboardPage() {
           <div className="space-y-1.5">
             <Link
               href="/bookings"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-[#F8FAFC] hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Plus className="h-4 w-4 text-[#1d4ed8] transition-transform group-hover/item:translate-x-0.5" />
+                <Plus className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
                 <span className="text-sm font-medium text-slate-900">
                   {t.addNewBooking}
                 </span>
@@ -430,10 +430,10 @@ export default function DashboardPage() {
 
             <Link
               href="/customers"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-[#F8FAFC] hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-[#1d4ed8] transition-transform group-hover/item:translate-x-0.5" />
+                <User className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
                 <span className="text-sm font-medium text-slate-900">
                   {t.addNewCustomer}
                 </span>
@@ -443,10 +443,10 @@ export default function DashboardPage() {
 
             <Link
               href="/services"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-[#F8FAFC] hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Plus className="h-4 w-4 text-[#1d4ed8] transition-transform group-hover/item:translate-x-0.5" />
+                <Plus className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
                 <span className="text-sm font-medium text-slate-900">
                   {t.addNewService}
                 </span>
@@ -456,10 +456,10 @@ export default function DashboardPage() {
 
             <Link
               href="/employees"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-[#F8FAFC] hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 text-[#1d4ed8] transition-transform group-hover/item:translate-x-0.5" />
+                <Users className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
                 <span className="text-sm font-medium text-slate-900">
                   {t.inviteNewStaff}
                 </span>
@@ -573,7 +573,7 @@ export default function DashboardPage() {
                     className="flex flex-col items-center flex-1 h-full justify-end gap-1"
                   >
                     <div
-                      className="w-full rounded-t transition-all duration-300 bg-gradient-to-t from-[#1d4ed8] to-[#3b82f6] opacity-80 hover:opacity-100"
+                      className="w-full rounded-t transition-all duration-300 bg-gradient-to-t from-blue-700 to-blue-500 opacity-80 hover:opacity-100"
                       style={{ height: `${height}%`, minHeight: "8px" }}
                     />
                     <span className="text-[10px] text-slate-500">{data.day}</span>
@@ -589,10 +589,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Announcements Section */}
-      <div className="group mt-8 rounded-2xl bg-gradient-to-br from-[#F5F8FF]/90 to-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+      <div className="group mt-8 rounded-2xl bg-gradient-to-br from-blue-50/90 to-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '200ms' }}>
         <div className="mb-8 flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1d4ed8]/10 shadow-[0_2px_8px_rgba(29,78,216,0.15)] transition-transform group-hover:scale-110">
-            <Info className="h-5 w-5 text-[#1d4ed8] transition-transform group-hover:translate-x-0.5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 shadow-[0_2px_8px_rgba(29,78,216,0.15)] transition-transform group-hover:scale-110">
+            <Info className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
           </div>
           <h2 className="text-lg font-semibold text-slate-900">
             {t.announcements}
@@ -601,19 +601,19 @@ export default function DashboardPage() {
 
         <div className="space-y-3 mb-6">
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#1d4ed8] mt-2 flex-shrink-0" />
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
             <p className="text-sm text-slate-700">
               {t.announcementWalkIn}
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#1d4ed8] mt-2 flex-shrink-0" />
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
             <p className="text-sm text-slate-700">
               {t.announcementLanguages}
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#1d4ed8] mt-2 flex-shrink-0" />
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
             <p className="text-sm text-slate-700">
               {t.announcementDashboardUpdate}
             </p>

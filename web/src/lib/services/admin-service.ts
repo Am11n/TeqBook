@@ -5,6 +5,7 @@
 // Note: This service is only for superadmin operations
 
 import { supabase } from "@/lib/supabase-client";
+import { getUserEmails } from "@/lib/repositories/admin";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getProfileByUserId } from "@/lib/repositories/profiles";
 
@@ -54,21 +55,14 @@ export async function getAllSalonsForAdmin(): Promise<{
 
     let emailMap = new Map<string, string>();
     if (allUserIds.length > 0) {
-      try {
-        const { data: userEmailsData, error: emailsError } = await supabase.rpc(
-          "get_user_emails",
-          { user_ids: allUserIds }
-        );
-
-        if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
-          userEmailsData.forEach((item: { user_id: string; email: string }) => {
-            if (item.user_id && item.email) {
-              emailMap.set(item.user_id, item.email);
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching user emails:", err);
+      const { data: userEmailsData, error: emailsError } = await getUserEmails(allUserIds);
+      
+      if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
+        userEmailsData.forEach((item) => {
+          if (item.user_id && item.email) {
+            emailMap.set(item.user_id, item.email);
+          }
+        });
       }
     }
 
@@ -119,14 +113,10 @@ export async function getAllUsersForAdmin(): Promise<{
     let createdAtMap = new Map<string, string>();
 
     if (allUserIds.length > 0) {
-      try {
-        const { data: userEmailsData, error: emailsError } = await supabase.rpc(
-          "get_user_emails",
-          { user_ids: allUserIds }
-        );
+      const { data: userEmailsData, error: emailsError } = await getUserEmails(allUserIds);
 
-        if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
-          userEmailsData.forEach((item: { user_id: string; email: string; created_at: string }) => {
+      if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
+        userEmailsData.forEach((item) => {
             if (item.user_id && item.email) {
               emailMap.set(item.user_id, item.email);
             }

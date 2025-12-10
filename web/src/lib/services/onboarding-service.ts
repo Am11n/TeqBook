@@ -4,7 +4,8 @@
 // Business logic layer for onboarding operations
 // Orchestrates repository calls and handles domain rules
 
-import { supabase } from "@/lib/supabase-client";
+import { createSalonForCurrentUser as createSalonRPC } from "@/lib/repositories/salons";
+import { createOpeningHours } from "@/lib/repositories/opening-hours";
 import type { AppLocale } from "@/i18n/translations";
 
 export type CreateSalonInput = {
@@ -33,30 +34,14 @@ export async function createSalonForCurrentUser(
     return { data: null, error: "Salon name is required" };
   }
 
-  try {
-    const { data, error } = await supabase.rpc("create_salon_for_current_user", {
-      salon_name: input.salon_name,
-      salon_type_param: input.salon_type,
-      preferred_language_param: input.preferred_language,
-      online_booking_enabled_param: input.online_booking_enabled,
-      is_public_param: input.is_public,
-    });
-
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    if (!data) {
-      return { data: null, error: "Failed to create salon" };
-    }
-
-    return { data: data as string, error: null };
-  } catch (err) {
-    return {
-      data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
-    };
-  }
+  // Use repository instead of direct Supabase call
+  return await createSalonRPC({
+    salon_name: input.salon_name,
+    salon_type: input.salon_type,
+    preferred_language: input.preferred_language,
+    online_booking_enabled: input.online_booking_enabled,
+    is_public: input.is_public,
+  });
 }
 
 /**
@@ -80,18 +65,7 @@ export async function createOpeningHours(
     }
   }
 
-  try {
-    const { error } = await supabase.from("opening_hours").insert(openingHours);
-
-    if (error) {
-      return { error: error.message };
-    }
-
-    return { error: null };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err.message : "Unknown error",
-    };
-  }
+  // Use repository instead of direct Supabase call
+  return await createOpeningHours(openingHours);
 }
 

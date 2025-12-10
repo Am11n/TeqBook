@@ -21,7 +21,7 @@ export function LogoLoop({
   gap = 24,
   className = "",
   fadeOut = true,
-  fadeOutColor = "#F3F4FF",
+  fadeOutColor = "rgb(239, 246, 255)", // blue-50
 }: LogoLoopProps) {
   // Duplicate logos for seamless loop
   const duplicatedLogos = [...logos, ...logos, ...logos];
