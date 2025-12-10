@@ -18,6 +18,12 @@ type PublicBookingPageProps = {
 type Salon = {
   id: string;
   name: string;
+  theme?: {
+    primary?: string;
+    secondary?: string;
+    font?: string;
+    logo_url?: string;
+  } | null;
 };
 
 type Service = {
@@ -81,7 +87,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         return;
       }
 
-      setSalon({ id: salonData.id, name: salonData.name });
+      setSalon({ 
+        id: salonData.id, 
+        name: salonData.name,
+        theme: salonData.theme || null,
+      });
 
       // Load services and employees in parallel
       const [
@@ -220,11 +230,29 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     );
   }
 
+  // Get theme colors with fallbacks
+  const primaryColor = salon.theme?.primary || "#3b82f6";
+  const secondaryColor = salon.theme?.secondary || "#8b5cf6";
+  const fontFamily = salon.theme?.font || "Inter";
+  const logoUrl = salon.theme?.logo_url;
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div 
+      className="flex min-h-screen flex-col bg-background"
+      style={{
+        fontFamily: fontFamily,
+      } as React.CSSProperties}
+    >
       <header className="border-b bg-card/80 px-4 py-4 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
+            {logoUrl && (
+              <img 
+                src={logoUrl} 
+                alt={salon.name}
+                className="mb-2 h-8 w-auto object-contain"
+              />
+            )}
             <h1 className="text-lg font-semibold tracking-tight">
               {salon.name}
             </h1>
@@ -335,6 +363,16 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               type="submit"
               className="w-full"
               disabled={!canLoadSlots || loadingSlots}
+              style={{
+                backgroundColor: primaryColor,
+                color: "white",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${primaryColor}dd`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = primaryColor;
+              }}
             >
               {loadingSlots ? t.loadingSlots : t.loadSlots}
             </Button>
@@ -430,6 +468,16 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               type="submit"
               className="mt-1 w-full"
               disabled={!selectedSlot || !customerName || saving}
+              style={{
+                backgroundColor: primaryColor,
+                color: "white",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${primaryColor}dd`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = primaryColor;
+              }}
             >
               {saving ? t.submitSaving : t.submitLabel}
             </Button>
