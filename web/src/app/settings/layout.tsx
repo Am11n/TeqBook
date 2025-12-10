@@ -5,8 +5,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import type { AppLocale } from "@/i18n/translations";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function SettingsLayout({

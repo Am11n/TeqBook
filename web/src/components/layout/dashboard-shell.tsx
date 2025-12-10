@@ -1,11 +1,9 @@
 "use client";
 
-import { ReactNode, useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { ReactNode, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { CurrentUserBadge } from "@/components/current-user-badge";
-import { CurrentSalonBadge } from "@/components/current-salon-badge";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -24,7 +22,6 @@ import {
   BookOpen,
   Settings,
   Shield,
-  Bell,
   Menu,
   X,
   Search,
@@ -62,14 +59,14 @@ let globalSidebarState: { loaded: boolean; state: boolean | null } = { loaded: f
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon, isSuperAdmin, user } = useCurrentSalon();
+  const { salon, isSuperAdmin } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  // const [scrolled, setScrolled] = useState(false); // Reserved for future use
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const appLocale =
@@ -116,6 +113,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   useEffect(() => {
       // If we've already loaded the state globally, use it immediately
     if (globalSidebarState.loaded && globalSidebarState.state !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSidebarCollapsed(globalSidebarState.state);
       return;
     }
@@ -724,7 +722,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <select
                 value={locale}
                 onChange={(e) => {
-                  setLocale(e.target.value as any);
+                  setLocale(e.target.value as AppLocale);
                   setMobileNavOpen(false);
                 }}
                 className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600/20"

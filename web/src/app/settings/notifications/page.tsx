@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import type { AppLocale } from "@/i18n/translations";
 
 export default function NotificationsSettingsPage() {
   const { locale } = useLocale();

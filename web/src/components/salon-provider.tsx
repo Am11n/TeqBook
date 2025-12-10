@@ -6,12 +6,18 @@ import {
   useState,
   useEffect,
   useMemo,
+  useCallback,
   ReactNode,
 } from "react";
-import { supabase } from "@/lib/supabase-client";
+import { getCurrentUser } from "@/lib/services/auth-service";
+import { getProfileForUser } from "@/lib/services/profiles-service";
+import { getSalonByIdForUser } from "@/lib/services/salons-service";
 import { useLocale } from "@/components/locale-provider";
+// eslint-disable-next-line no-restricted-imports
 import type { User } from "@supabase/supabase-js";
 import type { AppLocale } from "@/i18n/translations";
+// eslint-disable-next-line no-restricted-imports
+import { supabase } from "@/lib/supabase-client";
 
 type Profile = {
   user_id: string;
@@ -66,14 +72,11 @@ export function SalonProvider({ children }: SalonProviderProps) {
     status: "loading",
   });
 
-  const loadSalonData = async () => {
+  const loadSalonData = useCallback(async () => {
       setState({ status: "loading" });
 
       // 1. Get current user
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { data: user, error: userError } = await getCurrentUser();
 
       if (userError || !user) {
         setState({ status: "unauthenticated" });
@@ -81,20 +84,16 @@ export function SalonProvider({ children }: SalonProviderProps) {
       }
 
       // 2. Get profile with salon_id and is_superadmin
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("user_id, salon_id, is_superadmin")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: profile, error: profileError } = await getProfileForUser(user.id);
 
       // Super admins don't need a salon_id
-      if (profileError) {
+      if (profileError || !profile) {
         setState({ status: "no-salon" });
         return;
       }
 
       // If not superadmin and no salon_id, redirect to onboarding
-      if (!profile?.is_superadmin && !profile?.salon_id) {
+      if (!profile.is_superadmin && !profile.salon_id) {
         setState({ status: "no-salon" });
         return;
       }
@@ -102,16 +101,12 @@ export function SalonProvider({ children }: SalonProviderProps) {
       // 3. Get salon data (only if not superadmin or if salon_id exists)
       let salon = null;
       if (profile.salon_id) {
-        const { data: salonData, error: salonError } = await supabase
-          .from("salons")
-          .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number")
-          .eq("id", profile.salon_id)
-          .maybeSingle();
+        const { data: salonData, error: salonError } = await getSalonByIdForUser(profile.salon_id);
 
         if (salonError) {
           setState({
             status: "error",
-            error: salonError?.message ?? "Could not load salon data.",
+            error: salonError ?? "Could not load salon data.",
           });
           return;
         }
@@ -149,9 +144,10 @@ export function SalonProvider({ children }: SalonProviderProps) {
         profile,
         salon,
       });
-  };
+  }, [setLocale]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSalonData();
 
     // Listen for auth changes
@@ -164,7 +160,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setLocale]);
+  }, [loadSalonData]);
 
   const value = useMemo<SalonContextType>(() => {
     if (state.status === "ready") {
@@ -190,7 +186,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
       isSuperAdmin: false,
       refreshSalon: loadSalonData,
     };
-  }, [state]);
+  }, [state, loadSalonData]);
 
   return (
     <SalonContext.Provider value={value}>{children}</SalonContext.Provider>

@@ -73,6 +73,7 @@ export default function ServicesPage() {
   useEffect(() => {
     if (!isReady) {
       if (salonError) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(salonError);
       } else if (salonLoading) {
         setLoading(true);

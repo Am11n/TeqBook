@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase-client";
 import type {
   Employee,
   Service,
-  EmployeeService,
   CreateEmployeeInput,
   UpdateEmployeeInput,
 } from "@/lib/types";
@@ -26,7 +25,7 @@ export async function getEmployeesForCurrentSalon(
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
-    let query = supabase
+    const query = supabase
       .from("employees")
       .select("id, full_name, email, phone, role, preferred_language, is_active", { count: "exact" })
       .eq("salon_id", salonId)

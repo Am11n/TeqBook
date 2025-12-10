@@ -108,6 +108,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     }
 
     loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   async function handleLoadSlots(e: FormEvent) {
@@ -192,7 +193,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
       setSuccessMessage(t.successMessage);
       setSaving(false);
-    } catch (err) {
+    } catch {
       setError(t.createError);
       setSaving(false);
     }

@@ -20,17 +20,18 @@ import type {
 /**
  * Interface versions of domain types
  * Use these when you need interface semantics (e.g., extending, implementing)
+ * These are type aliases that can be extended if needed in the future
  */
-export interface IBooking extends Booking {}
-export interface ICalendarBooking extends CalendarBooking {}
-export interface ICustomer extends Customer {}
-export interface IEmployee extends Employee {}
-export interface IService extends Service {}
-export interface IShift extends Shift {}
-export interface ISalon extends Salon {}
-export interface IProfile extends Profile {}
-export interface IOpeningHours extends OpeningHours {}
-export interface IUserProfile extends UserProfile {}
+export type IBooking = Booking;
+export type ICalendarBooking = CalendarBooking;
+export type ICustomer = Customer;
+export type IEmployee = Employee;
+export type IService = Service;
+export type IShift = Shift;
+export type ISalon = Salon;
+export type IProfile = Profile;
+export type IOpeningHours = OpeningHours;
+export type IUserProfile = UserProfile;
 
 /**
  * Re-export domain types for convenience

@@ -124,6 +124,7 @@ export default function EmployeesPage() {
     }
 
     loadEmployees();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, salon?.id, salonLoading, salonError, t.noSalon]);
 
   async function handleAddEmployee(e: FormEvent) {

@@ -36,7 +36,7 @@ export async function searchSalonEntities(
     return { data: [], error: null };
   }
 
-  const term = query.toLowerCase().trim();
+  // const term = query.toLowerCase().trim(); // Reserved for future use
   const allResults: SearchResult[] = [];
 
   try {

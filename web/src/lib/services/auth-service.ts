@@ -129,7 +129,7 @@ export async function signOut(): Promise<{ error: string | null }> {
 /**
  * Get user session
  */
-export async function getSession(): Promise<{ data: any | null; error: string | null }> {
+export async function getSession(): Promise<{ data: { access_token: string; refresh_token: string; user: unknown } | null; error: string | null }> {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
 

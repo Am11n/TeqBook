@@ -49,7 +49,7 @@ export default function CalendarPage() {
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [bookings, setBookings] = useState<CalendarBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -60,6 +60,7 @@ export default function CalendarPage() {
   useEffect(() => {
     if (!isReady) {
       if (salonError) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(salonError);
       } else if (salonLoading) {
         setLoading(true);

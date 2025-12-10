@@ -6,8 +6,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { StatsGrid } from "@/components/stats-grid";
-import { Section, SectionCard } from "@/components/layout/section";
-import { Check, Sparkles, Calendar, Users, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, Waves, Hand, Paintbrush } from "lucide-react";
+import { Section } from "@/components/layout/section";
+import { Check, Sparkles, Calendar, Clock, User, Scissors, CreditCard, TrendingUp, Globe, UserPlus, Waves, Hand, Paintbrush } from "lucide-react";
 import { LogoLoop } from "@/components/ui/logo-loop";
 
 type Locale =
@@ -2259,7 +2259,7 @@ export default function LandingPage() {
             </motion.div>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               {pricingPlans.map((plan, index) => {
-                const isHighlighted = (plan as any).highlighted;
+                const isHighlighted = "highlighted" in plan && plan.highlighted === true;
 
                 return (
                   <motion.div

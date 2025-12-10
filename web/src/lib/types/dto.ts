@@ -6,11 +6,11 @@
 
 import type {
   BookingStatus,
-  EmployeeRole,
-  PlanType,
-  NotificationType,
-  NotificationStatus,
-  PaymentMethod,
+  // EmployeeRole, // Reserved for future use
+  // PlanType, // Reserved for future use
+  // NotificationType, // Reserved for future use
+  // NotificationStatus, // Reserved for future use
+  // PaymentMethod, // Reserved for future use
 } from "./domain";
 
 // =====================================================

@@ -40,7 +40,7 @@ describe("Bookings Repository", () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue(mockQuery),
-      } as any);
+      } as unknown as ReturnType<typeof supabase.from>);
 
       const result = await getBookingsForCurrentSalon(mockSalonId);
 
@@ -62,7 +62,7 @@ describe("Bookings Repository", () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue(mockQuery),
-      } as any);
+      } as unknown as ReturnType<typeof supabase.from>);
 
       const result = await getBookingsForCurrentSalon(mockSalonId);
 
@@ -88,7 +88,7 @@ describe("Bookings Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockBooking,
         error: null,
-      } as any);
+      } as unknown as ReturnType<typeof supabase.rpc>);
 
       const result = await createBooking({
         salon_id: mockSalonId,

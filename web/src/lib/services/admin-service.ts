@@ -6,8 +6,6 @@
 
 import { supabase } from "@/lib/supabase-client";
 import { getUserEmails } from "@/lib/repositories/admin";
-import { getSalonById } from "@/lib/repositories/salons";
-import { getProfileByUserId } from "@/lib/repositories/profiles";
 
 export type AdminSalon = {
   id: string;
@@ -53,7 +51,7 @@ export async function getAllSalonsForAdmin(): Promise<{
       ...new Set(profilesData?.map((p) => p.user_id).filter((id): id is string => !!id) || []),
     ];
 
-    let emailMap = new Map<string, string>();
+    const emailMap = new Map<string, string>();
     if (allUserIds.length > 0) {
       const { data: userEmailsData, error: emailsError } = await getUserEmails(allUserIds);
       
@@ -109,8 +107,8 @@ export async function getAllUsersForAdmin(): Promise<{
       ...new Set(allProfiles?.map((p) => p.user_id).filter((id): id is string => !!id) || []),
     ];
 
-    let emailMap = new Map<string, string>();
-    let createdAtMap = new Map<string, string>();
+    const emailMap = new Map<string, string>();
+    const createdAtMap = new Map<string, string>();
 
     if (allUserIds.length > 0) {
       try {

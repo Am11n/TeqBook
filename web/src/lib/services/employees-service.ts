@@ -36,7 +36,7 @@ export async function getEmployeesForSalon(
 export async function getEmployeeWithServicesForSalon(
   salonId: string,
   employeeId: string
-): Promise<{ data: { employee: Employee; services: any[] } | null; error: string | null }> {
+): Promise<{ data: { employee: Employee; services: { id: string; name: string }[] } | null; error: string | null }> {
   // Validation
   if (!salonId || !employeeId) {
     return { data: null, error: "Salon ID and Employee ID are required" };
@@ -53,7 +53,7 @@ export async function getEmployeesWithServicesForSalon(
   salonId: string,
   options?: { page?: number; pageSize?: number }
 ): Promise<{
-  data: { employees: Employee[]; servicesMap: Record<string, any[]> } | null;
+  data: { employees: Employee[]; servicesMap: Record<string, { id: string; name: string }[]> } | null;
   error: string | null;
   total?: number;
 }> {

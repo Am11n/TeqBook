@@ -125,7 +125,7 @@ export default function OnboardingPage() {
     t.step3Title || "Confirm & Create",
   ];
 
-  const progressPercentage = ((currentStep - 1) / 2) * 100;
+  // const progressPercentage = ((currentStep - 1) / 2) * 100; // Reserved for future use
 
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
 
             {/* Description */}
             <p className="mt-4 max-w-[460px] text-sm sm:text-base text-slate-600">
-              We'll help you set up your salon so you can start accepting bookings in minutes.
+              We&apos;ll help you set up your salon so you can start accepting bookings in minutes.
             </p>
 
             {/* Bullets */}
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
-                <span>Invite staff when you're ready</span>
+                <span>Invite staff when you&apos;re ready</span>
               </li>
             </ul>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Bell, X, Calendar, Users, Settings, Info } from "lucide-react";
+import { useState } from "react";
+import { Bell, Calendar, Users, Settings, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

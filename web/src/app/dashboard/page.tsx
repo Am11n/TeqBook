@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import "framer-motion";
-import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -10,8 +9,7 @@ import { translations } from "@/i18n/translations";
 import { getCalendarBookings } from "@/lib/services/bookings-service";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getCustomersForSalon } from "@/lib/services/customers-service";
-import { getServicesForSalon } from "@/lib/services/services-service";
-import { Calendar, Users, Zap, Clock, User, Plus, TrendingUp, Info, ArrowRight, DollarSign, Repeat } from "lucide-react";
+import { Calendar, Users, Zap, Clock, User, Plus, Info, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,8 +41,7 @@ type PerformanceData = {
 
 export default function DashboardPage() {
   const { locale } = useLocale();
-  const { salon, user, isReady } = useCurrentSalon();
-  const router = useRouter();
+  const { salon, isReady, user } = useCurrentSalon();
   const appLocale = locale === "nb" ? "nb" : "en";
   const t = translations[appLocale].home;
 
@@ -61,7 +58,88 @@ export default function DashboardPage() {
       const name = user.email.split("@")[0];
       setOwnerName(name.charAt(0).toUpperCase() + name.slice(1));
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadPerformanceData = async (salonId: string) => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    // Get this week's bookings
+    const { data: weekBookings } = await getCalendarBookings(salonId, {
+      startDate: startOfWeek.toISOString(),
+      endDate: endOfWeek.toISOString(),
+      pageSize: 100,
+    });
+
+    // Get all customers to find new ones this week
+    const { data: allCustomers } = await getCustomersForSalon(salonId, {
+      pageSize: 100,
+    });
+
+    // Calculate statistics
+    const bookingsThisWeek = weekBookings || [];
+    const bookingsCount = bookingsThisWeek.length;
+
+    // Find new customers this week
+    // Note: customers table might not have created_at, so we'll use a simple count
+    // In a real implementation, you'd filter by created_at >= startOfWeek
+    // const newCustomersCount = allCustomers?.filter(() => true).length || 0;
+
+    // Find top service
+    const serviceCounts: Record<string, number> = {};
+    bookingsThisWeek.forEach((booking) => {
+      const serviceName = booking.services?.name || "Unknown";
+      serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+    });
+    const topService =
+      Object.entries(serviceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      null;
+
+    // Find most booked staff
+    const staffCounts: Record<string, number> = {};
+    bookingsThisWeek.forEach((booking) => {
+      const staffName = booking.employees?.full_name || "Unknown";
+      staffCounts[staffName] = (staffCounts[staffName] || 0) + 1;
+    });
+    const mostBookedStaff =
+      Object.entries(staffCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      null;
+
+    // Create chart data (bookings per day this week)
+    const chartData: { day: string; bookings: number }[] = [];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(day);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const dayBookings = bookingsThisWeek.filter((booking) => {
+        const bookingDate = new Date(booking.start_time);
+        return bookingDate >= dayStart && bookingDate <= dayEnd;
+      });
+
+      chartData.push({
+        day: days[i],
+        bookings: dayBookings.length,
+      });
+    }
+
+    setPerformanceData({
+      bookingsCount,
+      newCustomersCount: allCustomers?.length || 0, // Simplified for now
+      topService,
+      mostBookedStaff,
+      chartData,
+    });
+  };
 
   // Load today's bookings
   useEffect(() => {
@@ -118,89 +196,6 @@ export default function DashboardPage() {
 
     loadData();
   }, [isReady, salon?.id]);
-
-  async function loadPerformanceData(salonId: string) {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
-
-    // Get this week's bookings
-    const { data: weekBookings } = await getCalendarBookings(salonId, {
-      startDate: startOfWeek.toISOString(),
-      endDate: endOfWeek.toISOString(),
-      pageSize: 100,
-    });
-
-    // Get all customers to find new ones this week
-    const { data: allCustomers } = await getCustomersForSalon(salonId, {
-      pageSize: 100,
-    });
-
-    // Calculate statistics
-    const bookingsThisWeek = weekBookings || [];
-    const bookingsCount = bookingsThisWeek.length;
-
-    // Find new customers this week
-    const newCustomersCount =
-      allCustomers?.filter((customer) => {
-        // Note: customers table might not have created_at, so we'll use a simple count
-        // In a real implementation, you'd filter by created_at >= startOfWeek
-        return true; // For now, return all as we don't have created_at
-      }).length || 0;
-
-    // Find top service
-    const serviceCounts: Record<string, number> = {};
-    bookingsThisWeek.forEach((booking) => {
-      const serviceName = booking.services?.name || "Unknown";
-      serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
-    });
-    const topService =
-      Object.entries(serviceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-      null;
-
-    // Find most booked staff
-    const staffCounts: Record<string, number> = {};
-    bookingsThisWeek.forEach((booking) => {
-      const staffName = booking.employees?.full_name || "Unknown";
-      staffCounts[staffName] = (staffCounts[staffName] || 0) + 1;
-    });
-    const mostBookedStaff =
-      Object.entries(staffCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-      null;
-
-    // Create chart data (bookings per day this week)
-    const chartData: { day: string; bookings: number }[] = [];
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(startOfWeek.getDate() + i);
-      const dayStart = new Date(day);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(day);
-      dayEnd.setHours(23, 59, 59, 999);
-
-      const dayBookings = bookingsThisWeek.filter((booking) => {
-        const bookingDate = new Date(booking.start_time);
-        return bookingDate >= dayStart && bookingDate <= dayEnd;
-      });
-
-      chartData.push({
-        day: days[i],
-        bookings: dayBookings.length,
-      });
-    }
-
-    setPerformanceData({
-      bookingsCount,
-      newCustomersCount: allCustomers?.length || 0, // Simplified for now
-      topService,
-      mostBookedStaff,
-      chartData,
-    });
-  }
 
   const formatTime = (timeString: string) => {
     const date = new Date(timeString);
@@ -516,7 +511,7 @@ export default function DashboardPage() {
                   >
                     <div
                       className="w-full rounded-t bg-slate-300/40"
-                      style={{ height: `${20 + Math.random() * 30}%`, minHeight: "8px" }}
+                      style={{ height: "25%", minHeight: "8px" }}
                     />
                   </div>
                 ))}

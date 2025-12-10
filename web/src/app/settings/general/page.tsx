@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
-import type { AppLocale } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
 
 export default function GeneralSettingsPage() {
