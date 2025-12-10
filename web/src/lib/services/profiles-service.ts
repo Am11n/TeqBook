@@ -27,7 +27,17 @@ export async function getProfileForUser(
  */
 export async function updatePreferencesForUser(
   userId: string,
-  preferences: { sidebarCollapsed?: boolean }
+  preferences: {
+    sidebarCollapsed?: boolean;
+    notifications?: {
+      email?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+      };
+    };
+  }
 ): Promise<{ error: string | null }> {
   // Validation
   if (!userId) {

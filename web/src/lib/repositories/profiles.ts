@@ -13,6 +13,14 @@ export type Profile = {
   role?: string | null;
   user_preferences?: {
     sidebarCollapsed?: boolean;
+    notifications?: {
+      email?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+      };
+    };
   } | null;
 };
 
@@ -51,13 +59,46 @@ export async function getProfileByUserId(
  */
 export async function updateUserPreferences(
   userId: string,
-  preferences: { sidebarCollapsed?: boolean }
+  preferences: {
+    sidebarCollapsed?: boolean;
+    notifications?: {
+      email?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+      };
+    };
+  }
 ): Promise<{ error: string | null }> {
   try {
+    // Get current preferences to merge
+    const { data: currentProfile } = await supabase
+      .from("profiles")
+      .select("user_preferences")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const currentPreferences = (currentProfile?.user_preferences as typeof preferences) || {};
+    
+    // Merge new preferences with existing ones
+    const mergedPreferences = {
+      ...currentPreferences,
+      ...preferences,
+      notifications: {
+        ...currentPreferences.notifications,
+        ...preferences.notifications,
+        email: {
+          ...currentPreferences.notifications?.email,
+          ...preferences.notifications?.email,
+        },
+      },
+    };
+
     const { error } = await supabase
       .from("profiles")
       .update({
-        user_preferences: preferences,
+        user_preferences: mergedPreferences,
       })
       .eq("user_id", userId);
 

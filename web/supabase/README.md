@@ -80,6 +80,19 @@ Adds the `whatsapp_number` column to the `salons` table for storing WhatsApp con
 
 **Note:** This script is idempotent - it can be run multiple times safely. It checks for existing columns before adding them.
 
+### `add-branding-theme.sql`
+
+Adds the `theme` JSONB column to the `salons` table for storing custom branding information (colors, fonts, logo, etc.).
+
+- `theme` - JSONB column storing theme configuration:
+  - `primary` - Primary brand color (hex)
+  - `secondary` - Secondary accent color (hex)
+  - `font` - Font family name
+  - `logo_url` - URL to salon logo
+  - `presets` - Array of preset names
+
+**Note:** This script is idempotent - it can be run multiple times safely. It creates a GIN index for faster JSONB queries.
+
 ### `add-superadmin.sql`
 
 Adds the `is_superadmin` column to the `profiles` table and creates RLS policies for super admin access.

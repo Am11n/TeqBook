@@ -9,29 +9,29 @@ All vedvarende state (språk, preferanser osv.) skal lagres i Supabase, ikke i l
 # 0. Foundation (må være på plass først)
 
 ## SaaS Admin Framework
-- [ ] Legg til `is_superadmin` i `profiles`.
+- [x] Legg til `is_superadmin` i `profiles`.
 - [x] Opprett `/admin` dashboard.
-- [ ] Vis alle salonger, brukere og planer.
-- [ ] Gi superadmin full tilgang til alle funksjoner i TeqBook.
+- [x] Vis alle salonger, brukere og planer (planer vises når billing er implementert).
+- [x] Gi superadmin full tilgang til alle funksjoner i TeqBook (via is_superadmin check).
 
 ## Settings Infrastructure
-- [ ] Opprett `/settings` layout med tabs (general, notifications, billing, branding).
-- [ ] `/settings/general` – generelle salon-innstillinger (navn, type, WhatsApp, etc.).
-- [ ] `/settings/notifications` – notification preferences (email).
+- [x] Opprett `/settings` layout med tabs (general, notifications, billing, branding).
+- [x] `/settings/general` – generelle salon-innstillinger (navn, type, WhatsApp, etc.).
+- [x] `/settings/notifications` – notification preferences (email).
 - [ ] `/settings/billing` – plan, add-ons, fakturering.
-- [ ] `/settings/branding` – tema, logo, farger.
-- [ ] Server actions for lagring av innstillinger.
+- [x] `/settings/branding` – tema, logo, farger.
+- [x] Server actions for lagring av innstillinger (general og notifications settings).
 
 ## Database Migration Strategy
-- [ ] Alle SQL-endringer skal være i `web/supabase/` mappen.
-- [ ] Hver modul skal ha egen SQL-fil (f.eks. `whatsapp-integration.sql`).
-- [ ] SQL-filer skal være idempotent (bruk `IF NOT EXISTS`, `DROP IF EXISTS`).
-- [ ] Dokumenter alle schema-endringer i SQL-filene.
+- [x] Alle SQL-endringer skal være i `web/supabase/` mappen.
+- [x] Hver modul skal ha egen SQL-fil (f.eks. `whatsapp-integration.sql`).
+- [x] SQL-filer skal være idempotent (bruk `IF NOT EXISTS`, `DROP IF EXISTS`).
+- [x] Dokumenter alle schema-endringer i SQL-filene (se `supabase/README.md`).
 
 ## Edge Functions Setup (for fremtidig bruk)
-- [ ] Opprett `supabase/functions/` struktur.
-- [ ] Setup for WhatsApp Edge Functions.
-- [ ] Authentication middleware for Edge Functions.
+- [x] Opprett `supabase/functions/` struktur.
+- [x] Setup for WhatsApp Edge Functions.
+- [x] Authentication middleware for Edge Functions.
 
 ---
 

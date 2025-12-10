@@ -48,7 +48,14 @@ supabase functions serve
 
 ## Available Functions
 
-(Add function documentation here as functions are created)
+### `whatsapp-send`
+Sends WhatsApp messages via external API. See `whatsapp-send/README.md` for details.
+
+### `_shared/auth.ts`
+Shared authentication middleware for Edge Functions. Provides:
+- `authenticateRequest()` - Validates JWT tokens from Authorization header
+- `isSuperAdmin()` - Checks if user is superadmin
+- `getUserSalonId()` - Gets user's salon_id from profile
 
 ## Notes
 

@@ -6,6 +6,14 @@
 
 import { supabase } from "@/lib/supabase-client";
 
+export type SalonTheme = {
+  primary?: string;
+  secondary?: string;
+  font?: string;
+  logo_url?: string;
+  presets?: string[];
+};
+
 export type Salon = {
   id: string;
   name: string;
@@ -14,6 +22,7 @@ export type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
+  theme?: SalonTheme | null;
 };
 
 /**
@@ -25,7 +34,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, theme")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -56,7 +65,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, theme")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -125,6 +134,7 @@ export async function updateSalon(
     salon_type?: string | null;
     whatsapp_number?: string | null;
     preferred_language?: string | null;
+    theme?: SalonTheme | null;
   }
 ): Promise<{ error: string | null }> {
   try {

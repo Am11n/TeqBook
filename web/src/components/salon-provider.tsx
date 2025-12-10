@@ -33,6 +33,13 @@ type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
+  theme?: {
+    primary?: string;
+    secondary?: string;
+    font?: string;
+    logo_url?: string;
+    presets?: string[];
+  } | null;
 };
 
 type SalonContextValue =

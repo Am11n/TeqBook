@@ -47,6 +47,13 @@ export async function updateSalonSettings(
     salon_type?: string | null;
     whatsapp_number?: string | null;
     preferred_language?: string | null;
+    theme?: {
+      primary?: string;
+      secondary?: string;
+      font?: string;
+      logo_url?: string;
+      presets?: string[];
+    } | null;
   }
 ): Promise<{ error: string | null }> {
   // Validation
@@ -72,6 +79,13 @@ export async function updateSalon(
     name?: string;
     salon_type?: string | null;
     whatsapp_number?: string | null;
+    theme?: {
+      primary?: string;
+      secondary?: string;
+      font?: string;
+      logo_url?: string;
+      presets?: string[];
+    } | null;
   }
 ): Promise<{ error: string | null }> {
   return updateSalonSettings(salonId, updates);

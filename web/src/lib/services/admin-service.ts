@@ -13,6 +13,7 @@ export type AdminSalon = {
   salon_type: string | null;
   created_at: string;
   owner_email?: string;
+  plan?: string | null; // Will be added when billing is implemented
 };
 
 export type AdminUser = {
@@ -35,6 +36,9 @@ export async function getAllSalonsForAdmin(): Promise<{
       .from("salons")
       .select("id, name, salon_type, created_at")
       .order("created_at", { ascending: false });
+    
+    // Note: plan column will be added when billing is implemented
+    // For now, we'll set it to null
 
     if (salonsError) {
       return { data: null, error: salonsError.message };
