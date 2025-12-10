@@ -129,10 +129,20 @@ describe("Bookings Repository", () => {
       };
 
       // Mock RPC to return data directly (not wrapped in single())
+      // Supabase RPC returns PostgrestSingleResponse which has data, error, count, status, statusText
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockBooking,
         error: null,
-      } as { data: typeof mockBooking; error: null });
+        count: null,
+        status: 200,
+        statusText: "OK",
+      } as {
+        data: typeof mockBooking;
+        error: null;
+        count: null;
+        status: number;
+        statusText: string;
+      });
 
       const result = await createBooking({
         salon_id: mockSalonId,
