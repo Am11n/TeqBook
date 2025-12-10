@@ -13,6 +13,7 @@ import { translations } from "@/i18n/translations";
 import type { AppLocale } from "@/i18n/translations";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { getProfileForUser, updatePreferencesForUser } from "@/lib/services/profiles-service";
+import { updateSalonSettings } from "@/lib/services/salons-service";
 import {
   LayoutDashboard,
   Calendar,
@@ -309,12 +310,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 const newLocale = e.target.value as AppLocale;
                 setLocale(newLocale);
                 
-                // Update salon's preferred_language in Supabase
+                // Update salon's preferred_language via service
                 if (salon?.id) {
-                  await supabase
-                    .from("salons")
-                    .update({ preferred_language: newLocale })
-                    .eq("id", salon.id);
+                  await updateSalonSettings(salon.id, {
+                    preferred_language: newLocale,
+                  });
                 }
               }}
               className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"

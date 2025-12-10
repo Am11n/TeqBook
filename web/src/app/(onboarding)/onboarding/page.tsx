@@ -97,8 +97,6 @@ export default function OnboardingPage() {
       }
     }
 
-    const data = salonData;
-
     // Set the locale to the preferred language before redirecting
     setLocale(preferredLanguage);
 

@@ -38,14 +38,15 @@ export async function getSalonByIdForUser(
 }
 
 /**
- * Update salon
+ * Update salon settings
  */
-export async function updateSalon(
+export async function updateSalonSettings(
   salonId: string,
   updates: {
     name?: string;
     salon_type?: string | null;
     whatsapp_number?: string | null;
+    preferred_language?: string | null;
   }
 ): Promise<{ error: string | null }> {
   // Validation
@@ -60,5 +61,19 @@ export async function updateSalon(
 
   // Call repository
   return await updateSalonRepo(salonId, updates);
+}
+
+/**
+ * Update salon (alias for backward compatibility)
+ */
+export async function updateSalon(
+  salonId: string,
+  updates: {
+    name?: string;
+    salon_type?: string | null;
+    whatsapp_number?: string | null;
+  }
+): Promise<{ error: string | null }> {
+  return updateSalonSettings(salonId, updates);
 }
 

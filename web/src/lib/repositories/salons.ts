@@ -86,6 +86,7 @@ export async function updateSalon(
     name?: string;
     salon_type?: string | null;
     whatsapp_number?: string | null;
+    preferred_language?: string | null;
   }
 ): Promise<{ error: string | null }> {
   try {
