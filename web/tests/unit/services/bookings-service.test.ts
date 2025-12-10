@@ -20,7 +20,7 @@ describe("Bookings Service", () => {
         customer_full_name: "John Doe",
       });
 
-      expect(result.error).toBe("Missing required booking information.");
+      expect(result.error).toBe("All required fields must be provided");
       expect(result.data).toBeNull();
     });
 
@@ -42,11 +42,16 @@ describe("Bookings Service", () => {
         error: null,
       });
 
+      // Use a future date for the test
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      const futureDateString = futureDate.toISOString();
+
       const result = await createBooking({
         salon_id: "salon-1",
         employee_id: "employee-1",
         service_id: "service-1",
-        start_time: "2024-01-01T10:00:00Z",
+        start_time: futureDateString,
         customer_full_name: "John Doe",
       });
 

@@ -1,9 +1,52 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// Mock Supabase BEFORE importing anything that uses it
+vi.mock("@/lib/supabase-client", () => {
+  const mockFrom = vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        order: vi.fn(() => ({
+          range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 })),
+        })),
+        maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+        single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      })),
+      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    })),
+    insert: vi.fn(() => ({
+      select: vi.fn(() => ({
+        maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      })),
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => Promise.resolve({ error: null })),
+      select: vi.fn(() => ({
+        maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      })),
+    })),
+    delete: vi.fn(() => ({
+      eq: vi.fn(() => Promise.resolve({ error: null })),
+    })),
+  }));
+
+  const mockRpc = vi.fn(() => ({
+    single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  }));
+
+  return {
+    supabase: {
+      from: mockFrom,
+      rpc: mockRpc,
+      auth: {
+        getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      },
+    },
+  };
+});
+
 import { getBookingsForCurrentSalon, createBooking } from "@/lib/repositories/bookings";
 import { supabase } from "@/lib/supabase-client";
-
-// Mock Supabase
-vi.mock("@/lib/supabase-client");
 
 describe("Bookings Repository", () => {
   const mockSalonId = "salon-123";
@@ -85,13 +128,11 @@ describe("Bookings Repository", () => {
         services: { name: "Haircut" },
       };
 
-      const mockRpcCall = {
-        single: vi.fn().mockResolvedValue({
-          data: mockBooking,
-          error: null,
-        }),
-      } as unknown as ReturnType<typeof supabase.rpc>;
-      vi.mocked(supabase.rpc).mockReturnValue(mockRpcCall);
+      // Mock RPC to return data directly (not wrapped in single())
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: mockBooking,
+        error: null,
+      } as { data: typeof mockBooking; error: null });
 
       const result = await createBooking({
         salon_id: mockSalonId,
@@ -103,6 +144,7 @@ describe("Bookings Repository", () => {
 
       expect(result.error).toBeNull();
       expect(result.data).toBeDefined();
+      expect(result.data?.id).toBe("booking-1");
     });
   });
 });
