@@ -3,7 +3,7 @@
 // =====================================================
 // Validation schemas for booking-related operations
 
-import type { CreateBookingInput, UpdateBookingInput } from "@/lib/types";
+import type { CreateBookingInput, UpdateBookingInput } from "@/lib/types/dto";
 
 /**
  * Validate create booking input

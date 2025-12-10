@@ -29,9 +29,9 @@ export type SearchService = {
 export type SearchBooking = {
   id: string;
   start_time: string;
-  customers: { full_name: string | null } | null;
-  employees: { full_name: string | null } | null;
-  services: { name: string | null } | null;
+  customers: { full_name: string | null }[] | null;
+  employees: { full_name: string | null }[] | null;
+  services: { name: string | null }[] | null;
 };
 
 /**

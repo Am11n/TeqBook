@@ -3,7 +3,7 @@
 // =====================================================
 // Validation schemas for service-related operations
 
-import type { CreateServiceInput, UpdateServiceInput } from "@/lib/types";
+import type { CreateServiceInput, UpdateServiceInput } from "@/lib/types/dto";
 
 /**
  * Validate create service input

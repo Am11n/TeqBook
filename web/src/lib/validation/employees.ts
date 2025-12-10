@@ -3,7 +3,7 @@
 // =====================================================
 // Validation schemas for employee-related operations
 
-import type { CreateEmployeeInput, UpdateEmployeeInput } from "@/lib/types";
+import type { CreateEmployeeInput, UpdateEmployeeInput } from "@/lib/types/dto";
 
 /**
  * Validate create employee input

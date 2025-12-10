@@ -5,7 +5,7 @@
 // Orchestrates repository calls and handles domain rules
 
 import { createSalonForCurrentUser as createSalonRPC } from "@/lib/repositories/salons";
-import { createOpeningHours } from "@/lib/repositories/opening-hours";
+import { createOpeningHours as createOpeningHoursRepo } from "@/lib/repositories/opening-hours";
 import type { AppLocale } from "@/i18n/translations";
 
 export type CreateSalonInput = {
@@ -66,6 +66,6 @@ export async function createOpeningHours(
   }
 
   // Use repository instead of direct Supabase call
-  return await createOpeningHours(openingHours);
+  return await createOpeningHoursRepo(openingHours);
 }
 

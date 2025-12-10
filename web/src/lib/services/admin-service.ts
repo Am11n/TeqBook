@@ -113,10 +113,11 @@ export async function getAllUsersForAdmin(): Promise<{
     let createdAtMap = new Map<string, string>();
 
     if (allUserIds.length > 0) {
-      const { data: userEmailsData, error: emailsError } = await getUserEmails(allUserIds);
+      try {
+        const { data: userEmailsData, error: emailsError } = await getUserEmails(allUserIds);
 
-      if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
-        userEmailsData.forEach((item) => {
+        if (!emailsError && userEmailsData && Array.isArray(userEmailsData)) {
+          userEmailsData.forEach((item) => {
             if (item.user_id && item.email) {
               emailMap.set(item.user_id, item.email);
             }

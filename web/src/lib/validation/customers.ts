@@ -3,7 +3,7 @@
 // =====================================================
 // Validation schemas for customer-related operations
 
-import type { CreateCustomerInput, UpdateCustomerInput } from "@/lib/types";
+import type { CreateCustomerInput, UpdateCustomerInput } from "@/lib/types/dto";
 
 /**
  * Validate create customer input

@@ -97,10 +97,12 @@ export async function searchSalonEntities(
           hour: "2-digit",
           minute: "2-digit",
         });
+        const serviceName = booking.services?.[0]?.name || "Service";
+        const customerName = booking.customers?.[0]?.full_name || "Walk-in";
         allResults.push({
           id: `booking-${booking.id}`,
           type: "booking",
-          label: `${booking.services?.name || "Service"} - ${booking.customers?.full_name || "Walk-in"}`,
+          label: `${serviceName} - ${customerName}`,
           metadata: timeStr,
           href: `/bookings?highlight=${booking.id}`,
         });

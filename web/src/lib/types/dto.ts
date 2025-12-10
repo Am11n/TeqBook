@@ -79,6 +79,13 @@ export type UpdateEmployeeInput = {
   service_ids?: string[];
 };
 
+export type UpdateBookingInput = {
+  status?: BookingStatus | string;
+  notes?: string | null;
+  start_time?: string;
+  end_time?: string;
+};
+
 export type UpdateServiceInput = {
   name?: string;
   category?: string | null;
@@ -86,13 +93,6 @@ export type UpdateServiceInput = {
   price_cents?: number;
   sort_order?: number;
   is_active?: boolean;
-};
-
-export type UpdateBookingInput = {
-  status?: BookingStatus | string;
-  notes?: string | null;
-  start_time?: string;
-  end_time?: string;
 };
 
 export type UpdateCustomerInput = {
