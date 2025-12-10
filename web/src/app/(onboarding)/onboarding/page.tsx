@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase-client";
+import { createSalonForCurrentUser, createOpeningHours } from "@/lib/services/onboarding-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { motion } from "framer-motion";
@@ -63,19 +63,16 @@ export default function OnboardingPage() {
     setError(null);
 
     // First create the salon
-    const { data: salonData, error: rpcError } = await supabase.rpc(
-      "create_salon_for_current_user",
-      {
-        salon_name: name,
-        salon_type_param: salonType,
-        preferred_language_param: preferredLanguage,
-        online_booking_enabled_param: onlineBooking,
-        is_public_param: publicBooking,
-      },
-    );
+    const { data: salonId, error: salonError } = await createSalonForCurrentUser({
+      salon_name: name,
+      salon_type: salonType,
+      preferred_language: preferredLanguage,
+      online_booking_enabled: onlineBooking,
+      is_public: publicBooking,
+    });
 
-    if (rpcError || !salonData) {
-      setError(rpcError?.message ?? t.createError);
+    if (salonError || !salonId) {
+      setError(salonError ?? t.createError);
       setStatus("error");
       return;
     }
@@ -84,19 +81,17 @@ export default function OnboardingPage() {
     const openingHoursToInsert = openingHours
       .filter((oh) => oh.isOpen)
       .map((oh) => ({
-        salon_id: salonData,
+        salon_id: salonId,
         day_of_week: oh.day,
         open_time: oh.openTime,
         close_time: oh.closeTime,
       }));
 
     if (openingHoursToInsert.length > 0) {
-      const { error: hoursError } = await supabase
-        .from("opening_hours")
-        .insert(openingHoursToInsert);
+      const { error: hoursError } = await createOpeningHours(openingHoursToInsert);
 
       if (hoursError) {
-        setError(hoursError.message ?? t.createError);
+        setError(hoursError);
         setStatus("error");
         return;
       }

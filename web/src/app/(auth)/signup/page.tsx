@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase-client";
+import { signUp } from "@/lib/services/auth-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { motion } from "framer-motion";
@@ -75,13 +75,10 @@ export default function SignUpPage() {
       return;
     }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { data: signUpData, error: signUpError } = await signUp(email, password);
 
-    if (signUpError || !data?.user) {
-      setError(signUpError?.message ?? signupT.signupError);
+    if (signUpError || !signUpData?.user) {
+      setError(signUpError ?? signupT.signupError);
       setStatus("error");
       return;
     }

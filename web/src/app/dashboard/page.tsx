@@ -7,11 +7,10 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
-import { getBookingsForCalendar } from "@/lib/repositories/bookings";
-import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
-import { getCustomersForCurrentSalon } from "@/lib/repositories/customers";
-import { getServicesForCurrentSalon } from "@/lib/repositories/services";
-import { supabase } from "@/lib/supabase-client";
+import { getCalendarBookings } from "@/lib/services/bookings-service";
+import { getEmployeesForSalon } from "@/lib/services/employees-service";
+import { getCustomersForSalon } from "@/lib/services/customers-service";
+import { getServicesForSalon } from "@/lib/services/services-service";
 import { Calendar, Users, Zap, Clock, User, Plus, TrendingUp, Info, ArrowRight, DollarSign, Repeat } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -83,7 +82,7 @@ export default function DashboardPage() {
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       const { data: bookingsData, error: bookingsError } =
-        await getBookingsForCalendar(salonId, {
+        await getCalendarBookings(salonId, {
           startDate: today.toISOString(),
           endDate: tomorrow.toISOString(),
           pageSize: 3,
@@ -105,7 +104,7 @@ export default function DashboardPage() {
 
       // Load employees
       const { data: employeesData, error: employeesError } =
-        await getEmployeesForCurrentSalon(salonId, { pageSize: 5 });
+        await getEmployeesForSalon(salonId, { pageSize: 5 });
 
       if (!employeesError && employeesData) {
         setEmployees(employeesData);
@@ -129,14 +128,14 @@ export default function DashboardPage() {
     endOfWeek.setDate(startOfWeek.getDate() + 7);
 
     // Get this week's bookings
-    const { data: weekBookings } = await getBookingsForCalendar(salonId, {
+    const { data: weekBookings } = await getCalendarBookings(salonId, {
       startDate: startOfWeek.toISOString(),
       endDate: endOfWeek.toISOString(),
       pageSize: 100,
     });
 
     // Get all customers to find new ones this week
-    const { data: allCustomers } = await getCustomersForCurrentSalon(salonId, {
+    const { data: allCustomers } = await getCustomersForSalon(salonId, {
       pageSize: 100,
     });
 

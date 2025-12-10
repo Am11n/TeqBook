@@ -4,7 +4,8 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase-client";
+import { signInWithPassword } from "@/lib/services/auth-service";
+import { getProfileForUser } from "@/lib/services/profiles-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { motion } from "framer-motion";
@@ -56,22 +57,21 @@ export default function LoginPage() {
     setStatus("loading");
     setError(null);
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword(
-      {
-        email,
-        password,
-      },
+    // Sign in using auth service
+    const { data: signInData, error: signInError } = await signInWithPassword(
+      email,
+      password,
     );
 
     if (signInError) {
       // Provide more specific error messages
-      let errorMessage = signInError.message;
+      let errorMessage = signInError;
       
-      if (signInError.message.includes("Invalid login credentials")) {
+      if (signInError.includes("Invalid login credentials")) {
         errorMessage = "Invalid email or password. Please check your credentials.";
-      } else if (signInError.message.includes("Email not confirmed")) {
+      } else if (signInError.includes("Email not confirmed")) {
         errorMessage = "Please confirm your email address before logging in. Check your inbox for a confirmation email.";
-      } else if (signInError.message.includes("User not found")) {
+      } else if (signInError.includes("User not found")) {
         errorMessage = "No account found with this email address.";
       }
       
@@ -81,18 +81,16 @@ export default function LoginPage() {
       return;
     }
 
-    if (!data?.user) {
+    if (!signInData?.user) {
       setError("Login failed. Please try again.");
       setStatus("error");
       return;
     }
 
-    // Check if user has a profile and check if they're superadmin
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("salon_id, is_superadmin")
-      .eq("user_id", data.user.id)
-      .maybeSingle();
+    // Get user profile using profiles service
+    const { data: profile, error: profileError } = await getProfileForUser(
+      signInData.user.id
+    );
 
     if (profileError) {
       setError("Could not load user profile.");
@@ -100,14 +98,20 @@ export default function LoginPage() {
       return;
     }
 
+    if (!profile) {
+      // No profile found, redirect to onboarding
+      router.push("/onboarding");
+      return;
+    }
+
     // If user is superadmin, redirect to admin dashboard
-    if (profile?.is_superadmin) {
+    if (profile.is_superadmin) {
       router.push("/admin");
       return;
     }
 
     // If user has a salon, redirect to dashboard
-    if (profile?.salon_id) {
+    if (profile.salon_id) {
       router.push("/dashboard");
       return;
     }

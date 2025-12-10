@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState, FormEvent } from "react";
-import { supabase } from "@/lib/supabase-client";
+import { getAvailableTimeSlots, createBooking } from "@/lib/services/bookings-service";
+import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
+import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
+import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
@@ -69,12 +72,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       setLoading(true);
       setError(null);
 
-      const { data: salonData, error: salonError } = await supabase
-        .from("salons")
-        .select("id, name")
-        .eq("slug", slug)
-        .eq("is_public", true)
-        .maybeSingle();
+      // Load salon by slug
+      const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
 
       if (salonError || !salonData) {
         setError(t.notFound);
@@ -82,28 +81,21 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         return;
       }
 
-      setSalon(salonData as Salon);
+      setSalon({ id: salonData.id, name: salonData.name });
 
-      const [{ data: servicesData, error: servicesError }, { data: employeesData, error: employeesError }] =
-        await Promise.all([
-          supabase
-            .from("services")
-            .select("id, name")
-            .eq("salon_id", salonData.id)
-            .eq("is_active", true)
-            .order("name", { ascending: true }),
-          supabase
-            .from("employees")
-            .select("id, full_name")
-            .eq("salon_id", salonData.id)
-            .eq("is_active", true)
-            .order("full_name", { ascending: true }),
-        ]);
+      // Load services and employees in parallel
+      const [
+        { data: servicesData, error: servicesError },
+        { data: employeesData, error: employeesError },
+      ] = await Promise.all([
+        getActiveServicesForPublicBooking(salonData.id),
+        getActiveEmployeesForPublicBooking(salonData.id),
+      ]);
 
       if (servicesError || employeesError) {
         setError(
-          servicesError?.message ??
-            employeesError?.message ??
+          servicesError ??
+            employeesError ??
             t.loadError,
         );
         setLoading(false);
@@ -127,49 +119,45 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     setSlots([]);
     setSelectedSlot("");
 
-    const { data, error: rpcError } = await supabase.rpc(
-      "generate_availability",
-      {
-        p_salon_id: salon.id,
-        p_employee_id: employeeId,
-        p_service_id: serviceId,
-        p_day: date,
-      },
+    const { data, error: slotsError } = await getAvailableTimeSlots(
+      salon.id,
+      employeeId,
+      serviceId,
+      date,
     );
 
-    if (rpcError) {
-      setError(rpcError.message);
+    if (slotsError || !data) {
+      setError(slotsError ?? t.loadError);
       setLoadingSlots(false);
       return;
     }
 
-    const mapped =
-      (data as { slot_start: string; slot_end: string }[])?.map((slot) => {
-        // Parse timestamps and extract time components
-        // The database returns timestamps that should be treated as local time
-        const startDate = new Date(slot.slot_start);
-        const endDate = new Date(slot.slot_end);
-        
-        // Extract time components from the ISO string directly to avoid timezone issues
-        // Format: "2024-01-01T10:00:00" or "2024-01-01T10:00:00Z"
-        const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
-        const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
-        
-        if (startMatch && endMatch) {
-          // Use the time directly from the string to avoid timezone conversion
-          const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
-          return { start: slot.slot_start, end: slot.slot_end, label };
-        }
-        
-        // Fallback to local time formatting if regex doesn't match
-        const startHours = startDate.getHours().toString().padStart(2, "0");
-        const startMinutes = startDate.getMinutes().toString().padStart(2, "0");
-        const endHours = endDate.getHours().toString().padStart(2, "0");
-        const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
-        
-        const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
+    const mapped = data.map((slot) => {
+      // Parse timestamps and extract time components
+      // The database returns timestamps that should be treated as local time
+      const startDate = new Date(slot.slot_start);
+      const endDate = new Date(slot.slot_end);
+      
+      // Extract time components from the ISO string directly to avoid timezone issues
+      // Format: "2024-01-01T10:00:00" or "2024-01-01T10:00:00Z"
+      const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
+      const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
+      
+      if (startMatch && endMatch) {
+        // Use the time directly from the string to avoid timezone conversion
+        const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
         return { start: slot.slot_start, end: slot.slot_end, label };
-      }) ?? [];
+      }
+      
+      // Fallback to local time formatting if regex doesn't match
+      const startHours = startDate.getHours().toString().padStart(2, "0");
+      const startMinutes = startDate.getMinutes().toString().padStart(2, "0");
+      const endHours = endDate.getHours().toString().padStart(2, "0");
+      const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
+      
+      const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
+      return { start: slot.slot_start, end: slot.slot_end, label };
+    });
 
     setSlots(mapped);
     setLoadingSlots(false);
@@ -184,22 +172,20 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     setSuccessMessage(null);
 
     try {
-      const { error: rpcError } = await supabase.rpc(
-        "create_booking_with_validation",
-        {
-          p_salon_id: salon.id,
-          p_employee_id: employeeId,
-          p_service_id: serviceId,
-          p_start_time: selectedSlot,
-          p_customer_full_name: customerName,
-          p_customer_email: customerEmail,
-          p_customer_phone: customerPhone,
-          p_customer_notes: null,
-        },
-      );
+      const { error: bookingError } = await createBooking({
+        salon_id: salon.id,
+        employee_id: employeeId,
+        service_id: serviceId,
+        start_time: selectedSlot,
+        customer_full_name: customerName,
+        customer_email: customerEmail || null,
+        customer_phone: customerPhone || null,
+        customer_notes: null,
+        is_walk_in: false,
+      });
 
-      if (rpcError) {
-        setError(rpcError.message);
+      if (bookingError) {
+        setError(bookingError);
         setSaving(false);
         return;
       }

@@ -8,7 +8,7 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import type { AppLocale } from "@/i18n/translations";
-import { supabase } from "@/lib/supabase-client";
+import { updateSalon } from "@/lib/services/salons-service";
 
 export default function GeneralSettingsPage() {
   const { locale } = useLocale();
@@ -71,16 +71,17 @@ export default function GeneralSettingsPage() {
     setSaved(false);
 
     try {
-      const { error: updateError } = await supabase
-        .from("salons")
-        .update({
-          name: salonName,
-          salon_type: salonType,
-          whatsapp_number: whatsappNumber || null,
-        })
-        .eq("id", salon.id);
+      const { error: updateError } = await updateSalon(salon.id, {
+        name: salonName,
+        salon_type: salonType || null,
+        whatsapp_number: whatsappNumber || null,
+      });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        setError(updateError);
+        setSaving(false);
+        return;
+      }
 
       setSaved(true);
       // Refresh salon data by reloading the page or refetching

@@ -11,7 +11,8 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import type { AppLocale } from "@/i18n/translations";
-import { supabase } from "@/lib/supabase-client";
+import { getCurrentUser, signOut } from "@/lib/services/auth-service";
+import { getProfileForUser, updatePreferencesForUser } from "@/lib/services/profiles-service";
 import {
   LayoutDashboard,
   Calendar,
@@ -104,8 +105,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   useEffect(() => {
     async function loadUserEmail() {
-      const { data } = await supabase.auth.getUser();
-      setUserEmail(data?.user?.email || null);
+      const { data: user } = await getCurrentUser();
+      setUserEmail(user?.email || null);
     }
     loadUserEmail();
   }, []);
@@ -120,17 +121,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
     // Load from Supabase only if we haven't loaded it yet
     async function loadSidebarState() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: user } = await getCurrentUser();
       if (!user) {
         globalSidebarState = { loaded: true, state: false };
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_preferences")
-        .eq("user_id", user.id)
-        .single();
+      const { data: profile } = await getProfileForUser(user.id);
 
       if (profile?.user_preferences?.sidebarCollapsed !== undefined) {
         const isCollapsed = profile.user_preferences.sidebarCollapsed;
@@ -152,15 +149,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
     // Update global state immediately so it persists across re-mounts
     globalSidebarState = { loaded: true, state: newState };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: user } = await getCurrentUser();
     if (!user) return;
 
-    await supabase
-      .from("profiles")
-      .update({
-        user_preferences: { sidebarCollapsed: newState },
-      })
-      .eq("user_id", user.id);
+    await updatePreferencesForUser(user.id, { sidebarCollapsed: newState });
   }
 
   // Ensure sidebar state persists across navigation
@@ -195,7 +187,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   async function handleLogout() {
     setLoggingOut(true);
     try {
-      await supabase.auth.signOut();
+      await signOut();
       router.push("/");
     } catch (error) {
       console.error("Error logging out:", error);

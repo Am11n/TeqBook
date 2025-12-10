@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase-client";
+import { getCurrentUser } from "@/lib/services/auth-service";
+import { getProfileForUser } from "@/lib/services/profiles-service";
+import { getSalonByIdForUser } from "@/lib/services/salons-service";
 
 type SalonState =
   | { status: "loading" }
@@ -15,30 +17,30 @@ export function CurrentSalonBadge() {
 
   useEffect(() => {
     async function loadSalon() {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { data: user, error: userError } = await getCurrentUser();
 
       if (userError || !user) {
         setSalonState({ status: "none" });
         return;
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("salons(name)")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: profile, error: profileError } = await getProfileForUser(user.id);
 
-      if (error || !data || !("salons" in data) || !data.salons) {
+      if (profileError || !profile || !profile.salon_id) {
+        setSalonState({ status: "none" });
+        return;
+      }
+
+      const { data: salon, error: salonError } = await getSalonByIdForUser(profile.salon_id);
+
+      if (salonError || !salon) {
         setSalonState({ status: "none" });
         return;
       }
 
       setSalonState({
         status: "some",
-        name: (data as any).salons.name as string,
+        name: salon.name,
       });
     }
 

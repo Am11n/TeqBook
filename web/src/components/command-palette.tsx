@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { supabase } from "@/lib/supabase-client";
+import { searchSalonEntities } from "@/lib/services/search-service";
 import {
   Search,
   Calendar,
@@ -110,98 +110,32 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       const allResults: SearchResult[] = [];
 
       try {
-        // Search customers
-        const { data: customers } = await supabase
-          .from("customers")
-          .select("id, full_name, email, phone")
-          .eq("salon_id", salon.id)
-          .or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`)
-          .limit(5);
+        // Search using search service
+        const { data: searchResults, error: searchError } = await searchSalonEntities(
+          salon.id,
+          term,
+          5
+        );
 
-        if (customers) {
-          customers.forEach((customer) => {
-            allResults.push({
-              id: `customer-${customer.id}`,
-              type: "customer",
-              label: customer.full_name || "Unknown",
-              metadata: customer.phone || customer.email || "",
-              href: `/customers?highlight=${customer.id}`,
-              icon: UserCircle,
-            });
-          });
+        if (searchError) {
+          console.error("Search error:", searchError);
+          setResults(navigationItems);
+          setLoading(false);
+          return;
         }
 
-        // Search employees
-        const { data: employees } = await supabase
-          .from("employees")
-          .select("id, full_name, email, phone")
-          .eq("salon_id", salon.id)
-          .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`)
-          .limit(5);
+        // Map search results to SearchResult format with icons
+        if (searchResults) {
+          searchResults.forEach((result) => {
+            let icon: React.ComponentType<{ className?: string }> = Search;
+            if (result.type === "customer") icon = UserCircle;
+            else if (result.type === "employee") icon = Users;
+            else if (result.type === "service") icon = Scissors;
+            else if (result.type === "booking") icon = Calendar;
 
-        if (employees) {
-          employees.forEach((employee) => {
             allResults.push({
-              id: `employee-${employee.id}`,
-              type: "employee",
-              label: employee.full_name,
-              metadata: employee.email || "",
-              href: `/employees?highlight=${employee.id}`,
-              icon: Users,
-            });
-          });
-        }
-
-        // Search services
-        const { data: services } = await supabase
-          .from("services")
-          .select("id, name, duration_minutes, price_cents")
-          .eq("salon_id", salon.id)
-          .ilike("name", `%${term}%`)
-          .limit(5);
-
-        if (services) {
-          services.forEach((service) => {
-            const price = service.price_cents
-              ? `$${(service.price_cents / 100).toFixed(2)}`
-              : "";
-            const duration = service.duration_minutes
-              ? `${service.duration_minutes}min`
-              : "";
-            allResults.push({
-              id: `service-${service.id}`,
-              type: "service",
-              label: service.name,
-              metadata: [duration, price].filter(Boolean).join(" • "),
-              href: `/services?highlight=${service.id}`,
-              icon: Scissors,
-            });
-          });
-        }
-
-        // Search bookings
-        const { data: bookings } = await supabase
-          .from("bookings")
-          .select(
-            "id, start_time, customers(full_name), employees(full_name), services(name)"
-          )
-          .eq("salon_id", salon.id)
-          .limit(5);
-
-        if (bookings) {
-          bookings.forEach((booking: any) => {
-            const date = new Date(booking.start_time);
-            const timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            allResults.push({
-              id: `booking-${booking.id}`,
-              type: "booking",
-              label: `${booking.services?.name || "Service"} - ${booking.customers?.full_name || "Walk-in"}`,
-              metadata: timeStr,
-              href: `/bookings?highlight=${booking.id}`,
-              icon: Calendar,
+              ...result,
+              icon,
             });
           });
         }

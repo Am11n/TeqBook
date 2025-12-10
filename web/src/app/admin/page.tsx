@@ -9,24 +9,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
-import { supabase } from "@/lib/supabase-client";
+import { getAllSalonsForAdmin, getAllUsersForAdmin } from "@/lib/services/admin-service";
+import type { AdminSalon, AdminUser } from "@/lib/services/admin-service";
 import { Badge } from "@/components/ui/badge";
 
-type Salon = {
-  id: string;
-  name: string;
-  salon_type: string | null;
-  created_at: string;
-  owner_email?: string;
-};
-
-type User = {
-  id: string;
-  email: string;
-  created_at: string;
-  is_superadmin: boolean;
-  salon_name?: string;
-};
+type Salon = AdminSalon;
+type User = AdminUser;
 
 export default function AdminPage() {
   const { locale } = useLocale();
@@ -56,95 +44,26 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      // Load all salons
-      const { data: salonsData, error: salonsError } = await supabase
-        .from("salons")
-        .select("id, name, salon_type, created_at")
-        .order("created_at", { ascending: false });
+      // Load all salons and users using admin service
+      const [salonsResult, usersResult] = await Promise.all([
+        getAllSalonsForAdmin(),
+        getAllUsersForAdmin(),
+      ]);
 
-      if (salonsError) throw salonsError;
-
-      // Load all profiles first (to get all user_ids)
-      const { data: allProfiles } = await supabase
-        .from("profiles")
-        .select("user_id, salon_id, is_superadmin");
-
-      // Load profiles for salons (to get owner user_ids)
-      const salonIds = salonsData?.map((s) => s.id) || [];
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("salon_id, user_id")
-        .in("salon_id", salonIds);
-
-      // Get all unique user IDs from both sources
-      const allUserIds = [
-        ...new Set([
-          ...(profilesData?.map((p) => p.user_id) || []),
-          ...(allProfiles?.map((p) => p.user_id) || []),
-        ]),
-      ].filter((id): id is string => !!id); // Filter out any null/undefined values
-
-      // Get user emails and created_at using RPC function
-      let emailMap = new Map<string, string>();
-      let createdAtMap = new Map<string, string>();
-      
-      if (allUserIds.length > 0) {
-        try {
-          const { data: userEmailsData, error: emailsError } = await supabase.rpc(
-            "get_user_emails",
-            { user_ids: allUserIds }
-          );
-
-          if (emailsError) {
-            console.error("Error fetching user emails:", emailsError);
-            console.error("User IDs attempted:", allUserIds);
-            // Continue without emails if RPC fails
-          } else if (userEmailsData && Array.isArray(userEmailsData)) {
-            console.log("User emails fetched:", userEmailsData);
-            userEmailsData.forEach((item: { user_id: string; email: string; created_at: string }) => {
-              if (item.user_id && item.email) {
-                emailMap.set(item.user_id, item.email);
-              }
-              if (item.user_id && item.created_at) {
-                createdAtMap.set(item.user_id, item.created_at);
-              }
-            });
-          } else {
-            console.warn("No user emails data returned from RPC");
-          }
-        } catch (err) {
-          console.error("Exception calling get_user_emails:", err);
-        }
-      } else {
-        console.warn("No user IDs found to fetch emails for");
+      if (salonsResult.error) {
+        setError(salonsResult.error);
+        setLoading(false);
+        return;
       }
 
-      // Map salons with owner emails
-      const salonsWithOwners: Salon[] = (salonsData || []).map((salon) => {
-        const profile = profilesData?.find((p) => p.salon_id === salon.id);
-        const ownerEmail = profile?.user_id
-          ? emailMap.get(profile.user_id) || profile.user_id
-          : undefined;
-        return { ...salon, owner_email: ownerEmail };
-      });
+      if (usersResult.error) {
+        setError(usersResult.error);
+        setLoading(false);
+        return;
+      }
 
-      setSalons(salonsWithOwners);
-
-      // Map profiles to users with emails and created_at
-      const usersWithProfiles: User[] = (allProfiles || []).map((profile) => {
-        const salon = salonsData?.find((s) => s.id === profile.salon_id);
-        const email = emailMap.get(profile.user_id) || profile.user_id;
-        const created_at = createdAtMap.get(profile.user_id) || "";
-        return {
-          id: profile.user_id,
-          email: email,
-          created_at: created_at,
-          is_superadmin: profile.is_superadmin ?? false,
-          salon_name: salon?.name,
-        };
-      });
-
-      setUsers(usersWithProfiles);
+      setSalons(salonsResult.data || []);
+      setUsers(usersResult.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.loadError);
     } finally {

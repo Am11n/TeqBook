@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase-client";
+import { getCurrentUser } from "@/lib/services/auth-service";
 
 type UserState =
   | { status: "loading" }
@@ -13,16 +13,16 @@ export function CurrentUserBadge() {
 
   useEffect(() => {
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
+      const { data: user, error } = await getCurrentUser();
 
-      if (error || !data?.user) {
+      if (error || !user) {
         setUserState({ status: "anonymous" });
         return;
       }
 
       setUserState({
         status: "authenticated",
-        email: data.user.email ?? null,
+        email: user.email ?? null,
       });
     }
 
