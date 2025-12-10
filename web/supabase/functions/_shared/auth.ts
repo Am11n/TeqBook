@@ -6,7 +6,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export interface AuthResult {
-  user: any;
+  user: {
+    id: string;
+    email?: string;
+    [key: string]: unknown;
+  } | null;
   error: string | null;
 }
 

@@ -19,6 +19,7 @@ export default function SettingsLayout({
 
   // Only render tabs on client to avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
   

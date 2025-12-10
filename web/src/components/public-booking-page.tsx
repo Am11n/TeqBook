@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, FormEvent } from "react";
+import Image from "next/image";
 import { getAvailableTimeSlots, createBooking } from "@/lib/services/bookings-service";
 import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
@@ -232,7 +233,6 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   // Get theme colors with fallbacks
   const primaryColor = salon.theme?.primary || "#3b82f6";
-  const secondaryColor = salon.theme?.secondary || "#8b5cf6";
   const fontFamily = salon.theme?.font || "Inter";
   const logoUrl = salon.theme?.logo_url;
 
@@ -247,9 +247,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         <div className="mx-auto flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {logoUrl && (
-              <img 
+              <Image 
                 src={logoUrl} 
                 alt={salon.name}
+                width={32}
+                height={32}
                 className="mb-2 h-8 w-auto object-contain"
               />
             )}
