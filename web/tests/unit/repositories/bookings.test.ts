@@ -85,10 +85,13 @@ describe("Bookings Repository", () => {
         services: { name: "Haircut" },
       };
 
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: mockBooking,
-        error: null,
-      } as unknown as ReturnType<typeof supabase.rpc>);
+      const mockRpcCall = {
+        single: vi.fn().mockResolvedValue({
+          data: mockBooking,
+          error: null,
+        }),
+      } as unknown as ReturnType<typeof supabase.rpc>;
+      vi.mocked(supabase.rpc).mockReturnValue(mockRpcCall);
 
       const result = await createBooking({
         salon_id: mockSalonId,
