@@ -337,16 +337,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </div>
 
           {/* User avatar with dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
-                <Avatar className="h-9 w-9 border-2 border-white shadow-sm transition-all hover:shadow-md">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
-                    {getInitials(userEmail)}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
+          <div suppressHydrationWarning>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
+                  <Avatar className="h-9 w-9 border-2 border-white shadow-sm transition-all hover:shadow-md">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
+                      {getInitials(userEmail)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               className="w-56 rounded-xl bg-white/90 backdrop-blur-md border border-neutral-200/70 shadow-lg"
@@ -383,54 +384,57 @@ export function DashboardShell({ children }: DashboardShellProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
 
           {/* Mobile: Avatar only */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center sm:hidden">
-                <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
-                    {getInitials(userEmail)}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-56 rounded-xl bg-white/90 backdrop-blur-md border border-neutral-200/70 shadow-lg"
-            >
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {userEmail || "User"}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {salon?.name || "Salon"}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
-                  <User className="h-4 w-4" />
-                  <span>My profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                <span>Billing (coming soon)</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                disabled={loggingOut}
-                className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
+          <div suppressHydrationWarning>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center sm:hidden">
+                  <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
+                      {getInitials(userEmail)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 rounded-xl bg-white/90 backdrop-blur-md border border-neutral-200/70 shadow-lg"
               >
-                <LogOut className="h-4 w-4" />
-                <span>{loggingOut ? "Logging out..." : "Log out"}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {userEmail || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {salon?.name || "Salon"}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>My profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Billing (coming soon)</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>{loggingOut ? "Logging out..." : "Log out"}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 

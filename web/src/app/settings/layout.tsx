@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -14,6 +15,12 @@ export default function SettingsLayout({
 }) {
   const { locale } = useLocale();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  // Only render tabs on client to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const appLocale =
     locale === "nb"
@@ -60,23 +67,29 @@ export default function SettingsLayout({
     <DashboardShell>
       <PageHeader title={t.title} description={t.description} />
       <div className="mt-6">
-        <Tabs value={activeTab} className="w-full" onValueChange={(value) => {
-          // Navigate when tab changes
-          if (value === "general") window.location.href = "/settings/general";
-          else if (value === "notifications") window.location.href = "/settings/notifications";
-          else if (value === "billing") window.location.href = "/settings/billing";
-          else if (value === "branding") window.location.href = "/settings/branding";
-        }}>
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
-            <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
-            <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
-            <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
-            <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
-          </TabsList>
-          <TabsContent value={activeTab} className="mt-6">
+        {mounted ? (
+          <Tabs value={activeTab} className="w-full" onValueChange={(value) => {
+            // Navigate when tab changes
+            if (value === "general") window.location.href = "/settings/general";
+            else if (value === "notifications") window.location.href = "/settings/notifications";
+            else if (value === "billing") window.location.href = "/settings/billing";
+            else if (value === "branding") window.location.href = "/settings/branding";
+          }}>
+            <TabsList className="grid w-full max-w-2xl grid-cols-4">
+              <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
+              <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
+              <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
+              <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab} className="mt-6">
+              {children}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="mt-6">
             {children}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </DashboardShell>
   );

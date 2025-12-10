@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Calendar, Users, Settings, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +55,12 @@ const mockNotifications: Notification[] = [
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Only render on client to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -80,6 +86,22 @@ export function NotificationCenter() {
   const markAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="relative h-9 w-9 rounded-lg transition-all hover:scale-105 hover:bg-slate-100/60 flex items-center justify-center"
+        aria-label="Notifications"
+        disabled
+      >
+        <Bell className="h-5 w-5 text-blue-700" />
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
