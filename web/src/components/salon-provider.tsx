@@ -21,7 +21,7 @@ import { supabase } from "@/lib/supabase-client";
 
 type Profile = {
   user_id: string;
-  salon_id: string;
+  salon_id: string | null;
   is_superadmin?: boolean;
 };
 

@@ -158,14 +158,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
   // This prevents sidebar from auto-expanding when navigating
   // Sidebar state should only change when user explicitly clicks the collapse button
 
-  // Scroll listener for header shadow
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Scroll listener for header shadow (reserved for future use)
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     setScrolled(window.scrollY > 10);
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   // Keyboard shortcut for command palette (CMD+K / CTRL+K)
   useEffect(() => {
