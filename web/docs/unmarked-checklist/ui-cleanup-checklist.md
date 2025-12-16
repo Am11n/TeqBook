@@ -6,32 +6,34 @@ Mål: Rydde opp i knapper, farger, bakgrunner og gjøre alt gjenbrukbart og doku
 
 ## 1. Design Tokens (farger, typografi, spacing, radius, shadow)
 
-- [ ] Opprett en felles definisjon av design-tokens:
-  - [ ] Farger
-  - [ ] Typografi
-  - [ ] Spacing
-  - [ ] Border radius
-  - [ ] Shadow-nivåer
+- [x] Opprett en felles definisjon av design-tokens:
+  - [x] Farger
+  - [x] Typografi
+  - [x] Spacing
+  - [x] Border radius
+  - [x] Shadow-nivåer
 
-- [ ] Legg tokens i én kilde:
-  - [ ] Enten i `tailwind.config` (`theme.extend.colors`, spacing osv.)
-  - [ ] Eller i egen fil, for eksempel `src/lib/design-tokens.ts`, som speiler Tailwind-oppsettet.
+- [x] Legg tokens i én kilde:
+  - [x] Enten i `tailwind.config` (`theme.extend.colors`, spacing osv.)
+  - [x] Eller i egen fil, for eksempel `src/lib/design-tokens.ts`, som speiler Tailwind-oppsettet.
+  - [x] **Status:** Tokens er definert i `globals.css` med CSS-variabler og mappet til Tailwind via `@theme inline` (Tailwind v4)
 
-- [ ] Gi alle tokens tydelige, semantiske navn:
-  - [ ] `primary`, `primary-foreground`
-  - [ ] `background`, `foreground`
-  - [ ] `muted`, `muted-foreground`
-  - [ ] `danger`, `success`, `warning` osv.
+- [x] Gi alle tokens tydelige, semantiske navn:
+  - [x] `primary`, `primary-foreground`
+  - [x] `background`, `foreground`
+  - [x] `muted`, `muted-foreground`
+  - [x] `destructive` (danger), `success`, `warning` osv.
 
-- [ ] Fjern direkte hex-farger fra komponenter:
-  - [ ] Erstatt alle hardkodede farger med tokens / Tailwind-klasser basert på design-systemet.
+- [x] Fjern direkte hex-farger fra komponenter:
+  - [x] Erstatt alle hardkodede farger med tokens / Tailwind-klasser basert på design-systemet.
+  - [x] **Merknad:** Hardkodede farger i `settings/branding/page.tsx` er bevisst, da de er for brukerens egne tema-farger (ikke design tokens)
 
-- [ ] Dokumenter tokens i egen fil:
-  - [ ] Opprett `docs/frontend/design-tokens.md`.
-  - [ ] List alle tokens med:
-    - [ ] Navn
-    - [ ] Beskrivelse
-    - [ ] Typisk bruk (knapper, bakgrunn, tekst osv.)
+- [x] Dokumenter tokens i egen fil:
+  - [x] Opprett `docs/frontend/design-tokens.md`.
+  - [x] List alle tokens med:
+    - [x] Navn
+    - [x] Beskrivelse
+    - [x] Typisk bruk (knapper, bakgrunn, tekst osv.)
 
 ---
 

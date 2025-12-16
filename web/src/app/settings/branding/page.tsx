@@ -50,6 +50,8 @@ export default function BrandingSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Default colors for user's custom theme (not design tokens)
+  // These are customizable by the user for their salon branding
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState("#8b5cf6");
   const [fontFamily, setFontFamily] = useState("Inter");
@@ -58,6 +60,7 @@ export default function BrandingSettingsPage() {
   // Load current theme data
   useEffect(() => {
     if (salon?.theme) {
+      // Use default colors if theme not set (these are user-customizable, not design tokens)
       setPrimaryColor(salon.theme.primary || "#3b82f6");
       setSecondaryColor(salon.theme.secondary || "#8b5cf6");
       setFontFamily(salon.theme.font || "Inter");

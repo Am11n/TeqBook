@@ -232,6 +232,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   }
 
   // Get theme colors with fallbacks
+  // Note: These are user-customizable salon branding colors (not design tokens)
+  // The fallback color (#3b82f6 = blue-500) is a sensible default that matches
+  // the design system's primary color intent, but users can customize it
   const primaryColor = salon.theme?.primary || "#3b82f6";
   const fontFamily = salon.theme?.font || "Inter";
   const logoUrl = salon.theme?.logo_url;
