@@ -7,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { useLocale } from "@/components/locale-provider";
-import { translations } from "@/i18n/translations";
 import {
   getTotalBookingsForSalon,
   getRevenueByMonthForSalon,
@@ -23,8 +21,6 @@ import type { Employee, Service } from "@/lib/types";
 
 export default function ReportsPage() {
   const { salon, isReady } = useCurrentSalon();
-  const { locale } = useLocale();
-  const appLocale = locale === "nb" ? "nb" : "en";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

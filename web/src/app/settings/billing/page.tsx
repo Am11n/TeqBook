@@ -53,8 +53,11 @@ export default function BillingSettingsPage() {
     if (isReady && salon) {
       // TODO: Read plan from salon.plan when database field is added
       // For now, default to starter
-      setCurrentPlan("starter");
-      setLoading(false);
+      // Use setTimeout to avoid calling setState synchronously in effect
+      setTimeout(() => {
+        setCurrentPlan("starter");
+        setLoading(false);
+      }, 0);
     }
   }, [isReady, salon]);
 
