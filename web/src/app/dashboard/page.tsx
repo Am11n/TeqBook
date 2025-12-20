@@ -219,10 +219,10 @@ export default function DashboardPage() {
     <DashboardShell>
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-[32px] font-bold leading-tight text-slate-900">
+        <h1 className="text-[32px] font-bold leading-tight text-foreground">
           {t.welcomeBack.replace("{name}", ownerName || "there")}
         </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-slate-500">
+        <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
           {t.welcomeSubtitle}
         </p>
       </div>
@@ -230,12 +230,12 @@ export default function DashboardPage() {
       {/* Premium Cards Grid */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {/* Card 1: Today's Bookings */}
-        <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+        <div className="group rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '0ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
-              <Calendar className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 transition-transform group-hover:scale-110">
+              <Calendar className="h-5 w-5 text-primary transition-transform group-hover:translate-x-0.5" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-foreground">
               {t.todaysBookings}
             </h2>
           </div>
@@ -252,19 +252,19 @@ export default function DashboardPage() {
           ) : bookingsCount === 0 ? (
             <div className="mb-6">
               <div className="mb-4 flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-700/10 text-2xl font-semibold text-blue-700">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-semibold text-primary">
                   <Calendar className="h-8 w-8" />
                 </div>
               </div>
-              <p className="mb-1 text-sm font-medium text-slate-900 text-center">
+              <p className="mb-1 text-sm font-medium text-foreground text-center">
                 {t.noBookingsYet}
               </p>
-              <p className="mb-4 text-xs text-slate-500 text-center">
+              <p className="mb-4 text-xs text-muted-foreground text-center">
                 {t.noBookingsYetSubtitle}
               </p>
               <Button
                 asChild
-                className="h-9 w-full bg-slate-900 text-white transition-transform active:scale-95 hover:bg-slate-900/90"
+                className="h-9 w-full"
               >
                 <Link href="/bookings">{t.createFirstBooking}</Link>
               </Button>
@@ -275,21 +275,21 @@ export default function DashboardPage() {
                 {todaysBookings.slice(0, 3).map((booking) => (
                   <div
                     key={booking.id}
-                    className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5"
+                    className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2.5"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-700/10 text-xs font-semibold text-blue-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                       <Clock className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-900 truncate">
+                      <p className="text-xs font-medium text-foreground truncate">
                         {formatTime(booking.start_time)}
                       </p>
                       <div className="mt-0.5 flex items-center gap-2">
-                        <span className="text-xs text-slate-500 truncate">
+                        <span className="text-xs text-muted-foreground truncate">
                           {booking.services?.name || "Service"}
                         </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-xs text-slate-500 truncate">
+                        <span className="text-muted-foreground/50">•</span>
+                        <span className="text-xs text-muted-foreground truncate">
                           {booking.customers?.full_name || "Customer"}
                         </span>
                       </div>
@@ -301,7 +301,7 @@ export default function DashboardPage() {
               <Button
                 asChild
                 variant="outline"
-                className="h-9 w-full border-slate-200 text-slate-700 transition-transform active:scale-95 hover:bg-slate-50"
+                className="h-9 w-full"
               >
                 <Link href="/calendar">{t.viewCalendar}</Link>
               </Button>
@@ -310,12 +310,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2: Staff Overview */}
-        <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+        <div className="group rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
-              <Users className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 transition-transform group-hover:scale-110">
+              <Users className="h-5 w-5 text-primary transition-transform group-hover:translate-x-0.5" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-foreground">
               {t.yourStaff}
             </h2>
           </div>
@@ -332,19 +332,19 @@ export default function DashboardPage() {
           ) : employees.length === 0 ? (
             <div className="mb-6">
               <div className="mb-4 flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-700/10 text-2xl font-semibold text-blue-700">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-semibold text-primary">
                   <Users className="h-8 w-8" />
                 </div>
               </div>
-              <p className="mb-1 text-sm font-medium text-slate-900 text-center">
+              <p className="mb-1 text-sm font-medium text-foreground text-center">
                 No staff members yet.
               </p>
-              <p className="mb-4 text-xs text-slate-500 text-center">
+              <p className="mb-4 text-xs text-muted-foreground text-center">
                 {t.manageStaffPermissions}
               </p>
               <Button
                 asChild
-                className="h-9 w-full bg-slate-900 text-white transition-transform active:scale-95 hover:bg-slate-900/90"
+                className="h-9 w-full"
               >
                 <Link href="/employees">{t.inviteNewStaff}</Link>
               </Button>
@@ -355,29 +355,29 @@ export default function DashboardPage() {
                 {employees.slice(0, 3).map((employee) => (
                   <div
                     key={employee.id}
-                    className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5"
+                    className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2.5"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-700/10 text-xs font-semibold text-blue-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                       {getInitials(employee.full_name)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-900 truncate">
+                      <p className="text-xs font-medium text-foreground truncate">
                         {employee.full_name}
                       </p>
                       <div className="mt-0.5 flex items-center gap-2">
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-muted-foreground">
                           {employee.role || "Staff"}
                         </span>
-                        <span className="text-slate-300">•</span>
+                        <span className="text-muted-foreground/50">•</span>
                         <div className="flex items-center gap-1">
                           <div
                             className={`h-1.5 w-1.5 rounded-full ${
                               employee.is_active
                                 ? "bg-green-500"
-                                : "bg-slate-300"
+                                : "bg-muted-foreground/40"
                             }`}
                           />
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground">
                             {employee.is_active ? t.online : t.offline}
                           </span>
                         </div>
@@ -390,7 +390,7 @@ export default function DashboardPage() {
               <Button
                 asChild
                 variant="outline"
-                className="h-9 w-full border-slate-200 text-slate-700 transition-transform active:scale-95 hover:bg-slate-50"
+                className="h-9 w-full"
               >
                 <Link href="/employees">{t.manageStaff}</Link>
               </Button>
@@ -399,12 +399,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 3: Quick Actions */}
-        <div className="group rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <div className="group rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 transition-transform group-hover:scale-110">
-              <Zap className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 transition-transform group-hover:scale-110">
+              <Zap className="h-5 w-5 text-primary transition-transform group-hover:translate-x-0.5" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-foreground">
               {t.quickActions}
             </h2>
           </div>
@@ -412,61 +412,61 @@ export default function DashboardPage() {
           <div className="space-y-1.5">
             <Link
               href="/bookings"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2 transition-all hover:bg-muted hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Plus className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
-                <span className="text-sm font-medium text-slate-900">
+                <Plus className="h-4 w-4 text-primary transition-transform group-hover/item:translate-x-0.5" />
+                <span className="text-sm font-medium text-foreground">
                   {t.addNewBooking}
                 </span>
               </div>
-              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover/item:translate-x-1" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover/item:translate-x-1" />
             </Link>
 
             <Link
               href="/customers"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2 transition-all hover:bg-muted hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
-                <span className="text-sm font-medium text-slate-900">
+                <User className="h-4 w-4 text-primary transition-transform group-hover/item:translate-x-0.5" />
+                <span className="text-sm font-medium text-foreground">
                   {t.addNewCustomer}
                 </span>
               </div>
-              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover/item:translate-x-1" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover/item:translate-x-1" />
             </Link>
 
             <Link
               href="/services"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2 transition-all hover:bg-muted hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Plus className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
-                <span className="text-sm font-medium text-slate-900">
+                <Plus className="h-4 w-4 text-primary transition-transform group-hover/item:translate-x-0.5" />
+                <span className="text-sm font-medium text-foreground">
                   {t.addNewService}
                 </span>
               </div>
-              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover/item:translate-x-1" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover/item:translate-x-1" />
             </Link>
 
             <Link
               href="/employees"
-              className="group/item flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2 transition-all hover:bg-slate-50 hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
+              className="group/item flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2 transition-all hover:bg-muted hover:shadow-[0_2px_8px_rgba(29,78,216,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 text-blue-700 transition-transform group-hover/item:translate-x-0.5" />
-                <span className="text-sm font-medium text-slate-900">
+                <Users className="h-4 w-4 text-primary transition-transform group-hover/item:translate-x-0.5" />
+                <span className="text-sm font-medium text-foreground">
                   {t.inviteNewStaff}
                 </span>
               </div>
-              <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover/item:translate-x-1" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover/item:translate-x-1" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Performance Snapshot Section */}
-      <div className="group mt-8 rounded-2xl bg-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+      <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
         {loading ? (
           <div className="space-y-4">
             <Skeleton className="h-6 w-32 rounded-lg animate-shimmer" />
@@ -481,46 +481,46 @@ export default function DashboardPage() {
           <div>
             {/* KPI Boxes */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.totalBookingsThisWeek}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">0</p>
+                <p className="text-2xl font-bold text-foreground">0</p>
               </div>
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.returningCustomers}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">0</p>
+                <p className="text-2xl font-bold text-foreground">0</p>
               </div>
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.revenueEstimate}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">$0</p>
+                <p className="text-2xl font-bold text-foreground">$0</p>
               </div>
             </div>
 
             {/* Placeholder Chart */}
             <div className="mb-4">
-              <div className="h-32 w-full rounded-lg bg-slate-50/50 border border-slate-100 flex items-end justify-between gap-1 px-2 py-2">
+              <div className="h-32 w-full rounded-lg bg-muted/50 border border-border flex items-end justify-between gap-1 px-2 py-2">
                 {[1, 2, 3, 4, 5, 6, 7].map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex-1 h-full flex items-end"
-                  >
                     <div
-                      className="w-full rounded-t bg-slate-300/40"
-                      style={{ height: "25%", minHeight: "8px" }}
-                    />
-                  </div>
+                      key={index}
+                      className="flex-1 h-full flex items-end"
+                    >
+                      <div
+                        className="w-full rounded-t bg-muted-foreground/20"
+                        style={{ height: "25%", minHeight: "8px" }}
+                      />
+                    </div>
                 ))}
               </div>
             </div>
 
             {/* Empty State Message */}
             <div className="text-center">
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 {t.noInsightsYet}
               </p>
             </div>
@@ -529,32 +529,32 @@ export default function DashboardPage() {
           <div>
             {/* KPI Boxes */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.totalBookingsThisWeek}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {performanceData.bookingsCount}
                 </p>
               </div>
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.returningCustomers}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {performanceData.newCustomersCount}
                 </p>
               </div>
-              <div className="rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
-                <p className="text-xs text-slate-500 mb-1">
+              <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-1">
                   {t.revenueEstimate}
                 </p>
-                <p className="text-2xl font-bold text-slate-900">$0</p>
+                <p className="text-2xl font-bold text-foreground">$0</p>
               </div>
             </div>
 
             {/* Chart */}
-            <div className="h-32 w-full rounded-lg bg-slate-50/50 border border-slate-100 flex items-end justify-between gap-1 px-2 py-2">
+            <div className="h-32 w-full rounded-lg bg-muted/50 border border-border flex items-end justify-between gap-1 px-2 py-2">
               {performanceData.chartData.map((data, index) => {
                 const maxBookings = Math.max(
                   ...performanceData.chartData.map((d) => d.bookings),
@@ -571,8 +571,8 @@ export default function DashboardPage() {
                       className="w-full rounded-t transition-all duration-300 bg-gradient-to-t from-blue-700 to-blue-500 opacity-80 hover:opacity-100"
                       style={{ height: `${height}%`, minHeight: "8px" }}
                     />
-                    <span className="text-[10px] text-slate-500">{data.day}</span>
-                    <span className="text-[10px] font-medium text-slate-700">
+                    <span className="text-[10px] text-muted-foreground">{data.day}</span>
+                    <span className="text-[10px] font-medium text-foreground">
                       {data.bookings}
                     </span>
                   </div>
@@ -584,32 +584,32 @@ export default function DashboardPage() {
       </div>
 
       {/* Announcements Section */}
-      <div className="group mt-8 rounded-2xl bg-gradient-to-br from-blue-50/90 to-white/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+      <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '200ms' }}>
         <div className="mb-8 flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-700/10 shadow-[0_2px_8px_rgba(29,78,216,0.15)] transition-transform group-hover:scale-110">
-            <Info className="h-5 w-5 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shadow-[0_2px_8px_rgba(29,78,216,0.15)] transition-transform group-hover:scale-110">
+            <Info className="h-5 w-5 text-primary transition-transform group-hover:translate-x-0.5" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold text-foreground">
             {t.announcements}
           </h2>
         </div>
 
         <div className="space-y-3 mb-6">
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
-            <p className="text-sm text-slate-700">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+            <p className="text-sm text-foreground">
               {t.announcementWalkIn}
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
-            <p className="text-sm text-slate-700">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+            <p className="text-sm text-foreground">
               {t.announcementLanguages}
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-2 flex-shrink-0" />
-            <p className="text-sm text-slate-700">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+            <p className="text-sm text-foreground">
               {t.announcementDashboardUpdate}
             </p>
           </div>
@@ -618,7 +618,7 @@ export default function DashboardPage() {
         <Button
           asChild
           variant="outline"
-          className="h-9 w-full border-slate-200 text-slate-700 hover:bg-slate-50"
+          className="h-9 w-full"
         >
           <Link href="#">{t.viewAllUpdates}</Link>
         </Button>

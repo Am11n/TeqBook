@@ -47,6 +47,8 @@ export async function updateSalonSettings(
     salon_type?: string | null;
     whatsapp_number?: string | null;
     preferred_language?: string | null;
+    supported_languages?: string[] | null;
+    default_language?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;
@@ -79,6 +81,8 @@ export async function updateSalon(
     name?: string;
     salon_type?: string | null;
     whatsapp_number?: string | null;
+    supported_languages?: string[] | null;
+    default_language?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;

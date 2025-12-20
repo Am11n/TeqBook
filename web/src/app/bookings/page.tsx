@@ -34,7 +34,11 @@ import {
 } from "@/lib/repositories/bookings";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
-import type { Booking } from "@/lib/types";
+import { getProductsForSalon } from "@/lib/services/products-service";
+import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
+import { getShiftsForCurrentSalon } from "@/lib/repositories/shifts";
+import type { Booking, Shift } from "@/lib/types";
+import type { Product } from "@/lib/repositories/products";
 
 export default function BookingsPage() {
   const { locale } = useLocale();
@@ -69,12 +73,15 @@ export default function BookingsPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].bookings;
-  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const { salon, loading: salonLoading, error: salonError, isReady, userRole, user } = useCurrentSalon();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>(
     [],
   );
   const [services, setServices] = useState<{ id: string; name: string }[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<{ productId: string; quantity: number }[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,23 +131,49 @@ export default function BookingsPage() {
         { data: bookingsData, error: bookingsError },
         { data: employeesData, error: employeesError },
         { data: servicesData, error: servicesError },
+        { data: productsData, error: productsError },
+        { data: shiftsData, error: shiftsError },
       ] = await Promise.all([
         getBookingsForCurrentSalon(salon.id),
         getEmployeesForCurrentSalon(salon.id),
         getActiveServicesForCurrentSalon(salon.id),
+        getProductsForSalon(salon.id, { activeOnly: true }),
+        getShiftsForCurrentSalon(salon.id),
         ]);
 
-      if (bookingsError || employeesError || servicesError) {
-        setError(bookingsError ?? employeesError ?? servicesError ?? t.loadError);
+      if (bookingsError || employeesError || servicesError || productsError || shiftsError) {
+        setError(bookingsError ?? employeesError ?? servicesError ?? productsError ?? shiftsError ?? t.loadError);
         setLoading(false);
         return;
       }
 
-      setBookings(bookingsData ?? []);
+      // Load products for each booking
+      const bookingsWithProducts = await Promise.all(
+        (bookingsData ?? []).map(async (booking) => {
+          const { data: bookingProducts } = await getProductsForBooking(booking.id);
+          return {
+            ...booking,
+            products: bookingProducts?.map((bp) => ({
+              id: bp.id,
+              product_id: bp.product_id,
+              quantity: bp.quantity,
+              price_cents: bp.price_cents,
+              product: {
+                id: bp.product.id,
+                name: bp.product.name,
+                price_cents: bp.product.price_cents,
+              },
+            })) || null,
+          };
+        })
+      );
+      setBookings(bookingsWithProducts);
       setEmployees(
         (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
       );
       setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
+      setProducts(productsData ?? []);
+      setShifts(shiftsData ?? []);
       setLoading(false);
     }
 
@@ -232,8 +265,43 @@ export default function BookingsPage() {
       return;
     }
 
+    // Hent produkter for den nye bookingen
+    let bookingWithProducts: Booking = { ...bookingData };
+    if (selectedProducts.length > 0) {
+      const { data: bookingProducts } = await getProductsForBooking(bookingData.id);
+      bookingWithProducts = {
+        ...bookingData,
+        products: bookingProducts?.map((bp) => ({
+          id: bp.id,
+          product_id: bp.product_id,
+          quantity: bp.quantity,
+          price_cents: bp.price_cents,
+          product: {
+            id: bp.product.id,
+            name: bp.product.name,
+            price_cents: bp.product.price_cents,
+          },
+        })) || null,
+      } as Booking;
+    }
+
     // Legg til i lokal state slik at listen oppdateres
-    setBookings((prev) => [...prev, bookingData]);
+    setBookings((prev) => [...prev, bookingWithProducts]);
+
+    // Legg til produkter hvis noen er valgt
+    if (selectedProducts.length > 0 && bookingData.id) {
+      for (const selectedProduct of selectedProducts) {
+        const product = products.find((p) => p.id === selectedProduct.productId);
+        if (product && selectedProduct.quantity > 0) {
+          await addProductToBooking(
+            bookingData.id,
+            selectedProduct.productId,
+            selectedProduct.quantity,
+            product.price_cents
+          );
+        }
+      }
+    }
 
     // Nullstill form og lukk dialog
     setIsDialogOpen(false);
@@ -246,6 +314,7 @@ export default function BookingsPage() {
     setCustomerEmail("");
     setCustomerPhone("");
     setIsWalkIn(false);
+    setSelectedProducts([]);
     setSavingBooking(false);
   }
 
@@ -302,6 +371,37 @@ export default function BookingsPage() {
     }
   }
 
+  // Check if booking has employee available at that time
+  function hasEmployeeAvailable(booking: Booking): boolean {
+    if (!booking.employees || !booking.start_time) return true; // Assume available if no employee assigned
+    
+    // Get employee ID from booking - employees is { full_name: string | null } | null
+    // We need to find the employee by name since we don't have ID in booking
+    const employeeName = booking.employees.full_name;
+    if (!employeeName) return true;
+    
+    const employee = employees.find((e) => e.full_name === employeeName);
+    if (!employee) return true; // Can't verify if employee not found
+    
+    const bookingDate = new Date(booking.start_time);
+    const weekday = bookingDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const bookingTime = bookingDate.toTimeString().slice(0, 5); // HH:MM format
+    
+    // Find shifts for this employee on this weekday
+    const employeeShifts = shifts.filter(
+      (s) => s.employee_id === employee.id && s.weekday === weekday
+    );
+    
+    if (employeeShifts.length === 0) return false; // No shifts = not available
+    
+    // Check if booking time falls within any shift
+    return employeeShifts.some((shift) => {
+      const shiftStart = shift.start_time?.slice(0, 5) || "00:00";
+      const shiftEnd = shift.end_time?.slice(0, 5) || "23:59";
+      return bookingTime >= shiftStart && bookingTime < shiftEnd;
+    });
+  }
+
   return (
     <DashboardShell>
       <PageHeader
@@ -351,6 +451,11 @@ export default function BookingsPage() {
                       </div>
                       <div className="mt-1 text-[11px] text-muted-foreground">
                         {booking.employees?.full_name ?? t.unknownEmployee}
+                        {!hasEmployeeAvailable(booking) && (
+                          <span className="ml-2 text-destructive" title="Employee not available at this time">
+                            ⚠️
+                          </span>
+                        )}
                       </div>
                       <div className="mt-1 text-[11px] text-muted-foreground">
                         {booking.customers?.full_name ?? t.unknownCustomer}
@@ -373,6 +478,16 @@ export default function BookingsPage() {
                     <p className="mt-2 text-[11px] text-muted-foreground">
                       {booking.notes}
                     </p>
+                  )}
+                  {booking.products && booking.products.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-[11px] font-medium text-muted-foreground">Products:</p>
+                      {booking.products.map((bp) => (
+                        <p key={bp.id} className="text-[11px] text-muted-foreground">
+                          {bp.product.name} x{bp.quantity} ({(bp.price_cents * bp.quantity / 100).toFixed(2)} NOK)
+                        </p>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
@@ -411,7 +526,14 @@ export default function BookingsPage() {
                         {booking.services?.name ?? t.unknownService}
                       </TableCell>
                       <TableCell className="pr-4 text-xs text-muted-foreground">
-                        {booking.employees?.full_name ?? t.unknownEmployee}
+                        <div className="flex items-center gap-2">
+                          {booking.employees?.full_name ?? t.unknownEmployee}
+                          {!hasEmployeeAvailable(booking) && (
+                            <span className="text-destructive" title="Employee not available at this time">
+                              ⚠️
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="pr-4 text-xs text-muted-foreground">
                         {booking.customers?.full_name ?? t.unknownCustomer}
@@ -428,7 +550,19 @@ export default function BookingsPage() {
                         {booking.is_walk_in ? t.typeWalkIn : t.typeOnline}
                       </TableCell>
                       <TableCell className="pr-4 text-xs text-muted-foreground">
-                        {booking.notes}
+                        <div className="space-y-1">
+                          {booking.notes && <div>{booking.notes}</div>}
+                          {booking.products && booking.products.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {booking.products.map((bp) => (
+                                <div key={bp.id} className="text-[11px]">
+                                  {bp.product.name} x{bp.quantity} ({(bp.price_cents * bp.quantity / 100).toFixed(2)} NOK)
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {!booking.notes && (!booking.products || booking.products.length === 0) && "-"}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -587,6 +721,81 @@ export default function BookingsPage() {
                 </label>
               </div>
             </div>
+
+            {/* Products Section */}
+            {products.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Products (Optional)</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+                  {products.map((product) => {
+                    const selected = selectedProducts.find((sp) => sp.productId === product.id);
+                    const quantity = selected?.quantity || 0;
+                    return (
+                      <div key={product.id} className="flex items-center justify-between gap-2 text-sm">
+                        <div className="flex-1">
+                          <span className="font-medium">{product.name}</span>
+                          <span className="ml-2 text-muted-foreground">
+                            ({(product.price_cents / 100).toFixed(2)} NOK)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (quantity > 0) {
+                                setSelectedProducts(
+                                  selectedProducts.map((sp) =>
+                                    sp.productId === product.id
+                                      ? { ...sp, quantity: quantity - 1 }
+                                      : sp
+                                  ).filter((sp) => sp.quantity > 0)
+                                );
+                              }
+                            }}
+                            disabled={quantity === 0}
+                            className="h-7 w-7 p-0"
+                          >
+                            -
+                          </Button>
+                          <span className="w-8 text-center">{quantity}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (quantity === 0) {
+                                setSelectedProducts([...selectedProducts, { productId: product.id, quantity: 1 }]);
+                              } else {
+                                setSelectedProducts(
+                                  selectedProducts.map((sp) =>
+                                    sp.productId === product.id
+                                      ? { ...sp, quantity: quantity + 1 }
+                                      : sp
+                                  )
+                                );
+                              }
+                            }}
+                            className="h-7 w-7 p-0"
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {selectedProducts.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Total: {selectedProducts.reduce((sum, sp) => {
+                      const product = products.find((p) => p.id === sp.productId);
+                      return sum + (product ? product.price_cents * sp.quantity : 0);
+                    }, 0) / 100} NOK
+                  </p>
+                )}
+              </div>
+            )}
 
             {error && (
               <p className="text-sm text-red-500" aria-live="polite">

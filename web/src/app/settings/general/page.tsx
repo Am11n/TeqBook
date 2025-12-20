@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { translations } from "@/i18n/translations";
+import { translations, type AppLocale } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
+import { updateProfile } from "@/lib/services/profiles-service";
+import { getCurrentUser } from "@/lib/services/auth-service";
 
 export default function GeneralSettingsPage() {
-  const { locale } = useLocale();
-  const { salon } = useCurrentSalon();
+  const { locale, setLocale } = useLocale();
+  const { salon, profile, user } = useCurrentSalon();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +21,10 @@ export default function GeneralSettingsPage() {
   const [salonName, setSalonName] = useState("");
   const [salonType, setSalonType] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
+  const [defaultLanguage, setDefaultLanguage] = useState<string>("en");
+  const [userPreferredLanguage, setUserPreferredLanguage] = useState<string>("en");
+  const [userRole, setUserRole] = useState<string>("owner");
 
   const appLocale =
     locale === "nb"
@@ -58,8 +64,14 @@ export default function GeneralSettingsPage() {
       setSalonName(salon.name || "");
       setSalonType(salon.salon_type || "");
       setWhatsappNumber(salon.whatsapp_number || "");
+      setSupportedLanguages(salon.supported_languages || ["en", "nb"]);
+      setDefaultLanguage(salon.default_language || salon.preferred_language || "en");
     }
-  }, [salon]);
+    if (profile) {
+      setUserPreferredLanguage(profile.preferred_language || salon?.preferred_language || "en");
+      setUserRole(profile.role || "owner");
+    }
+  }, [salon, profile]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -74,12 +86,32 @@ export default function GeneralSettingsPage() {
         name: salonName,
         salon_type: salonType || null,
         whatsapp_number: whatsappNumber || null,
+        supported_languages: supportedLanguages.length > 0 ? supportedLanguages : null,
+        default_language: defaultLanguage || null,
       });
 
       if (updateError) {
         setError(updateError);
         setSaving(false);
         return;
+      }
+
+      // Update user profile preferred_language if changed
+      if (user?.id && userPreferredLanguage !== profile?.preferred_language) {
+        const { error: profileError } = await updateProfile(user.id, {
+          preferred_language: userPreferredLanguage || null,
+        });
+
+        if (profileError) {
+          setError(profileError);
+          setSaving(false);
+          return;
+        }
+
+        // Update locale if user changed their preferred language
+        if (userPreferredLanguage && userPreferredLanguage !== locale) {
+          setLocale(userPreferredLanguage as AppLocale);
+        }
       }
 
       setSaved(true);
@@ -153,6 +185,147 @@ export default function GeneralSettingsPage() {
           <p className="text-xs text-muted-foreground">
             {t.whatsappNumberHint}
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            {t.supportedLanguagesLabel}
+          </label>
+          <div className="max-w-md space-y-2">
+            {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
+              const langLabels: Record<typeof lang, string> = {
+                nb: "🇳🇴 Norsk",
+                en: "🇬🇧 English",
+                ar: "🇸🇦 العربية",
+                so: "🇸🇴 Soomaali",
+                ti: "🇪🇷 ትግርኛ",
+                am: "🇪🇹 አማርኛ",
+                tr: "🇹🇷 Türkçe",
+                pl: "🇵🇱 Polski",
+                vi: "🇻🇳 Tiếng Việt",
+                tl: "🇵🇭 Tagalog",
+                zh: "🇨🇳 中文",
+                fa: "🇮🇷 فارسی",
+                dar: "🇦🇫 دری (Dari)",
+                ur: "🇵🇰 اردو",
+                hi: "🇮🇳 हिन्दी",
+              };
+              return (
+                <label key={lang} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={supportedLanguages.includes(lang)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSupportedLanguages([...supportedLanguages, lang]);
+                      } else {
+                        setSupportedLanguages(supportedLanguages.filter((l) => l !== lang));
+                        // If unchecking default language, set to first remaining language or 'en'
+                        if (defaultLanguage === lang) {
+                          const remaining = supportedLanguages.filter((l) => l !== lang);
+                          setDefaultLanguage(remaining.length > 0 ? remaining[0] : "en");
+                        }
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-input"
+                  />
+                  <span className="text-sm">{langLabels[lang]}</span>
+                </label>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t.supportedLanguagesHint}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="defaultLanguage" className="text-sm font-medium">
+            {t.defaultLanguageLabel}
+          </label>
+          <select
+            id="defaultLanguage"
+            value={defaultLanguage}
+            onChange={(e) => setDefaultLanguage(e.target.value)}
+            className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {supportedLanguages.length === 0 ? (
+              <option value="en">🇬🇧 English</option>
+            ) : (
+              supportedLanguages.map((lang) => {
+                const langLabels: Record<string, string> = {
+                  nb: "🇳🇴 Norsk",
+                  en: "🇬🇧 English",
+                  ar: "🇸🇦 العربية",
+                  so: "🇸🇴 Soomaali",
+                  ti: "🇪🇷 ትግርኛ",
+                  am: "🇪🇹 አማርኛ",
+                  tr: "🇹🇷 Türkçe",
+                  pl: "🇵🇱 Polski",
+                  vi: "🇻🇳 Tiếng Việt",
+                  tl: "🇵🇭 Tagalog",
+                  zh: "🇨🇳 中文",
+                  fa: "🇮🇷 فارسی",
+                  dar: "🇦🇫 دری (Dari)",
+                  ur: "🇵🇰 اردو",
+                  hi: "🇮🇳 हिन्दी",
+                };
+                return (
+                  <option key={lang} value={lang}>
+                    {langLabels[lang] || lang}
+                  </option>
+                );
+              })
+            )}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            {t.defaultLanguageHint}
+          </p>
+        </div>
+
+        {/* User Profile Section */}
+        <div className="space-y-4 border-t pt-6">
+          <h3 className="text-base font-semibold">Din profil</h3>
+          
+          <div className="space-y-2">
+            <label htmlFor="userPreferredLanguage" className="text-sm font-medium">
+              {t.userPreferredLanguageLabel}
+            </label>
+            <select
+              id="userPreferredLanguage"
+              value={userPreferredLanguage}
+              onChange={(e) => setUserPreferredLanguage(e.target.value)}
+              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
+                const langLabels: Record<typeof lang, string> = {
+                  nb: "🇳🇴 Norsk",
+                  en: "🇬🇧 English",
+                  ar: "🇸🇦 العربية",
+                  so: "🇸🇴 Soomaali",
+                  ti: "🇪🇷 ትግርኛ",
+                  am: "🇪🇹 አማርኛ",
+                  tr: "🇹🇷 Türkçe",
+                  pl: "🇵🇱 Polski",
+                  vi: "🇻🇳 Tiếng Việt",
+                  tl: "🇵🇭 Tagalog",
+                  zh: "🇨🇳 中文",
+                  fa: "🇮🇷 فارسی",
+                  dar: "🇦🇫 دری (Dari)",
+                  ur: "🇵🇰 اردو",
+                  hi: "🇮🇳 हिन्दी",
+                };
+                return (
+                  <option key={lang} value={lang}>
+                    {langLabels[lang]}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {t.userPreferredLanguageHint}
+            </p>
+          </div>
         </div>
 
         {error && (

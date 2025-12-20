@@ -77,6 +77,44 @@ export async function createShift(
 }
 
 /**
+ * Update a shift
+ */
+export async function updateShift(
+  salonId: string,
+  shiftId: string,
+  updates: {
+    employee_id?: string;
+    weekday?: number;
+    start_time?: string;
+    end_time?: string;
+  }
+): Promise<{ data: Shift | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("shifts")
+      .update(updates)
+      .eq("id", shiftId)
+      .eq("salon_id", salonId)
+      .select("id, employee_id, weekday, start_time, end_time, employee:employees(full_name)")
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        data: null,
+        error: error?.message ?? "Failed to update shift",
+      };
+    }
+
+    return { data: data as unknown as Shift, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Delete a shift
  */
 export async function deleteShift(

@@ -14,6 +14,7 @@ export type CreateSalonInput = {
   preferred_language: AppLocale;
   online_booking_enabled: boolean;
   is_public: boolean;
+  whatsapp_number?: string | null;
 };
 
 export type OpeningHourInput = {
@@ -41,6 +42,7 @@ export async function createSalonForCurrentUser(
     preferred_language: input.preferred_language,
     online_booking_enabled: input.online_booking_enabled,
     is_public: input.is_public,
+    whatsapp_number: input.whatsapp_number || null,
   });
 }
 

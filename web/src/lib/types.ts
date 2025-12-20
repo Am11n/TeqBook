@@ -72,6 +72,17 @@ export type Booking = {
   customers: { full_name: string | null } | null;
   employees: { full_name: string | null } | null;
   services: { name: string | null } | null;
+  products?: Array<{
+    id: string;
+    product_id: string;
+    quantity: number;
+    price_cents: number;
+    product: {
+      id: string;
+      name: string;
+      price_cents: number;
+    };
+  }> | null;
 };
 
 export type CalendarBooking = {

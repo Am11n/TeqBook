@@ -250,14 +250,17 @@ export default function EmployeesPage() {
               <label htmlFor="role" className="font-medium">
                 {t.roleLabel}
               </label>
-              <input
+              <select
                 id="role"
-                type="text"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                placeholder={t.rolePlaceholder}
-              />
+              >
+                <option value="">{t.rolePlaceholder}</option>
+                <option value="owner">Owner</option>
+                <option value="manager">Manager</option>
+                <option value="staff">Staff</option>
+              </select>
             </div>
             <div className="space-y-2 text-sm">
               <label htmlFor="preferred_language" className="font-medium">

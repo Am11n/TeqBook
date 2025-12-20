@@ -23,6 +23,8 @@ type Profile = {
   user_id: string;
   salon_id: string | null;
   is_superadmin?: boolean;
+  role?: string | null;
+  preferred_language?: string | null;
 };
 
 type Salon = {
@@ -33,6 +35,8 @@ type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
+  supported_languages?: string[] | null;
+  default_language?: string | null;
   theme?: {
     primary?: string;
     secondary?: string;
@@ -64,6 +68,8 @@ type SalonContextType = {
   isReady: boolean;
   // Helper to check if user is superadmin
   isSuperAdmin: boolean;
+  // Get user role (superadmin, owner, manager, staff)
+  userRole: string | null;
   refreshSalon: () => Promise<void>;
 };
 
@@ -171,6 +177,11 @@ export function SalonProvider({ children }: SalonProviderProps) {
 
   const value = useMemo<SalonContextType>(() => {
     if (state.status === "ready") {
+      // Determine user role: superadmin > profile.role > default to "owner"
+      const userRole = state.profile?.is_superadmin
+        ? "superadmin"
+        : (state.profile?.role || "owner");
+      
       return {
         salon: state.salon,
         profile: state.profile,
@@ -179,6 +190,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
         error: null,
         isReady: true,
         isSuperAdmin: state.profile?.is_superadmin ?? false,
+        userRole,
         refreshSalon: loadSalonData,
       };
     }
@@ -191,6 +203,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
       error: state.status === "error" ? state.error : null,
       isReady: false,
       isSuperAdmin: false,
+      userRole: null,
       refreshSalon: loadSalonData,
     };
   }, [state, loadSalonData]);

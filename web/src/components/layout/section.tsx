@@ -69,11 +69,11 @@ export function SectionCard({
               {title}
             </p>
           )}
-          {description && (
-            <p className="text-xs text-muted-foreground sm:text-[13px]">
-              {description}
-            </p>
-          )}
+            {description && (
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {description}
+              </p>
+            )}
         </div>
       )}
       {children}

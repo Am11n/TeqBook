@@ -30,6 +30,8 @@ import {
   User,
   CreditCard,
   LogOut,
+  TrendingUp,
+  Package,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CommandPalette } from "@/components/command-palette";
@@ -40,6 +42,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  canAccessSettings,
+  canAccessBilling,
+  canManageEmployees,
+  canManageServices,
+  canViewReports,
+  canManageShifts,
+  getRoleDisplayName,
+} from "@/lib/utils/access-control";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +70,7 @@ let globalSidebarState: { loaded: boolean; state: boolean | null } = { loaded: f
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon, isSuperAdmin } = useCurrentSalon();
+  const { salon, isSuperAdmin, userRole, profile } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -211,14 +222,18 @@ export function DashboardShell({ children }: DashboardShellProps) {
   ];
 
   const managementItems = [
-    { href: "/employees", label: texts.employees, icon: Users },
-    { href: "/services", label: texts.services, icon: Scissors },
-    { href: "/customers", label: texts.customers, icon: UserCircle },
-    { href: "/shifts", label: texts.shifts, icon: Clock },
+    ...(canManageEmployees(userRole) ? [{ href: "/employees", label: texts.employees, icon: Users }] : []),
+    ...(canManageServices(userRole) ? [{ href: "/services", label: texts.services, icon: Scissors }] : []),
+    { href: "/customers", label: texts.customers, icon: UserCircle }, // All roles can view customers
+    ...(canManageServices(userRole) ? [{ href: "/products", label: "Products", icon: Package }] : []),
+    ...(canManageShifts(userRole) ? [{ href: "/shifts", label: texts.shifts, icon: Clock }] : []),
+    ...(canViewReports(userRole) ? [{ href: "/reports", label: "Reports", icon: TrendingUp }] : []),
   ];
 
   const systemItems = [
-    { href: "/settings/general", label: translations[appLocale].settings.title, icon: Settings },
+    ...(canAccessSettings(userRole)
+      ? [{ href: "/settings/general", label: translations[appLocale].settings.title, icon: Settings }]
+      : []),
     ...(isSuperAdmin
       ? [{ href: "/admin", label: translations[appLocale].admin.title, icon: Shield }]
       : []),
@@ -227,7 +242,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-white">
       {/* Header - Full width at top */}
-        <header className="sticky top-0 z-[50] flex h-[72px] w-full items-center justify-between border-b border-white/10 bg-gradient-to-r from-white/95 via-blue-50/30 to-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+        <header className="sticky top-0 z-[50] flex h-[72px] w-full items-center justify-between border-b border-border bg-card/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
         {/* Left: Logo + TeqBook (Desktop) / Hamburger (Mobile) */}
         <div className="flex items-center gap-3 pl-6">
           {/* Mobile: Hamburger menu */}
@@ -255,7 +270,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               className="h-8 w-8 transition-transform duration-150"
               priority
             />
-            <span className="text-lg font-semibold tracking-tight text-slate-900">
+            <span className="text-lg font-semibold tracking-tight text-foreground">
               TeqBook
             </span>
           </Link>
@@ -273,7 +288,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               className="h-7 w-7"
               priority
             />
-            <span className="text-base font-semibold tracking-tight text-slate-900">
+            <span className="text-base font-semibold tracking-tight text-foreground">
               TeqBook
             </span>
           </Link>
@@ -283,13 +298,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <div className="hidden flex-1 items-center justify-center px-4 md:flex">
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="group flex w-full max-w-[600px] items-center gap-3 rounded-full bg-white/60 backdrop-blur-sm px-4 h-10 text-left transition-all duration-150 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-blue-700/20 focus-within:bg-white/80 hover:bg-white/70 hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]"
+            className="group flex w-full max-w-[600px] items-center gap-3 rounded-full bg-card/60 backdrop-blur-sm px-4 h-10 text-left transition-all duration-150 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card/80 hover:bg-card/70 hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]"
             >
-            <Search className="h-4 w-4 text-slate-400 transition-colors group-hover:text-blue-700" />
-            <span className="flex-1 text-sm text-slate-500 group-hover:text-slate-700">
+            <Search className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+            <span className="flex-1 text-sm text-muted-foreground group-hover:text-foreground">
               Search bookings, customers, services...
             </span>
-            <kbd className="hidden rounded-md bg-white/90 border border-slate-200/60 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-500 shadow-sm lg:block">
+            <kbd className="hidden rounded-md bg-card/90 border border-border/60 px-2 py-0.5 font-mono text-[10px] font-medium text-muted-foreground shadow-sm lg:block">
               ⌘K
             </kbd>
           </button>
@@ -297,11 +312,31 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
         {/* Right: Notifications, Language, Profile */}
         <div className="flex items-center gap-2 pr-6">
+          {/* WhatsApp Quick Button */}
+          {salon?.whatsapp_number && (
+            <a
+              href={`https://wa.me/${salon.whatsapp_number.replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-700 transition-all hover:scale-105 hover:bg-green-100 sm:flex"
+              aria-label="Chat on WhatsApp"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+              </svg>
+            </a>
+          )}
+
           {/* Notification Center */}
           <NotificationCenter />
 
           {/* Language selector (Desktop) */}
-          <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-white/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-slate-100/60 sm:flex">
+          <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
             <select
               value={locale}
               onChange={async (e) => {
@@ -341,7 +376,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
-                  <Avatar className="h-9 w-9 border-2 border-white shadow-sm transition-all hover:shadow-md">
+                  <Avatar className="h-9 w-9 border-2 border-card shadow-sm transition-all hover:shadow-md">
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                       {getInitials(userEmail)}
                     </AvatarFallback>
@@ -360,15 +395,22 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   <p className="text-xs leading-none text-muted-foreground">
                     {salon?.name || "Salon"}
                   </p>
+                  {userRole && (
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {getRoleDisplayName(userRole)}
+                    </p>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
-                  <User className="h-4 w-4" />
-                  <span>My profile</span>
-                </Link>
-              </DropdownMenuItem>
+              {canAccessSettings(userRole) && (
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>My profile</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem disabled className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 <span>Billing (coming soon)</span>
@@ -442,7 +484,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop sidebar */}
         <aside
-          className={`hidden border-r border-white/5 bg-gradient-to-b from-white/40 via-white/50 to-white/40 backdrop-blur-md transition-all duration-[250ms] ease-in-out md:flex md:flex-col shadow-[0_20px_60px_rgba(15,23,42,0.08)] ${
+          className={`hidden border-r border-border/5 bg-sidebar backdrop-blur-md transition-all duration-[250ms] ease-in-out md:flex md:flex-col shadow-[0_20px_60px_rgba(15,23,42,0.08)] ${
             sidebarCollapsed ? "w-20" : "w-72"
           }`}
         >
@@ -453,7 +495,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <div>
               {!sidebarCollapsed && (
                 <div className="mb-2 flex items-center justify-between px-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Overview
                   </p>
                   <TooltipProvider>
@@ -461,10 +503,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
                       <TooltipTrigger asChild>
                         <button
                           onClick={toggleSidebar}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-blue-200/60 bg-blue-50/80 transition-colors hover:bg-blue-100/60 hover:border-blue-300/60"
+                          className="flex h-6 w-6 items-center justify-center rounded border border-primary/20 bg-primary/10 transition-colors hover:bg-primary/20 hover:border-primary/30"
                           aria-label="Collapse sidebar"
                         >
-                          <ChevronLeft className="h-3 w-3 text-blue-600" />
+                          <ChevronLeft className="h-3 w-3 text-primary" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -484,7 +526,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                           className="flex h-6 w-6 items-center justify-center rounded border border-blue-200/60 bg-blue-50/80 transition-colors hover:bg-blue-100/60 hover:border-blue-300/60"
                           aria-label="Expand sidebar"
                         >
-                          <ChevronRight className="h-3 w-3 text-blue-600" />
+                          <ChevronRight className="h-3 w-3 text-primary" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -511,7 +553,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {/* Operations Section */}
             <div>
               {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Operations
                 </p>
               )}
@@ -532,7 +574,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {/* Management Section */}
             <div>
               {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Management
                 </p>
               )}
@@ -553,7 +595,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {/* System Section */}
             <div>
               {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   System
                 </p>
               )}
@@ -574,8 +616,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
           {/* Built for text at bottom */}
           {!sidebarCollapsed && (
-            <div className="mt-auto pt-4 border-t border-slate-100/60">
-              <p className="text-xs text-slate-500">
+            <div className="mt-auto pt-4 border-t border-border/60">
+              <p className="text-xs text-muted-foreground">
                 {texts.builtFor}
               </p>
             </div>
@@ -620,10 +662,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   priority
                 />
                 <div className="flex flex-col">
-                  <span className="text-base font-semibold tracking-tight text-slate-900">
+                  <span className="text-base font-semibold tracking-tight text-foreground">
                     TeqBook
                   </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-muted-foreground">
                     {texts.brandSubtitle}
                   </span>
                 </div>
@@ -643,7 +685,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <nav className="flex flex-1 flex-col gap-4">
               {/* Overview */}
               <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Overview
                 </p>
                 <div className="flex flex-col gap-1">
@@ -662,7 +704,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
               {/* Operations */}
               <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Operations
                 </p>
                 <div className="flex flex-col gap-1">
@@ -681,7 +723,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
               {/* Management */}
               <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Management
                 </p>
                 <div className="flex flex-col gap-1">
@@ -700,7 +742,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
               {/* System */}
               <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   System
                 </p>
                 <div className="flex flex-col gap-1">
@@ -729,7 +771,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   setLocale(e.target.value as AppLocale);
                   setMobileNavOpen(false);
                 }}
-                className="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600/20"
+                className="rounded-lg border border-border bg-card/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="nb">🇳🇴 Norsk</option>
                 <option value="en">🇬🇧 English</option>
@@ -753,13 +795,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 size="sm"
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="mt-2 w-full text-xs text-slate-600 hover:bg-slate-100"
+                className="mt-2 w-full text-xs text-foreground hover:bg-muted"
               >
                 {loggingOut ? "..." : texts.logout}
               </Button>
             </div>
 
-            <p className="mt-auto text-xs text-slate-500">
+            <p className="mt-auto text-xs text-muted-foreground">
               {texts.builtFor}
             </p>
           </div>
@@ -784,8 +826,8 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
       href={href}
       className={`group relative flex items-center rounded-xl text-[15px] font-medium transition-all duration-150 ease-out ${
         isActive
-          ? "bg-blue-50 text-blue-700"
-          : "bg-transparent text-slate-600 hover:bg-blue-50/50 hover:text-blue-700"
+          ? "bg-primary/10 text-primary"
+          : "bg-transparent text-foreground/70 hover:bg-primary/5 hover:text-primary"
       } ${collapsed ? "justify-center px-3 py-3" : "gap-2 px-4 py-3"} ${className ?? ""} ${
         !isActive ? "hover:-translate-y-[1px]" : ""
       }`}
@@ -809,7 +851,7 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
         className={`h-5 w-5 flex-shrink-0 transition-all duration-150 ${
           isActive
             ? "text-blue-700"
-            : "text-slate-500 group-hover:text-blue-700 group-hover:opacity-100"
+            : "text-muted-foreground group-hover:text-primary group-hover:opacity-100"
         } ${!isActive ? "opacity-70 group-hover:opacity-100" : ""}`}
       />
       {!collapsed && (
@@ -825,7 +867,7 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
-          <TooltipContent side="right" className="rounded-lg bg-slate-900 px-2 py-1 text-xs text-white">
+          <TooltipContent side="right" className="rounded-lg bg-foreground px-2 py-1 text-xs text-background">
             {label}
           </TooltipContent>
         </Tooltip>
@@ -853,14 +895,14 @@ function MobileNavLink({
       href={href}
       className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-all ${
         isActive
-          ? "bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
-          : "text-slate-600 hover:bg-black/5"
+          ? "bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
+          : "text-foreground/70 hover:bg-muted/50"
       } ${className ?? ""}`}
       onClick={onNavigate}
     >
       <Icon
         className={`h-5 w-5 ${
-          isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
         }`}
       />
       <span>{label}</span>

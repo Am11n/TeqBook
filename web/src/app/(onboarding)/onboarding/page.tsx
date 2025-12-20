@@ -45,6 +45,7 @@ export default function OnboardingPage() {
   // Step 1: Grunninfo
   const [name, setName] = useState("");
   const [salonType, setSalonType] = useState<SalonType>("barber");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   // Initialize preferredLanguage from current locale
   const [preferredLanguage, setPreferredLanguage] = useState<AppLocale>(
     appLocale
@@ -69,6 +70,7 @@ export default function OnboardingPage() {
       preferred_language: preferredLanguage,
       online_booking_enabled: onlineBooking,
       is_public: publicBooking,
+      whatsapp_number: whatsappNumber.trim() || null,
     });
 
     if (salonError || !salonId) {
@@ -343,6 +345,23 @@ export default function OnboardingPage() {
                         <option value="ur">🇵🇰 اردو</option>
                         <option value="hi">🇮🇳 हिन्दी</option>
                       </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="whatsappNumber" className="text-sm font-medium text-slate-800">
+                        {t.whatsappNumberLabel}
+                      </label>
+                      <input
+                        id="whatsappNumber"
+                        type="tel"
+                        value={whatsappNumber}
+                        onChange={(e) => setWhatsappNumber(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+                        placeholder={t.whatsappNumberPlaceholder}
+                      />
+                      <p className="text-xs text-slate-500">
+                        {t.whatsappNumberHint}
+                      </p>
                     </div>
 
                     <div className="flex justify-end pt-2">

@@ -115,6 +115,9 @@ export type OnboardingMessages = {
   paymentMethodLabel: string;
   paymentMethodPhysicalOnly: string;
   preferredLanguageLabel: string;
+  whatsappNumberLabel: string;
+  whatsappNumberPlaceholder: string;
+  whatsappNumberHint: string;
   nextButton: string;
   // Step 2: Åpningstider
   step2Title: string;
@@ -467,6 +470,12 @@ export type SettingsMessages = {
   whatsappNumberLabel: string;
   whatsappNumberPlaceholder: string;
   whatsappNumberHint: string;
+  supportedLanguagesLabel: string;
+  supportedLanguagesHint: string;
+  defaultLanguageLabel: string;
+  defaultLanguageHint: string;
+  userPreferredLanguageLabel: string;
+  userPreferredLanguageHint: string;
   saveButton: string;
   saving: string;
   saved: string;
@@ -515,6 +524,30 @@ export type AdminMessages = {
   emptyUsers: string;
 };
 
+export type ProductsMessages = {
+  title: string;
+  description: string;
+  noProducts: string;
+  createFirst: string;
+  name: string;
+  price: string;
+  stock: string;
+  sku: string;
+  status: string;
+  actions: string;
+  create: string;
+  edit: string;
+  delete: string;
+  save: string;
+  cancel: string;
+  active: string;
+  inactive: string;
+  namePlaceholder: string;
+  pricePlaceholder: string;
+  stockPlaceholder: string;
+  skuPlaceholder: string;
+};
+
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
@@ -530,6 +563,7 @@ export type TranslationNamespaces = {
   shifts: ShiftsMessages;
   settings: SettingsMessages;
   admin: AdminMessages;
+  products: ProductsMessages;
 };
 
 import { nb } from "./nb";

@@ -37,8 +37,10 @@ export default function RootLayout({
       >
         <LocaleProvider>
           <SalonProvider>
-          <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top,_rgb(240,240,245),_transparent_55%),linear-gradient(to_bottom,_rgb(250,250,252),_rgb(243,243,247))]">
-        {children}
+          {/* Main app container - uses design token for background */}
+          {/* Note: Marketing pages (landing, login, signup, onboarding) override this with their own gradients */}
+          <div className="min-h-screen w-full bg-background">
+            {children}
           </div>
           </SalonProvider>
         </LocaleProvider>

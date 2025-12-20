@@ -22,6 +22,8 @@ export type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
+  supported_languages?: string[] | null;
+  default_language?: string | null;
   theme?: SalonTheme | null;
 };
 
@@ -34,7 +36,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, theme")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, theme")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -96,6 +98,7 @@ export async function createSalonForCurrentUser(
     preferred_language: string;
     online_booking_enabled: boolean;
     is_public: boolean;
+    whatsapp_number?: string | null;
   }
 ): Promise<{ data: string | null; error: string | null }> {
   try {
@@ -105,6 +108,7 @@ export async function createSalonForCurrentUser(
       preferred_language_param: input.preferred_language,
       online_booking_enabled_param: input.online_booking_enabled,
       is_public_param: input.is_public,
+      whatsapp_number_param: input.whatsapp_number || null,
     });
 
     if (error) {
@@ -134,6 +138,8 @@ export async function updateSalon(
     salon_type?: string | null;
     whatsapp_number?: string | null;
     preferred_language?: string | null;
+    supported_languages?: string[] | null;
+    default_language?: string | null;
     theme?: SalonTheme | null;
   }
 ): Promise<{ error: string | null }> {

@@ -11,6 +11,7 @@ export type Profile = {
   salon_id: string | null;
   is_superadmin: boolean;
   role?: string | null;
+  preferred_language?: string | null;
   user_preferences?: {
     sidebarCollapsed?: boolean;
     notifications?: {
@@ -33,7 +34,7 @@ export async function getProfileByUserId(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("user_id, salon_id, is_superadmin, role, user_preferences")
+      .select("user_id, salon_id, is_superadmin, role, preferred_language, user_preferences")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -100,6 +101,34 @@ export async function updateUserPreferences(
       .update({
         user_preferences: mergedPreferences,
       })
+      .eq("user_id", userId);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Update user profile
+ */
+export async function updateProfile(
+  userId: string,
+  updates: {
+    preferred_language?: string | null;
+    role?: string | null;
+  }
+): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
       .eq("user_id", userId);
 
     if (error) {
