@@ -73,7 +73,7 @@ export default function BookingsPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].bookings;
-  const { salon, loading: salonLoading, error: salonError, isReady, userRole, user } = useCurrentSalon();
+  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>(
     [],

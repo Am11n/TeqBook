@@ -233,8 +233,17 @@ export async function getProductsForBooking(
       return { data: null, error: error.message };
     }
 
+    type BookingProductRow = {
+      id: string;
+      booking_id: string;
+      product_id: string;
+      quantity: number;
+      price_cents: number;
+      products: Product | Product[];
+    };
+
     return {
-      data: (data || []).map((row: any) => ({
+      data: (data || []).map((row: BookingProductRow) => ({
         id: row.id,
         booking_id: row.booking_id,
         product_id: row.product_id,

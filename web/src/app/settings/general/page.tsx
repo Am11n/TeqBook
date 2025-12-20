@@ -9,7 +9,6 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
-import { getCurrentUser } from "@/lib/services/auth-service";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
@@ -324,6 +323,26 @@ export default function GeneralSettingsPage() {
             </select>
             <p className="text-xs text-muted-foreground">
               {t.userPreferredLanguageHint}
+            </p>
+          </div>
+
+          {/* User Role Section */}
+          <div className="space-y-2">
+            <label htmlFor="userRole" className="text-sm font-medium">
+              Your Role
+            </label>
+            <select
+              id="userRole"
+              value={userRole}
+              onChange={(e) => setUserRole(e.target.value)}
+              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="owner">Owner</option>
+              <option value="manager">Manager</option>
+              <option value="staff">Staff</option>
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Your role determines what features you can access in the dashboard.
             </p>
           </div>
         </div>

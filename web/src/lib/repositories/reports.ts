@@ -93,7 +93,7 @@ export async function getRevenueByMonth(
     }
 
     return {
-      data: (data || []).map((row: any) => ({
+      data: (data || []).map((row: { month: string; revenue_cents: number; booking_count: number }) => ({
         month: row.month,
         revenue_cents: row.revenue_cents,
         booking_count: row.booking_count,
@@ -131,8 +131,15 @@ export async function getBookingsPerService(
       return { data: null, error: error.message };
     }
 
+    type BookingsPerServiceRow = {
+      service_id: string;
+      service_name: string;
+      booking_count: number;
+      revenue_cents: number;
+    };
+
     return {
-      data: (data || []).map((row: any) => ({
+      data: (data || []).map((row: BookingsPerServiceRow) => ({
         service_id: row.service_id,
         service_name: row.service_name,
         booking_count: row.booking_count,

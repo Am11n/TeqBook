@@ -18,14 +18,13 @@ import {
 } from "@/lib/services/reports-service";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getActiveServicesForSalon } from "@/lib/services/services-service";
-import { Calendar, TrendingUp, Users, Clock, DollarSign, Filter, X } from "lucide-react";
+import { Calendar, TrendingUp, Clock, DollarSign, Filter, X } from "lucide-react";
 import type { Employee, Service } from "@/lib/types";
 
 export default function ReportsPage() {
   const { salon, isReady } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = locale === "nb" ? "nb" : "en";
-  const t = translations[appLocale].dashboard || translations[appLocale].home;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

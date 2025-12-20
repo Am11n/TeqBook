@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/tooltip";
 import {
   canAccessSettings,
-  canAccessBilling,
   canManageEmployees,
   canManageServices,
   canViewReports,
@@ -70,7 +69,7 @@ let globalSidebarState: { loaded: boolean; state: boolean | null } = { loaded: f
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon, isSuperAdmin, userRole, profile } = useCurrentSalon();
+  const { salon, isSuperAdmin, userRole } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

@@ -56,7 +56,6 @@ export default function BillingSettingsPage() {
       setCurrentPlan("starter");
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, salon]);
 
   const plans = [

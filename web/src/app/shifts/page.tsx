@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, FormEvent, useMemo } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/empty-state";
-import { TableToolbar } from "@/components/table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -21,7 +20,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getShiftsForCurrentSalon, createShift, deleteShift, updateShift } from "@/lib/repositories/shifts";
 import type { Shift } from "@/lib/types";
-import { ChevronLeft, ChevronRight, Edit, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
 
 export default function ShiftsPage() {
   const { locale } = useLocale();
