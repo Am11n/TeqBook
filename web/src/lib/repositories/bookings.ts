@@ -230,7 +230,7 @@ export async function getBookingById(
       return { data: null, error: "Booking not found" };
     }
 
-    return { data: data as Booking & { salon_id: string }, error: null };
+    return { data: data as unknown as Booking & { salon_id: string }, error: null };
   } catch (err) {
     return {
       data: null,

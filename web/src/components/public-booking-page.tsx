@@ -226,7 +226,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       }
 
       // Redirect to confirmation page
-      router.push(`/book/${slug}/confirmation?bookingId=${bookingData.id}`);
+      window.location.href = `/book/${slug}/confirmation?bookingId=${bookingData.id}`;
     } catch {
       setError(t.createError);
       setSaving(false);

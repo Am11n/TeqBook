@@ -98,6 +98,67 @@ export default function BookingsPage() {
   const [date, setDate] = useState<string>(() =>
     new Date().toISOString().slice(0, 10),
   );
+
+  // Load bookings function (defined outside useEffect so it can be reused)
+  async function loadBookings() {
+    setLoading(true);
+    setError(null);
+
+    if (!salon?.id) {
+      setError(t.noSalon);
+      setLoading(false);
+      return;
+    }
+
+    const [
+      { data: bookingsData, error: bookingsError },
+      { data: employeesData, error: employeesError },
+      { data: servicesData, error: servicesError },
+      { data: productsData, error: productsError },
+      { data: shiftsData, error: shiftsError },
+    ] = await Promise.all([
+      getBookingsForCurrentSalon(salon.id),
+      getEmployeesForCurrentSalon(salon.id),
+      getActiveServicesForCurrentSalon(salon.id),
+      getProductsForSalon(salon.id, { activeOnly: true }),
+      getShiftsForCurrentSalon(salon.id),
+      ]);
+
+    if (bookingsError || employeesError || servicesError || productsError || shiftsError) {
+      setError(bookingsError ?? employeesError ?? servicesError ?? productsError ?? shiftsError ?? t.loadError);
+      setLoading(false);
+      return;
+    }
+
+    // Load products for each booking
+    const bookingsWithProducts = await Promise.all(
+      (bookingsData ?? []).map(async (booking) => {
+        const { data: bookingProducts } = await getProductsForBooking(booking.id);
+        return {
+          ...booking,
+          products: bookingProducts?.map((bp) => ({
+            id: bp.id,
+            product_id: bp.product_id,
+            quantity: bp.quantity,
+            price_cents: bp.price_cents,
+            product: {
+              id: bp.product.id,
+              name: bp.product.name,
+              price_cents: bp.product.price_cents,
+            },
+          })) || null,
+        };
+      })
+    );
+    setBookings(bookingsWithProducts);
+    setEmployees(
+      (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
+    );
+    setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
+    setProducts(productsData ?? []);
+    setShifts(shiftsData ?? []);
+    setLoading(false);
+  }
   const [slots, setSlots] = useState<
     { start: string; end: string; label: string }[]
   >([]);
@@ -121,66 +182,6 @@ export default function BookingsPage() {
         setLoading(false);
       }
       return;
-    }
-
-    async function loadBookings() {
-      setLoading(true);
-      setError(null);
-
-      if (!salon?.id) {
-        setError(t.noSalon);
-        setLoading(false);
-        return;
-      }
-
-      const [
-        { data: bookingsData, error: bookingsError },
-        { data: employeesData, error: employeesError },
-        { data: servicesData, error: servicesError },
-        { data: productsData, error: productsError },
-        { data: shiftsData, error: shiftsError },
-      ] = await Promise.all([
-        getBookingsForCurrentSalon(salon.id),
-        getEmployeesForCurrentSalon(salon.id),
-        getActiveServicesForCurrentSalon(salon.id),
-        getProductsForSalon(salon.id, { activeOnly: true }),
-        getShiftsForCurrentSalon(salon.id),
-        ]);
-
-      if (bookingsError || employeesError || servicesError || productsError || shiftsError) {
-        setError(bookingsError ?? employeesError ?? servicesError ?? productsError ?? shiftsError ?? t.loadError);
-        setLoading(false);
-        return;
-      }
-
-      // Load products for each booking
-      const bookingsWithProducts = await Promise.all(
-        (bookingsData ?? []).map(async (booking) => {
-          const { data: bookingProducts } = await getProductsForBooking(booking.id);
-          return {
-            ...booking,
-            products: bookingProducts?.map((bp) => ({
-              id: bp.id,
-              product_id: bp.product_id,
-              quantity: bp.quantity,
-              price_cents: bp.price_cents,
-              product: {
-                id: bp.product.id,
-                name: bp.product.name,
-                price_cents: bp.product.price_cents,
-              },
-            })) || null,
-          };
-        })
-      );
-      setBookings(bookingsWithProducts);
-      setEmployees(
-        (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
-      );
-      setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
-      setProducts(productsData ?? []);
-      setShifts(shiftsData ?? []);
-      setLoading(false);
     }
 
     loadBookings();

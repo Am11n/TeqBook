@@ -8,6 +8,7 @@ import { getRevenueByMonth } from "@/lib/repositories/reports";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 import type { ReportsFilters } from "./reports-service";
+import type { Booking, CalendarBooking } from "@/lib/types";
 
 /**
  * Convert array of objects to CSV string
@@ -66,7 +67,7 @@ export async function exportBookingsToCSV(
 ): Promise<{ success: boolean; error: string | null }> {
   try {
     // Fetch all bookings (with pagination if needed)
-    let allBookings: unknown[] = [];
+    let allBookings: Booking[] = [];
     let page = 0;
     const pageSize = 1000;
     let hasMore = true;
@@ -103,7 +104,9 @@ export async function exportBookingsToCSV(
         if (filters.status && booking.status !== filters.status) return false;
         if (filters.startDate && new Date(booking.start_time) < new Date(filters.startDate)) return false;
         if (filters.endDate && new Date(booking.start_time) > new Date(filters.endDate)) return false;
-        if (filters.employeeId && booking.employees?.id !== filters.employeeId) return false;
+        if (filters.employeeId && booking.employees && typeof booking.employees === 'object' && 'id' in booking.employees && (booking.employees as { id: string }).id !== filters.employeeId) {
+          return false;
+        }
         return true;
       });
     }
@@ -202,7 +205,7 @@ export async function exportEmployeeWorkloadToCSV(
     const startDate = filters?.startDate || null;
     const endDate = filters?.endDate || null;
 
-    let allBookings: unknown[] = [];
+    let allBookings: CalendarBooking[] = [];
     let page = 0;
     const pageSize = 1000;
     let hasMore = true;
@@ -224,7 +227,7 @@ export async function exportEmployeeWorkloadToCSV(
         break;
       }
 
-      allBookings = [...allBookings, ...data];
+      allBookings = [...allBookings, ...(data as CalendarBooking[])];
 
       if (data.length < pageSize) {
         hasMore = false;

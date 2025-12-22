@@ -121,7 +121,7 @@ function PaymentForm({
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
   const { salon, isReady, refreshSalon, user } = useCurrentSalon();
-  const [currentPlan, setCurrentPlan] = useState<PlanType>(null);
+  const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);

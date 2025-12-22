@@ -76,7 +76,7 @@ export async function updateSalonSettings(
     const { canAdd, currentCount, limit, error: limitError } = await canAddLanguage(
       salonId,
       salonPlan,
-      updates.supported_languages
+      updates.supported_languages || []
     );
 
     if (limitError) {
