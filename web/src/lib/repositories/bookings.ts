@@ -208,6 +208,38 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Get booking by ID (public access for confirmation page)
+ */
+export async function getBookingById(
+  bookingId: string
+): Promise<{ data: Booking & { salon_id: string } | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(
+        "id, salon_id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)"
+      )
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!data) {
+      return { data: null, error: "Booking not found" };
+    }
+
+    return { data: data as Booking & { salon_id: string }, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Delete a booking
  */
 export async function deleteBooking(

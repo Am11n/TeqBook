@@ -207,7 +207,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     setSuccessMessage(null);
 
     try {
-      const { error: bookingError } = await createBooking({
+      const { data: bookingData, error: bookingError } = await createBooking({
         salon_id: salon.id,
         employee_id: employeeId,
         service_id: serviceId,
@@ -219,14 +219,14 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         is_walk_in: false,
       });
 
-      if (bookingError) {
-        setError(bookingError);
+      if (bookingError || !bookingData) {
+        setError(bookingError || t.createError);
         setSaving(false);
         return;
       }
 
-      setSuccessMessage(t.successMessage);
-      setSaving(false);
+      // Redirect to confirmation page
+      router.push(`/book/${slug}/confirmation?bookingId=${bookingData.id}`);
     } catch {
       setError(t.createError);
       setSaving(false);

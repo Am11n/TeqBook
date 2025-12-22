@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,9 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
+import { uploadLogo } from "@/lib/services/storage-service";
+import { Upload, X, Eye } from "lucide-react";
+import Image from "next/image";
 
 export default function BrandingSettingsPage() {
   const { locale } = useLocale();
@@ -49,6 +52,9 @@ export default function BrandingSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Default colors for user's custom theme (not design tokens)
   // These are customizable by the user for their salon branding
@@ -56,6 +62,41 @@ export default function BrandingSettingsPage() {
   const [secondaryColor, setSecondaryColor] = useState("#8b5cf6");
   const [fontFamily, setFontFamily] = useState("Inter");
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  // Preset themes
+  const presets = [
+    {
+      name: "Default",
+      primary: "#3b82f6",
+      secondary: "#8b5cf6",
+      font: "Inter",
+    },
+    {
+      name: "Elegant",
+      primary: "#1f2937",
+      secondary: "#6b7280",
+      font: "Montserrat",
+    },
+    {
+      name: "Vibrant",
+      primary: "#f59e0b",
+      secondary: "#ef4444",
+      font: "Poppins",
+    },
+    {
+      name: "Calm",
+      primary: "#10b981",
+      secondary: "#3b82f6",
+      font: "Open Sans",
+    },
+    {
+      name: "Modern",
+      primary: "#6366f1",
+      secondary: "#8b5cf6",
+      font: "Roboto",
+    },
+  ];
 
   // Load current theme data
   useEffect(() => {
@@ -65,8 +106,42 @@ export default function BrandingSettingsPage() {
       setSecondaryColor(salon.theme.secondary || "#8b5cf6");
       setFontFamily(salon.theme.font || "Inter");
       setLogoUrl(salon.theme.logo_url || "");
+      if (salon.theme.logo_url) {
+        setLogoPreview(salon.theme.logo_url);
+      }
     }
   }, [salon]);
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !salon?.id) return;
+
+    setUploadingLogo(true);
+    setError(null);
+
+    try {
+      const { data, error: uploadError } = await uploadLogo(file, salon.id);
+
+      if (uploadError || !data) {
+        setError(uploadError || "Failed to upload logo");
+        setUploadingLogo(false);
+        return;
+      }
+
+      setLogoUrl(data.url);
+      setLogoPreview(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload logo");
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
+  function applyPreset(preset: typeof presets[0]) {
+    setPrimaryColor(preset.primary);
+    setSecondaryColor(preset.secondary);
+    setFontFamily(preset.font);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -113,16 +188,46 @@ export default function BrandingSettingsPage() {
   }
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">{t.brandingTitle}</h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            {t.brandingDescription}
-          </p>
+    <div className="space-y-6">
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">{t.brandingTitle}</h3>
+            <p className="text-sm text-muted-foreground">
+              {t.brandingDescription}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            {showPreview ? "Hide Preview" : "Show Preview"}
+          </Button>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Preset Themes */}
+          <div className="space-y-2">
+            <Label>Preset Themes</Label>
+            <div className="flex flex-wrap gap-2">
+              {presets.map((preset) => (
+                <Button
+                  key={preset.name}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyPreset(preset)}
+                  className="text-xs"
+                >
+                  {preset.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="primaryColor">Primary Color</Label>
             <div className="flex items-center gap-3">
@@ -190,17 +295,63 @@ export default function BrandingSettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="logoUrl">Logo URL</Label>
-            <Input
-              id="logoUrl"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              placeholder="https://example.com/logo.png"
-              className="max-w-md"
-            />
+            <Label htmlFor="logo">Logo</Label>
+            <div className="space-y-3">
+              {logoPreview && (
+                <div className="relative w-32 h-32 border rounded-lg overflow-hidden bg-muted">
+                  <Image
+                    src={logoPreview}
+                    alt="Logo preview"
+                    fill
+                    className="object-contain p-2"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 w-6 p-0"
+                    onClick={() => {
+                      setLogoUrl("");
+                      setLogoPreview(null);
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                </Button>
+                <span className="text-xs text-muted-foreground">or</span>
+                <Input
+                  id="logoUrl"
+                  type="url"
+                  value={logoUrl}
+                  onChange={(e) => {
+                    setLogoUrl(e.target.value);
+                    setLogoPreview(e.target.value || null);
+                  }}
+                  placeholder="https://example.com/logo.png"
+                  className="max-w-md"
+                />
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground">
-              URL to your salon logo (will be displayed on the booking page)
+              Upload a logo file or enter a URL (max 5MB, PNG/JPG recommended)
             </p>
           </div>
         </div>
@@ -217,10 +368,32 @@ export default function BrandingSettingsPage() {
           </div>
         )}
 
-        <Button type="submit" disabled={saving} className="w-full max-w-md">
-          {saving ? t.saving : t.saveButton}
-        </Button>
-      </form>
-    </Card>
+          <Button type="submit" disabled={saving} className="w-full max-w-md">
+            {saving ? t.saving : t.saveButton}
+          </Button>
+        </form>
+      </Card>
+
+      {/* Live Preview */}
+      {showPreview && salon?.slug && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Live Preview</h3>
+          <div className="border rounded-lg overflow-hidden">
+            <iframe
+              src={`/book/${salon.slug}?preview=true`}
+              className="w-full h-[600px] border-0"
+              title="Booking page preview"
+              style={{
+                // Apply theme colors to iframe
+                // Note: This is a simplified preview - full theme application happens in the actual page
+              }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Preview shows how your booking page will look with the current theme settings
+          </p>
+        </Card>
+      )}
+    </div>
   );
 }

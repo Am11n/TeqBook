@@ -204,6 +204,12 @@ export type Salon = {
   whatsapp_number?: string | null;
   supported_languages?: string[];
   default_language?: string;
+  plan?: PlanType | null;
+  // Billing fields (for future Stripe integration)
+  billing_customer_id?: string | null;
+  billing_subscription_id?: string | null;
+  current_period_end?: string | null;
+  trial_end?: string | null;
 };
 
 export type Profile = {

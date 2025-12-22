@@ -12,7 +12,8 @@ import {
   updateEmployee as updateEmployeeRepo,
   deleteEmployee as deleteEmployeeRepo,
 } from "@/lib/repositories/employees";
-import type { Employee, CreateEmployeeInput, UpdateEmployeeInput } from "@/lib/types";
+import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
+import { canAddEmployee } from "./plan-limits-service";
 
 /**
  * Get employees for current salon
@@ -70,8 +71,9 @@ export async function getEmployeesWithServicesForSalon(
  * Create a new employee with business logic
  */
 export async function createEmployee(
-  input: CreateEmployeeInput
-): Promise<{ data: Employee | null; error: string | null }> {
+  input: CreateEmployeeInput,
+  salonPlan?: PlanType | null
+): Promise<{ data: Employee | null; error: string | null; limitReached?: boolean }> {
   // Validation
   if (!input.salon_id || !input.full_name) {
     return { data: null, error: "Salon ID and full name are required" };
@@ -85,6 +87,26 @@ export async function createEmployee(
   // Validate phone format if provided (basic validation)
   if (input.phone && input.phone.trim().length < 8) {
     return { data: null, error: "Phone number must be at least 8 characters" };
+  }
+
+  // Check plan limits if plan is provided
+  if (salonPlan !== undefined) {
+    const { canAdd, currentCount, limit, error: limitError } = await canAddEmployee(
+      input.salon_id,
+      salonPlan
+    );
+
+    if (limitError) {
+      return { data: null, error: limitError };
+    }
+
+    if (!canAdd && limit !== null) {
+      return {
+        data: null,
+        error: `Employee limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more staff seats.`,
+        limitReached: true,
+      };
+    }
   }
 
   // Call repository

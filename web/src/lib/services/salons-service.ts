@@ -6,6 +6,8 @@
 
 import { getSalonBySlug, getSalonById, updateSalon as updateSalonRepo } from "@/lib/repositories/salons";
 import type { Salon } from "@/lib/repositories/salons";
+import { canAddLanguage } from "./plan-limits-service";
+import type { PlanType } from "@/lib/types";
 
 /**
  * Get salon by slug (for public booking pages)
@@ -56,8 +58,9 @@ export async function updateSalonSettings(
       logo_url?: string;
       presets?: string[];
     } | null;
-  }
-): Promise<{ error: string | null }> {
+  },
+  salonPlan?: PlanType | null
+): Promise<{ error: string | null; limitReached?: boolean }> {
   // Validation
   if (!salonId) {
     return { error: "Salon ID is required" };
@@ -66,6 +69,26 @@ export async function updateSalonSettings(
   // Validate name if provided
   if (updates.name !== undefined && updates.name.trim().length === 0) {
     return { error: "Salon name cannot be empty" };
+  }
+
+  // Check language limits if supported_languages is being updated and plan is provided
+  if (updates.supported_languages !== undefined && salonPlan !== undefined) {
+    const { canAdd, currentCount, limit, error: limitError } = await canAddLanguage(
+      salonId,
+      salonPlan,
+      updates.supported_languages
+    );
+
+    if (limitError) {
+      return { error: limitError };
+    }
+
+    if (!canAdd && limit !== null) {
+      return {
+        error: `Language limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more language seats.`,
+        limitReached: true,
+      };
+    }
   }
 
   // Call repository
@@ -90,8 +113,9 @@ export async function updateSalon(
       logo_url?: string;
       presets?: string[];
     } | null;
-  }
-): Promise<{ error: string | null }> {
-  return updateSalonSettings(salonId, updates);
+  },
+  salonPlan?: PlanType | null
+): Promise<{ error: string | null; limitReached?: boolean }> {
+  return updateSalonSettings(salonId, updates, salonPlan);
 }
 

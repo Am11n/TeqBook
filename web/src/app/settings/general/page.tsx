@@ -81,16 +81,20 @@ export default function GeneralSettingsPage() {
     setSaved(false);
 
     try {
-      const { error: updateError } = await updateSalon(salon.id, {
+      const { error: updateError, limitReached } = await updateSalon(salon.id, {
         name: salonName,
         salon_type: salonType || null,
         whatsapp_number: whatsappNumber || null,
         supported_languages: supportedLanguages.length > 0 ? supportedLanguages : null,
         default_language: defaultLanguage || null,
-      });
+      }, salon.plan);
 
       if (updateError) {
         setError(updateError);
+        if (limitReached) {
+          // TODO: Show upgrade modal
+          // For now, error message already contains upgrade info
+        }
         setSaving(false);
         return;
       }

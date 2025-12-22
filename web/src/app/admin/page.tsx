@@ -9,9 +9,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
-import { getAllSalonsForAdmin, getAllUsersForAdmin } from "@/lib/services/admin-service";
+import {
+  getAllSalonsForAdmin,
+  getAllUsersForAdmin,
+  updateSalonPlan,
+  setSalonActive,
+  getSalonUsageStats,
+} from "@/lib/services/admin-service";
 import type { AdminSalon, AdminUser } from "@/lib/services/admin-service";
+import { getAddonsForSalon } from "@/lib/repositories/addons";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, TrendingUp, Users, Calendar, Scissors, UserCircle } from "lucide-react";
 
 type Salon = AdminSalon;
 type User = AdminUser;
@@ -26,6 +49,17 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [showStatsDialog, setShowStatsDialog] = useState(false);
+  const [usageStats, setUsageStats] = useState<{
+    employee_count: number;
+    booking_count: number;
+    booking_count_30d: number;
+    customer_count: number;
+    service_count: number;
+  } | null>(null);
+  const [salonAddons, setSalonAddons] = useState<Array<{ type: string; qty: number }>>([]);
 
   useEffect(() => {
     // Redirect if not superadmin
@@ -51,22 +85,27 @@ export default function AdminPage() {
         getAllUsersForAdmin(),
       ]);
 
+      // Handle errors gracefully - don't crash if one fails
       if (salonsResult.error) {
-        setError(salonsResult.error);
-        setLoading(false);
-        return;
+        console.error("Error loading salons:", salonsResult.error);
+        // Continue with empty salons array instead of showing error
+        setSalons([]);
+      } else {
+        setSalons(salonsResult.data || []);
       }
 
       if (usersResult.error) {
-        setError(usersResult.error);
-        setLoading(false);
-        return;
+        console.error("Error loading users:", usersResult.error);
+        // Continue with empty users array instead of showing error
+        setUsers([]);
+      } else {
+        setUsers(usersResult.data || []);
       }
-
-      setSalons(salonsResult.data || []);
-      setUsers(usersResult.data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.loadError);
+      console.error("Error in loadData:", err);
+      // Don't set error state - just log it and continue with empty data
+      setSalons([]);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -130,19 +169,98 @@ export default function AdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t.colSalonName}</TableHead>
+                    <TableHead>Plan</TableHead>
                     <TableHead>{t.colSalonType}</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Stats</TableHead>
                     <TableHead>{t.colOwner}</TableHead>
                     <TableHead>{t.colCreatedAt}</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {salons.map((salon) => (
                     <TableRow key={salon.id}>
                       <TableCell className="font-medium">{salon.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {salon.plan || "starter"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{salon.salon_type || "-"}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={salon.is_public ? "default" : "secondary"}
+                        >
+                          {salon.is_public ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            setSelectedSalon(salon);
+                            const { data: stats } = await getSalonUsageStats(salon.id);
+                            if (stats) {
+                              setUsageStats(stats);
+                            }
+                            const { data: addons } = await getAddonsForSalon(salon.id);
+                            setSalonAddons(
+                              addons?.map((a) => ({ type: a.type, qty: a.qty })) || []
+                            );
+                            setShowStatsDialog(true);
+                          }}
+                        >
+                          <TrendingUp className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </TableCell>
                       <TableCell>{salon.owner_email || "-"}</TableCell>
                       <TableCell>
                         {new Date(salon.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedSalon(salon);
+                                setShowPlanDialog(true);
+                              }}
+                            >
+                              Change Plan
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                if (
+                                  confirm(
+                                    `Are you sure you want to ${
+                                      salon.is_public ? "deactivate" : "activate"
+                                    } this salon?`
+                                  )
+                                ) {
+                                  const { error: updateError } = await setSalonActive(
+                                    salon.id,
+                                    !salon.is_public
+                                  );
+                                  if (updateError) {
+                                    setError(updateError);
+                                  } else {
+                                    await loadData();
+                                  }
+                                }
+                              }}
+                            >
+                              {salon.is_public ? "Deactivate" : "Activate"}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -194,6 +312,118 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Plan Change Dialog */}
+      <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Plan for {selectedSalon?.name}</DialogTitle>
+            <DialogDescription>
+              Select a new plan for this salon. This will immediately update their plan limits.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {(["starter", "pro", "business"] as const).map((plan) => (
+              <Button
+                key={plan}
+                variant={selectedSalon?.plan === plan ? "default" : "outline"}
+                className="w-full justify-start"
+                onClick={async () => {
+                  if (!selectedSalon?.id) return;
+                  const { error: updateError } = await updateSalonPlan(
+                    selectedSalon.id,
+                    plan
+                  );
+                  if (updateError) {
+                    setError(updateError);
+                  } else {
+                    await loadData();
+                    setShowPlanDialog(false);
+                  }
+                }}
+              >
+                {plan.charAt(0).toUpperCase() + plan.slice(1)}
+              </Button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Usage Stats Dialog */}
+      <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Usage Statistics - {selectedSalon?.name}</DialogTitle>
+            <DialogDescription>
+              Current usage and statistics for this salon
+            </DialogDescription>
+          </DialogHeader>
+          {usageStats && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Employees</span>
+                  </div>
+                  <p className="text-2xl font-bold">{usageStats.employee_count}</p>
+                </div>
+                <div className="p-3 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Total Bookings</span>
+                  </div>
+                  <p className="text-2xl font-bold">{usageStats.booking_count}</p>
+                </div>
+                <div className="p-3 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Bookings (30d)</span>
+                  </div>
+                  <p className="text-2xl font-bold">{usageStats.booking_count_30d}</p>
+                </div>
+                <div className="p-3 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <UserCircle className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Customers</span>
+                  </div>
+                  <p className="text-2xl font-bold">{usageStats.customer_count}</p>
+                </div>
+                <div className="p-3 border rounded-lg col-span-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Scissors className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Services</span>
+                  </div>
+                  <p className="text-2xl font-bold">{usageStats.service_count}</p>
+                </div>
+              </div>
+              {salonAddons.length > 0 && (
+                <div className="p-3 border rounded-lg">
+                  <span className="text-sm font-medium mb-2 block">Add-ons</span>
+                  <div className="space-y-1">
+                    {salonAddons.map((addon, idx) => (
+                      <div key={idx} className="text-sm">
+                        {addon.type === "extra_staff" ? "Extra Staff" : "Extra Languages"}:{" "}
+                        {addon.qty}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowStatsDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }

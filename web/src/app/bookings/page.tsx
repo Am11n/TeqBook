@@ -32,6 +32,7 @@ import {
   getAvailableSlots,
   createBooking,
 } from "@/lib/repositories/bookings";
+import { cancelBooking, updateBookingStatus } from "@/lib/services/bookings-service";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { getProductsForSalon } from "@/lib/services/products-service";
@@ -84,6 +85,11 @@ export default function BookingsPage() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Cancel booking dialog state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   // Ny booking-dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -510,6 +516,7 @@ export default function BookingsPage() {
                       <TableHead className="pr-4">{t.colStatus}</TableHead>
                       <TableHead className="pr-4">{t.colType}</TableHead>
                       <TableHead className="pr-4">{t.colNotes}</TableHead>
+                      <TableHead className="pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -563,6 +570,21 @@ export default function BookingsPage() {
                           )}
                           {!booking.notes && (!booking.products || booking.products.length === 0) && "-"}
                         </div>
+                      </TableCell>
+                      <TableCell className="pr-4 text-xs">
+                        {booking.status !== "cancelled" && booking.status !== "completed" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setBookingToCancel(booking);
+                              setCancelDialogOpen(true);
+                            }}
+                            className="h-7 text-xs"
+                          >
+                            Cancel
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -816,6 +838,80 @@ export default function BookingsPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Booking Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this booking? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {bookingToCancel && (
+              <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-sm">
+                <p><strong>Date:</strong> {formatDate(bookingToCancel.start_time)}</p>
+                <p><strong>Time:</strong> {formatTime(bookingToCancel.start_time)} - {formatTime(bookingToCancel.end_time)}</p>
+                <p><strong>Service:</strong> {bookingToCancel.services?.name || "Unknown"}</p>
+                <p><strong>Customer:</strong> {bookingToCancel.customers?.full_name || "Unknown"}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Cancellation Reason (Optional)
+              </label>
+              <textarea
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                className="w-full p-2 border rounded-md text-sm"
+                rows={3}
+                placeholder="Please provide a reason for cancellation..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false);
+                setBookingToCancel(null);
+                setCancellationReason("");
+              }}
+            >
+              Keep Booking
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!salon?.id || !bookingToCancel?.id) return;
+
+                const { error: cancelError } = await cancelBooking(
+                  salon.id,
+                  bookingToCancel.id,
+                  cancellationReason || null
+                );
+
+                if (cancelError) {
+                  setError(cancelError);
+                  return;
+                }
+
+                // Reload bookings
+                await loadBookings();
+                setCancelDialogOpen(false);
+                setBookingToCancel(null);
+                setCancellationReason("");
+              }}
+            >
+              Confirm Cancellation
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </DashboardShell>

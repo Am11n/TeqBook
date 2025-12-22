@@ -19,10 +19,10 @@ import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
   getEmployeesWithServicesMap,
-  createEmployee,
   toggleEmployeeActive,
   deleteEmployee,
 } from "@/lib/repositories/employees";
+import { createEmployee } from "@/lib/services/employees-service";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import type { Employee, Service } from "@/lib/types";
 
@@ -135,7 +135,7 @@ export default function EmployeesPage() {
     setSaving(true);
     setError(null);
 
-    const { data: employeeData, error: insertError } = await createEmployee({
+    const { data: employeeData, error: insertError, limitReached } = await createEmployee({
       salon_id: salon.id,
         full_name: fullName.trim(),
         email: email.trim() || null,
@@ -143,10 +143,14 @@ export default function EmployeesPage() {
       role: role.trim() || null,
       preferred_language: preferredLanguage || "nb",
       service_ids: selectedServices.length > 0 ? selectedServices : undefined,
-    });
+    }, salon.plan);
 
     if (insertError || !employeeData) {
       setError(insertError ?? t.addError);
+      if (limitReached) {
+        // TODO: Show upgrade modal
+        // For now, error message already contains upgrade info
+      }
       setSaving(false);
       return;
     }

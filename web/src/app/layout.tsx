@@ -37,11 +37,11 @@ export default function RootLayout({
       >
         <LocaleProvider>
           <SalonProvider>
-          {/* Main app container - uses design token for background */}
-          {/* Note: Marketing pages (landing, login, signup, onboarding) override this with their own gradients */}
-          <div className="min-h-screen w-full bg-background">
-            {children}
-          </div>
+            {/* Main app container - uses design token for background */}
+            {/* Note: Marketing pages (landing, login, signup, onboarding) override this with their own gradients */}
+            <div className="min-h-screen w-full bg-background">
+              {children}
+            </div>
           </SalonProvider>
         </LocaleProvider>
       </body>
