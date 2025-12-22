@@ -32,7 +32,7 @@ import {
   getAvailableSlots,
   createBooking,
 } from "@/lib/repositories/bookings";
-import { cancelBooking, updateBookingStatus } from "@/lib/services/bookings-service";
+import { cancelBooking } from "@/lib/services/bookings-service";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { getProductsForSalon } from "@/lib/services/products-service";

@@ -71,7 +71,6 @@ export default function AdminPage() {
     if (isSuperAdmin) {
       loadData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuperAdmin, contextLoading, router]);
 
   async function loadData() {

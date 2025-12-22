@@ -89,7 +89,15 @@ function PaymentForm({
 export default function TestBillingPage() {
   const { salon, isReady, loading: contextLoading, error: contextError, refreshSalon, user } = useCurrentSalon();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    subscription_id?: string;
+    plan?: string;
+    customer_id?: string;
+    email?: string;
+    current_period_end?: string;
+    status?: string;
+    client_secret?: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -266,7 +274,7 @@ export default function TestBillingPage() {
             Make sure you are logged in and have a salon associated with your account.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            If you haven't completed onboarding, please do that first.
+            If you haven&apos;t completed onboarding, please do that first.
           </p>
         </Card>
       </div>

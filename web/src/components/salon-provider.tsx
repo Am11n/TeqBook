@@ -20,8 +20,7 @@ import type { AppLocale } from "@/i18n/translations";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/lib/supabase-client";
 
-// Ensure we're on client side
-const isClient = typeof window !== "undefined";
+// Component is client-side only
 
 type Profile = {
   user_id: string;
@@ -244,6 +243,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

@@ -30,7 +30,7 @@ export async function uploadLogo(
     const filePath = `logos/${fileName}`;
 
     // Upload file
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("salon-assets")
       .upload(filePath, file, {
         cacheControl: "3600",

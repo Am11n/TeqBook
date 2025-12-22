@@ -28,11 +28,6 @@ export async function getUserEmails(
 
     // If RPC function doesn't exist or has permission issues, return empty data
     if (error) {
-      // Check if it's a "function does not exist" error or any RPC error
-      const errorMessage = error.message?.toLowerCase() || "";
-      const errorCode = error.code || "";
-      const errorDetails = error.details || "";
-      
       // Log the full error for debugging
       console.warn("get_user_emails RPC error:", {
         message: error.message,

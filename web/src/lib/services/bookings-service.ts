@@ -130,9 +130,6 @@ export async function cancelBooking(
     return { error: "Salon ID and Booking ID are required" };
   }
 
-  // Update status to cancelled and add reason to notes if provided
-  const notesUpdate = reason ? { notes: reason } : {};
-  
   // Call repository to update status
   const result = await updateBookingStatusRepo(salonId, bookingId, "cancelled");
   

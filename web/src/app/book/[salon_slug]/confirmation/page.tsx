@@ -9,7 +9,7 @@ import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getBookingById } from "@/lib/repositories/bookings";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import { useLocale } from "@/components/locale-provider";
-import { translations } from "@/i18n/translations";
+// Translation available if needed: import { translations } from "@/i18n/translations";
 import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide-react";
 import type { Booking } from "@/lib/types";
 
@@ -35,7 +35,7 @@ export default function BookingConfirmationPage({ params }: BookingConfirmationP
   const [slug, setSlug] = useState<string>("");
   const bookingId = searchParams.get("bookingId") || searchParams.get("id");
 
-  const t = translations[locale].publicBooking;
+  // Translation available if needed: const t = translations[locale].publicBooking;
   const [salon, setSalon] = useState<Salon | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);

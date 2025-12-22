@@ -99,7 +99,7 @@ export async function exportBookingsToCSV(
     // Apply filters if provided
     let filteredBookings = allBookings;
     if (filters) {
-      filteredBookings = allBookings.filter((booking: any) => {
+      filteredBookings = allBookings.filter((booking) => {
         if (filters.status && booking.status !== filters.status) return false;
         if (filters.startDate && new Date(booking.start_time) < new Date(filters.startDate)) return false;
         if (filters.endDate && new Date(booking.start_time) > new Date(filters.endDate)) return false;
@@ -109,7 +109,7 @@ export async function exportBookingsToCSV(
     }
 
     // Transform to CSV format
-    const csvData = filteredBookings.map((booking: any) => ({
+    const csvData = filteredBookings.map((booking) => ({
       "Booking ID": booking.id,
       "Start Time": booking.start_time,
       "End Time": booking.end_time,
@@ -246,7 +246,7 @@ export async function exportEmployeeWorkloadToCSV(
     });
 
     // Count bookings and calculate duration
-    allBookings.forEach((booking: any) => {
+    allBookings.forEach((booking) => {
       const empId = booking.employees?.id;
       if (!empId) return;
 

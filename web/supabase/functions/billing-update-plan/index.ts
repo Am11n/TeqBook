@@ -267,7 +267,7 @@ serve(async (req) => {
           details: error.message,
           type: error.type,
           code: error.code,
-          param: (error as any).param,
+          param: error instanceof Stripe.errors.StripeError && 'param' in error ? error.param : undefined,
           hint: error.type === "invalid_request_error" 
             ? "Check that the subscription exists and the price ID is correct"
             : undefined,
