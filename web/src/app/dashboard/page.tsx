@@ -40,6 +40,7 @@ type PerformanceData = {
 };
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const { locale } = useLocale();
   const { salon, isReady, user } = useCurrentSalon();
   const appLocale = locale === "nb" ? "nb" : "en";
@@ -51,6 +52,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [ownerName, setOwnerName] = useState<string>("");
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null);
+
+  // Ensure component only renders fully on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Get owner name from user email
   useEffect(() => {
@@ -214,6 +220,23 @@ export default function DashboardPage() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // Show loading state during SSR or before mount
+  if (!mounted) {
+    return (
+      <DashboardShell>
+        <div className="mb-10">
+          <Skeleton className="h-10 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-2xl" />
+          ))}
+        </div>
+      </DashboardShell>
+    );
+  }
 
   return (
     <DashboardShell>

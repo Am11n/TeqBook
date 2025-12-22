@@ -207,36 +207,52 @@ export function SalonProvider({ children }: SalonProviderProps) {
   }, [loadSalonData]);
 
   const value = useMemo<SalonContextType>(() => {
-    if (state.status === "ready") {
-      // Determine user role: superadmin > profile.role > default to "owner"
-      const userRole = state.profile?.is_superadmin
-        ? "superadmin"
-        : (state.profile?.role || "owner");
-      
+    try {
+      if (state.status === "ready") {
+        // Determine user role: superadmin > profile.role > default to "owner"
+        const userRole = state.profile?.is_superadmin
+          ? "superadmin"
+          : (state.profile?.role || "owner");
+        
+        return {
+          salon: state.salon,
+          profile: state.profile,
+          user: state.user,
+          loading: false,
+          error: null,
+          isReady: true,
+          isSuperAdmin: state.profile?.is_superadmin ?? false,
+          userRole,
+          refreshSalon: loadSalonData,
+        };
+      }
+
       return {
-        salon: state.salon,
-        profile: state.profile,
-        user: state.user,
+        salon: null,
+        profile: null,
+        user: null,
+        loading: state.status === "loading",
+        error: state.status === "error" ? state.error : null,
+        isReady: false,
+        isSuperAdmin: false,
+        userRole: null,
+        refreshSalon: loadSalonData,
+      };
+    } catch (err) {
+      console.error("Error in SalonProvider value calculation:", err);
+      // Return safe default value
+      return {
+        salon: null,
+        profile: null,
+        user: null,
         loading: false,
-        error: null,
-        isReady: true,
-        isSuperAdmin: state.profile?.is_superadmin ?? false,
-        userRole,
+        error: err instanceof Error ? err.message : "Unknown error",
+        isReady: false,
+        isSuperAdmin: false,
+        userRole: null,
         refreshSalon: loadSalonData,
       };
     }
-
-    return {
-      salon: null,
-      profile: null,
-      user: null,
-      loading: state.status === "loading",
-      error: state.status === "error" ? state.error : null,
-      isReady: false,
-      isSuperAdmin: false,
-      userRole: null,
-      refreshSalon: loadSalonData,
-    };
   }, [state, loadSalonData]);
 
   // Show loading screen when loading (only on client to avoid hydration mismatch)
