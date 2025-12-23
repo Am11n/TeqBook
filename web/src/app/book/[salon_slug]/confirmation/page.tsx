@@ -6,11 +6,12 @@ type BookingConfirmationPageProps = {
   params: Promise<{ salon_slug: string }>;
 };
 
-// Generate static params for dynamic route (required for static export)
+// Generate static params for dynamic route
+// For Vercel, this pre-generates a placeholder page at build time
+// Additional routes will be generated on-demand at runtime
 export function generateStaticParams() {
-  // Return at least one placeholder to satisfy Next.js static export requirements
-  // In production, this will be used for static generation
-  // In dev mode, Next.js will still allow dynamic routes
+  // Return at least one placeholder for build-time generation
+  // Vercel will handle additional routes dynamically
   return [{ salon_slug: "example-salon" }];
 }
 

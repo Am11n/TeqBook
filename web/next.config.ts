@@ -1,15 +1,13 @@
 import type { NextConfig } from "next";
 
-const isDev = process.env.NODE_ENV === "development";
-
 const nextConfig: NextConfig = {
-  // Static export for deployment at root of custom domain
-  // In dev mode, we don't use static export to allow dynamic routes
-  // Note: Dynamic routes like /book/[salon_slug]/confirmation will be generated at runtime
-  ...(isDev ? {} : { output: "export" }),
+  // Vercel supports full Next.js with SSR, API routes, and image optimization
+  // No need for static export - Vercel handles everything automatically
   images: {
-    // Static export does not support the default image optimizer
-    unoptimized: true,
+    // Vercel supports Next.js Image Optimization by default
+    // Keep unoptimized: true only if you have specific requirements
+    // For now, we'll enable optimization for better performance
+    unoptimized: false,
   },
   // No basePath or assetPrefix - site is served at root of domain
   trailingSlash: true,

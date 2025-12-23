@@ -4,14 +4,12 @@ type RouteParams = {
   salon_slug: string;
 };
 
-// With output: "export", dynamic routes must define generateStaticParams.
-// For GitHub Pages we don't know real slugs at build time, so we export
-// a single placeholder path. The actual runtime slugs will typically be
-// used in a deployed environment with a real domain.
+// Generate static params for dynamic route
+// For Vercel, this pre-generates a placeholder page at build time
+// Additional routes will be generated on-demand at runtime
 export function generateStaticParams(): RouteParams[] {
-  // Always return at least one placeholder to satisfy Next.js static export requirements
-  // In production, this will be used for static generation
-  // In dev mode, Next.js will still allow dynamic routes
+  // Return at least one placeholder for build-time generation
+  // Vercel will handle additional routes dynamically
   return [{ salon_slug: "example-salon" }];
 }
 
