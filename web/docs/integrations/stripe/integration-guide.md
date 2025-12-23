@@ -2,7 +2,7 @@
 
 Denne guiden viser deg hvordan du setter opp Stripe-integrasjonen for TeqBook steg for steg.
 
-> **💡 Tips:** Du kan deploye Edge Functions direkte fra Supabase Dashboard uten å bruke CLI. Se [stripe-deploy-via-dashboard.md](./stripe-deploy-via-dashboard.md) for detaljert guide.
+> **💡 Tips:** Se [setup.md](./setup.md) for en konsolidert setup-guide, eller [edge-functions-setup.md](../edge-functions-setup.md) for Edge Functions spesifikt.
 
 ---
 

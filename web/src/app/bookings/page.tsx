@@ -27,6 +27,7 @@ import {
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useFeatures } from "@/lib/hooks/use-features";
 import {
   getBookingsForCurrentSalon,
   getAvailableSlots,
@@ -38,6 +39,9 @@ import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { getProductsForSalon } from "@/lib/services/products-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
 import { getShiftsForCurrentSalon } from "@/lib/repositories/shifts";
+import { PageLayout } from "@/components/layout/page-layout";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import type { Booking, Shift } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 
@@ -75,6 +79,8 @@ export default function BookingsPage() {
                                 : "en";
   const t = translations[appLocale].bookings;
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const { hasFeature, loading: featuresLoading } = useFeatures();
+  const [mounted, setMounted] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>(
     [],
@@ -85,6 +91,10 @@ export default function BookingsPage() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Cancel booking dialog state
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -120,34 +130,41 @@ export default function BookingsPage() {
       getBookingsForCurrentSalon(salon.id),
       getEmployeesForCurrentSalon(salon.id),
       getActiveServicesForCurrentSalon(salon.id),
-      getProductsForSalon(salon.id, { activeOnly: true }),
+      // Only load products if INVENTORY feature is available
+      mounted && hasFeature("INVENTORY")
+        ? getProductsForSalon(salon.id, { activeOnly: true })
+        : Promise.resolve({ data: [], error: null }),
       getShiftsForCurrentSalon(salon.id),
       ]);
 
-    if (bookingsError || employeesError || servicesError || productsError || shiftsError) {
-      setError(bookingsError ?? employeesError ?? servicesError ?? productsError ?? shiftsError ?? t.loadError);
+    const hasInventoryFeature = mounted && hasFeature("INVENTORY");
+    if (bookingsError || employeesError || servicesError || (hasInventoryFeature && productsError) || shiftsError) {
+      setError(bookingsError ?? employeesError ?? servicesError ?? (hasInventoryFeature ? productsError : null) ?? shiftsError ?? t.loadError);
       setLoading(false);
       return;
     }
 
-    // Load products for each booking
+    // Load products for each booking only if INVENTORY feature is available
     const bookingsWithProducts = await Promise.all(
       (bookingsData ?? []).map(async (booking) => {
-        const { data: bookingProducts } = await getProductsForBooking(booking.id);
-        return {
-          ...booking,
-          products: bookingProducts?.map((bp) => ({
-            id: bp.id,
-            product_id: bp.product_id,
-            quantity: bp.quantity,
-            price_cents: bp.price_cents,
-            product: {
-              id: bp.product.id,
-              name: bp.product.name,
-              price_cents: bp.product.price_cents,
-            },
-          })) || null,
-        };
+        if (hasInventoryFeature) {
+          const { data: bookingProducts } = await getProductsForBooking(booking.id);
+          return {
+            ...booking,
+            products: bookingProducts?.map((bp) => ({
+              id: bp.id,
+              product_id: bp.product_id,
+              quantity: bp.quantity,
+              price_cents: bp.price_cents,
+              product: {
+                id: bp.product.id,
+                name: bp.product.name,
+                price_cents: bp.product.price_cents,
+              },
+            })) || null,
+          };
+        }
+        return { ...booking, products: null };
       })
     );
     setBookings(bookingsWithProducts);
@@ -155,7 +172,12 @@ export default function BookingsPage() {
       (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
     );
     setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
-    setProducts(productsData ?? []);
+    // Only set products if INVENTORY feature is available
+    if (mounted && hasFeature("INVENTORY")) {
+      setProducts(productsData ?? []);
+    } else {
+      setProducts([]);
+    }
     setShifts(shiftsData ?? []);
     setLoading(false);
   }
@@ -295,8 +317,8 @@ export default function BookingsPage() {
     // Legg til i lokal state slik at listen oppdateres
     setBookings((prev) => [...prev, bookingWithProducts]);
 
-    // Legg til produkter hvis noen er valgt
-    if (selectedProducts.length > 0 && bookingData.id) {
+    // Legg til produkter hvis noen er valgt og INVENTORY feature er tilgjengelig
+    if (mounted && hasFeature("INVENTORY") && selectedProducts.length > 0 && bookingData.id) {
       for (const selectedProduct of selectedProducts) {
         const product = products.find((p) => p.id === selectedProduct.productId);
         if (product && selectedProduct.quantity > 0) {
@@ -409,34 +431,43 @@ export default function BookingsPage() {
     });
   }
 
+  const hasInventory = mounted && hasFeature("INVENTORY");
+
   return (
-    <DashboardShell>
-      <PageHeader
+    <ErrorBoundary>
+      <PageLayout
         title={t.title}
         description={t.description}
-      />
+        actions={
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={employees.length === 0 || services.length === 0}
+          >
+            {t.newBookingButton}
+          </Button>
+        }
+      >
+        {error && (
+          <ErrorMessage
+            message={error}
+            onDismiss={() => setError(null)}
+            variant="destructive"
+            className="mb-4"
+          />
+        )}
 
-      <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
         <TableToolbar
           title={t.listTitle}
-          actions={
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsDialogOpen(true)}
-              disabled={employees.length === 0 || services.length === 0}
-            >
-              {t.newBookingButton}
-            </Button>
-          }
         />
 
-        {loading ? (
-          <p className="mt-4 text-sm text-muted-foreground">
+        {loading || featuresLoading ? (
+          <p className="text-sm text-muted-foreground">
             {t.loading}
           </p>
         ) : bookings.length === 0 ? (
-          <div className="mt-4">
+          <div>
             <EmptyState
               title={t.emptyTitle}
               description={t.emptyDescription}
@@ -445,7 +476,7 @@ export default function BookingsPage() {
         ) : (
           <>
             {/* Mobil: kortvisning */}
-            <div className="mt-4 space-y-3 md:hidden">
+            <div className="space-y-3 md:hidden">
               {bookings.map((booking) => (
                 <div
                   key={booking.id}
@@ -501,7 +532,7 @@ export default function BookingsPage() {
             </div>
 
             {/* Desktop: tabellvisning */}
-            <div className="mt-4 hidden overflow-x-auto md:block">
+            <div className="hidden overflow-x-auto md:block">
               <Table className="text-sm">
                 <TableHeader>
                   <TableRow>
@@ -594,10 +625,9 @@ export default function BookingsPage() {
             </div>
           </>
         )}
-      </div>
 
-      {/* Ny booking-dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {/* Ny booking-dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{t.dialogTitle}</DialogTitle>
@@ -745,8 +775,8 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            {/* Products Section */}
-            {products.length > 0 && (
+            {/* Products Section - Only show if INVENTORY feature is available */}
+            {hasInventory && products.length > 0 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Products (Optional)</label>
                 <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
@@ -915,7 +945,8 @@ export default function BookingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardShell>
+      </PageLayout>
+    </ErrorBoundary>
   );
 }
 

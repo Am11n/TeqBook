@@ -9,10 +9,11 @@ import { translations } from "@/i18n/translations";
 import { getCalendarBookings } from "@/lib/services/bookings-service";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getCustomersForSalon } from "@/lib/services/customers-service";
-import { Calendar, Users, Zap, Clock, User, Plus, Info, ArrowRight } from "lucide-react";
+import { Calendar, Users, Zap, Clock, User, Plus, Info, ArrowRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFeatures } from "@/lib/hooks/use-features";
 
 type Booking = {
   id: string;
@@ -43,8 +44,12 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { locale } = useLocale();
   const { salon, isReady, user } = useCurrentSalon();
+  const { hasFeature } = useFeatures();
   const appLocale = locale === "nb" ? "nb" : "en";
   const t = translations[appLocale].home;
+
+  // Only use features after mount to avoid hydration mismatch
+  const featuresMounted = mounted;
 
   const [todaysBookings, setTodaysBookings] = useState<Booking[]>([]);
   const [bookingsCount, setBookingsCount] = useState(0);
@@ -488,7 +493,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Performance Snapshot Section */}
+      {/* Performance Snapshot Section - Only show if ADVANCED_REPORTS feature is available */}
+      {featuresMounted && hasFeature("ADVANCED_REPORTS") && (
       <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
         {loading ? (
           <div className="space-y-4">
@@ -605,6 +611,7 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Announcements Section */}
       <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '200ms' }}>

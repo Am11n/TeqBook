@@ -29,6 +29,23 @@ export type PlanType =
   | "pro"
   | "business";
 
+// Feature keys - must match database features.key values
+export type FeatureKey = 
+  | "BOOKINGS"
+  | "CALENDAR"
+  | "SHIFTS"
+  | "ADVANCED_REPORTS"
+  | "MULTILINGUAL"
+  | "SMS_NOTIFICATIONS"
+  | "EMAIL_NOTIFICATIONS"
+  | "WHATSAPP"
+  | "INVENTORY"
+  | "BRANDING"
+  | "ROLES_ACCESS"
+  | "EXPORTS"
+  | "CUSTOMER_HISTORY"
+  | "ONLINE_PAYMENTS";
+
 export type NotificationType = 
   | "sms"
   | "email"

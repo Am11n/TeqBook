@@ -341,7 +341,15 @@ export default function BillingSettingsPage() {
       );
 
       if (updateError || !updateData) {
-        setError(updateError || "Failed to update plan");
+        // Check if error is about incomplete subscription
+        const errorMessage = updateError || "Failed to update plan";
+        if (errorMessage.includes("incomplete")) {
+          setError(
+            "Cannot change plan while payment is pending. Please complete your payment first, or cancel this subscription and create a new one with the desired plan."
+          );
+        } else {
+          setError(errorMessage);
+        }
         setActionLoading(false);
         return;
       }

@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { usePathname } from "next/navigation";
+import { useFeatures } from "@/lib/hooks/use-features";
 
 export default function SettingsLayout({
   children,
@@ -15,7 +16,14 @@ export default function SettingsLayout({
 }) {
   const { locale } = useLocale();
   const pathname = usePathname();
+  const { hasFeature } = useFeatures();
   const [mounted, setMounted] = useState(false);
+  const [featuresMounted, setFeaturesMounted] = useState(false);
+
+  // Only use features after mount to avoid hydration mismatch
+  useEffect(() => {
+    setFeaturesMounted(true);
+  }, []);
 
   // Only render tabs on client to avoid hydration mismatch
   useEffect(() => {
@@ -76,11 +84,13 @@ export default function SettingsLayout({
             else if (value === "billing") window.location.href = "/settings/billing";
             else if (value === "branding") window.location.href = "/settings/branding";
           }}>
-            <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsList className={`grid w-full max-w-2xl ${featuresMounted && hasFeature("BRANDING") ? "grid-cols-4" : "grid-cols-3"}`}>
               <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
               <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
               <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
-              <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
+              {featuresMounted && hasFeature("BRANDING") && (
+                <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
+              )}
             </TabsList>
             <TabsContent value={activeTab} className="mt-6">
               {children}

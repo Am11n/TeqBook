@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
+import { ErrorBoundary } from "@/components/error-boundary";
 import {
   Table,
   TableBody,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import {
   getServicesForCurrentSalon,
   createService,
@@ -168,11 +169,11 @@ export default function ServicesPage() {
   }
 
   return (
-    <DashboardShell>
-      <PageHeader
+    <ErrorBoundary>
+      <PageLayout
         title={t.title}
         description={t.description}
-      />
+      >
 
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
         <form
@@ -264,9 +265,10 @@ export default function ServicesPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-500" aria-live="polite">
-              {error}
-            </p>
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+            />
           )}
 
           <button
@@ -440,7 +442,8 @@ export default function ServicesPage() {
           )}
         </div>
       </div>
-    </DashboardShell>
+      </PageLayout>
+    </ErrorBoundary>
   );
 }
 

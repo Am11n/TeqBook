@@ -7,10 +7,22 @@ It is designed for salons that take **payment in the salon**, not online, with a
 - **Multi‑language UX** for both staff and end‑clients.
 - **Clean multi‑tenant data isolation** using Supabase Row Level Security.
 
+**🌐 Production:** [https://teqbook.com](https://teqbook.com)
+
 This repository contains:
 
 - `web/` – the Next.js + Supabase web application (dashboard, public booking, landing page).
 - SQL / schema and RLS logic managed directly in Supabase (see `web/docs/plan.md` for the implementation roadmap).
+
+### Deployment
+
+TeqBook is deployed on **Vercel** with automatic deployments from the `main` branch. Each push to `main` triggers a new deployment.
+
+- **Production:** Automatically deployed from `main` branch
+- **Preview:** Automatically created for pull requests
+- **Build:** `npm run build` (handled automatically by Vercel)
+
+For detailed deployment information and migration notes, see [`web/docs/deployment/vercel.md`](web/docs/deployment/vercel.md).
 
 ---
 

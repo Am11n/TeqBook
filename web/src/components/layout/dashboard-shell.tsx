@@ -50,6 +50,7 @@ import {
   canManageShifts,
   getRoleDisplayName,
 } from "@/lib/utils/access-control";
+import { useFeatures } from "@/lib/hooks/use-features";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,14 +71,26 @@ let globalSidebarState: { loaded: boolean; state: boolean | null } = { loaded: f
 export function DashboardShell({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
   const { salon, isSuperAdmin, userRole } = useCurrentSalon();
+  const { hasFeature, loading: featuresLoading } = useFeatures();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close mobile nav when route changes
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   // const [scrolled, setScrolled] = useState(false); // Reserved for future use
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Only use features after mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const appLocale =
     locale === "nb"
@@ -220,13 +233,15 @@ export function DashboardShell({ children }: DashboardShellProps) {
     { href: "/bookings", label: texts.bookings, icon: BookOpen },
   ];
 
+  // Only check features after mount to avoid hydration mismatch
   const managementItems = [
     ...(canManageEmployees(userRole) ? [{ href: "/employees", label: texts.employees, icon: Users }] : []),
     ...(canManageServices(userRole) ? [{ href: "/services", label: texts.services, icon: Scissors }] : []),
     { href: "/customers", label: texts.customers, icon: UserCircle }, // All roles can view customers
-    ...(canManageServices(userRole) ? [{ href: "/products", label: "Products", icon: Package }] : []),
-    ...(canManageShifts(userRole) ? [{ href: "/shifts", label: texts.shifts, icon: Clock }] : []),
-    ...(canViewReports(userRole) ? [{ href: "/reports", label: "Reports", icon: TrendingUp }] : []),
+    // Only check features after mount to avoid hydration mismatch
+    ...(mounted && canManageServices(userRole) && hasFeature("INVENTORY") ? [{ href: "/products", label: "Products", icon: Package }] : []),
+    ...(mounted && canManageShifts(userRole) && hasFeature("SHIFTS") ? [{ href: "/shifts", label: texts.shifts, icon: Clock }] : []),
+    ...(mounted && canViewReports(userRole) && hasFeature("ADVANCED_REPORTS") ? [{ href: "/reports", label: "Reports", icon: TrendingUp }] : []),
   ];
 
   const systemItems = [
@@ -648,161 +663,106 @@ export function DashboardShell({ children }: DashboardShellProps) {
             onClick={() => setMobileNavOpen(false)}
           />
 
-          {/* Sliding panel with glassmorphism */}
-          <div className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col gap-6 rounded-r-[28px] border-r border-white/35 bg-white/65 p-6 backdrop-blur-xl shadow-[0_4px_40px_rgba(20,20,70,0.08)] pt-[72px]">
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/Favikon.svg"
-                  alt="TeqBook logo"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8"
-                  priority
-                />
-                <div className="flex flex-col">
-                  <span className="text-base font-semibold tracking-tight text-foreground">
-                    TeqBook
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {texts.brandSubtitle}
-                  </span>
+          {/* Sliding panel - matching desktop sidebar */}
+          <div className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col border-r border-border/5 bg-sidebar backdrop-blur-md shadow-[0_20px_60px_rgba(15,23,42,0.08)] pt-[72px]">
+            {/* Close button at top right */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 h-9 w-9 rounded-lg z-10"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label={texts.closeNav}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+
+            <div className="flex h-full flex-col p-5 overflow-y-auto">
+              <nav className="flex flex-1 flex-col gap-3 overflow-y-auto min-h-0">
+                {/* Overview Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Overview
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {overviewItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
                 </div>
+
+                {/* Operations Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Operations
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {operationsItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Management Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Management
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {managementItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href)}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* System Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    System
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {systemItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname.startsWith(item.href)}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </nav>
+
+              {/* Built for text at bottom */}
+              <div className="mt-auto pt-4 border-t border-border/60">
+                <p className="text-xs text-muted-foreground">
+                  {texts.builtFor}
+                </p>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-lg"
-                onClick={() => setMobileNavOpen(false)}
-                aria-label={texts.closeNav}
-              >
-                <X className="h-5 w-5" />
-              </Button>
             </div>
-
-            <nav className="flex flex-1 flex-col gap-4">
-              {/* Overview */}
-              <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Overview
-                </p>
-                <div className="flex flex-col gap-1">
-                  {overviewItems.map((item) => (
-                    <MobileNavLink
-                      key={item.href}
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      isActive={pathname === item.href}
-                      onNavigate={() => setMobileNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Operations */}
-              <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Operations
-                </p>
-                <div className="flex flex-col gap-1">
-                  {operationsItems.map((item) => (
-                    <MobileNavLink
-                      key={item.href}
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      isActive={pathname === item.href}
-                      onNavigate={() => setMobileNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Management */}
-              <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Management
-                </p>
-                <div className="flex flex-col gap-1">
-                  {managementItems.map((item) => (
-                    <MobileNavLink
-                      key={item.href}
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href)}
-                      onNavigate={() => setMobileNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* System */}
-              <div>
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  System
-                </p>
-                <div className="flex flex-col gap-1">
-                  {systemItems.map((item) => (
-                    <MobileNavLink
-                      key={item.href}
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      isActive={pathname.startsWith(item.href)}
-                      onNavigate={() => setMobileNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </nav>
-
-            {/* Language selector and logout for mobile */}
-            <div className="mt-4 flex flex-col gap-2 border-t border-slate-200/50 pt-4">
-              <label className="text-xs font-medium text-slate-600">
-                {texts.langLabel}:
-              </label>
-              <select
-                value={locale}
-                onChange={(e) => {
-                  setLocale(e.target.value as AppLocale);
-                  setMobileNavOpen(false);
-                }}
-                className="rounded-lg border border-border bg-card/80 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="nb">🇳🇴 Norsk</option>
-                <option value="en">🇬🇧 English</option>
-                <option value="ar">🇸🇦 العربية</option>
-                <option value="so">🇸🇴 Soomaali</option>
-                <option value="ti">🇪🇷 ትግርኛ</option>
-                <option value="am">🇪🇹 አማርኛ</option>
-                <option value="tr">🇹🇷 Türkçe</option>
-                <option value="pl">🇵🇱 Polski</option>
-                <option value="vi">🇻🇳 Tiếng Việt</option>
-                <option value="tl">🇵🇭 Tagalog</option>
-                <option value="zh">🇨🇳 中文</option>
-                <option value="fa">🇮🇷 فارسی</option>
-                <option value="dar">🇦🇫 دری</option>
-                <option value="ur">🇵🇰 اردو</option>
-                <option value="hi">🇮🇳 हिन्दी</option>
-              </select>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                disabled={loggingOut}
-                className="mt-2 w-full text-xs text-foreground hover:bg-muted"
-              >
-                {loggingOut ? "..." : texts.logout}
-              </Button>
-            </div>
-
-            <p className="mt-auto text-xs text-muted-foreground">
-              {texts.builtFor}
-            </p>
           </div>
         </div>
       )}

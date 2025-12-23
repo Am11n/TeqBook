@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 import type { CalendarBooking } from "@/lib/types";
@@ -227,23 +228,30 @@ export default function CalendarPage() {
   }
 
   return (
-    <DashboardShell>
-      <PageHeader
+    <ErrorBoundary>
+      <PageLayout
         title={t.title}
         description={t.description}
-      />
+      >
+        {salonError && (
+          <ErrorMessage
+            message={salonError}
+            variant="destructive"
+            className="mb-4"
+          />
+        )}
 
-      {/* Date controls */}
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-sm">
+        {/* Date controls */}
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm">
           <span className="text-xs font-medium text-muted-foreground">
             {t.selectedDayLabel}
           </span>
           <span className="text-sm font-medium">
             {viewMode === "day" ? formatDayHeading(selectedDate) : `${formatDayHeading(selectedDate)} - ${formatDayHeading(getWeekDates(selectedDate)[6])}`}
           </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 rounded-md border bg-card px-2 py-1">
             <Button
               type="button"
@@ -306,10 +314,10 @@ export default function CalendarPage() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="h-8 rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2"
           />
+          </div>
         </div>
-      </div>
 
-      <div className="mt-4 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+        <div className="mt-4 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
         {loading ? (
           <p className="text-sm text-muted-foreground">
             {t.loading}
@@ -435,8 +443,9 @@ export default function CalendarPage() {
             )}
           </>
         )}
-      </div>
-    </DashboardShell>
+        </div>
+      </PageLayout>
+    </ErrorBoundary>
   );
 }
 

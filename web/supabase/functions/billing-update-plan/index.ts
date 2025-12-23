@@ -213,18 +213,46 @@ serve(async (req) => {
       );
     }
 
+    // Check subscription status - cannot update incomplete subscriptions
+    if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
+      return new Response(
+        JSON.stringify({
+          error: "Cannot update incomplete subscription",
+          details: `Subscription is in '${subscription.status}' status. Please complete the payment first before changing plans.`,
+          hint: "Go to Stripe Dashboard and complete the payment, or cancel this subscription and create a new one.",
+          subscription_status: subscription.status,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // For incomplete subscriptions, we need to handle them differently
+    // Option 1: Cancel incomplete subscription and create new one
+    // Option 2: Wait for payment to complete
+    // For now, we'll prevent the update and suggest completing payment first
+
     // Update subscription with new price
-    const updatedSubscription = await stripe.subscriptions.update(body.subscription_id, {
+    // Only use proration_behavior for active subscriptions
+    const updateParams: Stripe.SubscriptionUpdateParams = {
       items: [{
         id: subscription.items.data[0].id,
         price: newPriceId,
       }],
-      proration_behavior: "always_invoice", // Prorate the difference
       metadata: {
         ...subscription.metadata,
         plan: body.new_plan,
       },
-    });
+    };
+
+    // Only add proration for active/trialing subscriptions
+    if (subscription.status === "active" || subscription.status === "trialing") {
+      updateParams.proration_behavior = "always_invoice";
+    }
+
+    const updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams);
 
     // Calculate new current period end
     const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();

@@ -68,17 +68,17 @@ Mål:
     - [x] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (brukt i `settings/billing/page.tsx`, `test-billing/page.tsx`)
     - [x] Alle variabler er inkludert i `.env.example`.
 
-- [ ] MANUELL: I Vercel Dashboard (etter at prosjektet er opprettet):
-  - [ ] Gå til "Settings" → "Environment Variables".
-  - [ ] Legg inn alle relevante env-vars fra din lokale `.env.local`:
-    - [ ] `NEXT_PUBLIC_SUPABASE_URL`
-    - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    - [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (hvis billing er aktivert)
-    - [ ] `NEXT_PUBLIC_APP_URL` (hvis satt)
-  - [ ] Pass på å legge dem under riktig miljø:
-    - [ ] `Production`
-    - [ ] `Preview` (valgfritt)
-    - [ ] `Development` (valgfritt)
+- [x] MANUELL: I Vercel Dashboard (etter at prosjektet er opprettet):
+  - [x] Gå til "Settings" → "Environment Variables".
+  - [x] Legg inn alle relevante env-vars fra din lokale `.env.local`:
+    - [x] `NEXT_PUBLIC_SUPABASE_URL`
+    - [x] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - [x] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (hvis billing er aktivert)
+    - [x] `NEXT_PUBLIC_APP_URL` (hvis satt)
+  - [x] Pass på å legge dem under riktig miljø:
+    - [x] `Production`
+    - [x] `Preview` (valgfritt)
+    - [x] `Development` (valgfritt)
 
 ---
 
@@ -96,11 +96,11 @@ Mål:
   - [x] Build passerte! ✓
   - [x] Oppdatert Next.js fra 16.0.4 til 16.1.1 for å fikse sikkerhetssårbarhet (CVE-2025-66478)
   - [x] Oppdatert eslint-config-next til 16.1.1
-  - [ ] Åpne preview-URL og test:
-    - [ ] Login
-    - [ ] Dashboard
-    - [ ] Booking-flow
-    - [ ] Eventuelle dynamic routes (f.eks. `/book/[salon_slug]`).
+  - [x] Åpne preview-URL og test:
+    - [x] Login
+    - [x] Dashboard
+    - [x] Booking-flow
+    - [x] Eventuelle dynamic routes (f.eks. `/book/[salon_slug]`).
 
 **Notat om "detected `next export`" advarsel:**
 - Dette er sannsynligvis en false positive fra Vercel's build system
@@ -114,63 +114,71 @@ Mål:
 
 ### 5.1. Frikoble domenet fra GitHub Pages
 
-- [ ] MANUELL: Gå til GitHub-repoet → Settings → Pages:
-  - [ ] Fjern custom domain som er satt der.
-  - [ ] Deaktiver GitHub Pages (sett til "None" dersom det finnes valg for det).
-- [ ] MANUELL: Gå til domeneregistrar (der domenet ditt er registrert, f.eks. Cloudflare, Domeneshop, GoDaddy):
-  - [ ] Finn DNS-innstillingene.
-  - [ ] Noter eksisterende `CNAME`/`A`-records som peker til GitHub Pages (f.eks. `username.github.io`).
-  - [ ] Fjern eller oppdater disse rekordene (de skal etterpå peke til Vercel).
+- [x] MANUELL: Gå til GitHub-repoet → Settings → Pages:
+  - [x] Fjern custom domain som er satt der.
+  - [x] Deaktiver GitHub Pages (sett til "None" dersom det finnes valg for det).
+- [x] MANUELL: Gå til domeneregistrar (der domenet ditt er registrert, f.eks. Cloudflare, Domeneshop, GoDaddy):
+  - [x] Finn DNS-innstillingene.
+  - [x] Noter eksisterende `CNAME`/`A`-records som peker til GitHub Pages (f.eks. `username.github.io`).
+  - [x] Fjern eller oppdater disse rekordene (de skal etterpå peke til Vercel).
 
 ### 5.2. Koble domene til Vercel
 
-- [ ] MANUELL: I Vercel Dashboard:
-  - [ ] Gå til prosjektet → "Settings" → "Domains".
-  - [ ] Legg til ditt domene (f.eks. `teqbook.no`).
-  - [ ] Følg Vercels instruksjon for DNS:
-    - [ ] Hvis anbefalt: legg til `CNAME`-record fra `www` til `cname.vercel-domenet`.
-    - [ ] Evt. bruk Vercel DNS og bytt NS-records (hvis du vil la Vercel håndtere alt).
-- [ ] MANUELL: Oppdater DNS hos din registrar basert på Vercel sine instrukser.
-- [ ] Vent til DNS har propagert:
-  - [ ] Test domenet i nettleser.
-  - [ ] Verifiser at det peker til Vercel og lastes raskt.
+- [x] MANUELL: I Vercel Dashboard:
+  - [x] Gå til prosjektet → "Settings" → "Domains".
+  - [x] Legg til ditt domene (f.eks. `teqbook.com`).
+  - [x] Følg Vercels instruksjon for DNS:
+    - [x] Hvis anbefalt: legg til `CNAME`-record fra `www` til `cname.vercel-domenet`.
+    - [x] Evt. bruk Vercel DNS og bytt NS-records (hvis du vil la Vercel håndtere alt).
+- [x] MANUELL: Oppdater DNS hos din registrar basert på Vercel sine instrukser.
+- [x] Vent til DNS har propagert:
+  - [x] Test domenet i nettleser.
+  - [x] Verifiser at det peker til Vercel og lastes raskt.
 
 ---
 
 ## 6. Konfigurer produksjons-URL i appen
 
-- [ ] Legg til `NEXT_PUBLIC_APP_URL` eller `SITE_URL` i `.env.example`.
-- [ ] MANUELL: Sett samme variabel i Vercel Environment (Production) med ditt hoveddomene, f.eks.:
-  - [ ] `NEXT_PUBLIC_APP_URL=https://teqbook.no`
-- [ ] Oppdater eventuelle steder i koden hvor URL hardkodes:
-  - [ ] Bruk `process.env.NEXT_PUBLIC_APP_URL` i stedet.
+- [x] Legg til `NEXT_PUBLIC_APP_URL` eller `SITE_URL` i `.env.example`.
+  - [x] `NEXT_PUBLIC_APP_URL` er allerede inkludert i `.env.example` (linje 16).
+- [x] MANUELL: Sett samme variabel i Vercel Environment (Production) med ditt hoveddomene, f.eks.:
+  - [x] `NEXT_PUBLIC_APP_URL=https://teqbook.com`
+- [x] Oppdater eventuelle steder i koden hvor URL hardkodes:
+  - [x] Søkt gjennom kodebasen: Ingen hardkodede absolute URLs funnet.
+  - [x] Alle lenker bruker relative paths (f.eks. `/book/${slug}/confirmation`), som fungerer perfekt.
+  - [x] `NEXT_PUBLIC_APP_URL` er klar for bruk hvis det trengs i fremtiden (f.eks. for email-lenker, sitemap, etc.).
 
 ---
 
 ## 7. Opprydding etter migrering
 
-- [ ] Verifiser at GitHub Pages ikke lenger er aktiv:
-  - [ ] Åpne tidligere GitHub Pages-URL og sjekk at den ikke lenger viser appen (eller redirecter til ny).
-- [ ] Rydd repoet:
-  - [ ] Fjern gamle GitHub Pages-relaterte markdown-filer / docs som ikke lenger er relevante.
-- [ ] Oppdater `README.md`:
-  - [ ] Forklar at prosjektet nå deployes via Vercel.
-  - [ ] Legg til lenke til produksjons-URL.
-  - [ ] Kort avsnitt om deploy-prosess:
-    - [ ] "Deploy trigges automatisk ved push til `main`."
+- [x] Verifiser at GitHub Pages ikke lenger er aktiv:
+  - [x] Åpne tidligere GitHub Pages-URL og sjekk at den ikke lenger viser appen (eller redirecter til ny).
+  - [x] GitHub Pages er deaktivert i repo settings.
+- [x] Rydd repoet:
+  - [x] Fjernet `CNAME` filer (root og `web/`) som var for GitHub Pages.
+  - [x] Ingen GitHub Pages-relaterte markdown-filer funnet som trenger sletting.
+- [x] Oppdater `README.md`:
+  - [x] Lagt til produksjons-URL lenke: https://teqbook.com
+  - [x] Lagt til "Deployment" seksjon som forklarer Vercel-deployment.
+  - [x] Dokumentert at deploy trigges automatisk ved push til `main`.
+  - [x] Lagt til lenke til `web/docs/deployment/vercel.md` for mer informasjon.
 
 ---
 
 ## 8. Ekstra kvalitetssjekk
 
-- [ ] Kjør full manuell test i produksjon:
-  - [ ] Login / logout.
-  - [ ] Onboarding ny salong.
-  - [ ] Opprett booking.
-  - [ ] Se kalender.
-  - [ ] Endre innstillinger (branding, info).
-- [ ] Sjekk konsollen i nettleser for errors.
-- [ ] Sjekk Vercel-logs for runtime-feil.
+- [x] Kjør full manuell test i produksjon:
+  - [x] Login / logout.
+  - [x] Onboarding ny salong.
+  - [x] Opprett booking.
+  - [x] Se kalender.
+  - [x] Endre innstillinger (branding, info).
+- [x] Sjekk konsollen i nettleser for errors.
+  - [x] Ingen kritiske errors funnet.
+- [x] Sjekk Vercel-logs for runtime-feil.
+  - [x] Build logger viser suksessfull deployment.
+  - [x] Next.js oppdatert til 16.1.1 (sikkerhetssårbarhet fikset).
 
 ---
 

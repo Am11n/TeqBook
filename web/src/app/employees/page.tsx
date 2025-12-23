@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import {
   Table,
   TableBody,
@@ -193,11 +194,19 @@ export default function EmployeesPage() {
   }
 
   return (
-    <DashboardShell>
-      <PageHeader
+    <ErrorBoundary>
+      <PageLayout
         title={t.title}
         description={t.description}
-      />
+      >
+        {error && (
+          <ErrorMessage
+            message={error}
+            onDismiss={() => setError(null)}
+            variant="destructive"
+            className="mb-4"
+          />
+        )}
 
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
         <form
@@ -492,7 +501,8 @@ export default function EmployeesPage() {
           )}
         </div>
       </div>
-    </DashboardShell>
+      </PageLayout>
+    </ErrorBoundary>
   );
 }
 

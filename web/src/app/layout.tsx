@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/components/locale-provider";
 import { SalonProvider } from "@/components/salon-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,13 +37,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <LocaleProvider>
-          <SalonProvider>
-            {/* Main app container - uses design token for background */}
-            {/* Note: Marketing pages (landing, login, signup, onboarding) override this with their own gradients */}
-            <div className="min-h-screen w-full bg-background">
-              {children}
-            </div>
-          </SalonProvider>
+          <ErrorBoundary>
+            <SalonProvider>
+              {/* Main app container - uses design token for background */}
+              {/* Note: Marketing pages (landing, login, signup, onboarding) override this with their own gradients */}
+              <div className="min-h-screen w-full bg-background">
+                {children}
+              </div>
+            </SalonProvider>
+          </ErrorBoundary>
         </LocaleProvider>
       </body>
     </html>
