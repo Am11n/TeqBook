@@ -30,10 +30,20 @@ export async function generateTOTPSecret(): Promise<{
       return { data: null, error: "Failed to generate TOTP secret" };
     }
 
+    // Supabase MFA enroll returns data with totp object containing secret and qr_code
+    // TypeScript types may not include secret, but it's available at runtime
+    const totpData = data.totp;
+    if (!totpData) {
+      return { data: null, error: "Failed to get TOTP data from response" };
+    }
+
+    // Access secret via type assertion since it exists at runtime but may not be in types
+    const secret = (totpData as any).secret || "";
+
     return {
       data: {
-        secret: data.secret || "",
-        qrCode: data.qr_code || "",
+        secret,
+        qrCode: totpData.qr_code || "",
         factorId: data.id || "",
       },
       error: null,
