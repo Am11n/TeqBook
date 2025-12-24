@@ -14,6 +14,7 @@ import {
   type BookingsPerServiceResult,
   type CapacityUtilisationResult,
 } from "@/lib/repositories/reports";
+import * as featureFlagsService from "@/lib/services/feature-flags-service";
 
 export type ReportsFilters = {
   status?: string | null;
@@ -33,6 +34,23 @@ export async function getTotalBookingsForSalon(
   // Validation
   if (!salonId) {
     return { data: null, error: "Salon ID is required" };
+  }
+
+  // Check if ADVANCED_REPORTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "ADVANCED_REPORTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "ADVANCED_REPORTS feature is not available in your plan. Please upgrade to access advanced reports.",
+    };
   }
 
   // Call repository
@@ -56,6 +74,23 @@ export async function getRevenueByMonthForSalon(
     return { data: null, error: "Salon ID is required" };
   }
 
+  // Check if ADVANCED_REPORTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "ADVANCED_REPORTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "ADVANCED_REPORTS feature is not available in your plan. Please upgrade to access advanced reports.",
+    };
+  }
+
   // Call repository
   return await getRevenueByMonth(salonId, {
     startDate: filters?.startDate,
@@ -76,6 +111,23 @@ export async function getBookingsPerServiceForSalon(
     return { data: null, error: "Salon ID is required" };
   }
 
+  // Check if ADVANCED_REPORTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "ADVANCED_REPORTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "ADVANCED_REPORTS feature is not available in your plan. Please upgrade to access advanced reports.",
+    };
+  }
+
   // Call repository
   return await getBookingsPerService(salonId, {
     startDate: filters?.startDate,
@@ -94,6 +146,23 @@ export async function getCapacityUtilisationForSalon(
   // Validation
   if (!salonId) {
     return { data: null, error: "Salon ID is required" };
+  }
+
+  // Check if ADVANCED_REPORTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "ADVANCED_REPORTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "ADVANCED_REPORTS feature is not available in your plan. Please upgrade to access advanced reports.",
+    };
   }
 
   // Call repository

@@ -9,6 +9,18 @@ import { getProfileForUser } from "@/lib/services/profiles-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { motion } from "framer-motion";
+import {
+  recordFailedAttempt,
+  clearRateLimit,
+  isRateLimited,
+  formatTimeRemaining,
+  getTimeUntilReset,
+} from "@/lib/services/rate-limit-service";
+import { initSession } from "@/lib/services/session-service";
+import { logSecurity, logError } from "@/lib/services/logger";
+
+// Rate limit configuration (matches rate-limit-service.ts)
+const MAX_LOGIN_ATTEMPTS = 5;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,11 +63,31 @@ export default function LoginPage() {
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    limited: boolean;
+    remainingAttempts: number;
+    resetTime: number | null;
+  } | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setStatus("loading");
     setError(null);
+
+    // Check rate limiting before attempting login
+    if (email) {
+      const rateLimitCheck = isRateLimited(email);
+      setRateLimitInfo(rateLimitCheck);
+
+      if (rateLimitCheck.limited) {
+        const timeRemaining = getTimeUntilReset(rateLimitCheck.resetTime);
+        setError(
+          `Too many failed login attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+        );
+        setStatus("error");
+        return;
+      }
+    }
 
     // Sign in using auth service
     const { data: signInData, error: signInError } = await signInWithPassword(
@@ -63,7 +95,52 @@ export default function LoginPage() {
       password,
     );
 
+    // Check if 2FA is required
+    if (signInData?.requiresMFA && signInData.factorId) {
+      // Redirect to 2FA page
+      router.push(`/login-2fa?factorId=${signInData.factorId}`);
+      return;
+    }
+
     if (signInError) {
+      // Record failed attempt
+      if (email) {
+        const rateLimitResult = recordFailedAttempt(email);
+        setRateLimitInfo({
+          limited: rateLimitResult.blocked,
+          remainingAttempts: rateLimitResult.remainingAttempts,
+          resetTime: rateLimitResult.resetTime,
+        });
+
+        if (rateLimitResult.blocked) {
+          const timeRemaining = getTimeUntilReset(rateLimitResult.resetTime);
+          setError(
+            `Too many failed login attempts. Your account has been temporarily blocked. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+          );
+          setStatus("error");
+          return;
+        }
+
+        if (rateLimitResult.remainingAttempts < MAX_LOGIN_ATTEMPTS) {
+          // Show warning about remaining attempts
+          const timeRemaining = getTimeUntilReset(rateLimitResult.resetTime);
+          let errorMessage = signInError;
+          
+          if (signInError.includes("Invalid login credentials")) {
+            errorMessage = `Invalid email or password. ${rateLimitResult.remainingAttempts} attempt${rateLimitResult.remainingAttempts !== 1 ? "s" : ""} remaining.`;
+          } else if (signInError.includes("Email not confirmed")) {
+            errorMessage = "Please confirm your email address before logging in. Check your inbox for a confirmation email.";
+          } else if (signInError.includes("User not found")) {
+            errorMessage = "No account found with this email address.";
+          }
+          
+          setError(errorMessage);
+          setStatus("error");
+          console.error("Login error:", signInError);
+          return;
+        }
+      }
+
       // Provide more specific error messages
       let errorMessage = signInError;
       
@@ -77,15 +154,39 @@ export default function LoginPage() {
       
       setError(errorMessage);
       setStatus("error");
-      console.error("Login error:", signInError);
+      logSecurity("Failed login attempt", { email, error: signInError });
+      logError("Login error", new Error(signInError), { email });
       return;
     }
 
     if (!signInData?.user) {
+      // Record failed attempt
+      if (email) {
+        recordFailedAttempt(email);
+      }
       setError("Login failed. Please try again.");
       setStatus("error");
       return;
     }
+
+    // Check if 2FA is required (before clearing rate limit)
+    if (signInData.requiresMFA && signInData.factorId) {
+      // Redirect to 2FA page
+      router.push(`/login-2fa?factorId=${signInData.factorId}`);
+      return;
+    }
+
+    // Clear rate limit on successful login
+    if (email) {
+      clearRateLimit(email);
+      setRateLimitInfo(null);
+    }
+
+    // Initialize session tracking
+    initSession(keepLoggedIn);
+
+    // Log successful login
+    logSecurity("Successful login", { email, userId: signInData.user.id });
 
     // Get user profile using profiles service
     const { data: profile, error: profileError } = await getProfileForUser(

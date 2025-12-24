@@ -70,6 +70,8 @@ export default function SettingsLayout({
     ? "billing"
     : pathname.includes("/branding")
     ? "branding"
+    : pathname.includes("/security")
+    ? "security"
     : "general";
 
   return (
@@ -82,12 +84,16 @@ export default function SettingsLayout({
             if (value === "general") window.location.href = "/settings/general";
             else if (value === "notifications") window.location.href = "/settings/notifications";
             else if (value === "billing") window.location.href = "/settings/billing";
+            else if (value === "security") window.location.href = "/settings/security";
             else if (value === "branding") window.location.href = "/settings/branding";
           }}>
-            <TabsList className={`grid w-full max-w-2xl ${featuresMounted && hasFeature("BRANDING") ? "grid-cols-4" : "grid-cols-3"}`}>
+            <TabsList className={`grid w-full max-w-2xl ${
+              featuresMounted && hasFeature("BRANDING") ? "grid-cols-5" : "grid-cols-4"
+            }`}>
               <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
               <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
               <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
               {featuresMounted && hasFeature("BRANDING") && (
                 <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
               )}

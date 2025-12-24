@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import Link from "next/link";
+import { AdminShell } from "@/components/layout/admin-shell";
+import { PageLayout } from "@/components/layout/page-layout";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocale } from "@/components/locale-provider";
@@ -112,205 +115,138 @@ export default function AdminPage() {
 
   if (contextLoading || loading) {
     return (
-      <DashboardShell>
-        <PageHeader title={t.title} description={t.description} />
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">{t.loading}</p>
-          </CardContent>
-        </Card>
-      </DashboardShell>
+      <AdminShell>
+        <PageLayout title="Admin Dashboard" description="Loading...">
+          <p className="text-sm text-muted-foreground">{t.loading}</p>
+        </PageLayout>
+      </AdminShell>
     );
   }
 
   if (!isSuperAdmin) {
     return (
-      <DashboardShell>
-        <PageHeader title={t.title} description={t.description} />
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <p className="text-sm text-destructive">{t.mustBeSuperAdmin}</p>
-          </CardContent>
-        </Card>
-      </DashboardShell>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardShell>
-        <PageHeader title={t.title} description={t.description} />
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <p className="text-sm text-destructive">{error}</p>
-          </CardContent>
-        </Card>
-      </DashboardShell>
+      <AdminShell>
+        <PageLayout title="Access Denied" description="You must be a super admin">
+          <p className="text-sm text-destructive">{t.mustBeSuperAdmin}</p>
+        </PageLayout>
+      </AdminShell>
     );
   }
 
   return (
-    <DashboardShell>
-      <PageHeader title={t.title} description={t.description} />
-      
-      <div className="mt-6 space-y-6">
-        {/* Salons Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.salonsTitle}</CardTitle>
-            <p className="text-sm text-muted-foreground">{t.salonsDescription}</p>
-          </CardHeader>
-          <CardContent>
-            {salons.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t.emptySalons}</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t.colSalonName}</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>{t.colSalonType}</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Stats</TableHead>
-                    <TableHead>{t.colOwner}</TableHead>
-                    <TableHead>{t.colCreatedAt}</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {salons.map((salon) => (
-                    <TableRow key={salon.id}>
-                      <TableCell className="font-medium">{salon.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {salon.plan || "starter"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{salon.salon_type || "-"}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={salon.is_public ? "default" : "secondary"}
-                        >
-                          {salon.is_public ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={async () => {
-                            setSelectedSalon(salon);
-                            const { data: stats } = await getSalonUsageStats(salon.id);
-                            if (stats) {
-                              setUsageStats(stats);
-                            }
-                            const { data: addons } = await getAddonsForSalon(salon.id);
-                            setSalonAddons(
-                              addons?.map((a) => ({ type: a.type, qty: a.qty })) || []
-                            );
-                            setShowStatsDialog(true);
-                          }}
-                        >
-                          <TrendingUp className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </TableCell>
-                      <TableCell>{salon.owner_email || "-"}</TableCell>
-                      <TableCell>
-                        {new Date(salon.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedSalon(salon);
-                                setShowPlanDialog(true);
-                              }}
-                            >
-                              Change Plan
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={async () => {
-                                if (
-                                  confirm(
-                                    `Are you sure you want to ${
-                                      salon.is_public ? "deactivate" : "activate"
-                                    } this salon?`
-                                  )
-                                ) {
-                                  const { error: updateError } = await setSalonActive(
-                                    salon.id,
-                                    !salon.is_public
-                                  );
-                                  if (updateError) {
-                                    setError(updateError);
-                                  } else {
-                                    await loadData();
-                                  }
-                                }
-                              }}
-                            >
-                              {salon.is_public ? "Deactivate" : "Activate"}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+    <ErrorBoundary>
+      <AdminShell>
+        <PageLayout
+          title="Admin Dashboard"
+          description="Overview of all salons and users in the system"
+        >
+          {error && (
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+              variant="destructive"
+              className="mb-4"
+            />
+          )}
 
-        {/* Users Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.usersTitle}</CardTitle>
-            <p className="text-sm text-muted-foreground">{t.usersDescription}</p>
-          </CardHeader>
-          <CardContent>
-            {users.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t.emptyUsers}</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t.colUserEmail}</TableHead>
-                    <TableHead>{t.colIsSuperAdmin}</TableHead>
-                    <TableHead>{t.colSalon}</TableHead>
-                    <TableHead>{t.colCreatedAt}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>
-                        {user.is_superadmin ? (
-                          <Badge variant="default">{t.yes}</Badge>
-                        ) : (
-                          <Badge variant="secondary">{t.no}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{user.salon_name || "-"}</TableCell>
-                      <TableCell>
-                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          {/* Quick Stats */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Salons</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{salons.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  {salons.filter((s) => s.is_public).length} active
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{users.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  Across all salons
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Salons</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {salons.filter((s) => s.is_public).length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {salons.length > 0
+                    ? `${Math.round((salons.filter((s) => s.is_public).length / salons.length) * 100)}% of total`
+                    : "0%"}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {users.filter((u) => u.is_superadmin).length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  System administrators
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Links */}
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <Link href="/admin/salons">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
+                <CardHeader>
+                  <CardTitle className="text-base">Manage Salons</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    View and manage all salons, change plans, and view statistics
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/users">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
+                <CardHeader>
+                  <CardTitle className="text-base">Manage Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    View all users and their roles across the system
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/analytics">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
+                <CardHeader>
+                  <CardTitle className="text-base">Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    System-wide analytics and insights
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
 
       {/* Plan Change Dialog */}
       <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
@@ -423,7 +359,9 @@ export default function AdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardShell>
+      </PageLayout>
+    </AdminShell>
+    </ErrorBoundary>
   );
 }
 

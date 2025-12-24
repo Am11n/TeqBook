@@ -10,6 +10,7 @@ import {
   deleteShift as deleteShiftRepo,
 } from "@/lib/repositories/shifts";
 import type { Shift, CreateShiftInput } from "@/lib/types";
+import * as featureFlagsService from "@/lib/services/feature-flags-service";
 
 /**
  * Get shifts for current salon
@@ -21,6 +22,23 @@ export async function getShiftsForSalon(
   // Validation
   if (!salonId) {
     return { data: null, error: "Salon ID is required" };
+  }
+
+  // Check if SHIFTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "SHIFTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "SHIFTS feature is not available in your plan. Please upgrade to access shift management.",
+    };
   }
 
   // Call repository
@@ -36,6 +54,23 @@ export async function createShift(
   // Validation
   if (!input.salon_id || !input.employee_id || input.weekday === undefined || !input.start_time || !input.end_time) {
     return { data: null, error: "All required fields must be provided" };
+  }
+
+  // Check if SHIFTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    input.salon_id,
+    "SHIFTS"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "SHIFTS feature is not available in your plan. Please upgrade to access shift management.",
+    };
   }
 
   // Validate weekday is between 0-6 (Sunday-Saturday)
@@ -69,6 +104,22 @@ export async function deleteShift(
   // Validation
   if (!salonId || !shiftId) {
     return { error: "Salon ID and Shift ID are required" };
+  }
+
+  // Check if SHIFTS feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "SHIFTS"
+  );
+
+  if (featureError) {
+    return { error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      error: "SHIFTS feature is not available in your plan. Please upgrade to access shift management.",
+    };
   }
 
   // Call repository

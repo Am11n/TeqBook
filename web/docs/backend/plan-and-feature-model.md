@@ -75,6 +75,65 @@ Alle tilgjengelige features:
 
 ---
 
+## Plan vs Feature vs Role - Understanding the Hierarchy
+
+### Plan (Organization Level)
+**Plan** bestemmer hvilke features en organisasjon (salon) har tilgang til.
+
+- Plans are defined by the `salons.plan` enum: `starter`, `pro`, `business`
+- Each plan has a set of features mapped in the `plan_features` table
+- When a salon upgrades/downgrades their plan, their available features change automatically
+- Plans are managed via Stripe subscriptions (see `docs/backend/billing-and-plans.md`)
+
+### Features (Module Level)
+**Features** representerer modulene/områdene i systemet (booking, calendar, shifts, reports, osv.).
+
+- Features are defined in the `features` table with a unique `key` (e.g., "BOOKINGS", "CALENDAR", "SHIFTS")
+- Features can have limits (e.g., maximum number of languages, employees)
+- Features are enabled/disabled based on the salon's plan
+- Examples:
+  - `BOOKINGS` - Core booking functionality (available in all plans)
+  - `SHIFTS` - Employee shift management (pro+ plans)
+  - `ADVANCED_REPORTS` - Detailed analytics (pro+ plans)
+  - `INVENTORY` - Product/inventory management (pro+ plans)
+
+### Roles (User Level)
+**Roller** (user roles) bestemmer hva en spesifikk bruker i org kan gjøre på en feature.
+
+- Roles are defined in the `profiles.role` field: `owner`, `manager`, `staff`, `superadmin`
+- Role hierarchy: `superadmin` > `owner` > `manager` > `staff`
+- Roles determine permissions within features:
+  - **Owner**: Full access to all features available in the plan
+  - **Manager**: Can manage employees, services, shifts, view reports
+  - **Staff**: Can view own bookings, limited access
+  - **Superadmin**: Access to everything (bypasses plan restrictions)
+
+### Example: Combining Plan, Feature, and Role
+
+```typescript
+// Check if user can access SHIFTS feature
+const { hasFeature } = await hasFeatureForUser(userId, "SHIFTS", "manager");
+
+// This checks:
+// 1. Does the salon's plan include SHIFTS? (plan → feature)
+// 2. Does the user's role have permission? (role → permission)
+// Returns true only if BOTH conditions are met
+```
+
+### Access Control Flow
+
+```
+User Request
+    ↓
+1. Check user's role (from profile)
+    ↓
+2. Check if salon has feature (from plan → plan_features → features)
+    ↓
+3. Check if role has permission for feature action
+    ↓
+Access Granted/Denied
+```
+
 ## Plan Features Mapping
 
 ### Starter Plan

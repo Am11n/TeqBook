@@ -14,6 +14,7 @@ import {
   type CreateProductInput,
   type UpdateProductInput,
 } from "@/lib/repositories/products";
+import * as featureFlagsService from "@/lib/services/feature-flags-service";
 
 /**
  * Get products for current salon
@@ -25,6 +26,23 @@ export async function getProductsForSalon(
   // Validation
   if (!salonId) {
     return { data: null, error: "Salon ID is required" };
+  }
+
+  // Check if INVENTORY feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "INVENTORY"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "INVENTORY feature is not available in your plan. Please upgrade to access inventory management.",
+    };
   }
 
   // Call repository
@@ -62,6 +80,23 @@ export async function createProduct(
     return { data: null, error: "Salon ID is required" };
   }
 
+  // Check if INVENTORY feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    input.salon_id,
+    "INVENTORY"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "INVENTORY feature is not available in your plan. Please upgrade to access inventory management.",
+    };
+  }
+
   if (!input.name || input.name.trim().length === 0) {
     return { data: null, error: "Product name is required" };
   }
@@ -91,6 +126,23 @@ export async function updateProduct(
     return { data: null, error: "Product ID is required" };
   }
 
+  // Check if INVENTORY feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "INVENTORY"
+  );
+
+  if (featureError) {
+    return { data: null, error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      data: null,
+      error: "INVENTORY feature is not available in your plan. Please upgrade to access inventory management.",
+    };
+  }
+
   if (updates.name !== undefined && updates.name.trim().length === 0) {
     return { data: null, error: "Product name cannot be empty" };
   }
@@ -117,6 +169,22 @@ export async function deleteProduct(
 
   if (!productId) {
     return { error: "Product ID is required" };
+  }
+
+  // Check if INVENTORY feature is available
+  const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+    salonId,
+    "INVENTORY"
+  );
+
+  if (featureError) {
+    return { error: featureError };
+  }
+
+  if (!hasFeature) {
+    return {
+      error: "INVENTORY feature is not available in your plan. Please upgrade to access inventory management.",
+    };
   }
 
   // Call repository

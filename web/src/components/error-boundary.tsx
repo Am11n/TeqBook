@@ -3,6 +3,7 @@
 import { Component, ReactNode } from "react";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/services/logger";
 
 interface Props {
   children: ReactNode;
@@ -24,10 +25,11 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
-    // TODO: Send to error tracking service (e.g., Sentry) in the future
-  }
+      componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        logError("ErrorBoundary caught an error", error, {
+          componentStack: errorInfo.componentStack,
+        });
+      }
 
   handleReset = () => {
     this.setState({ hasError: false, error: null });

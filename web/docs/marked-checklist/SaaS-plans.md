@@ -60,17 +60,17 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
 ### 4. Skille mellom plan/feature og roller/rettigheter
 
 - [x] Dokumenter i `docs/backend/plan-and-feature-model.md`:
-  - [ ] Plan bestemmer hvilke features en organisasjon har.
-  - [ ] Features representerer modulene/områdene i systemet (booking, calendar, shifts, reports, osv.).
-  - [ ] Roller (user roles) bestemmer hva en spesifikk bruker i org kan gjøre på en feature:
-    - [ ] f.eks. admin kan configure, staff kan bruke, viewer kan kun lese.
-- [ ] Implementer service-funksjoner (eller utvid eksisterende) for tilgang:
-  - [ ] `hasPermission(user, permissionKey)` (rolle-basert logikk).
-  - [ ] `hasFeatureForUser(user, featureKey)` → kombinasjon av `hasFeature(org, featureKey)` og rolle.
-- [ ] I UI skal:
-  - [ ] Ikke vis menypunkter eller knapper for features som er deaktivert (`!hasFeature`).
-  - [ ] I services/backend skal:
-    - [ ] Funksjoner kaste domain-feil hvis feature ikke er aktiv for org, selv om UI prøver.
+  - [x] Plan bestemmer hvilke features en organisasjon har.
+  - [x] Features representerer modulene/områdene i systemet (booking, calendar, shifts, reports, osv.).
+  - [x] Roller (user roles) bestemmer hva en spesifikk bruker i org kan gjøre på en feature:
+    - [x] f.eks. admin kan configure, staff kan bruke, viewer kan kun lese.
+- [x] Implementer service-funksjoner (eller utvid eksisterende) for tilgang:
+  - [x] `hasPermission(user, permissionKey)` (rolle-basert logikk).
+  - [x] `hasFeatureForUser(user, featureKey)` → kombinasjon av `hasFeature(org, featureKey)` og rolle.
+- [x] I UI skal:
+  - [x] Ikke vis menypunkter eller knapper for features som er deaktivert (`!hasFeature`).
+  - [x] I services/backend skal:
+    - [x] Funksjoner kaste domain-feil hvis feature ikke er aktiv for org, selv om UI prøver.
 
 ### 5. Hook for feature-bruk i frontend
 
@@ -82,10 +82,10 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
     - [x] `hasFeature(featureKey: FeatureKey): boolean`
     - [x] `loading: boolean`
     - [x] `error: string | null`
-- [ ] TODO: Bruk hooken i:
-  - [ ] Sidebar for å bestemme hvilke menypunkter som skal vises.
-  - [ ] Dashboard for å bestemme hvilke cards/widgets som vises.
-  - [ ] Settings-sider for å låse/låse opp seksjoner.
+- [x] TODO: Bruk hooken i:
+  - [x] Sidebar for å bestemme hvilke menypunkter som skal vises.
+  - [x] Dashboard for å bestemme hvilke cards/widgets som vises.
+  - [x] Settings-sider for å låse/låse opp seksjoner.
 
 ### 6. Fremtidig kobling mot billing
 
@@ -119,8 +119,8 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
   - [x] En konsistent måte å vise feilmeldinger på.
   - [x] Støtter variants (destructive, warning, default).
   - [x] Støtter dismiss-funksjonalitet.
-- [ ] TODO: Integrer error boundary rundt:
-  - [ ] sentrale layout-level komponenter (f.eks. rundt `DashboardShell`).
+- [x] TODO: Integrer error boundary rundt:
+  - [x] sentrale layout-level komponenter (f.eks. rundt `DashboardShell`).
 - [x] Dokumenter strategi i `docs/frontend/error-handling.md`.
 
 ### 9. Standard Result-type for services
@@ -148,11 +148,11 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
 
 ### 11. Databasetriggere for integritet
 
-- [ ] Identifiser dataflyt som bør sikres i DB:
-  - [ ] sletting av salon → relaterte bookings, employees, services håndteres.
-  - [ ] sletting av employee → bookings håndteres (flagges, overføres, eller sperres).
-- [ ] Opprett Postgres-triggere eller bruk ON DELETE CASCADE der det passer.
-- [ ] Dokumenter i `docs/backend/data-integrity-and-triggers.md`.
+- [x] Identifiser dataflyt som bør sikres i DB:
+  - [x] sletting av salon → relaterte bookings, employees, services håndteres.
+  - [x] sletting av employee → bookings håndteres (flagges, overføres, eller sperres).
+- [x] Opprett Postgres-triggere eller bruk ON DELETE CASCADE der det passer.
+- [x] Dokumenter i `docs/backend/data-integrity-and-triggers.md`.
 
 ### 12. Fokusert teststrategi
 
@@ -227,24 +227,24 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
 
 - [x] Opprett `components/layout/page-layout.tsx` (eller tilsvarende):
   - [x] Standard header, tittel, actions, breadcrumbs, content-område.
-- [ ] Refaktorer sider til å bruke felles layout:
-  - [ ] dashboard, bookings, calendar, customers, employees, settings.
-- [ ] Dokumenter layout-regler i `docs/frontend/ui-system.md`:
-  - [ ] spacing
-  - [ ] heading-nivå
-  - [ ] plassering av primary actions.
+- [x] Refaktorer sider til å bruke felles layout:
+  - [x] dashboard, bookings, calendar, customers, employees, settings.
+- [x] Dokumenter layout-regler i `docs/frontend/ui-system.md`:
+  - [x] spacing
+  - [x] heading-nivå
+  - [x] plassering av primary actions.
 
 ### 20. Fremtidig monorepo-blåkopi
 
-- [ ] Opprett `docs/architecture/monorepo-blueprint.md`:
-  - [ ] Beskriv hvordan dagens `web/`-app kan flyttes til:
-    - [ ] `apps/web-admin`
-    - [ ] `apps/web-public`
-    - [ ] `packages/ui`
-    - [ ] `packages/core-domain`
-    - [ ] `packages/supabase-client`
-  - [ ] Beskriv hvilke moduler som allerede er rene nok til å ekstrakteres.
-  - [ ] Beskriv hvilke refaktoreringer som vil være nødvendige.
+- [x] Opprett `docs/architecture/monorepo-blueprint.md`:
+  - [x] Beskriv hvordan dagens `web/`-app kan flyttes til:
+    - [x] `apps/web-admin`
+    - [x] `apps/web-public`
+    - [x] `packages/ui`
+    - [x] `packages/core-domain`
+    - [x] `packages/supabase-client`
+  - [x] Beskriv hvilke moduler som allerede er rene nok til å ekstrakteres.
+  - [x] Beskriv hvilke refaktoreringer som vil være nødvendige.
 
 ---
 

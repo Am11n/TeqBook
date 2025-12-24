@@ -65,11 +65,42 @@ export default function SignUpPage() {
       return;
     }
 
-    if (password.length < 6) {
+    // Password validation (matches auth-service.ts)
+    if (password.length < 8) {
       setError(
         appLocale === "nb"
-          ? "Passordet må være minst 6 tegn"
-          : "Password must be at least 6 characters"
+          ? "Passordet må være minst 8 tegn"
+          : "Password must be at least 8 characters"
+      );
+      setStatus("error");
+      return;
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+      setError(
+        appLocale === "nb"
+          ? "Passordet må inneholde minst én stor bokstav"
+          : "Password must contain at least one uppercase letter"
+      );
+      setStatus("error");
+      return;
+    }
+    
+    if (!/[0-9]/.test(password)) {
+      setError(
+        appLocale === "nb"
+          ? "Passordet må inneholde minst ett tall"
+          : "Password must contain at least one number"
+      );
+      setStatus("error");
+      return;
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      setError(
+        appLocale === "nb"
+          ? "Passordet må inneholde minst ett spesialtegn"
+          : "Password must contain at least one special character"
       );
       setStatus("error");
       return;

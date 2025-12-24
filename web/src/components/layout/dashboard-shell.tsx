@@ -12,6 +12,7 @@ import type { AppLocale } from "@/i18n/translations";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { getProfileForUser, updatePreferencesForUser } from "@/lib/services/profiles-service";
 import { updateSalonSettings } from "@/lib/services/salons-service";
+import { ErrorBoundary } from "@/components/error-boundary";
 import {
   LayoutDashboard,
   Calendar,
@@ -51,6 +52,7 @@ import {
   getRoleDisplayName,
 } from "@/lib/utils/access-control";
 import { useFeatures } from "@/lib/hooks/use-features";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +61,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type DashboardShellProps = {
   children: ReactNode;
@@ -69,12 +79,50 @@ type DashboardShellProps = {
 let globalSidebarState: { loaded: boolean; state: boolean | null } = { loaded: false, state: null };
 
 export function DashboardShell({ children }: DashboardShellProps) {
+  return (
+    <ErrorBoundary>
+      <DashboardShellContent>{children}</DashboardShellContent>
+    </ErrorBoundary>
+  );
+}
+
+function DashboardShellContent({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon, isSuperAdmin, userRole } = useCurrentSalon();
+  const { salon, isSuperAdmin, userRole, isReady, loading, user } = useCurrentSalon();
   const { hasFeature, loading: featuresLoading } = useFeatures();
+  const { showWarning, timeRemaining, extendSession, logout: handleSessionLogout } = useSessionTimeout();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Don't render DashboardShell on admin pages - they use AdminShell instead
+  if (pathname.startsWith("/admin")) {
+    return <>{children}</>;
+  }
+
+  // Only use features after mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    // Only check after mount and when loading is complete
+    if (!mounted || loading) return;
+
+    // List of public routes that don't require authentication
+    const publicRoutes = ["/", "/login", "/signup", "/onboarding", "/landing"];
+    const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith("/book/");
+
+    // If user is not authenticated and trying to access protected route, redirect to login
+    // Check both user and isReady to ensure we have authenticated user data
+    if (!isPublicRoute && (!user || !isReady)) {
+      // Use replace to prevent back button from going back to protected route
+      router.replace("/login");
+      return;
+    }
+  }, [mounted, loading, user, isReady, pathname, router]);
 
   // Close mobile nav when route changes
   useEffect(() => {
@@ -85,12 +133,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   // const [scrolled, setScrolled] = useState(false); // Reserved for future use
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Only use features after mount to avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const appLocale =
     locale === "nb"
@@ -248,7 +290,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
     ...(canAccessSettings(userRole)
       ? [{ href: "/settings/general", label: translations[appLocale].settings.title, icon: Settings }]
       : []),
-    ...(isSuperAdmin
+    // Only show admin link if not already on admin pages
+    ...(isSuperAdmin && !pathname.startsWith("/admin")
       ? [{ href: "/admin", label: translations[appLocale].admin.title, icon: Shield }]
       : []),
   ];
@@ -651,6 +694,35 @@ export function DashboardShell({ children }: DashboardShellProps) {
         open={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
       />
+
+      {/* Session Timeout Warning Dialog */}
+      <Dialog open={showWarning} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Session Timeout Warning</DialogTitle>
+            <DialogDescription>
+              Your session will expire in {timeRemaining}. Would you like to extend your session?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                handleSessionLogout();
+              }}
+            >
+              Log Out
+            </Button>
+            <Button
+              onClick={() => {
+                extendSession();
+              }}
+            >
+              Stay Logged In
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Mobile nav overlay */}
       {mobileNavOpen && (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import {
@@ -23,6 +23,8 @@ import {
   createCustomer,
   deleteCustomer,
 } from "@/lib/repositories/customers";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import type { Customer } from "@/lib/types";
 
 export default function CustomersPage() {
@@ -155,13 +157,22 @@ export default function CustomersPage() {
   }
 
   return (
-    <DashboardShell>
-      <PageHeader
+    <ErrorBoundary>
+      <PageLayout
         title={t.title}
         description={t.description}
-      />
+        showCard={false}
+      >
+        {error && (
+          <ErrorMessage
+            message={error}
+            onDismiss={() => setError(null)}
+            variant="destructive"
+            className="mb-4"
+          />
+        )}
 
-      <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)]">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)]">
         <form
           onSubmit={handleAddCustomer}
           className="space-y-4 rounded-xl border bg-card p-4 shadow-sm"
@@ -237,12 +248,6 @@ export default function CustomersPage() {
               {t.gdprLabel}
             </span>
           </label>
-
-          {error && (
-            <p className="text-sm text-red-500" aria-live="polite">
-              {error}
-            </p>
-          )}
 
           <Button
             type="submit"
@@ -365,7 +370,8 @@ export default function CustomersPage() {
           )}
         </div>
       </div>
-    </DashboardShell>
+      </PageLayout>
+    </ErrorBoundary>
   );
 }
 

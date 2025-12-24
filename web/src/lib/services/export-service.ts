@@ -9,6 +9,7 @@ import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 import type { ReportsFilters } from "./reports-service";
 import type { Booking, CalendarBooking } from "@/lib/types";
+import * as featureFlagsService from "@/lib/services/feature-flags-service";
 
 /**
  * Convert array of objects to CSV string
@@ -66,6 +67,22 @@ export async function exportBookingsToCSV(
   filters?: ReportsFilters
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    // Check if EXPORTS feature is available
+    const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+      salonId,
+      "EXPORTS"
+    );
+
+    if (featureError) {
+      return { success: false, error: featureError };
+    }
+
+    if (!hasFeature) {
+      return {
+        success: false,
+        error: "EXPORTS feature is not available in your plan. Please upgrade to access data exports.",
+      };
+    }
     // Fetch all bookings (with pagination if needed)
     let allBookings: Booking[] = [];
     let page = 0;
@@ -146,6 +163,22 @@ export async function exportRevenueToCSV(
   filters?: ReportsFilters
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    // Check if EXPORTS feature is available
+    const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+      salonId,
+      "EXPORTS"
+    );
+
+    if (featureError) {
+      return { success: false, error: featureError };
+    }
+
+    if (!hasFeature) {
+      return {
+        success: false,
+        error: "EXPORTS feature is not available in your plan. Please upgrade to access data exports.",
+      };
+    }
     const { data, error } = await getRevenueByMonth(salonId, {
       startDate: filters?.startDate || null,
       endDate: filters?.endDate || null,
@@ -190,6 +223,22 @@ export async function exportEmployeeWorkloadToCSV(
   filters?: ReportsFilters
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    // Check if EXPORTS feature is available
+    const { hasFeature, error: featureError } = await featureFlagsService.hasFeature(
+      salonId,
+      "EXPORTS"
+    );
+
+    if (featureError) {
+      return { success: false, error: featureError };
+    }
+
+    if (!hasFeature) {
+      return {
+        success: false,
+        error: "EXPORTS feature is not available in your plan. Please upgrade to access data exports.",
+      };
+    }
     // Get all employees
     const { data: employees, error: employeesError } = await getEmployeesForCurrentSalon(salonId);
 

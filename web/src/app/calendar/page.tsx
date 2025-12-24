@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import type { CalendarBooking } from "@/lib/types";
 
 export default function CalendarPage() {
   const { locale } = useLocale();
+  const router = useRouter();
   const appLocale =
     locale === "nb"
       ? "nb"
@@ -46,7 +48,7 @@ export default function CalendarPage() {
                                 ? "hi"
                                 : "en";
   const t = translations[appLocale].calendar;
-  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const { salon, loading: salonLoading, error: salonError, isReady, user } = useCurrentSalon();
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [bookings, setBookings] = useState<CalendarBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +59,14 @@ export default function CalendarPage() {
     const today = new Date();
     return today.toISOString().slice(0, 10);
   });
+
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    if (!salonLoading && !user && !isReady) {
+      router.replace("/login");
+      return;
+    }
+  }, [salonLoading, user, isReady, router]);
 
   useEffect(() => {
     if (!isReady) {

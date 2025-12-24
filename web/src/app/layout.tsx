@@ -5,6 +5,14 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { SalonProvider } from "@/components/salon-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 
+// Initialize Sentry
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  // Dynamic import to avoid bundling in development
+  import("@sentry/nextjs").catch(() => {
+    // Sentry not available, ignore
+  });
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

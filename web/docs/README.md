@@ -33,6 +33,12 @@ Dokumentasjon for eksterne integrasjoner:
 Deployment-guider:
 - Vercel deployment og migrering
 
+### `/security/`
+Sikkerhetsdokumentasjon:
+- Security overview og best practices
+- Authentication og authorization
+- Data protection og compliance
+
 ### `/features/`
 Feature-spesifikk dokumentasjon:
 - Public booking funksjonalitet
@@ -63,6 +69,7 @@ Sjekklister og implementeringsplaner
 - [Onboarding Guide](./onboarding.md) - Komplett onboarding-guide
 - [Coding Style](./coding-style.md) - Koding-standarder og best practices
 - [Architecture Overview](./architecture/overview.md) - Systemarkitektur
+- [Security Overview](./security/security-overview.md) - Sikkerhetsarkitektur og best practices
 - [Implementation Plan](../unmarked-checklist/new-implementation-plan.md) - Feature roadmap
 
 ---

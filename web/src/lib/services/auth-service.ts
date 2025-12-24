@@ -7,6 +7,7 @@
 
 import { supabase } from "@/lib/supabase-client";
 import type { User } from "@supabase/supabase-js";
+import { logSecurity, logError } from "@/lib/services/logger";
 
 /**
  * Get current authenticated user
@@ -34,7 +35,10 @@ export async function getCurrentUser(): Promise<{ data: User | null; error: stri
 export async function signInWithPassword(
   email: string,
   password: string
-): Promise<{ data: { user: User | null } | null; error: string | null }> {
+): Promise<{
+  data: { user: User | null; requiresMFA?: boolean; factorId?: string } | null;
+  error: string | null;
+}> {
   // Validation
   if (!email || !password) {
     return { data: null, error: "Email and password are required" };
@@ -82,9 +86,22 @@ export async function signUp(
     return { data: null, error: "Invalid email format" };
   }
 
-  // Validate password strength (basic)
-  if (password.length < 6) {
-    return { data: null, error: "Password must be at least 6 characters" };
+  // Validate password strength
+  // Minimum 8 characters, at least one uppercase letter, one number, and one special character
+  if (password.length < 8) {
+    return { data: null, error: "Password must be at least 8 characters" };
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return { data: null, error: "Password must contain at least one uppercase letter" };
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { data: null, error: "Password must contain at least one number" };
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return { data: null, error: "Password must contain at least one special character" };
   }
 
   try {
