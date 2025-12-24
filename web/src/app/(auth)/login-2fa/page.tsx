@@ -10,6 +10,7 @@ import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { motion } from "framer-motion";
 import { logSecurity, logError } from "@/lib/services/logger";
+import { initSession } from "@/lib/services/session-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase-client";
