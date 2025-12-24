@@ -180,7 +180,7 @@ export async function getMFAFactors(): Promise<{
     return {
       data: data.all.map((factor) => ({
         id: factor.id,
-        type: factor.type,
+        type: factor.factor_type, // Supabase uses factor_type instead of type
         friendlyName: factor.friendly_name || "TOTP",
       })),
       error: null,
