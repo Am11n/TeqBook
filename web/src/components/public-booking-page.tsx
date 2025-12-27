@@ -233,7 +233,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         window.location.href = `/book/${slug}/confirmation?bookingId=${bookingData.id}`;
       } else {
         // In preview mode, just show success message
-        setSuccessMessage(t.bookingCreated || "Booking created successfully!");
+        setSuccessMessage(t.submitLabel || "Booking created successfully!");
         setSaving(false);
       }
     } catch {
