@@ -8,6 +8,7 @@ import { createSalonForCurrentUser, createOpeningHours } from "@/lib/services/on
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { motion } from "framer-motion";
+import { Field } from "@/components/form/Field";
 
 type OnboardingStep = 1 | 2 | 3;
 
@@ -265,34 +266,35 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+              <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                 {/* Step 1: Salon Information */}
                 {currentStep === 1 && (
                   <motion.div 
-                    className="space-y-5"
+                    className="space-y-6"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
                   >
-                    <div className="space-y-1.5">
-                      <label htmlFor="name" className="text-sm font-medium text-slate-800">
-                {t.nameLabel}
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                    <Field
+                      label={t.nameLabel}
+                      htmlFor="name"
+                      required
+                    >
+                      <input
+                        id="name"
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
-                placeholder={t.namePlaceholder}
-              />
-            </div>
+                        placeholder={t.namePlaceholder}
+                      />
+                    </Field>
 
-                    <div className="space-y-1.5">
-                      <label htmlFor="salonType" className="text-sm font-medium text-slate-800">
-                        {t.salonTypeLabel}
-                      </label>
+                    <Field
+                      label={t.salonTypeLabel}
+                      htmlFor="salonType"
+                    >
                       <select
                         id="salonType"
                         value={salonType}
@@ -304,21 +306,20 @@ export default function OnboardingPage() {
                         <option value="massage">{t.salonTypeMassage}</option>
                         <option value="other">{t.salonTypeOther}</option>
                       </select>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-800">
-                        {t.paymentMethodLabel}
-                      </label>
+                    <Field
+                      label={t.paymentMethodLabel}
+                    >
                       <div className="rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-600">
                         {t.paymentMethodPhysicalOnly}
                       </div>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-1.5">
-                      <label htmlFor="preferredLanguage" className="text-sm font-medium text-slate-800">
-                        {t.preferredLanguageLabel}
-                      </label>
+                    <Field
+                      label={t.preferredLanguageLabel}
+                      htmlFor="preferredLanguage"
+                    >
                       <select
                         id="preferredLanguage"
                         value={preferredLanguage}
@@ -345,12 +346,13 @@ export default function OnboardingPage() {
                         <option value="ur">🇵🇰 اردو</option>
                         <option value="hi">🇮🇳 हिन्दी</option>
                       </select>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-1.5">
-                      <label htmlFor="whatsappNumber" className="text-sm font-medium text-slate-800">
-                        {t.whatsappNumberLabel}
-                      </label>
+                    <Field
+                      label={t.whatsappNumberLabel}
+                      htmlFor="whatsappNumber"
+                      description={t.whatsappNumberHint}
+                    >
                       <input
                         id="whatsappNumber"
                         type="tel"
@@ -359,10 +361,7 @@ export default function OnboardingPage() {
                         className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
                         placeholder={t.whatsappNumberPlaceholder}
                       />
-                      <p className="text-xs text-slate-500">
-                        {t.whatsappNumberHint}
-                      </p>
-                    </div>
+                    </Field>
 
                     <div className="flex justify-end pt-2">
                       <button
@@ -380,7 +379,7 @@ export default function OnboardingPage() {
                 {/* Step 2: Opening Hours & Settings */}
                 {currentStep === 2 && (
                   <motion.div 
-                    className="space-y-5"
+                    className="space-y-6"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}

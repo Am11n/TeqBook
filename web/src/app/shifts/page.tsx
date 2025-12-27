@@ -19,6 +19,7 @@ import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getShiftsForCurrentSalon, createShift, deleteShift, updateShift } from "@/lib/repositories/shifts";
+import { Field } from "@/components/form/Field";
 import type { Shift } from "@/lib/types";
 import { ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
 
@@ -334,14 +335,14 @@ export default function ShiftsPage() {
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)]">
         <form
           onSubmit={handleAddShift}
-          className="space-y-4 rounded-xl border bg-card p-4 shadow-sm"
+          className="space-y-6 rounded-xl border bg-card p-4 shadow-sm"
         >
           <h2 className="text-sm font-medium">{t.newShift}</h2>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="employee" className="font-medium">
-              {t.employeeLabel}
-            </label>
+          <Field
+            label={t.employeeLabel}
+            htmlFor="employee"
+          >
             <select
               id="employee"
               value={employeeId}
@@ -355,13 +356,13 @@ export default function ShiftsPage() {
                 </option>
               ))}
             </select>
-          </div>
+          </Field>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2 text-sm">
-              <label htmlFor="weekday" className="font-medium">
-                {t.weekdayLabel}
-              </label>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Field
+              label={t.weekdayLabel}
+              htmlFor="weekday"
+            >
               <select
                 id="weekday"
                 value={weekday}
@@ -374,11 +375,11 @@ export default function ShiftsPage() {
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="space-y-2 text-sm">
-              <label htmlFor="start_time" className="font-medium">
-                {t.startLabel}
-              </label>
+            </Field>
+            <Field
+              label={t.startLabel}
+              htmlFor="start_time"
+            >
               <input
                 id="start_time"
                 type="time"
@@ -386,11 +387,11 @@ export default function ShiftsPage() {
                 onChange={(e) => setStartTime(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
-            </div>
-            <div className="space-y-2 text-sm">
-              <label htmlFor="end_time" className="font-medium">
-                {t.endLabel}
-              </label>
+            </Field>
+            <Field
+              label={t.endLabel}
+              htmlFor="end_time"
+            >
               <input
                 id="end_time"
                 type="time"
@@ -398,7 +399,7 @@ export default function ShiftsPage() {
                 onChange={(e) => setEndTime(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
-            </div>
+            </Field>
           </div>
 
           {error && (
@@ -661,11 +662,12 @@ export default function ShiftsPage() {
             <DialogTitle>Edit Shift</DialogTitle>
             <DialogDescription>Update shift details</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateShift} className="space-y-4">
-            <div className="space-y-2 text-sm">
-              <label htmlFor="edit_employee" className="font-medium">
-                {t.employeeLabel}
-              </label>
+          <form onSubmit={handleUpdateShift} className="space-y-6">
+            <Field
+              label={t.employeeLabel}
+              htmlFor="edit_employee"
+              required
+            >
               <select
                 id="edit_employee"
                 value={editEmployeeId}
@@ -680,13 +682,14 @@ export default function ShiftsPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </Field>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2 text-sm">
-                <label htmlFor="edit_weekday" className="font-medium">
-                  {t.weekdayLabel}
-                </label>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Field
+                label={t.weekdayLabel}
+                htmlFor="edit_weekday"
+                required
+              >
                 <select
                   id="edit_weekday"
                   value={editWeekday}
@@ -700,11 +703,12 @@ export default function ShiftsPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-              <div className="space-y-2 text-sm">
-                <label htmlFor="edit_start_time" className="font-medium">
-                  {t.startLabel}
-                </label>
+              </Field>
+              <Field
+                label={t.startLabel}
+                htmlFor="edit_start_time"
+                required
+              >
                 <input
                   id="edit_start_time"
                   type="time"
@@ -713,11 +717,12 @@ export default function ShiftsPage() {
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                   required
                 />
-              </div>
-              <div className="space-y-2 text-sm">
-                <label htmlFor="edit_end_time" className="font-medium">
-                  {t.endLabel}
-                </label>
+              </Field>
+              <Field
+                label={t.endLabel}
+                htmlFor="edit_end_time"
+                required
+              >
                 <input
                   id="edit_end_time"
                   type="time"
@@ -726,7 +731,7 @@ export default function ShiftsPage() {
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                   required
                 />
-              </div>
+              </Field>
             </div>
 
             {error && (

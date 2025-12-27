@@ -42,6 +42,7 @@ import { getShiftsForCurrentSalon } from "@/lib/repositories/shifts";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { Field } from "@/components/form/Field";
 import type { Booking, Shift } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 
@@ -725,11 +726,12 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            <div className="grid gap-3">
-              <div className="space-y-1 text-sm">
-                <label className="font-medium" htmlFor="customer_name">
-                  {t.customerNameLabel}
-                </label>
+            <div className="grid gap-6">
+              <Field
+                label={t.customerNameLabel}
+                htmlFor="customer_name"
+                required
+              >
                 <Input
                   id="customer_name"
                   type="text"
@@ -737,11 +739,11 @@ export default function BookingsPage() {
                   onChange={(e) => setCustomerName(e.target.value)}
                   required
                 />
-              </div>
-              <div className="space-y-1 text-sm">
-                <label className="font-medium" htmlFor="customer_email">
-                  {t.customerEmailLabel}
-                </label>
+              </Field>
+              <Field
+                label={t.customerEmailLabel}
+                htmlFor="customer_email"
+              >
                 <Input
                   id="customer_email"
                   type="email"
@@ -749,11 +751,11 @@ export default function BookingsPage() {
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder={t.customerEmailPlaceholder}
                 />
-              </div>
-              <div className="space-y-1 text-sm">
-                <label className="font-medium" htmlFor="customer_phone">
-                  {t.customerPhoneLabel}
-                </label>
+              </Field>
+              <Field
+                label={t.customerPhoneLabel}
+                htmlFor="customer_phone"
+              >
                 <Input
                   id="customer_phone"
                   type="tel"
@@ -761,16 +763,17 @@ export default function BookingsPage() {
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder={t.customerPhonePlaceholder}
                 />
-              </div>
-              <div className="space-y-1 text-sm">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={isWalkIn}
-                    onChange={(e) => setIsWalkIn(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  <span className="font-medium">{t.isWalkInLabel}</span>
+              </Field>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isWalkIn"
+                  checked={isWalkIn}
+                  onChange={(e) => setIsWalkIn(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="isWalkIn" className="text-sm font-medium">
+                  {t.isWalkInLabel}
                 </label>
               </div>
             </div>

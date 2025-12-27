@@ -5,9 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { signUp } from "@/lib/services/auth-service";
+import { updateProfile } from "@/lib/services/profiles-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import { motion } from "framer-motion";
+// Lazy load framer-motion for better initial load performance
+import dynamic from "next/dynamic";
+const MotionDiv = dynamic(
+  () => import("framer-motion").then((mod) => mod.motion.div),
+  { ssr: false }
+);
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -45,6 +51,8 @@ export default function SignUpPage() {
   const t = translations[appLocale].login;
   const signupT = translations[appLocale].signup;
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,6 +66,27 @@ export default function SignUpPage() {
     e.preventDefault();
     setStatus("loading");
     setError(null);
+
+    // Validation
+    if (!firstName.trim()) {
+      setError(
+        appLocale === "nb"
+          ? "Fornavn er påkrevd"
+          : "First name is required"
+      );
+      setStatus("error");
+      return;
+    }
+
+    if (!lastName.trim()) {
+      setError(
+        appLocale === "nb"
+          ? "Etternavn er påkrevd"
+          : "Last name is required"
+      );
+      setStatus("error");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError(signupT.passwordMismatch);
@@ -112,6 +141,28 @@ export default function SignUpPage() {
       setError(signUpError ?? signupT.signupError);
       setStatus("error");
       return;
+    }
+
+    // Save first name and last name to profile
+    // Note: This may fail if database migration hasn't been run yet, but that's OK
+    // The user can update their profile later, and the fallback in getProfileByUserId
+    // will handle missing columns gracefully
+    if (signUpData.user?.id) {
+      try {
+        const { error: profileError } = await updateProfile(signUpData.user.id, {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        });
+
+        if (profileError) {
+          // Log error but don't block signup - user can update profile later
+          // This is expected if database migration hasn't been run yet
+          console.warn("Failed to save name to profile (this is OK if migration not run):", profileError);
+        }
+      } catch (err) {
+        // Silently ignore errors - signup should succeed even if profile update fails
+        console.warn("Exception saving name to profile:", err);
+      }
     }
 
     // Redirect to onboarding after successful signup
@@ -194,7 +245,7 @@ export default function SignUpPage() {
 
           {/* Right side - signup card */}
           <section className="flex items-center justify-center">
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
@@ -225,6 +276,46 @@ export default function SignUpPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                {/* First Name */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="firstName"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {appLocale === "nb" ? "Fornavn" : "First Name"}
+                  </label>
+                  <input
+                    id="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder={appLocale === "nb" ? "Ditt fornavn" : "Your first name"}
+                    className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="lastName"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    {appLocale === "nb" ? "Etternavn" : "Last Name"}
+                  </label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder={appLocale === "nb" ? "Ditt etternavn" : "Your last name"}
+                    className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+                  />
+                </div>
+
                 {/* Email */}
                 <div className="space-y-1.5">
                   <label
@@ -356,7 +447,7 @@ export default function SignUpPage() {
               <p className="mt-4 text-[11px] text-center text-slate-400">
                 {signupT.secureLoginLine}
               </p>
-            </motion.div>
+            </MotionDiv>
           </section>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Field } from "@/components/form/Field";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
@@ -12,7 +13,7 @@ import { updateProfile } from "@/lib/services/profiles-service";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
-  const { salon, profile, user } = useCurrentSalon();
+  const { salon, profile, user, refreshSalon } = useCurrentSalon();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,8 +119,8 @@ export default function GeneralSettingsPage() {
       }
 
       setSaved(true);
-      // Refresh salon data by reloading the page or refetching
-      window.location.reload();
+      // Refresh salon data without full page reload
+      await refreshSalon();
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error("Error saving settings:", err);
@@ -141,11 +142,13 @@ export default function GeneralSettingsPage() {
 
   return (
     <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <label htmlFor="salonName" className="text-sm font-medium">
-            {t.salonNameLabel}
-          </label>
+      <form onSubmit={handleSubmit} className="space-y-6" data-testid="settings-form">
+        <Field
+          label={t.salonNameLabel}
+          htmlFor="salonName"
+          required
+          data-testid="field-salon-name"
+        >
           <Input
             id="salonName"
             value={salonName}
@@ -153,12 +156,13 @@ export default function GeneralSettingsPage() {
             required
             className="max-w-md"
           />
-        </div>
+        </Field>
 
-        <div className="space-y-2">
-          <label htmlFor="salonType" className="text-sm font-medium">
-            {t.salonTypeLabel}
-          </label>
+        <Field
+          label={t.salonTypeLabel}
+          htmlFor="salonType"
+          data-testid="field-salon-type"
+        >
           <select
             id="salonType"
             value={salonType}
@@ -171,12 +175,13 @@ export default function GeneralSettingsPage() {
             <option value="massage">Massage</option>
             <option value="other">Other</option>
           </select>
-        </div>
+        </Field>
 
-        <div className="space-y-2">
-          <label htmlFor="whatsappNumber" className="text-sm font-medium">
-            {t.whatsappNumberLabel}
-          </label>
+        <Field
+          label={t.whatsappNumberLabel}
+          htmlFor="whatsappNumber"
+          description={t.whatsappNumberHint}
+        >
           <Input
             id="whatsappNumber"
             type="tel"
@@ -185,15 +190,12 @@ export default function GeneralSettingsPage() {
             placeholder={t.whatsappNumberPlaceholder}
             className="max-w-md"
           />
-          <p className="text-xs text-muted-foreground">
-            {t.whatsappNumberHint}
-          </p>
-        </div>
+        </Field>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">
-            {t.supportedLanguagesLabel}
-          </label>
+        <Field
+          label={t.supportedLanguagesLabel}
+          description={t.supportedLanguagesHint}
+        >
           <div className="max-w-md space-y-2">
             {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
               const langLabels: Record<typeof lang, string> = {
@@ -237,15 +239,13 @@ export default function GeneralSettingsPage() {
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t.supportedLanguagesHint}
-          </p>
-        </div>
+        </Field>
 
-        <div className="space-y-2">
-          <label htmlFor="defaultLanguage" className="text-sm font-medium">
-            {t.defaultLanguageLabel}
-          </label>
+        <Field
+          label={t.defaultLanguageLabel}
+          htmlFor="defaultLanguage"
+          description={t.defaultLanguageHint}
+        >
           <select
             id="defaultLanguage"
             value={defaultLanguage}
@@ -281,19 +281,17 @@ export default function GeneralSettingsPage() {
               })
             )}
           </select>
-          <p className="text-xs text-muted-foreground">
-            {t.defaultLanguageHint}
-          </p>
-        </div>
+        </Field>
 
         {/* User Profile Section */}
-        <div className="space-y-4 border-t pt-6">
+        <div className="space-y-6 border-t pt-6">
           <h3 className="text-base font-semibold">Din profil</h3>
           
-          <div className="space-y-2">
-            <label htmlFor="userPreferredLanguage" className="text-sm font-medium">
-              {t.userPreferredLanguageLabel}
-            </label>
+          <Field
+            label={t.userPreferredLanguageLabel}
+            htmlFor="userPreferredLanguage"
+            description={t.userPreferredLanguageHint}
+          >
             <select
               id="userPreferredLanguage"
               value={userPreferredLanguage}
@@ -325,16 +323,14 @@ export default function GeneralSettingsPage() {
                 );
               })}
             </select>
-            <p className="text-xs text-muted-foreground">
-              {t.userPreferredLanguageHint}
-            </p>
-          </div>
+          </Field>
 
           {/* User Role Section */}
-          <div className="space-y-2">
-            <label htmlFor="userRole" className="text-sm font-medium">
-              Your Role
-            </label>
+          <Field
+            label="Your Role"
+            htmlFor="userRole"
+            description="Your role determines what features you can access in the dashboard."
+          >
             <select
               id="userRole"
               value={userRole}
@@ -345,10 +341,7 @@ export default function GeneralSettingsPage() {
               <option value="manager">Manager</option>
               <option value="staff">Staff</option>
             </select>
-            <p className="text-xs text-muted-foreground">
-              Your role determines what features you can access in the dashboard.
-            </p>
-          </div>
+          </Field>
         </div>
 
         {error && (

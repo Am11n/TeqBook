@@ -28,6 +28,9 @@ type Profile = {
   is_superadmin?: boolean;
   role?: string | null;
   preferred_language?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
 };
 
 type Salon = {

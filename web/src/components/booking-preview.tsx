@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState, FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
-import Image from "next/image";
-import { getAvailableTimeSlots, createBooking } from "@/lib/services/bookings-service";
+import { useEffect, useState, FormEvent } from "react";
 import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
 import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/empty-state";
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 
-type PublicBookingPageProps = {
-  slug: string;
+type BookingPreviewProps = {
+  salonSlug: string;
+  theme?: {
+    primary?: string;
+    secondary?: string;
+    font?: string;
+    logo_url?: string;
+  } | null;
 };
 
 type Salon = {
@@ -42,19 +45,10 @@ type Employee = {
   full_name: string;
 };
 
-type Slot = {
-  start: string;
-  end: string;
-  label: string;
-};
-
-export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
-  const searchParams = useSearchParams();
-  const isPreview = searchParams.get("preview") === "true";
+export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
   const { locale, setLocale } = useLocale();
-
-  // Use translations from i18n system
   const t = translations[locale].publicBooking;
+  
   const [salon, setSalon] = useState<Salon | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -66,185 +60,94 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const [date, setDate] = useState<string>(() =>
     new Date().toISOString().slice(0, 10),
   );
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [loadingSlots, setLoadingSlots] = useState(false);
-
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const canLoadSlots = useMemo(
-    () => !!(salon && serviceId && employeeId && date),
-    [salon, serviceId, employeeId, date],
-  );
+  // Use provided theme or salon theme
+  const primaryColor = theme?.primary || salon?.theme?.primary || "#3b82f6";
+  const fontFamily = theme?.font || salon?.theme?.font || "Inter";
+  const logoUrl = theme?.logo_url || salon?.theme?.logo_url;
 
   useEffect(() => {
-    async function loadInitial() {
+    async function loadData() {
       setLoading(true);
       setError(null);
 
-      // Load salon by slug
-      const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
+      try {
+        const { data: salonData, error: salonError } = await getSalonBySlugForPublic(salonSlug);
 
-      if (salonError || !salonData) {
-        setError(t.notFound);
+        if (salonError || !salonData) {
+          setError("Salon not found");
+          setLoading(false);
+          return;
+        }
+
+        setSalon({ 
+          id: salonData.id, 
+          name: salonData.name,
+          whatsapp_number: salonData.whatsapp_number || null,
+          supported_languages: salonData.supported_languages || null,
+          default_language: salonData.default_language || null,
+          preferred_language: salonData.preferred_language || null,
+          theme: salonData.theme || null,
+        });
+
+        // Set initial locale from salon's default_language or preferred_language
+        const storedLocale = typeof window !== 'undefined' 
+          ? localStorage.getItem(`booking-locale-${salonData.id}`) 
+          : null;
+        
+        const initialLocale = storedLocale && 
+          salonData.supported_languages?.includes(storedLocale)
+          ? storedLocale as AppLocale
+          : (salonData.default_language || salonData.preferred_language || 'en') as AppLocale;
+        
+        if (initialLocale && salonData.supported_languages?.includes(initialLocale)) {
+          setLocale(initialLocale);
+        }
+
+        const [
+          { data: servicesData, error: servicesError },
+          { data: employeesData, error: employeesError },
+        ] = await Promise.all([
+          getActiveServicesForPublicBooking(salonData.id),
+          getActiveEmployeesForPublicBooking(salonData.id),
+        ]);
+
+        if (servicesError || employeesError) {
+          setError("Failed to load services or employees");
+          setLoading(false);
+          return;
+        }
+
+        setServices(servicesData ?? []);
+        setEmployees(employeesData ?? []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load preview");
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setSalon({ 
-        id: salonData.id, 
-        name: salonData.name,
-        whatsapp_number: salonData.whatsapp_number || null,
-        supported_languages: salonData.supported_languages || null,
-        default_language: salonData.default_language || null,
-        preferred_language: salonData.preferred_language || null,
-        theme: salonData.theme || null,
-      });
-
-      // Set initial locale from salon's default_language or preferred_language
-      // Check localStorage first for user's previous choice
-      const storedLocale = typeof window !== 'undefined' 
-        ? localStorage.getItem(`booking-locale-${salonData.id}`) 
-        : null;
-      
-      const initialLocale = storedLocale && 
-        salonData.supported_languages?.includes(storedLocale)
-        ? storedLocale as AppLocale
-        : (salonData.default_language || salonData.preferred_language || 'en') as AppLocale;
-      
-      if (initialLocale && salonData.supported_languages?.includes(initialLocale)) {
-        setLocale(initialLocale);
-      }
-
-      // Load services and employees in parallel
-      const [
-        { data: servicesData, error: servicesError },
-        { data: employeesData, error: employeesError },
-      ] = await Promise.all([
-        getActiveServicesForPublicBooking(salonData.id),
-        getActiveEmployeesForPublicBooking(salonData.id),
-      ]);
-
-      if (servicesError || employeesError) {
-        setError(
-          servicesError ??
-            employeesError ??
-            t.loadError,
-        );
-        setLoading(false);
-        return;
-      }
-
-      setServices(servicesData ?? []);
-      setEmployees(employeesData ?? []);
-      setLoading(false);
     }
 
-    loadInitial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+    if (salonSlug) {
+      loadData();
+    }
+  }, [salonSlug, setLocale]);
 
-  async function handleLoadSlots(e: FormEvent) {
+  function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
-    if (!salon || !canLoadSlots) return;
-
-    setLoadingSlots(true);
-    setError(null);
-    setSlots([]);
-    setSelectedSlot("");
-
-    const { data, error: slotsError } = await getAvailableTimeSlots(
-      salon.id,
-      employeeId,
-      serviceId,
-      date,
-    );
-
-    if (slotsError || !data) {
-      setError(slotsError ?? t.loadError);
-      setLoadingSlots(false);
-      return;
-    }
-
-    const mapped = data.map((slot) => {
-      // Parse timestamps and extract time components
-      // The database returns timestamps that should be treated as local time
-      const startDate = new Date(slot.slot_start);
-      const endDate = new Date(slot.slot_end);
-      
-      // Extract time components from the ISO string directly to avoid timezone issues
-      // Format: "2024-01-01T10:00:00" or "2024-01-01T10:00:00Z"
-      const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
-      const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
-      
-      if (startMatch && endMatch) {
-        // Use the time directly from the string to avoid timezone conversion
-        const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
-        return { start: slot.slot_start, end: slot.slot_end, label };
-      }
-      
-      // Fallback to local time formatting if regex doesn't match
-      const startHours = startDate.getHours().toString().padStart(2, "0");
-      const startMinutes = startDate.getMinutes().toString().padStart(2, "0");
-      const endHours = endDate.getHours().toString().padStart(2, "0");
-      const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
-      
-      const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
-      return { start: slot.slot_start, end: slot.slot_end, label };
-    });
-
-    setSlots(mapped);
-    setLoadingSlots(false);
+    // In preview mode, just prevent default - don't actually load slots
   }
 
-  async function handleSubmitBooking(e: FormEvent) {
+  function handleSubmitBooking(e: FormEvent) {
     e.preventDefault();
-    if (!salon || !serviceId || !employeeId || !selectedSlot) return;
-
-    setSaving(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    try {
-      const { data: bookingData, error: bookingError } = await createBooking({
-        salon_id: salon.id,
-        employee_id: employeeId,
-        service_id: serviceId,
-        start_time: selectedSlot,
-        customer_full_name: customerName,
-        customer_email: customerEmail || null,
-        customer_phone: customerPhone || null,
-        customer_notes: null,
-        is_walk_in: false,
-      });
-
-      if (bookingError || !bookingData) {
-        setError(bookingError || t.createError);
-        setSaving(false);
-        return;
-      }
-
-      // Redirect to confirmation page (unless in preview mode)
-      if (!isPreview) {
-        window.location.href = `/book/${slug}/confirmation?bookingId=${bookingData.id}`;
-      } else {
-        // In preview mode, just show success message
-        setSuccessMessage(t.bookingCreated || "Booking created successfully!");
-        setSaving(false);
-      }
-    } catch {
-      setError(t.createError);
-      setSaving(false);
-    }
+    // In preview mode, just prevent default - don't actually submit
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-[600px] items-center justify-center px-4">
         <p className="text-sm text-muted-foreground">{t.loadingSalon}</p>
       </div>
     );
@@ -252,28 +155,17 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   if (error || !salon) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <EmptyState
-            title={t.unavailableTitle}
-            description={error ?? t.unavailableDescription}
-          />
-        </div>
+      <div className="flex min-h-[600px] items-center justify-center px-4">
+        <p className="text-sm text-destructive">{error || "Preview not available"}</p>
       </div>
     );
   }
 
-  // Get theme colors with fallbacks
-  // Note: These are user-customizable salon branding colors (not design tokens)
-  // The fallback color (#3b82f6 = blue-500) is a sensible default that matches
-  // the design system's primary color intent, but users can customize it
-  const primaryColor = salon.theme?.primary || "#3b82f6";
-  const fontFamily = salon.theme?.font || "Inter";
-  const logoUrl = salon.theme?.logo_url;
+  const canLoadSlots = !!(salon && serviceId && employeeId && date);
 
   return (
     <div 
-      className="flex min-h-screen flex-col bg-background"
+      className="flex min-h-[600px] flex-col bg-background"
       style={{
         fontFamily: fontFamily,
       } as React.CSSProperties}
@@ -323,14 +215,13 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 Chat on WhatsApp
               </a>
             )}
-            {/* Språkvelger for offentlige kunder */}
+            {/* Language Selector */}
             {salon.supported_languages && salon.supported_languages.length > 0 && (
               <select
                 value={locale}
                 onChange={(e) => {
                   const newLocale = e.target.value as AppLocale;
                   setLocale(newLocale);
-                  // Save to localStorage for this salon
                   if (typeof window !== 'undefined' && salon.id) {
                     localStorage.setItem(`booking-locale-${salon.id}`, newLocale);
                   }
@@ -368,7 +259,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       </header>
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6">
-        {/* Steg 1–3: valg av service, ansatt, tidspunkt */}
+        {/* Step 1-3: Service, Employee, Time Selection */}
         <section className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
           <div className="space-y-1">
             <h2 className="text-sm font-medium tracking-tight">
@@ -381,11 +272,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
           <form onSubmit={handleLoadSlots} className="space-y-4">
             <div className="space-y-2 text-sm">
-              <label className="font-medium" htmlFor="service">
+              <label className="font-medium" htmlFor="preview-service">
                 {t.serviceLabel}
               </label>
               <select
-                id="service"
+                id="preview-service"
                 value={serviceId}
                 onChange={(e) => setServiceId(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
@@ -401,11 +292,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             </div>
 
             <div className="space-y-2 text-sm">
-              <label className="font-medium" htmlFor="employee">
+              <label className="font-medium" htmlFor="preview-employee">
                 {t.employeeLabel}
               </label>
               <select
-                id="employee"
+                id="preview-employee"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
@@ -421,11 +312,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             </div>
 
             <div className="space-y-2 text-sm">
-              <label className="font-medium" htmlFor="date">
+              <label className="font-medium" htmlFor="preview-date">
                 {t.dateLabel}
               </label>
               <Input
-                id="date"
+                id="preview-date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
@@ -436,7 +327,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             <Button
               type="submit"
               className="w-full"
-              disabled={!canLoadSlots || loadingSlots}
+              disabled={!canLoadSlots}
               style={{
                 backgroundColor: primaryColor,
                 color: "white",
@@ -448,36 +339,27 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
-              {loadingSlots ? t.loadingSlots : t.loadSlots}
+              {t.loadSlots}
             </Button>
           </form>
 
           <div className="space-y-2 text-sm">
-            <label className="font-medium" htmlFor="slot">
+            <label className="font-medium" htmlFor="preview-slot">
               {t.step2Label}
             </label>
             <select
-              id="slot"
-              value={selectedSlot}
-              onChange={(e) => setSelectedSlot(e.target.value)}
+              id="preview-slot"
               className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              required
+              disabled
             >
               <option value="">
-                {slots.length === 0
-                  ? t.noSlotsYet
-                  : t.selectSlotPlaceholder}
+                {t.noSlotsYet}
               </option>
-              {slots.map((slot) => (
-                <option key={slot.start} value={slot.start}>
-                  {slot.label}
-                </option>
-              ))}
             </select>
           </div>
         </section>
 
-        {/* Steg 4: kundedetaljer (ingen lagring enda) */}
+        {/* Step 4: Customer Details */}
         <section className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
           <div className="space-y-1">
             <h2 className="text-sm font-medium tracking-tight">
@@ -490,11 +372,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
           <form onSubmit={handleSubmitBooking} className="space-y-3">
             <div className="space-y-1 text-sm">
-              <label className="font-medium" htmlFor="customer_name">
+              <label className="font-medium" htmlFor="preview-customer_name">
                 {t.nameLabel}
               </label>
               <Input
-                id="customer_name"
+                id="preview-customer_name"
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -502,11 +384,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               />
             </div>
             <div className="space-y-1 text-sm">
-              <label className="font-medium" htmlFor="customer_email">
+              <label className="font-medium" htmlFor="preview-customer_email">
                 {t.emailLabel}
               </label>
               <Input
-                id="customer_email"
+                id="preview-customer_email"
                 type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
@@ -514,11 +396,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               />
             </div>
             <div className="space-y-1 text-sm">
-              <label className="font-medium" htmlFor="customer_phone">
+              <label className="font-medium" htmlFor="preview-customer_phone">
                 {t.phoneLabel}
               </label>
               <Input
-                id="customer_phone"
+                id="preview-customer_phone"
                 type="tel"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
@@ -526,22 +408,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-500" aria-live="polite">
-                {error}
-              </p>
-            )}
-
-            {successMessage && (
-              <p className="text-sm text-emerald-600" aria-live="polite">
-                {successMessage}
-              </p>
-            )}
-
             <Button
               type="submit"
               className="mt-1 w-full"
-              disabled={!selectedSlot || !customerName || saving}
+              disabled={!customerName}
               style={{
                 backgroundColor: primaryColor,
                 color: "white",
@@ -553,7 +423,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
-              {saving ? t.submitSaving : t.submitLabel}
+              {t.submitLabel}
             </Button>
           </form>
 
@@ -565,5 +435,3 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     </div>
   );
 }
-
-

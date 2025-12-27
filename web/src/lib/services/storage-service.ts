@@ -88,3 +88,87 @@ export async function deleteLogo(
   }
 }
 
+/**
+ * Upload avatar to Supabase Storage
+ */
+export async function uploadAvatar(
+  file: File,
+  userId: string
+): Promise<{ data: { url: string } | null; error: string | null }> {
+  try {
+    // Validate file type (jpg, png, webp)
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      return { data: null, error: "File must be a JPG, PNG, or WebP image" };
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      return { data: null, error: "File size must be less than 2MB" };
+    }
+
+    // Generate unique filename
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    // Upload file
+    const { error: uploadError } = await supabase.storage
+      .from("user-assets")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return { data: null, error: uploadError.message };
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("user-assets")
+      .getPublicUrl(filePath);
+
+    if (!urlData?.publicUrl) {
+      return { data: null, error: "Failed to get public URL" };
+    }
+
+    return { data: { url: urlData.publicUrl }, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Delete avatar from Supabase Storage
+ */
+export async function deleteAvatar(
+  url: string,
+  userId: string
+): Promise<{ error: string | null }> {
+  try {
+    // Extract file path from URL
+    // URL format: https://...supabase.co/storage/v1/object/public/user-assets/avatars/{userId}/{filename}
+    const urlParts = url.split("/");
+    const fileName = urlParts[urlParts.length - 1];
+    const filePath = `avatars/${userId}/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from("user-assets")
+      .remove([filePath]);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}

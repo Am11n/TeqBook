@@ -25,6 +25,7 @@ import {
 } from "@/lib/repositories/customers";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { Field } from "@/components/form/Field";
 import type { Customer } from "@/lib/types";
 
 export default function CustomersPage() {
@@ -175,14 +176,15 @@ export default function CustomersPage() {
         <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)]">
         <form
           onSubmit={handleAddCustomer}
-          className="space-y-4 rounded-xl border bg-card p-4 shadow-sm"
+          className="space-y-6 rounded-xl border bg-card p-4 shadow-sm"
         >
           <h2 className="text-sm font-medium">{t.newCustomer}</h2>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="full_name" className="font-medium">
-              {t.nameLabel}
-            </label>
+          <Field
+            label={t.nameLabel}
+            htmlFor="full_name"
+            required
+          >
             <input
               id="full_name"
               type="text"
@@ -192,13 +194,13 @@ export default function CustomersPage() {
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               placeholder={t.namePlaceholder}
             />
-          </div>
+          </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 text-sm">
-              <label htmlFor="email" className="font-medium">
-                {t.emailLabel}
-              </label>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field
+              label={t.emailLabel}
+              htmlFor="email"
+            >
               <input
                 id="email"
                 type="email"
@@ -207,11 +209,11 @@ export default function CustomersPage() {
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                 placeholder={t.emailPlaceholder}
               />
-            </div>
-            <div className="space-y-2 text-sm">
-              <label htmlFor="phone" className="font-medium">
-                {t.phoneLabel}
-              </label>
+            </Field>
+            <Field
+              label={t.phoneLabel}
+              htmlFor="phone"
+            >
               <input
                 id="phone"
                 type="tel"
@@ -220,13 +222,13 @@ export default function CustomersPage() {
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                 placeholder={t.phonePlaceholder}
               />
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="notes" className="font-medium">
-              {t.notesLabel}
-            </label>
+          <Field
+            label={t.notesLabel}
+            htmlFor="notes"
+          >
             <Textarea
               id="notes"
               value={notes}
@@ -235,7 +237,7 @@ export default function CustomersPage() {
               className="resize-none text-sm"
               placeholder={t.notesPlaceholder}
             />
-          </div>
+          </Field>
 
           <label className="flex items-start gap-2 text-xs text-muted-foreground">
             <input

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { Field } from "@/components/form/Field";
 import {
   Table,
   TableBody,
@@ -211,13 +212,14 @@ export default function EmployeesPage() {
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
         <form
           onSubmit={handleAddEmployee}
-          className="space-y-4 rounded-xl border bg-card p-4 shadow-sm"
+          className="space-y-6 rounded-xl border bg-card p-4 shadow-sm"
         >
           <h2 className="text-sm font-medium">{t.newEmployee}</h2>
-          <div className="space-y-2 text-sm">
-            <label htmlFor="full_name" className="font-medium">
-              {t.nameLabel}
-            </label>
+          <Field
+            label={t.nameLabel}
+            htmlFor="full_name"
+            required
+          >
             <input
               id="full_name"
               type="text"
@@ -227,13 +229,13 @@ export default function EmployeesPage() {
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               placeholder={t.namePlaceholder}
             />
-          </div>
+          </Field>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 text-sm">
-              <label htmlFor="email" className="font-medium">
-                {t.emailLabel}
-              </label>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Field
+              label={t.emailLabel}
+              htmlFor="email"
+            >
               <input
                 id="email"
                 type="email"
@@ -242,11 +244,11 @@ export default function EmployeesPage() {
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                 placeholder={t.emailPlaceholder}
               />
-            </div>
-            <div className="space-y-2 text-sm">
-              <label htmlFor="phone" className="font-medium">
-                {t.phoneLabel}
-              </label>
+            </Field>
+            <Field
+              label={t.phoneLabel}
+              htmlFor="phone"
+            >
               <input
                 id="phone"
                 type="tel"
@@ -255,14 +257,14 @@ export default function EmployeesPage() {
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                 placeholder={t.phonePlaceholder}
               />
-            </div>
+            </Field>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 text-sm">
-              <label htmlFor="role" className="font-medium">
-                {t.roleLabel}
-              </label>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Field
+              label={t.roleLabel}
+              htmlFor="role"
+            >
               <select
                 id="role"
                 value={role}
@@ -274,11 +276,11 @@ export default function EmployeesPage() {
                 <option value="manager">Manager</option>
                 <option value="staff">Staff</option>
               </select>
-            </div>
-            <div className="space-y-2 text-sm">
-              <label htmlFor="preferred_language" className="font-medium">
-                {t.preferredLanguageLabel}
-              </label>
+            </Field>
+            <Field
+              label={t.preferredLanguageLabel}
+              htmlFor="preferred_language"
+            >
               <select
                 id="preferred_language"
                 value={preferredLanguage}
@@ -301,13 +303,14 @@ export default function EmployeesPage() {
                 <option value="ur">🇵🇰 اردو</option>
                 <option value="hi">🇮🇳 हिन्दी</option>
               </select>
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="services" className="font-medium">
-              {t.servicesLabel}
-            </label>
+          <Field
+            label={t.servicesLabel}
+            htmlFor="services"
+            description={`${t.servicesPlaceholder} (Hold Ctrl/Cmd for å velge flere)`}
+          >
             <select
               id="services"
               multiple
@@ -324,10 +327,7 @@ export default function EmployeesPage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-muted-foreground">
-              {t.servicesPlaceholder} (Hold Ctrl/Cmd for å velge flere)
-            </p>
-          </div>
+          </Field>
 
           {error && (
             <p className="text-sm text-red-500" aria-live="polite">

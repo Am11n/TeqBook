@@ -163,3 +163,195 @@ export async function getSession(): Promise<{ data: { access_token: string; refr
   }
 }
 
+/**
+ * Update user password
+ */
+export async function updatePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ error: string | null }> {
+  // Validation
+  if (!currentPassword || !newPassword) {
+    return { error: "Current password and new password are required" };
+  }
+
+  // Validate new password strength
+  if (newPassword.length < 8) {
+    return { error: "Password must be at least 8 characters" };
+  }
+  
+  if (!/[A-Z]/.test(newPassword)) {
+    return { error: "Password must contain at least one uppercase letter" };
+  }
+  
+  if (!/[0-9]/.test(newPassword)) {
+    return { error: "Password must contain at least one number" };
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
+    return { error: "Password must contain at least one special character" };
+  }
+
+  try {
+    // First verify current password by attempting to sign in
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) {
+      return { error: "User not found" };
+    }
+
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (verifyError) {
+      return { error: "Current password is incorrect" };
+    }
+
+    // Update password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      logError("Failed to update password", updateError);
+      return { error: updateError.message };
+    }
+
+    logSecurity("Password updated successfully", { userId: user.id });
+    return { error: null };
+  } catch (err) {
+    logError("Exception updating password", err);
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Get email verification status
+ */
+export async function getEmailVerificationStatus(): Promise<{
+  data: { verified: boolean; email: string | null } | null;
+  error: string | null;
+}> {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!user) {
+      return { data: null, error: "User not found" };
+    }
+
+    return {
+      data: {
+        verified: !!user.email_confirmed_at,
+        email: user.email || null,
+      },
+      error: null,
+    };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Resend email verification
+ */
+export async function resendEmailVerification(): Promise<{ error: string | null }> {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user?.email) {
+      return { error: "User not found" };
+    }
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: user.email,
+    });
+
+    if (error) {
+      logError("Failed to resend verification email", error);
+      return { error: error.message };
+    }
+
+    logSecurity("Verification email resent", { userId: user.id });
+    return { error: null };
+  } catch (err) {
+    logError("Exception resending verification email", err);
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Get active sessions count
+ * Note: Supabase doesn't provide a direct API for this,
+ * so we return 1 for the current session
+ */
+export async function getActiveSessionsCount(): Promise<{
+  data: number | null;
+  error: string | null;
+}> {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Supabase doesn't expose multiple sessions easily
+    // Return 1 if session exists, 0 otherwise
+    return { data: session ? 1 : 0, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Sign out all other sessions
+ * Note: Supabase doesn't provide a direct API for this,
+ * so we sign out and the user will need to sign in again
+ */
+export async function signOutOtherSessions(): Promise<{ error: string | null }> {
+  try {
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      return { error: sessionError.message };
+    }
+
+    if (!session) {
+      return { error: "No active session" };
+    }
+
+    // Sign out (this will invalidate all sessions)
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      logError("Failed to sign out other sessions", error);
+      return { error: error.message };
+    }
+
+    logSecurity("Signed out all sessions", { userId: session.user.id });
+    return { error: null };
+  } catch (err) {
+    logError("Exception signing out other sessions", err);
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+

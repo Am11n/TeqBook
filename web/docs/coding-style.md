@@ -53,6 +53,37 @@ import type { Booking, Employee, Service } from "@/lib/types";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 ```
 
+### Page Layout og Actions
+
+**Kritisk regel:** Alle sider som har en "Create" eller "New" knapp skal bruke `PageLayout` med `actions` prop for å plassere knappen på høyre side av tittelen.
+
+```typescript
+// ✅ RIKTIG - Knapp på høyre side via actions prop
+<PageLayout
+  title="Products"
+  description="Manage your inventory and products"
+  actions={
+    <Button onClick={openCreateModal} size="sm">
+      <Plus className="h-4 w-4" />
+      Create Product
+    </Button>
+  }
+>
+  {/* Page content */}
+</PageLayout>
+
+// ❌ FEIL - Knapp under tittelen
+<PageLayout title="Products" description="...">
+  <Button onClick={openCreateModal}>Create Product</Button>
+  {/* Page content */}
+</PageLayout>
+```
+
+**Regel:** 
+- Alle "Create", "New", "Add" knapper skal ligge på høyre side av page header
+- Bruk `PageLayout` med `actions` prop for konsistent plassering
+- Knapper i `actions` skal ha `size="sm"` for konsistent størrelse
+
 ### Best practices for UI
 
 1. **Bruk services for all datatilgang**

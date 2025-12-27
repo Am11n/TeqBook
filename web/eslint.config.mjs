@@ -46,9 +46,22 @@ const eslintConfig = defineConfig([
           ],
         },
       ],
+      // Forbid direct <label> usage in feature code - must use <Field /> component
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXElement[openingElement.name.name='label']",
+          message:
+            "Direct <label> usage is not allowed in feature code. Use <Field /> component from '@/components/form/Field' instead. Labels are only allowed inside 'components/form/**' directory.",
+        },
+      ],
     },
-    // Apply rules only to UI layer files
-    files: ["src/app/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+    // Apply rules only to UI layer files (except form components directory)
+    files: [
+      "src/app/**/*.{ts,tsx}",
+      "src/components/**/*.{ts,tsx}",
+      "!src/components/form/**/*.{ts,tsx}",
+    ],
   },
 ]);
 

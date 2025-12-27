@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useFeatures } from "@/lib/hooks/use-features";
 
 export default function SettingsLayout({
@@ -16,6 +16,7 @@ export default function SettingsLayout({
 }) {
   const { locale } = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const { hasFeature } = useFeatures();
   const [mounted, setMounted] = useState(false);
   const [featuresMounted, setFeaturesMounted] = useState(false);
@@ -80,12 +81,12 @@ export default function SettingsLayout({
       <div className="mt-6">
         {mounted ? (
           <Tabs value={activeTab} className="w-full" onValueChange={(value) => {
-            // Navigate when tab changes
-            if (value === "general") window.location.href = "/settings/general";
-            else if (value === "notifications") window.location.href = "/settings/notifications";
-            else if (value === "billing") window.location.href = "/settings/billing";
-            else if (value === "security") window.location.href = "/settings/security";
-            else if (value === "branding") window.location.href = "/settings/branding";
+            // Use client-side navigation for instant tab switching
+            if (value === "general") router.push("/settings/general");
+            else if (value === "notifications") router.push("/settings/notifications");
+            else if (value === "billing") router.push("/settings/billing");
+            else if (value === "security") router.push("/settings/security");
+            else if (value === "branding") router.push("/settings/branding");
           }}>
             <TabsList className={`grid w-full max-w-2xl ${
               featuresMounted && hasFeature("BRANDING") ? "grid-cols-5" : "grid-cols-4"

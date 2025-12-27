@@ -161,6 +161,9 @@ export type Profile = {
   salon_id: string | null;
   is_superadmin: boolean;
   role?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
   user_preferences?: {
     sidebarCollapsed?: boolean;
     [key: string]: unknown;

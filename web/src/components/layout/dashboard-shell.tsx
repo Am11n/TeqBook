@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, memo, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,7 +34,7 @@ import {
   TrendingUp,
   Package,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationCenter } from "@/components/notification-center";
 import {
@@ -86,10 +86,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
   );
 }
 
-function DashboardShellContent({ children }: DashboardShellProps) {
+// Memoize DashboardShellContent to prevent unnecessary re-renders when only children change
+// This ensures the sidebar doesn't re-render when navigating between pages
+const DashboardShellContent = memo(function DashboardShellContent({ children }: DashboardShellProps) {
   const { locale, setLocale } = useLocale();
-  const { salon, isSuperAdmin, userRole, isReady, loading, user } = useCurrentSalon();
-  const { hasFeature, loading: featuresLoading } = useFeatures();
+  const { salon, isSuperAdmin, userRole, isReady, loading, user, profile } = useCurrentSalon();
+  const { hasFeature, loading: featuresLoading, features } = useFeatures();
   const { showWarning, timeRemaining, extendSession, logout: handleSessionLogout } = useSessionTimeout();
   const router = useRouter();
   const pathname = usePathname();
@@ -265,36 +267,58 @@ function DashboardShellContent({ children }: DashboardShellProps) {
     return name.charAt(0).toUpperCase() + (name.length > 1 ? name.charAt(1).toUpperCase() : "");
   };
 
-  // Menu items organized by sections
-  const overviewItems = [
+  // Menu items organized by sections - memoized to prevent re-building on every render
+  const overviewItems = useMemo(() => [
     { href: "/dashboard", label: texts.overview, icon: LayoutDashboard },
-  ];
+  ], [texts.overview]);
 
-  const operationsItems = [
+  const operationsItems = useMemo(() => [
     { href: "/calendar", label: texts.calendar, icon: Calendar },
     { href: "/bookings", label: texts.bookings, icon: BookOpen },
-  ];
+  ], [texts.calendar, texts.bookings]);
 
-  // Only check features after mount to avoid hydration mismatch
-  const managementItems = [
-    ...(canManageEmployees(userRole) ? [{ href: "/employees", label: texts.employees, icon: Users }] : []),
-    ...(canManageServices(userRole) ? [{ href: "/services", label: texts.services, icon: Scissors }] : []),
-    { href: "/customers", label: texts.customers, icon: UserCircle }, // All roles can view customers
-    // Only check features after mount to avoid hydration mismatch
-    ...(mounted && canManageServices(userRole) && hasFeature("INVENTORY") ? [{ href: "/products", label: "Products", icon: Package }] : []),
-    ...(mounted && canManageShifts(userRole) && hasFeature("SHIFTS") ? [{ href: "/shifts", label: texts.shifts, icon: Clock }] : []),
-    ...(mounted && canViewReports(userRole) && hasFeature("ADVANCED_REPORTS") ? [{ href: "/reports", label: "Reports", icon: TrendingUp }] : []),
-  ];
+  // Memoize management items to prevent re-building on every render
+  // Only rebuild when features are loaded, userRole changes, or mounted state changes
+  // Use features array directly instead of hasFeature() to avoid function call overhead
+  const managementItems = useMemo(() => {
+    const items = [
+      ...(canManageEmployees(userRole) ? [{ href: "/employees", label: texts.employees, icon: Users }] : []),
+      ...(canManageServices(userRole) ? [{ href: "/services", label: texts.services, icon: Scissors }] : []),
+      { href: "/customers", label: texts.customers, icon: UserCircle }, // All roles can view customers
+    ];
 
-  const systemItems = [
-    ...(canAccessSettings(userRole)
-      ? [{ href: "/settings/general", label: translations[appLocale].settings.title, icon: Settings }]
-      : []),
+    // Only add feature-based items after features are loaded (not loading) and mounted
+    // Use features array directly instead of hasFeature() to avoid function call overhead
+    if (mounted && !featuresLoading && features.length > 0) {
+      const hasInventory = features.includes("INVENTORY");
+      const hasShifts = features.includes("SHIFTS");
+      const hasReports = features.includes("ADVANCED_REPORTS");
+
+      if (canManageServices(userRole) && hasInventory) {
+        items.push({ href: "/products", label: "Products", icon: Package });
+      }
+      if (canManageShifts(userRole) && hasShifts) {
+        items.push({ href: "/shifts", label: texts.shifts, icon: Clock });
+      }
+      if (canViewReports(userRole) && hasReports) {
+        items.push({ href: "/reports", label: "Reports", icon: TrendingUp });
+      }
+    }
+
+    return items;
+  }, [mounted, featuresLoading, features, userRole, texts.employees, texts.services, texts.customers, texts.shifts]);
+
+  const systemItems = useMemo(() => {
+    const items = [];
+    if (canAccessSettings(userRole)) {
+      items.push({ href: "/settings/general", label: translations[appLocale].settings.title, icon: Settings });
+    }
     // Only show admin link if not already on admin pages
-    ...(isSuperAdmin && !pathname.startsWith("/admin")
-      ? [{ href: "/admin", label: translations[appLocale].admin.title, icon: Shield }]
-      : []),
-  ];
+    if (isSuperAdmin && !pathname.startsWith("/admin")) {
+      items.push({ href: "/admin", label: translations[appLocale].admin.title, icon: Shield });
+    }
+    return items;
+  }, [userRole, isSuperAdmin, pathname, appLocale, translations]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-white">
@@ -317,6 +341,7 @@ function DashboardShellContent({ children }: DashboardShellProps) {
           {/* Desktop: Logo + TeqBook */}
           <Link
             href="/dashboard"
+            prefetch={true}
             className="hidden items-center gap-3 transition-all duration-150 hover:scale-105 hover:drop-shadow-[0_2px_8px_rgba(29,78,216,0.15)] md:flex"
           >
             <Image
@@ -335,6 +360,7 @@ function DashboardShellContent({ children }: DashboardShellProps) {
           {/* Mobile: Logo centered */}
           <Link
             href="/dashboard"
+            prefetch={true}
             className="flex items-center gap-2 transition-opacity hover:opacity-80 md:hidden"
           >
             <Image
@@ -432,8 +458,14 @@ function DashboardShellContent({ children }: DashboardShellProps) {
           <div suppressHydrationWarning>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
+                <button 
+                  className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex"
+                  suppressHydrationWarning
+                >
                   <Avatar className="h-9 w-9 border-2 border-card shadow-sm transition-all hover:shadow-md">
+                    {profile?.avatar_url && (
+                      <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+                    )}
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                       {getInitials(userEmail)}
                     </AvatarFallback>
@@ -447,7 +479,9 @@ function DashboardShellContent({ children }: DashboardShellProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {userEmail || "User"}
+                    {profile?.first_name && profile?.last_name
+                      ? `${profile.first_name} ${profile.last_name}`
+                      : userEmail || "User"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {salon?.name || "Salon"}
@@ -462,7 +496,7 @@ function DashboardShellContent({ children }: DashboardShellProps) {
               <DropdownMenuSeparator />
               {canAccessSettings(userRole) && (
                 <DropdownMenuItem asChild>
-                  <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
+                  <Link href="/profile" prefetch={true} className="flex items-center gap-2 cursor-pointer">
                     <User className="h-4 w-4" />
                     <span>My profile</span>
                   </Link>
@@ -489,8 +523,14 @@ function DashboardShellContent({ children }: DashboardShellProps) {
           <div suppressHydrationWarning>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center sm:hidden">
+                <button 
+                  className="flex items-center sm:hidden"
+                  suppressHydrationWarning
+                >
                   <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
+                    {profile?.avatar_url && (
+                      <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+                    )}
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                       {getInitials(userEmail)}
                     </AvatarFallback>
@@ -513,7 +553,7 @@ function DashboardShellContent({ children }: DashboardShellProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/settings/general" className="flex items-center gap-2 cursor-pointer">
+                  <Link href="/profile" prefetch={true} className="flex items-center gap-2 cursor-pointer">
                     <User className="h-4 w-4" />
                     <span>My profile</span>
                   </Link>
@@ -840,7 +880,7 @@ function DashboardShellContent({ children }: DashboardShellProps) {
       )}
     </div>
   );
-}
+});
 
 type NavLinkProps = {
   href: string;
@@ -851,10 +891,11 @@ type NavLinkProps = {
   className?: string;
 };
 
-function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false, className }: NavLinkProps) {
+const NavLink = memo(function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false, className }: NavLinkProps) {
   const content = (
     <Link
       href={href}
+      prefetch={true}
       className={`group relative flex items-center rounded-xl text-[15px] font-medium transition-all duration-150 ease-out ${
         isActive
           ? "bg-primary/10 text-primary"
@@ -907,13 +948,13 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
   }
 
   return content;
-}
+});
 
 type MobileNavLinkProps = NavLinkProps & {
   onNavigate?: () => void;
 };
 
-function MobileNavLink({
+const MobileNavLink = memo(function MobileNavLink({
   href,
   label,
   icon: Icon,
@@ -924,6 +965,7 @@ function MobileNavLink({
   return (
     <Link
       href={href}
+      prefetch={true}
       className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-all ${
         isActive
           ? "bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(44,111,248,0.4)]"
@@ -939,6 +981,6 @@ function MobileNavLink({
       <span>{label}</span>
     </Link>
   );
-}
+});
 
 

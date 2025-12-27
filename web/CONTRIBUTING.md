@@ -152,6 +152,11 @@ Legg til screenshots for UI-endringer.
 - [ ] Type check passerer
 - [ ] Dokumentasjon er oppdatert
 - [ ] Jeg har testet endringene manuelt
+- [ ] **Form Layout & Spacing:**
+  - [ ] Alle nye/oppdaterte felter bruker `<Field />` komponenten
+  - [ ] Ingen inline label layouts lagt til uten `variant="inline"`
+  - [ ] Settings form screenshot test passerer (hvis relevant)
+  - [ ] Lint passerer (ingen restricted label violations)
 ```
 
 ### PR-review prosess

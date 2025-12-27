@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -25,7 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +56,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
 function AdminShellContent({ children }: AdminShellProps) {
   const { locale, setLocale } = useLocale();
-  const { isSuperAdmin } = useCurrentSalon();
+  const { isSuperAdmin, profile } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -278,6 +278,9 @@ function AdminShellContent({ children }: AdminShellProps) {
               <DropdownMenuTrigger asChild>
                 <button className="hidden h-9 w-9 items-center justify-center transition-all hover:scale-105 sm:flex">
                   <Avatar className="h-9 w-9 border-2 border-card shadow-sm transition-all hover:shadow-md">
+                    {profile?.avatar_url && (
+                      <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+                    )}
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                       {getInitials(userEmail)}
                     </AvatarFallback>
@@ -291,7 +294,9 @@ function AdminShellContent({ children }: AdminShellProps) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {userEmail || "Admin"}
+                      {profile?.first_name && profile?.last_name
+                        ? `${profile.first_name} ${profile.last_name}`
+                        : userEmail || "Admin"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       Super Admin
@@ -300,7 +305,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
                     <User className="h-4 w-4" />
                     <span>My profile</span>
                   </Link>
@@ -324,6 +329,9 @@ function AdminShellContent({ children }: AdminShellProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center sm:hidden">
                   <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
+                    {profile?.avatar_url && (
+                      <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
+                    )}
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
                       {getInitials(userEmail)}
                     </AvatarFallback>
@@ -337,7 +345,9 @@ function AdminShellContent({ children }: AdminShellProps) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {userEmail || "Admin"}
+                      {profile?.first_name && profile?.last_name
+                        ? `${profile.first_name} ${profile.last_name}`
+                        : userEmail || "Admin"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       Super Admin
@@ -346,7 +356,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
                     <User className="h-4 w-4" />
                     <span>My profile</span>
                   </Link>
@@ -611,10 +621,11 @@ type NavLinkProps = {
   className?: string;
 };
 
-function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false, className }: NavLinkProps) {
+const NavLink = memo(function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false, className }: NavLinkProps) {
   const content = (
     <Link
       href={href}
+      prefetch={true}
       className={`group relative flex items-center rounded-xl text-[15px] font-medium transition-all duration-150 ease-out ${
         isActive
           ? "bg-primary/10 text-primary"
@@ -668,4 +679,4 @@ function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false,
   }
 
   return content;
-}
+});

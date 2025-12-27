@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import PublicBookingPage from "@/components/public-booking-page";
 
 type RouteParams = {
@@ -19,6 +20,18 @@ export default async function BookSalonPage({
   params: Promise<RouteParams>;
 }) {
   const { salon_slug } = await params;
-  return <PublicBookingPage slug={salon_slug} />;
+  // Note: searchParams are handled in the client component via useSearchParams
+  // Suspense is required for useSearchParams() in App Router
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center px-4">
+          <p className="text-sm text-muted-foreground">Loading booking page...</p>
+        </div>
+      }
+    >
+      <PublicBookingPage slug={salon_slug} />
+    </Suspense>
+  );
 }
 

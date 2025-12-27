@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import "framer-motion";
+// Removed unused framer-motion import for better performance
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";

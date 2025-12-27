@@ -8,7 +8,12 @@ import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
-import { motion } from "framer-motion";
+// Lazy load framer-motion for better initial load performance
+import dynamic from "next/dynamic";
+const MotionDiv = dynamic(
+  () => import("framer-motion").then((mod) => mod.motion.div),
+  { ssr: false }
+);
 import {
   recordFailedAttempt,
   clearRateLimit,
@@ -285,7 +290,7 @@ export default function LoginPage() {
 
           {/* Høyre side: Login card */}
           <div className="flex items-center justify-center">
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
@@ -400,7 +405,7 @@ export default function LoginPage() {
               <p className="mt-4 text-[11px] text-center text-slate-400">
                 {t.secureLoginLine}
               </p>
-            </motion.div>
+            </MotionDiv>
           </div>
         </div>
       </div>

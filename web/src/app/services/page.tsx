@@ -5,6 +5,8 @@ import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
+import { Field } from "@/components/form/Field";
 import {
   Table,
   TableBody,
@@ -17,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { ErrorMessage } from "@/components/feedback/error-message";
 import {
   getServicesForCurrentSalon,
   createService,
@@ -178,29 +179,30 @@ export default function ServicesPage() {
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
         <form
           onSubmit={handleAddService}
-          className="space-y-4 rounded-xl border bg-card p-4 shadow-sm"
+          className="space-y-6 rounded-xl border bg-card p-4 shadow-sm"
         >
           <h2 className="text-sm font-medium">{t.newService}</h2>
 
-          <div className="space-y-2 text-sm">
-              <label htmlFor="name" className="font-medium">
-                {t.nameLabel}
-            </label>
+          <Field
+            label={t.nameLabel}
+            htmlFor="name"
+            required
+          >
             <input
               id="name"
               type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                placeholder={t.namePlaceholder}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              placeholder={t.namePlaceholder}
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="category" className="font-medium">
-              {t.categoryLabel}
-            </label>
+          <Field
+            label={t.categoryLabel}
+            htmlFor="category"
+          >
             <select
               id="category"
               value={category}
@@ -214,13 +216,13 @@ export default function ServicesPage() {
               <option value="nails">{t.categoryNails}</option>
               <option value="massage">{t.categoryMassage}</option>
             </select>
-          </div>
+          </Field>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 text-sm">
-                <label htmlFor="duration" className="font-medium">
-                  {t.durationLabel}
-              </label>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Field
+              label={t.durationLabel}
+              htmlFor="duration"
+            >
               <input
                 id="duration"
                 type="number"
@@ -231,12 +233,12 @@ export default function ServicesPage() {
                 onChange={(e) => setDuration(Number(e.target.value) || 0)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2 text-sm">
-                <label htmlFor="price" className="font-medium">
-                  {t.priceLabel}
-              </label>
+            <Field
+              label={t.priceLabel}
+              htmlFor="price"
+            >
               <input
                 id="price"
                 type="number"
@@ -246,13 +248,13 @@ export default function ServicesPage() {
                 onChange={(e) => setPrice(Number(e.target.value) || 0)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-2 text-sm">
-            <label htmlFor="sort_order" className="font-medium">
-              {t.sortOrderLabel}
-            </label>
+          <Field
+            label={t.sortOrderLabel}
+            htmlFor="sort_order"
+          >
             <input
               id="sort_order"
               type="number"
@@ -262,7 +264,7 @@ export default function ServicesPage() {
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               placeholder="0"
             />
-          </div>
+          </Field>
 
           {error && (
             <ErrorMessage

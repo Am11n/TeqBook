@@ -12,6 +12,7 @@ import { updateSalon } from "@/lib/services/salons-service";
 import { uploadLogo } from "@/lib/services/storage-service";
 import { Upload, X, Eye } from "lucide-react";
 import Image from "next/image";
+import { BookingPreview } from "@/components/booking-preview";
 
 export default function BrandingSettingsPage() {
   const { locale } = useLocale();
@@ -189,6 +190,48 @@ export default function BrandingSettingsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Live Preview - shown first when active */}
+      {showPreview && salon?.slug && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Live Preview</h3>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPreview(false)}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Hide Preview
+            </Button>
+          </div>
+          <div className="border rounded-lg overflow-hidden bg-muted/50">
+            <BookingPreview
+              salonSlug={salon.slug}
+              theme={{
+                primary: primaryColor,
+                secondary: secondaryColor,
+                font: fontFamily,
+                logo_url: logoUrl || undefined,
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+            <span>
+              Preview shows how your booking page will look with the current theme settings
+            </span>
+            <a
+              href={`/book/${salon.slug}?preview=true`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              Open in new tab
+            </a>
+          </div>
+        </Card>
+      )}
+
+      {/* Branding Settings Card */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -197,14 +240,16 @@ export default function BrandingSettingsPage() {
               {t.brandingDescription}
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            {showPreview ? "Hide Preview" : "Show Preview"}
-          </Button>
+          {!showPreview && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPreview(true)}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Show Preview
+            </Button>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -374,24 +419,18 @@ export default function BrandingSettingsPage() {
         </form>
       </Card>
 
-      {/* Live Preview */}
-      {showPreview && salon?.slug && (
+      {/* Show error message if preview requested but no slug */}
+      {showPreview && !salon?.slug && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Live Preview</h3>
-          <div className="border rounded-lg overflow-hidden">
-            <iframe
-              src={`/book/${salon.slug}?preview=true`}
-              className="w-full h-[600px] border-0"
-              title="Booking page preview"
-              style={{
-                // Apply theme colors to iframe
-                // Note: This is a simplified preview - full theme application happens in the actual page
-              }}
-            />
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Preview is not available. Your salon needs a slug to show the preview.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              If you just created your salon, please refresh the page. If the problem persists, 
+              contact support.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Preview shows how your booking page will look with the current theme settings
-          </p>
         </Card>
       )}
     </div>

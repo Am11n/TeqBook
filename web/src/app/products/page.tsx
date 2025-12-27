@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
+import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import {
@@ -16,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Field } from "@/components/form/Field";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -214,32 +214,36 @@ export default function ProductsPage() {
 
   if (!isReady) {
     return (
-      <DashboardShell>
-        <PageHeader title={t.title} description={t.description} />
+      <PageLayout
+        title={t.title}
+        description={t.description}
+        showCard={false}
+      >
         <div className="space-y-4">
           <div className="h-8 w-32 animate-pulse rounded bg-muted" />
           <div className="h-64 w-full animate-pulse rounded bg-muted" />
         </div>
-      </DashboardShell>
+      </PageLayout>
     );
   }
 
   return (
-    <DashboardShell>
-      <PageHeader title={t.title} description={t.description} />
-
-      {error && (
-        <Card className="p-4 border-destructive bg-destructive/10">
-          <p className="text-sm text-destructive">{error}</p>
-        </Card>
-      )}
-
-      <TableToolbar>
-        <Button onClick={openCreateModal} className="gap-2">
+    <PageLayout
+      title={t.title}
+      description={t.description}
+      actions={
+        <Button onClick={openCreateModal} size="sm" className="gap-2">
           <Plus className="h-4 w-4" />
           {t.create}
         </Button>
-      </TableToolbar>
+      }
+      showCard={false}
+    >
+      {error && (
+        <Card className="p-4 border-destructive bg-destructive/10 mb-4">
+          <p className="text-sm text-destructive">{error}</p>
+        </Card>
+      )}
 
       {loading ? (
         <div className="space-y-4">
@@ -324,11 +328,12 @@ export default function ProductsPage() {
               {editingProduct ? t.edit : t.create}
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                  {t.name}
-                </label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <Field
+                label={t.name}
+                htmlFor="name"
+                required
+              >
                 <Input
                   id="name"
                   type="text"
@@ -337,12 +342,13 @@ export default function ProductsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t.namePlaceholder}
                 />
-              </div>
+              </Field>
 
-              <div className="space-y-2">
-                <label htmlFor="price" className="text-sm font-medium">
-                  {t.price} (NOK)
-                </label>
+              <Field
+                label={`${t.price} (NOK)`}
+                htmlFor="price"
+                required
+              >
                 <Input
                   id="price"
                   type="number"
@@ -353,12 +359,13 @@ export default function ProductsPage() {
                   onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
                   placeholder={t.pricePlaceholder}
                 />
-              </div>
+              </Field>
 
-              <div className="space-y-2">
-                <label htmlFor="stock" className="text-sm font-medium">
-                  {t.stock}
-                </label>
+              <Field
+                label={t.stock}
+                htmlFor="stock"
+                required
+              >
                 <Input
                   id="stock"
                   type="number"
@@ -368,12 +375,12 @@ export default function ProductsPage() {
                   onChange={(e) => setStock(parseInt(e.target.value, 10) || 0)}
                   placeholder={t.stockPlaceholder}
                 />
-              </div>
+              </Field>
 
-              <div className="space-y-2">
-                <label htmlFor="sku" className="text-sm font-medium">
-                  {t.sku} (Optional)
-                </label>
+              <Field
+                label={`${t.sku} (Optional)`}
+                htmlFor="sku"
+              >
                 <Input
                   id="sku"
                   type="text"
@@ -381,7 +388,7 @@ export default function ProductsPage() {
                   onChange={(e) => setSku(e.target.value)}
                   placeholder={t.skuPlaceholder}
                 />
-              </div>
+              </Field>
 
               <div className="flex items-center gap-2">
                 <input
@@ -408,7 +415,7 @@ export default function ProductsPage() {
           </Card>
         </div>
       )}
-    </DashboardShell>
+    </PageLayout>
   );
 }
 
