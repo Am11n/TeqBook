@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -17,36 +18,7 @@ import type { CalendarBooking } from "@/lib/types";
 export default function CalendarPage() {
   const { locale } = useLocale();
   const router = useRouter();
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
+  const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].calendar;
   const { salon, loading: salonLoading, error: salonError, isReady, user } = useCurrentSalon();
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);

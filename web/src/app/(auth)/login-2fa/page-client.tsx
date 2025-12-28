@@ -6,65 +6,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { challengeTOTP, verifyTOTPChallenge } from "@/lib/services/two-factor-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
-import { useLocale } from "@/components/locale-provider";
-import { translations } from "@/i18n/translations";
-import { logSecurity, logError } from "@/lib/services/logger";
+import { getCurrentUser } from "@/lib/services/auth-service";
+import { logSecurity } from "@/lib/services/logger";
 import { initSession } from "@/lib/services/session-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase-client";
+import { Field } from "@/components/form/Field";
 
 export default function Login2FAPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { locale } = useLocale();
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
-  const t = translations[appLocale].login;
 
   const factorId = searchParams.get("factorId");
   const [code, setCode] = useState("");
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Challenge TOTP when component mounts
-    if (factorId) {
-      handleChallenge();
-    } else {
-      setError("Missing factor ID. Please try logging in again.");
-      setStatus("error");
-    }
-  }, [factorId]);
 
   async function handleChallenge() {
     if (!factorId) return;
@@ -83,6 +40,17 @@ export default function Login2FAPageClient() {
     setChallengeId(challengeData.challengeId);
     setStatus("idle");
   }
+
+  useEffect(() => {
+    // Challenge TOTP when component mounts
+    if (factorId) {
+      handleChallenge();
+    } else {
+      setError("Missing factor ID. Please try logging in again.");
+      setStatus("error");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factorId]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -107,7 +75,7 @@ export default function Login2FAPageClient() {
     logSecurity("Successful 2FA verification", { challengeId });
 
     // Get user profile to determine redirect
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: user, error: userError } = await getCurrentUser();
     if (userError || !user) {
       setError("Failed to get user information");
       setStatus("error");
@@ -174,11 +142,13 @@ export default function Login2FAPageClient() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-slate-700 mb-2">
-                Authentication Code
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Field
+              label="Authentication Code"
+              htmlFor="code"
+              required
+              error={error || undefined}
+            >
               <Input
                 id="code"
                 type="text"
@@ -195,7 +165,7 @@ export default function Login2FAPageClient() {
                 disabled={status === "loading" || !challengeId}
                 autoFocus
               />
-            </div>
+            </Field>
 
             <Button
               type="submit"

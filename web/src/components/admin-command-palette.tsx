@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -108,6 +108,13 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
     return () => clearTimeout(timeoutId);
   }, [query, open]);
 
+  const handleSelect = useCallback((result: SearchResult) => {
+    if (result.href) {
+      router.push(result.href);
+      onClose();
+    }
+  }, [router, onClose]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!open) return;
@@ -131,8 +138,7 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, results, selectedIndex, onClose]);
+  }, [open, results, selectedIndex, onClose, handleSelect]);
 
   // Reset selected index when results change
   useEffect(() => {
@@ -148,13 +154,6 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
       setResults(adminNavigationItems);
     }
   }, [open]);
-
-  const handleSelect = (result: SearchResult) => {
-    if (result.href) {
-      router.push(result.href);
-      onClose();
-    }
-  };
 
   if (!open) return null;
 

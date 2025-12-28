@@ -211,16 +211,16 @@ export default function TestBillingPage() {
     setLoading(false);
   };
 
-  // Debug info
-  useEffect(() => {
-    console.log("Test Billing Page State:", {
-      isReady,
-      contextLoading,
-      hasSalon: !!salon,
-      salonId: salon?.id,
-      contextError,
-    });
-  }, [isReady, contextLoading, salon, contextError]);
+  // Debug info removed for production
+  // useEffect(() => {
+  //   console.log("Test Billing Page State:", {
+  //     isReady,
+  //     contextLoading,
+  //     hasSalon: !!salon,
+  //     salonId: salon?.id,
+  //     contextError,
+  //   });
+  // }, [isReady, contextLoading, salon, contextError]);
 
   if (contextLoading) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { searchSalonEntities } from "@/lib/services/search-service";
@@ -159,6 +159,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     return () => clearTimeout(timeoutId);
   }, [query, open, salon?.id]);
 
+  const handleSelect = useCallback((result: SearchResult) => {
+    if (result.href) {
+      router.push(result.href);
+      onClose();
+    }
+  }, [router, onClose]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!open) return;
@@ -182,8 +189,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, results, selectedIndex, onClose]);
+  }, [open, results, selectedIndex, onClose, handleSelect]);
 
   // Reset selected index when results change
   useEffect(() => {
@@ -200,12 +206,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }
   }, [open]);
 
-  const handleSelect = (result: SearchResult) => {
-    if (result.href) {
-      router.push(result.href);
-      onClose();
-    }
-  };
 
   if (!open) return null;
 

@@ -9,6 +9,9 @@ import { supabase } from "@/lib/supabase-client";
 import type { User } from "@supabase/supabase-js";
 import { logSecurity, logError } from "@/lib/services/logger";
 
+// Re-export User type for use in UI layer
+export type { User };
+
 /**
  * Get current authenticated user
  */
@@ -353,5 +356,23 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
       error: err instanceof Error ? err.message : "Unknown error",
     };
   }
+}
+
+/**
+ * Subscribe to authentication state changes
+ * Returns an unsubscribe function
+ */
+export function subscribeToAuthChanges(
+  callback: (event: "SIGNED_IN" | "SIGNED_OUT" | "TOKEN_REFRESHED" | "USER_UPDATED" | "PASSWORD_RECOVERY", session: unknown) => void
+): () => void {
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
 }
 

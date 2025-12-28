@@ -9,16 +9,12 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { getCurrentUser } from "@/lib/services/auth-service";
+import { getCurrentUser, subscribeToAuthChanges, type User } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { getSalonByIdForUser } from "@/lib/services/salons-service";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingScreen } from "@/components/loading-screen";
-// eslint-disable-next-line no-restricted-imports
-import type { User } from "@supabase/supabase-js";
 import type { AppLocale } from "@/i18n/translations";
-// eslint-disable-next-line no-restricted-imports
-import { supabase } from "@/lib/supabase-client";
 
 // Component is client-side only
 
@@ -194,14 +190,12 @@ export function SalonProvider({ children }: SalonProviderProps) {
 
     // Listen for auth changes
     try {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(() => {
+      const unsubscribe = subscribeToAuthChanges(() => {
         loadSalonData();
       });
 
       return () => {
-        subscription.unsubscribe();
+        unsubscribe();
       };
     } catch (err) {
       console.warn("Error setting up auth listener:", err);

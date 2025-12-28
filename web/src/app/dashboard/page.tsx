@@ -69,8 +69,7 @@ export default function DashboardPage() {
       const name = user.email.split("@")[0];
       setOwnerName(name.charAt(0).toUpperCase() + name.slice(1));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.email]);
 
   const loadPerformanceData = async (salonId: string) => {
     const now = new Date();

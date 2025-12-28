@@ -73,7 +73,9 @@ const nextConfig: NextConfig = {
             shared: {
               name(module: { resource?: string }) {
                 if (!module.resource) return "shared-unknown";
-                const hash = require("crypto").createHash("sha1");
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
+                const crypto = require("crypto");
+                const hash = crypto.createHash("sha1");
                 hash.update(module.resource);
                 return hash.digest("hex").substring(0, 8);
               },

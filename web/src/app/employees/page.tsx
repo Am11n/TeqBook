@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useCallback } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
   getEmployeesWithServicesMap,
@@ -30,36 +31,7 @@ import type { Employee, Service } from "@/lib/types";
 
 export default function EmployeesPage() {
   const { locale } = useLocale();
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
+  const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].employees;
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -76,15 +48,15 @@ export default function EmployeesPage() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  async function loadEmployees() {
-      setLoading(true);
-      setError(null);
+  const loadEmployees = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
     if (!salon?.id) {
       setError(t.noSalon);
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
 
     const [
       { data: employeesData, error: employeesError },
@@ -96,21 +68,21 @@ export default function EmployeesPage() {
 
     if (employeesError || servicesError) {
       setError(employeesError ?? servicesError ?? "Kunne ikke laste data");
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
 
     if (!employeesData || !servicesData) {
       setError("Kunne ikke laste data");
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
 
     setEmployees(employeesData.employees);
     setServices(servicesData);
     setEmployeeServicesMap(employeesData.servicesMap);
-      setLoading(false);
-    }
+    setLoading(false);
+  }, [salon?.id, t.noSalon]);
 
   useEffect(() => {
     if (!isReady) {
@@ -126,8 +98,7 @@ export default function EmployeesPage() {
     }
 
     loadEmployees();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon]);
+  }, [isReady, salonLoading, salonError, t.noSalon, loadEmployees]);
 
   async function handleAddEmployee(e: FormEvent) {
     e.preventDefault();

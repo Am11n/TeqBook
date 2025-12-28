@@ -15,7 +15,7 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
-      // Prevent direct Supabase imports in UI layer
+      // Prevent direct Supabase imports in UI layer (scripts are allowed)
       "no-restricted-imports": [
         "error",
         {
@@ -24,7 +24,6 @@ const eslintConfig = defineConfig([
               group: ["@/lib/supabase-client", "@supabase/supabase-js"],
               message:
                 "Direct Supabase imports are not allowed in UI layer. Use services instead: import from '@/lib/services/*'",
-              // Only apply to UI layer files
               importNames: undefined,
             },
           ],
@@ -33,14 +32,12 @@ const eslintConfig = defineConfig([
               name: "@/lib/supabase-client",
               message:
                 "Direct Supabase imports are not allowed in UI layer. Use services instead: import from '@/lib/services/*'",
-              // Only restrict in app and components directories
               importNames: undefined,
             },
             {
               name: "@supabase/supabase-js",
               message:
                 "Direct Supabase imports are not allowed in UI layer. Use services instead: import from '@/lib/services/*'",
-              // Only restrict in app and components directories
               importNames: undefined,
             },
           ],
@@ -62,6 +59,13 @@ const eslintConfig = defineConfig([
       "src/components/**/*.{ts,tsx}",
       "!src/components/form/**/*.{ts,tsx}",
     ],
+  },
+  // Allow scripts to use Supabase directly
+  {
+    rules: {
+      "no-restricted-imports": "off",
+    },
+    files: ["scripts/**/*.{ts,tsx}"],
   },
 ]);
 

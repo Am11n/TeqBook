@@ -8,6 +8,7 @@ import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 // Lazy load framer-motion for better initial load performance
 import dynamic from "next/dynamic";
 const MotionDiv = dynamic(
@@ -30,36 +31,7 @@ const MAX_LOGIN_ATTEMPTS = 5;
 export default function LoginPage() {
   const router = useRouter();
   const { locale } = useLocale();
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
+  const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].login;
 
   const [email, setEmail] = useState("");
