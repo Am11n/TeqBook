@@ -6,7 +6,7 @@
 // but this service provides a clean API for auth operations
 
 import { supabase } from "@/lib/supabase-client";
-import type { User } from "@supabase/supabase-js";
+import type { User, AuthChangeEvent } from "@supabase/supabase-js";
 import { logSecurity, logError } from "@/lib/services/logger";
 
 // Re-export User type for use in UI layer
@@ -363,7 +363,7 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
  * Returns an unsubscribe function
  */
 export function subscribeToAuthChanges(
-  callback: (event: "SIGNED_IN" | "SIGNED_OUT" | "TOKEN_REFRESHED" | "USER_UPDATED" | "PASSWORD_RECOVERY", session: unknown) => void
+  callback: (event: AuthChangeEvent, session: unknown) => void
 ): () => void {
   const {
     data: { subscription },
