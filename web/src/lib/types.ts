@@ -202,8 +202,15 @@ export type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
-  supported_languages?: string[];
-  default_language?: string;
+  supported_languages?: string[] | null;
+  default_language?: string | null;
+  theme?: {
+    primary?: string;
+    secondary?: string;
+    font?: string;
+    logo_url?: string;
+    presets?: string[];
+  } | null;
   plan?: PlanType | null;
   // Billing fields (for future Stripe integration)
   billing_customer_id?: string | null;

@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Field } from "@/components/form/Field";
-import type { SalonType, AppLocale } from "@/lib/utils/onboarding/onboarding-utils";
+import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
+import type { AppLocale } from "@/i18n/translations";
 
 interface OnboardingStep1Props {
   name: string;

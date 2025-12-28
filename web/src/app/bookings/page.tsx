@@ -10,6 +10,7 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { TableToolbar } from "@/components/table-toolbar";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { useBookings } from "@/lib/hooks/bookings/useBookings";
 import { BookingsTable } from "@/components/bookings/BookingsTable";
 import { BookingsCardView } from "@/components/bookings/BookingsCardView";
@@ -22,6 +23,7 @@ export default function BookingsPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].bookings;
+  const { salon } = useCurrentSalon();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -59,10 +61,10 @@ export default function BookingsPage() {
   };
 
   const handleConfirmCancel = async (reason: string) => {
-    if (!bookingToCancel) return;
+    if (!bookingToCancel || !salon?.id) return;
 
     const { error: cancelError } = await cancelBooking(
-      bookingToCancel.salon_id,
+      salon.id,
       bookingToCancel.id,
       reason || null
     );

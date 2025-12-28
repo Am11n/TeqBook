@@ -24,7 +24,7 @@ interface ProfileCardProps {
     is_superadmin?: boolean;
   } | null;
   uploadingAvatar: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveAvatar: () => void;
 }

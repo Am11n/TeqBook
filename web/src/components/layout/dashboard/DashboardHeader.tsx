@@ -8,6 +8,7 @@ import { NotificationCenter } from "@/components/notification-center";
 import { useLocale } from "@/components/locale-provider";
 import { updateSalonSettings } from "@/lib/services/salons-service";
 import { UserMenu } from "./UserMenu";
+import type { Salon } from "@/lib/types";
 import type { AppLocale } from "@/i18n/translations";
 
 interface DashboardHeaderProps {

@@ -89,7 +89,7 @@ export function useProfile() {
     setError(null);
 
     try {
-      const { data: uploadData, error: uploadError } = await uploadAvatar(user.id, file);
+      const { data: uploadData, error: uploadError } = await uploadAvatar(file, user.id);
       if (uploadError || !uploadData) {
         setError(uploadError || "Failed to upload avatar");
         setUploadingAvatar(false);
@@ -112,7 +112,7 @@ export function useProfile() {
     setError(null);
 
     try {
-      const { error: deleteError } = await deleteAvatar(user.id);
+      const { error: deleteError } = await deleteAvatar(avatarUrl, user.id);
       if (deleteError) {
         setError(deleteError);
         setUploadingAvatar(false);

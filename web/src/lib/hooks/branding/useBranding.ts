@@ -24,11 +24,11 @@ export function useBranding() {
   // Load existing branding settings
   useEffect(() => {
     if (salon) {
-      setPrimaryColor(salon.branding_primary_color || "#3b82f6");
-      setSecondaryColor(salon.branding_secondary_color || "#8b5cf6");
-      setFontFamily(salon.branding_font_family || "Inter");
-      setLogoUrl(salon.branding_logo_url || "");
-      setLogoPreview(salon.branding_logo_url || null);
+      setPrimaryColor(salon.theme?.primary || "#3b82f6");
+      setSecondaryColor(salon.theme?.secondary || "#8b5cf6");
+      setFontFamily(salon.theme?.font || "Inter");
+      setLogoUrl(salon.theme?.logo_url || "");
+      setLogoPreview(salon.theme?.logo_url || null);
     }
   }, [salon]);
 
@@ -52,7 +52,7 @@ export function useBranding() {
     setError(null);
 
     try {
-      const { data: uploadData, error: uploadError } = await uploadLogo(salon.id, file);
+      const { data: uploadData, error: uploadError } = await uploadLogo(file, salon.id);
       if (uploadError || !uploadData) {
         setError(uploadError || "Failed to upload logo");
         setUploadingLogo(false);
@@ -78,10 +78,12 @@ export function useBranding() {
 
     try {
       const { error: updateError } = await updateSalon(salon.id, {
-        branding_primary_color: primaryColor,
-        branding_secondary_color: secondaryColor,
-        branding_font_family: fontFamily,
-        branding_logo_url: logoUrl || null,
+        theme: {
+          primary: primaryColor,
+          secondary: secondaryColor,
+          font: fontFamily,
+          logo_url: logoUrl || undefined,
+        },
       });
 
       if (updateError) {

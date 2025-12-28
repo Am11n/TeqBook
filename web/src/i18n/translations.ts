@@ -90,8 +90,8 @@ export type SignUpMessages = {
   bullet1: string;
   bullet2: string;
   bullet3: string;
-  formSubtitle: string;
   trustLine: string;
+  formSubtitle: string;
   passwordPlaceholder: string;
   passwordHint: string;
   termsAgreement: string;

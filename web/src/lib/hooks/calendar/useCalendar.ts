@@ -99,7 +99,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
 
     const byEmployee: Record<string, CalendarBooking[]> = {};
     filtered.forEach((b) => {
-      const empId = b.employee_id || "unknown";
+      const empId = b.employees?.id || "unknown";
       if (filterEmployeeId === "all" || empId === filterEmployeeId) {
         if (!byEmployee[empId]) {
           byEmployee[empId] = [];

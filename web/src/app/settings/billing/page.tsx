@@ -55,7 +55,7 @@ export default function BillingSettingsPage() {
 
     const result = await handleChangePlan(selectedPlan);
 
-    if (result.success) {
+    if (result?.success) {
       if (result.clientSecret) {
         setClientSecret(result.clientSecret);
         setPaymentFormType("subscription");

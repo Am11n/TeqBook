@@ -9,7 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CheckCircle2 } from "lucide-react";
-import type { Plan, PlanType } from "@/lib/utils/billing/billing-utils";
+import type { Plan } from "@/lib/utils/billing/billing-utils";
+import type { PlanType } from "@/lib/types";
 
 interface PlanSelectionDialogProps {
   open: boolean;

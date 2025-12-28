@@ -147,7 +147,7 @@ export function SignupForm({
             />
             <button
               type="button"
-              onClick={() => setShowPassword((v) => !v)}
+              onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
             >
               {showPassword ? "Hide" : "Show"}
@@ -170,7 +170,7 @@ export function SignupForm({
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword((v) => !v)}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
             >
               {showConfirmPassword ? "Hide" : "Show"}

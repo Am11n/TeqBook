@@ -152,7 +152,7 @@ export type Salon = {
   preferred_language: string | null;
   salon_type?: string | null;
   whatsapp_number?: string | null;
-  supported_languages?: string[];
+  supported_languages?: string[] | null;
   default_language?: string;
 };
 

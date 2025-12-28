@@ -15,6 +15,7 @@ import { getSalonByIdForUser } from "@/lib/services/salons-service";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingScreen } from "@/components/loading-screen";
 import type { AppLocale } from "@/i18n/translations";
+import type { Salon } from "@/lib/types";
 
 // Component is client-side only
 
@@ -27,31 +28,6 @@ type Profile = {
   first_name?: string | null;
   last_name?: string | null;
   avatar_url?: string | null;
-};
-
-type Salon = {
-  id: string;
-  name: string;
-  slug: string | null;
-  is_public: boolean;
-  preferred_language: string | null;
-  salon_type?: string | null;
-  whatsapp_number?: string | null;
-  supported_languages?: string[] | null;
-  default_language?: string | null;
-  theme?: {
-    primary?: string;
-    secondary?: string;
-    font?: string;
-    logo_url?: string;
-    presets?: string[];
-  } | null;
-  plan?: "starter" | "pro" | "business" | null;
-  // Billing fields (for future Stripe integration)
-  billing_customer_id?: string | null;
-  billing_subscription_id?: string | null;
-  current_period_end?: string | null;
-  trial_end?: string | null;
 };
 
 type SalonContextValue =

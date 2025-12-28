@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { SalonType, AppLocale } from "@/lib/utils/onboarding/onboarding-utils";
+import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
+import type { AppLocale } from "@/i18n/translations";
 
 interface OnboardingStep3Props {
   name: string;

@@ -73,7 +73,7 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
                 <AvatarImage src={profile.avatar_url} alt="Profile avatar" />
               )}
               <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400 text-xs font-semibold text-white">
-                {getInitials(userEmail)}
+                {getInitials(userEmail || "")}
               </AvatarFallback>
             </Avatar>
           </button>

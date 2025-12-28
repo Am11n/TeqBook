@@ -344,6 +344,7 @@ For any public-facing pages:
 
 ### Requirements
 
+- **Type checks MUST run before build** - `npm run type-check` catches syntax errors early
 - Linting enforced
 - Type checks enforced
 - Tests enforced
@@ -351,6 +352,29 @@ For any public-facing pages:
 - Migrations automated
 - Rollback strategy defined
 - Zero-downtime deploy preferred
+
+### Pre-Commit Checklist (MANDATORY)
+
+**Before committing ANY code, you MUST run:**
+
+```bash
+npm run pre-commit
+```
+
+This runs:
+1. `type-check` - Catches TypeScript syntax errors (prevents broken builds)
+2. `lint` - Catches code quality issues
+3. `format:check` - Ensures consistent formatting
+
+**If any check fails, fix the issues before committing.**
+
+### Build Process
+
+The `build` script automatically runs type-check first:
+- ✅ `npm run build` - Runs type-check, then builds (safe)
+- ⚠️ `npm run build:skip-typecheck` - Skips type-check (only for emergency hotfixes)
+
+**NEVER commit code that fails `npm run type-check`.**
 
 **Manual deploys are a liability.**
 

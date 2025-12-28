@@ -236,7 +236,7 @@ export function LandingPricing({
                       {addon.isMultilingual && (
                         <div className="h-12 relative overflow-hidden w-full">
                           <LogoLoop
-                            logos={languageLogos}
+                            logos={[...languageLogos]}
                             speed={40}
                             direction="left"
                             logoHeight={24}

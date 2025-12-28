@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
@@ -26,6 +27,7 @@ export default function ShiftsPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].shifts;
+  const { salon } = useCurrentSalon();
   const [viewMode, setViewMode] = useState<"list" | "week">("week");
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
 
@@ -55,8 +57,9 @@ export default function ShiftsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this shift?")) return;
+    if (!salon?.id) return;
 
-    const { error: deleteError } = await deleteShift(shifts.find((s) => s.id === id)?.salon_id || "", id);
+    const { error: deleteError } = await deleteShift(salon.id, id);
 
     if (deleteError) {
       setError(deleteError);

@@ -22,7 +22,7 @@ interface BrandingFormProps {
   logoPreview: string | null;
   setLogoPreview: (preview: string | null) => void;
   uploadingLogo: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   presets: BrandingPreset[];
   onApplyPreset: (preset: BrandingPreset) => void;
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;

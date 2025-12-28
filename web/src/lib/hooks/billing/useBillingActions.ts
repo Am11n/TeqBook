@@ -17,8 +17,10 @@ export function useBillingActions() {
   const hasSubscription = !!salon?.billing_subscription_id;
   const hasCustomer = !!salon?.billing_customer_id;
 
-  const handleChangePlan = async (selectedPlan: PlanType) => {
-    if (!salon?.id) return;
+  const handleChangePlan = async (selectedPlan: PlanType): Promise<{ success: boolean; clientSecret: string | null }> => {
+    if (!salon?.id) {
+      return { success: false, clientSecret: null };
+    }
 
     setActionLoading(true);
     setError(null);

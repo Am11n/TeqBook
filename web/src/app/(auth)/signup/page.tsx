@@ -30,8 +30,8 @@ export default function SignUpPage() {
         <div className="relative grid gap-8 sm:gap-12 p-8 md:p-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-16">
           <SignupBranding
             translations={{
-              headline: signupT.headline,
-              subheadline: signupT.subheadline,
+              headline: signupT.createAccountTitle,
+              subheadline: signupT.createAccountDescription,
               bullet1: signupT.bullet1,
               bullet2: signupT.bullet2,
               bullet3: signupT.bullet3,
