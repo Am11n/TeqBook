@@ -77,12 +77,38 @@ Separate the following layers:
 
 ### Project Structure
 
-- Consistent folder structure
+**MANDATORY:** Follow the feature-based organization pattern documented in `docs/architecture/folder-structure.md`.
+
+#### Feature-Based Organization (Required for Large Features)
+
+For features with 3+ components, custom hooks, or feature-specific utilities:
+
+```
+app/{feature}/page.tsx              # ✅ ONLY the main page file
+components/{feature}/                # ✅ All UI components
+lib/hooks/{feature}/                 # ✅ All custom hooks
+lib/utils/{feature}/                 # ✅ All utility functions
+```
+
+**Rules:**
+- ❌ **NEVER** create `components/`, `hooks/`, or `lib/` folders inside `app/{feature}/`
+- ✅ **ALWAYS** use absolute imports: `@/components/{feature}/`, `@/lib/hooks/{feature}/`
+- ✅ **ALWAYS** group related code by feature name
+- ✅ **ALWAYS** keep page files minimal (delegate to components/hooks)
+
+**Examples:**
+- ✅ `app/bookings/page.tsx` + `components/bookings/` + `lib/hooks/bookings/`
+- ✅ `app/landing/page.tsx` + `components/landing/`
+- ❌ `app/bookings/components/` (WRONG - use `components/bookings/`)
+
+#### General Structure Rules
+
+- Consistent folder structure (see `docs/architecture/folder-structure.md`)
 - Predictable naming conventions
 - Clear separation of:
-  - Features
-  - Shared components
-  - Utilities
+  - Features (feature-based organization)
+  - Shared components (`components/ui/`, `components/layout/`)
+  - Utilities (`lib/utils/`)
 - **No circular dependencies**
 - **No "misc" or "helpers" dumping grounds**
 

@@ -8,6 +8,71 @@ import { supabase } from "@/lib/supabase-client";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
 
+// Helper function to safely fetch and parse JSON
+async function safeFetch(
+  url: string,
+  options: RequestInit
+): Promise<{ data: any; error: string | null }> {
+  try {
+    // Validate URL
+    if (!SUPABASE_URL) {
+      return {
+        data: null,
+        error: "Supabase URL is not configured. Please check your environment variables.",
+      };
+    }
+
+    const response = await fetch(url, options);
+
+    // Check if response is ok before trying to parse JSON
+    if (!response.ok) {
+      // Try to parse error response
+      let errorMessage = `Request failed with status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || errorMessage;
+        if (errorData.details) {
+          errorMessage += `: ${errorData.details}`;
+        }
+      } catch {
+        // If JSON parsing fails, try to get text
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        } catch {
+          // Ignore text parsing errors
+        }
+      }
+      return { data: null, error: errorMessage };
+    }
+
+    // Parse successful response
+    try {
+      const result = await response.json();
+      return { data: result, error: null };
+    } catch (parseError) {
+      return {
+        data: null,
+        error: `Failed to parse response: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
+      };
+    }
+  } catch (error) {
+    // Handle network errors, CORS errors, etc.
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      return {
+        data: null,
+        error: "Network error: Unable to connect to the server. Please check your internet connection and ensure the Edge Functions are running.",
+      };
+    }
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
 /**
  * Create a Stripe customer for a salon
  */
@@ -25,28 +90,25 @@ export async function createStripeCustomer(
       return { data: null, error: "Not authenticated" };
     }
 
-    const response = await fetch(`${EDGE_FUNCTION_BASE}/billing-create-customer`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      },
-      body: JSON.stringify({
-        salon_id: salonId,
-        email,
-        name,
-      }),
-    });
+    const { data: result, error: fetchError } = await safeFetch(
+      `${EDGE_FUNCTION_BASE}/billing-create-customer`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          email,
+          name,
+        }),
+      }
+    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      // Provide more detailed error message
-      const errorMessage = result.error 
-        ? `${result.error}${result.details ? `: ${result.details}` : ""}`
-        : `Failed to create customer (${response.status})`;
-      return { data: null, error: errorMessage };
+    if (fetchError) {
+      return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };
@@ -84,24 +146,25 @@ export async function createStripeSubscription(
       return { data: null, error: "Not authenticated" };
     }
 
-    const response = await fetch(`${EDGE_FUNCTION_BASE}/billing-create-subscription`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      },
-      body: JSON.stringify({
-        salon_id: salonId,
-        customer_id: customerId,
-        plan,
-      }),
-    });
+    const { data: result, error: fetchError } = await safeFetch(
+      `${EDGE_FUNCTION_BASE}/billing-create-subscription`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          customer_id: customerId,
+          plan,
+        }),
+      }
+    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      return { data: null, error: result.error || "Failed to create subscription" };
+    if (fetchError) {
+      return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };
@@ -138,28 +201,25 @@ export async function updateSubscriptionPlan(
       return { data: null, error: "Not authenticated" };
     }
 
-    const response = await fetch(`${EDGE_FUNCTION_BASE}/billing-update-plan`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      },
-      body: JSON.stringify({
-        salon_id: salonId,
-        subscription_id: subscriptionId,
-        new_plan: newPlan,
-      }),
-    });
+    const { data: result, error: fetchError } = await safeFetch(
+      `${EDGE_FUNCTION_BASE}/billing-update-plan`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          subscription_id: subscriptionId,
+          new_plan: newPlan,
+        }),
+      }
+    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      // Provide more detailed error message
-      const errorMessage = result.error 
-        ? `${result.error}${result.details ? `: ${result.details}` : ""}${result.hint ? ` (${result.hint})` : ""}`
-        : `Failed to update plan (${response.status})`;
-      return { data: null, error: errorMessage };
+    if (fetchError) {
+      return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };
@@ -195,23 +255,24 @@ export async function cancelSubscription(
       return { data: null, error: "Not authenticated" };
     }
 
-    const response = await fetch(`${EDGE_FUNCTION_BASE}/billing-cancel-subscription`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      },
-      body: JSON.stringify({
-        salon_id: salonId,
-        subscription_id: subscriptionId,
-      }),
-    });
+    const { data: result, error: fetchError } = await safeFetch(
+      `${EDGE_FUNCTION_BASE}/billing-cancel-subscription`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          subscription_id: subscriptionId,
+        }),
+      }
+    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      return { data: null, error: result.error || "Failed to cancel subscription" };
+    if (fetchError) {
+      return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };
@@ -245,23 +306,24 @@ export async function getPaymentMethodSetupIntent(
       return { data: null, error: "Not authenticated" };
     }
 
-    const response = await fetch(`${EDGE_FUNCTION_BASE}/billing-update-payment-method`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      },
-      body: JSON.stringify({
-        salon_id: salonId,
-        customer_id: customerId,
-      }),
-    });
+    const { data: result, error: fetchError } = await safeFetch(
+      `${EDGE_FUNCTION_BASE}/billing-update-payment-method`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          customer_id: customerId,
+        }),
+      }
+    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      return { data: null, error: result.error || "Failed to create setup intent" };
+    if (fetchError) {
+      return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };

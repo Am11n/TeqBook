@@ -1,0 +1,70 @@
+import type { CalendarBooking } from "@/lib/types";
+
+/**
+ * Format day heading
+ */
+export function formatDayHeading(dateString: string, locale: string): string {
+  const date = new Date(dateString + "T00:00:00");
+  return date.toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+/**
+ * Format time range for a booking
+ */
+export function formatTimeRange(booking: CalendarBooking): string {
+  const start = new Date(booking.start_time);
+  const end = new Date(booking.end_time);
+  return `${start.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })} - ${end.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
+}
+
+/**
+ * Get status color class
+ */
+export function getStatusColor(status: string | null | undefined): string {
+  switch (status) {
+    case "confirmed":
+      return "bg-blue-50 border-blue-200";
+    case "completed":
+      return "bg-green-50 border-green-200";
+    case "cancelled":
+      return "bg-red-50 border-red-200";
+    case "no-show":
+      return "bg-orange-50 border-orange-200";
+    default:
+      return "bg-gray-50 border-gray-200";
+  }
+}
+
+/**
+ * Get week dates from start date
+ */
+export function getWeekDates(startDate: string): string[] {
+  const dates: string[] = [];
+  const start = new Date(startDate + "T00:00:00");
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + i);
+    dates.push(date.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+/**
+ * Change date by offset
+ */
+export function changeDate(currentDate: string, offset: number): string {
+  const date = new Date(currentDate + "T00:00:00");
+  date.setDate(date.getDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+

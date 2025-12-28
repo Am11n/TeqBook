@@ -182,27 +182,52 @@ Akseptanse
 ## 7) Splitt store filer (vedlikeholdbarhet)
 
 ### Landing
-- [ ] `web/src/app/landing/page.tsx` (2547 linjer - stor refactoring nødvendig)
-  - [ ] Flytt `copy` objekt til `web/src/components/landing/content.ts`
-  - [ ] Flytt seksjoner til `web/src/components/landing/**`
-  - [ ] Flytt statiske data til `constants.ts` / `content.ts`
-  - **Note**: Dette krever omfattende refactoring og bør gjøres i egen PR
+- [x] `web/src/app/landing/page.tsx` (2547 → 136 linjer - fullført)
+  - [x] Flytt `copy` objekt til `web/src/components/landing/landing-copy.ts`
+  - [x] Flytt seksjoner til `web/src/components/landing/**`
+    - [x] `LandingHeader.tsx` - Header/navigation
+    - [x] `LandingMobileMenu.tsx` - Mobile menu overlay
+    - [x] `LandingHero.tsx` - Hero section med floating cards
+    - [x] `LandingStats.tsx` - Stats section
+    - [x] `LandingPricing.tsx` - Pricing plans og add-ons
+    - [x] `LandingFAQ.tsx` - FAQ section
+    - [x] `LandingFooter.tsx` - Footer
+  - [x] Flytt statiske data til `constants.ts` (languageLogos)
 
 ### Bookings/Shifts
-- [ ] `web/src/app/bookings/page.tsx` (956 linjer)
-- [ ] `web/src/app/shifts/page.tsx`
-  - [ ] Del opp i:
-    - [ ] `components/`
-    - [ ] `hooks/`
-    - [ ] `lib/`
+- [x] `web/src/app/bookings/page.tsx` (956 → 214 linjer - fullført)
+  - [x] Del opp i:
+    - [x] `components/` - BookingsTable, BookingsCardView, CreateBookingDialog, CancelBookingDialog
+    - [x] `hooks/` - useBookings, useCreateBooking
+    - [x] `lib/` - bookings-utils (formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable)
+- [x] `web/src/app/shifts/page.tsx` (762 → 182 linjer - fullført)
+  - [x] Del opp i:
+    - [x] `components/` - CreateShiftForm, ShiftsWeekView, ShiftsListView, EditShiftDialog
+    - [x] `hooks/` - useShifts, useCreateShift, useEditShift
+    - [x] `lib/utils/` - shifts-utils (getWeekdays, formatWeekday, getWeekDates, getWeekdayNumber, getShiftsForDayAndEmployee, hasOverlappingShifts, getInitialWeekStart, changeWeek, goToTodayWeek)
 
 ### Dashboard shell
-- [ ] `web/src/components/layout/dashboard-shell.tsx`
-  - [ ] Splitt ut menydata, user menu, actions i egne komponenter
+- [x] `web/src/components/layout/dashboard-shell.tsx` (986 → 217 linjer - fullført)
+  - [x] `lib/utils/dashboard/dashboard-utils.ts` - getInitials utility
+  - [x] `lib/hooks/dashboard/useDashboardMenuItems.ts` - menu items hook
+  - [x] `components/layout/dashboard/NavLink.tsx` - NavLink component
+  - [x] `components/layout/dashboard/UserMenu.tsx` - UserMenu component
+  - [x] `components/layout/dashboard/DashboardHeader.tsx` - Header component
+  - [x] `components/layout/dashboard/DashboardSidebar.tsx` - Sidebar component
+  - [x] `components/layout/dashboard/MobileNavigation.tsx` - Mobile nav component
+  - [x] `components/layout/dashboard/SessionTimeoutDialog.tsx` - Session timeout dialog
 
 Akseptanse
-- [ ] Ingen `page.tsx` bør være > 400 linjer uten grunn.
-- [ ] Endringer blir enklere å teste og review'e.
+- [x] Regel definert: Ingen `page.tsx` bør være > 400 linjer uten grunn.
+  - [x] Refaktorert: bookings (957→214), shifts (762→182), landing (902→136), dashboard-shell (986→217)
+  - [x] Refaktorert: billing (701→161), onboarding (701→182), dashboard (657→122), reports (606→89), security (575→48)
+  - [x] Refaktorert: employees (480→113), services (452→119), calendar (434→116), profile (434→97), signup (428→87), branding (438→66), products (421→145), test-billing (403→86)
+  - [x] Audit opprettet: `large-pages-audit.md` og `page-size-compliance.md`
+  - [x] **Alle `page.tsx` filer er nå < 400 linjer!** ✅
+- [x] Endringer blir enklere å teste og review'e.
+  - [x] Feature-based organization implementert og dokumentert
+  - [x] Komponenter, hooks og utils er separert i egne mapper
+  - [x] Struktur dokumentert i `docs/architecture/folder-structure.md`
 
 ---
 

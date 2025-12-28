@@ -173,23 +173,153 @@ web/
 
 ---
 
+## Feature-Based Organization
+
+For større features med flere komponenter, hooks og utilities, følger vi en **feature-based struktur** som grupperer relatert kode sammen.
+
+### Strukturprinsipp
+
+```
+web/src/
+├── app/
+│   └── {feature}/
+│       └── page.tsx              # ✅ Bare hovedfil (Next.js page)
+│
+├── components/
+│   └── {feature}/                # ✅ Alle UI-komponenter for featuren
+│       ├── ComponentA.tsx
+│       ├── ComponentB.tsx
+│       └── ComponentDialog.tsx
+│
+├── lib/
+│   ├── hooks/
+│   │   └── {feature}/            # ✅ Alle custom hooks for featuren
+│   │       ├── useFeature.ts
+│   │       └── useFeatureAction.ts
+│   │
+│   └── utils/
+│       └── {feature}/             # ✅ Alle utility-funksjoner for featuren
+│           └── feature-utils.ts
+```
+
+### Eksempel: Bookings Feature
+
+```
+web/src/
+├── app/
+│   └── bookings/
+│       └── page.tsx              # Hovedfil - kun page logic
+│
+├── components/
+│   └── bookings/
+│       ├── BookingsTable.tsx      # Desktop table view
+│       ├── BookingsCardView.tsx   # Mobile card view
+│       ├── CreateBookingDialog.tsx
+│       └── CancelBookingDialog.tsx
+│
+├── lib/
+│   ├── hooks/
+│   │   └── bookings/
+│   │       ├── useBookings.ts    # State management & data loading
+│   │       └── useCreateBooking.ts # Create booking logic
+│   │
+│   └── utils/
+│       └── bookings/
+│           └── bookings-utils.ts  # formatDate, formatTime, statusColor, etc.
+```
+
+### Eksempel: Landing Feature
+
+```
+web/src/
+├── app/
+│   └── landing/
+│       └── page.tsx              # Hovedfil - kun page logic
+│
+├── components/
+│   └── landing/
+│       ├── LandingHeader.tsx
+│       ├── LandingHero.tsx
+│       ├── LandingStats.tsx
+│       ├── LandingPricing.tsx
+│       ├── LandingFAQ.tsx
+│       ├── LandingFooter.tsx
+│       ├── LandingMobileMenu.tsx
+│       ├── landing-copy.ts       # Statisk data/innhold
+│       └── constants.ts          # Statiske konstanter
+```
+
+### Regler for Feature-Based Organization
+
+#### ✅ Når å bruke feature-based struktur
+
+- **Større features** med flere komponenter (3+ komponenter)
+- **Kompleks state management** som krever custom hooks
+- **Feature-spesifikke utilities** som ikke er generelle
+- **Tett koblede komponenter** som hører sammen logisk
+
+#### ❌ Når IKKE å bruke feature-based struktur
+
+- **Enkle sider** med kun 1-2 komponenter
+- **Generelle komponenter** som brukes på tvers av features
+- **Shared utilities** som brukes av flere features
+
+### Import Patterns
+
+```typescript
+// ✅ RIKTIG - Page importerer fra feature-mapper
+import { BookingsTable } from "@/components/bookings/BookingsTable";
+import { useBookings } from "@/lib/hooks/bookings/useBookings";
+import { formatDate } from "@/lib/utils/bookings/bookings-utils";
+
+// ✅ RIKTIG - Komponenter importerer fra utils/hooks
+import { formatDate, statusColor } from "@/lib/utils/bookings/bookings-utils";
+import { useCreateBooking } from "@/lib/hooks/bookings/useCreateBooking";
+
+// ❌ FEIL - Relative imports fra app-mappen
+import { BookingsTable } from "./components/BookingsTable";
+import { useBookings } from "./hooks/useBookings";
+```
+
+### Fordeler med Feature-Based Organization
+
+1. **Skalerbarhet:** Enkelt å legge til nye features uten å forstyrre eksisterende
+2. **Vedlikeholdbarhet:** Relatert kode er gruppert sammen
+3. **Gjenbrukbarhet:** Komponenter og hooks kan gjenbrukes internt i featuren
+4. **Klarhet:** Tydelig hva som hører til hvilken feature
+5. **Isolasjon:** Endringer i en feature påvirker ikke andre features
+
+---
+
 ## Best Practices
 
 ### 1. Nye features
 
 Når du legger til nye features:
 
+**For enkle features (1-2 komponenter):**
 1. **UI:** Legg til page/component i `src/app/` eller `src/components/`
 2. **Business Logic:** Legg til service i `src/lib/services/`
 3. **Data Access:** Legg til repository i `src/lib/repositories/`
 4. **Types:** Legg til typer i `src/lib/types.ts`
 
+**For større features (3+ komponenter, hooks, utilities):**
+1. **Page:** Legg til `src/app/{feature}/page.tsx` (kun hovedfil)
+2. **Components:** Legg til alle komponenter i `src/components/{feature}/`
+3. **Hooks:** Legg til custom hooks i `src/lib/hooks/{feature}/`
+4. **Utils:** Legg til utilities i `src/lib/utils/{feature}/`
+5. **Business Logic:** Legg til service i `src/lib/services/` (delt på tvers av features)
+6. **Data Access:** Legg til repository i `src/lib/repositories/` (delt på tvers av features)
+
 ### 2. Filnavn
 
 - **Services:** `{domain}-service.ts` (f.eks. `bookings-service.ts`)
 - **Repositories:** `{domain}.ts` (f.eks. `bookings.ts`)
-- **Components:** `kebab-case.tsx` (f.eks. `booking-list.tsx`)
+- **Components:** `PascalCase.tsx` (f.eks. `BookingsTable.tsx`)
+- **Hooks:** `use{Feature}.ts` (f.eks. `useBookings.ts`)
+- **Utils:** `{feature}-utils.ts` (f.eks. `bookings-utils.ts`)
 - **Pages:** `page.tsx` (Next.js App Router)
+- **Constants/Data:** `kebab-case.ts` (f.eks. `landing-copy.ts`, `constants.ts`)
 
 ### 3. Imports
 
@@ -202,6 +332,36 @@ import * as bookingsRepo from "@/lib/repositories/bookings";
 
 // ✅ RIKTIG - Repository importerer Supabase
 import { supabase } from "@/lib/supabase-client";
+```
+
+---
+
+## Eksempler på Feature-Based Organization
+
+### ✅ God struktur (Bookings)
+
+```
+app/bookings/page.tsx                    # 214 linjer - kun page logic
+components/bookings/                     # 4 komponenter
+lib/hooks/bookings/                      # 2 hooks
+lib/utils/bookings/                      # 1 utility fil
+```
+
+### ✅ God struktur (Landing)
+
+```
+app/landing/page.tsx                     # 136 linjer - kun page logic
+components/landing/                      # 8 filer (komponenter + data)
+```
+
+### ❌ Dårlig struktur (ikke gjør dette)
+
+```
+app/bookings/
+  ├── page.tsx
+  ├── components/                        # ❌ IKKE i app-mappen
+  ├── hooks/                             # ❌ IKKE i app-mappen
+  └── lib/                               # ❌ IKKE i app-mappen
 ```
 
 ---

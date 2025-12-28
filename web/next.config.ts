@@ -91,6 +91,31 @@ const nextConfig: NextConfig = {
   },
   // Security headers
   async headers() {
+    const isDevelopment = process.env.NODE_ENV === "development";
+    
+    // CSP configuration - more permissive in development for HMR
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' data:",
+      // In development, allow connections to localhost for HMR and WebSocket
+      isDevelopment
+        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co https://api.stripe.com"
+        : "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+    ];
+    
+    // Only add upgrade-insecure-requests in production
+    if (!isDevelopment) {
+      cspDirectives.push("upgrade-insecure-requests");
+    }
+    
     return [
       {
         source: "/:path*",
@@ -99,10 +124,15 @@ const nextConfig: NextConfig = {
             key: "X-DNS-Prefetch-Control",
             value: "on",
           },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload",
-          },
+          // HSTS only in production
+          ...(isDevelopment
+            ? []
+            : [
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=63072000; includeSubDomains; preload",
+                },
+              ]),
           {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",
@@ -126,20 +156,7 @@ const nextConfig: NextConfig = {
           // Content Security Policy
           {
             key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com",
-              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self'",
-              "upgrade-insecure-requests",
-            ].join("; "),
+            value: cspDirectives.join("; "),
           },
         ],
       },
