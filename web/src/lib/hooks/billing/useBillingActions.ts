@@ -11,9 +11,6 @@ import type { PlanType } from "@/lib/types";
 
 export function useBillingActions() {
   const { salon, refreshSalon, user } = useCurrentSalon();
-  
-  return {
-    salon,
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,6 +144,8 @@ export function useBillingActions() {
     return data.client_secret;
   };
 
+  return {
+    salon,
     actionLoading,
     error,
     setError,
