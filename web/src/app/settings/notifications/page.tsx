@@ -10,6 +10,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { getCurrentUser } from "@/lib/services/auth-service";
 import { getProfileForUser, updatePreferencesForUser } from "@/lib/services/profiles-service";
+import { logError } from "@/lib/services/logger";
 
 export default function NotificationsSettingsPage() {
   const { locale } = useLocale();
@@ -124,7 +125,7 @@ export default function NotificationsSettingsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      console.error("Error saving notification preferences:", err);
+      logError("Error saving notification preferences", err);
       setError(t.error || "Failed to save preferences");
     } finally {
       setSaving(false);

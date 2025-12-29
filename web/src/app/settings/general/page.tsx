@@ -10,6 +10,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
+import { logError } from "@/lib/services/logger";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
@@ -123,7 +124,7 @@ export default function GeneralSettingsPage() {
       await refreshSalon();
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      console.error("Error saving settings:", err);
+      logError("Error saving settings", err);
       setError(t.error);
     } finally {
       setSaving(false);

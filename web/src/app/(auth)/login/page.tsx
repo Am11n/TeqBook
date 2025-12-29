@@ -113,7 +113,7 @@ export default function LoginPage() {
           
           setError(errorMessage);
           setStatus("error");
-          console.error("Login error:", signInError);
+          logError("Login error", signInError, { email });
           return;
         }
       }

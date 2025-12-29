@@ -23,6 +23,7 @@ import type { AdminSalon, AdminUser } from "@/lib/services/admin-service";
 import { getAddonsForSalon } from "@/lib/repositories/addons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/services/logger";
 import {
   Dialog,
   DialogContent,
@@ -89,7 +90,7 @@ export default function AdminPage() {
 
       // Handle errors gracefully - don't crash if one fails
       if (salonsResult.error) {
-        console.error("Error loading salons:", salonsResult.error);
+        logError("Error loading salons", salonsResult.error);
         // Continue with empty salons array instead of showing error
         setSalons([]);
       } else {
@@ -97,14 +98,14 @@ export default function AdminPage() {
       }
 
       if (usersResult.error) {
-        console.error("Error loading users:", usersResult.error);
+        logError("Error loading users", usersResult.error);
         // Continue with empty users array instead of showing error
         setUsers([]);
       } else {
         setUsers(usersResult.data || []);
       }
     } catch (err) {
-      console.error("Error in loadData:", err);
+      logError("Error in loadData", err);
       // Don't set error state - just log it and continue with empty data
       setSalons([]);
       setUsers([]);
