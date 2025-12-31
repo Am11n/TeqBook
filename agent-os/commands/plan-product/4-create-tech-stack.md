@@ -38,6 +38,10 @@ You're ready to start planning a feature spec! You can do so by running `shape-s
 
 The user may provide information regarding their tech stack, which should take precidence when documenting the product's tech stack.  To fill in any gaps, find the user's usual tech stack information as documented in any of these files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md

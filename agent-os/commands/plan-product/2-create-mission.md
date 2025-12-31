@@ -70,6 +70,10 @@ NEXT STEP 👉 Run the command, `3-create-roadmap.md`
 
 IMPORTANT: Ensure the product mission is ALIGNED and DOES NOT CONFLICT with the user's preferences and standards as detailed in the following files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md

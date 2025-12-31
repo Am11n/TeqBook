@@ -82,6 +82,10 @@ IMPORTANT: Ensure that the tasks list is ALIGNED and DOES NOT CONFLICT with the 
 @agent-os/standards/frontend/components.md
 @agent-os/standards/frontend/css.md
 @agent-os/standards/frontend/responsive.md
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md

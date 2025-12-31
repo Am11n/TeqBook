@@ -49,6 +49,10 @@ Then WAIT for me to give you specific instructions on how to use the information
 
 When planning the product's tech stack, mission statement and roadmap, use the user's standards and preferences for context and baseline assumptions, as documented in these files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md
@@ -119,6 +123,10 @@ This results in [MEASURABLE_BENEFIT].
 
 IMPORTANT: Ensure the product mission is ALIGNED and DOES NOT CONFLICT with the user's preferences and standards as detailed in the following files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md
@@ -184,6 +192,10 @@ Effort scale:
 
 IMPORTANT: Ensure the product roadmap is ALIGNED and DOES NOT CONFLICT with the user's preferences and standards as detailed in the following files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md
@@ -233,6 +245,10 @@ You're ready to start planning a feature spec! You can do so by running `shape-s
 
 The user may provide information regarding their tech stack, which should take precidence when documenting the product's tech stack.  To fill in any gaps, find the user's usual tech stack information as documented in any of these files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md

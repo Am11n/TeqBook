@@ -45,6 +45,10 @@ NEXT STEP 👉 Run the command, `2-create-mission.md`
 
 When planning the product's tech stack, mission statement and roadmap, use the user's standards and preferences for context and baseline assumptions, as documented in these files:
 
+@agent-os/standards/global/00-frontend-layering.md
+@agent-os/standards/global/00-supabase-access.md
+@agent-os/standards/global/00-teqbook-non-negotiables.md
+@agent-os/standards/global/00-testing.md
 @agent-os/standards/global/coding-style.md
 @agent-os/standards/global/commenting.md
 @agent-os/standards/global/conventions.md
