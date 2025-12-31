@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "models": {
+      "salon": "The barbershop or beauty salon business that uses the platform, containing profile information, address, and contact details.",
+      "openingHours": "Weekly opening hours configuration for each day of the week, including open/close times and closed status.",
+      "paymentPlans": "Billing plans that salons can subscribe to, such as basic, premium, or enterprise tiers with feature limits.",
+      "subscription": "Active subscription that a salon has to a payment plan, determining their access level and features.",
+      "invoices": "Billing invoices for subscription payments and charges, including payment status and download links.",
+      "branding": "Branding configuration including logo and color palette tokens for the salon's visual identity.",
+      "notificationPreferences": "User preferences for email and SMS notifications for different event types."
+    },
+    "relationships": [
+      "Salon has one Subscription that belongs to a PaymentPlan",
+      "Subscription generates multiple Invoices over time",
+      "Salon has one Branding configuration",
+      "Salon has one OpeningHours configuration",
+      "Salon has one NotificationPreferences configuration"
+    ]
+  },
+  "salon": {
+    "id": "salon-001",
+    "name": "Elite Cuts Barbershop",
+    "address": {
+      "street": "1245 Main Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "zipCode": "94102"
+    },
+    "phone": "(415) 555-0123",
+    "email": "info@elitecuts.com",
+    "website": "https://www.elitecuts.com",
+    "taxId": "12-3456789"
+  },
+  "openingHours": [
+    {
+      "day": "monday",
+      "open": "09:00",
+      "close": "18:00",
+      "closed": false
+    },
+    {
+      "day": "tuesday",
+      "open": "09:00",
+      "close": "18:00",
+      "closed": false
+    },
+    {
+      "day": "wednesday",
+      "open": "09:00",
+      "close": "18:00",
+      "closed": false
+    },
+    {
+      "day": "thursday",
+      "open": "09:00",
+      "close": "20:00",
+      "closed": false
+    },
+    {
+      "day": "friday",
+      "open": "09:00",
+      "close": "20:00",
+      "closed": false
+    },
+    {
+      "day": "saturday",
+      "open": "10:00",
+      "close": "17:00",
+      "closed": false
+    },
+    {
+      "day": "sunday",
+      "open": null,
+      "close": null,
+      "closed": true
+    }
+  ],
+  "paymentPlans": [
+    {
+      "id": "plan-basic",
+      "name": "Basic",
+      "description": "Perfect for small salons getting started",
+      "price": 29.99,
+      "billingCycle": "monthly",
+      "features": [
+        "Up to 3 employees",
+        "Unlimited bookings",
+        "Customer database",
+        "Basic reporting",
+        "Email support"
+      ],
+      "limits": {
+        "employees": 3,
+        "bookings": -1,
+        "customers": -1,
+        "storage": "5GB"
+      }
+    },
+    {
+      "id": "plan-premium",
+      "name": "Premium",
+      "description": "For growing salons that need advanced features",
+      "price": 79.99,
+      "billingCycle": "monthly",
+      "features": [
+        "Unlimited employees",
+        "Unlimited bookings",
+        "Advanced analytics",
+        "Custom branding",
+        "Priority support",
+        "API access",
+        "Automated reminders"
+      ],
+      "limits": {
+        "employees": -1,
+        "bookings": -1,
+        "customers": -1,
+        "storage": "50GB"
+      }
+    }
+  ],
+  "subscription": {
+    "id": "sub-001",
+    "planId": "plan-basic",
+    "planName": "Basic",
+    "status": "active",
+    "currentPeriodStart": "2024-01-01",
+    "currentPeriodEnd": "2024-02-01",
+    "cancelAtPeriodEnd": false,
+    "trialEndsAt": null
+  },
+  "invoices": [
+    {
+      "id": "inv-005",
+      "invoiceNumber": "INV-2024-005",
+      "date": "2024-01-01",
+      "amount": 29.99,
+      "status": "paid",
+      "planName": "Basic",
+      "period": "January 2024",
+      "downloadUrl": "/invoices/inv-005.pdf"
+    },
+    {
+      "id": "inv-004",
+      "invoiceNumber": "INV-2023-124",
+      "date": "2023-12-01",
+      "amount": 29.99,
+      "status": "paid",
+      "planName": "Basic",
+      "period": "December 2023",
+      "downloadUrl": "/invoices/inv-004.pdf"
+    },
+    {
+      "id": "inv-003",
+      "invoiceNumber": "INV-2023-123",
+      "date": "2023-11-01",
+      "amount": 29.99,
+      "status": "paid",
+      "planName": "Basic",
+      "period": "November 2023",
+      "downloadUrl": "/invoices/inv-003.pdf"
+    },
+    {
+      "id": "inv-002",
+      "invoiceNumber": "INV-2023-122",
+      "date": "2023-10-01",
+      "amount": 29.99,
+      "status": "paid",
+      "planName": "Basic",
+      "period": "October 2023",
+      "downloadUrl": "/invoices/inv-002.pdf"
+    },
+    {
+      "id": "inv-001",
+      "invoiceNumber": "INV-2023-121",
+      "date": "2023-09-01",
+      "amount": 29.99,
+      "status": "paid",
+      "planName": "Basic",
+      "period": "September 2023",
+      "downloadUrl": "/invoices/inv-001.pdf"
+    }
+  ],
+  "branding": {
+    "logoUrl": "/placeholder-logo.svg",
+    "logoPlaceholder": true,
+    "colors": {
+      "primary": "indigo",
+      "secondary": "slate",
+      "neutral": "slate"
+    }
+  },
+  "notificationPreferences": {
+    "bookingReminders": {
+      "email": true,
+      "sms": true
+    },
+    "cancellations": {
+      "email": true,
+      "sms": false
+    },
+    "newBookings": {
+      "email": true,
+      "sms": false
+    },
+    "paymentReceipts": {
+      "email": true,
+      "sms": false
+    },
+    "reports": {
+      "email": true,
+      "sms": false
+    }
+  }
+}
+
