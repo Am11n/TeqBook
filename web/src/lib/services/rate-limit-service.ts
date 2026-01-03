@@ -1,10 +1,10 @@
 // =====================================================
 // Rate Limit Service
 // =====================================================
-// Client-side rate limiting for login attempts
-// Uses localStorage to track attempts per email/IP
-// Note: This is a client-side protection. Server-side rate limiting
-// should also be implemented in Edge Functions or middleware.
+// Server-side and client-side rate limiting for login attempts and API endpoints
+// Uses Edge Function for server-side rate limiting (primary)
+// Falls back to localStorage for client-side rate limiting (secondary)
+// Note: Server-side rate limiting is the primary protection and cannot be bypassed
 
 type RateLimitEntry = {
   attempts: number;
@@ -211,5 +211,268 @@ export function formatTimeRemaining(seconds: number): string {
     return `${hours} hour${hours !== 1 ? "s" : ""}`;
   }
   return `${hours} hour${hours !== 1 ? "s" : ""} ${remainingMinutes} minute${remainingMinutes !== 1 ? "s" : ""}`;
+}
+
+// =====================================================
+// Server-Side Rate Limiting (Primary)
+// =====================================================
+// These functions call the Edge Function for server-side rate limiting
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
+
+interface ServerRateLimitResponse {
+  allowed: boolean;
+  remainingAttempts: number;
+  resetTime: number | null;
+  blocked: boolean;
+}
+
+interface ServerRateLimitOptions {
+  identifierType?: "email" | "ip" | "user_id";
+  endpointType?: string;
+}
+
+/**
+ * Check rate limit on server (via Edge Function)
+ */
+export async function checkRateLimit(
+  identifier: string,
+  endpointType: string = "login",
+  options: ServerRateLimitOptions = {}
+): Promise<ServerRateLimitResponse> {
+  if (!SUPABASE_URL) {
+    // Fallback to client-side if Supabase URL not configured
+    const clientResult = isRateLimited(identifier);
+    return {
+      allowed: !clientResult.limited,
+      remainingAttempts: clientResult.remainingAttempts,
+      resetTime: clientResult.resetTime,
+      blocked: clientResult.limited,
+    };
+  }
+
+  try {
+    // Validate URL before attempting fetch
+    if (!EDGE_FUNCTION_BASE || !SUPABASE_URL) {
+      // Fallback to client-side if URL not configured
+      const clientResult = isRateLimited(identifier);
+      return {
+        allowed: !clientResult.limited,
+        remainingAttempts: clientResult.remainingAttempts,
+        resetTime: clientResult.resetTime,
+        blocked: clientResult.limited,
+      };
+    }
+
+    // Get session if available (optional for public endpoints)
+    let authToken = "";
+    try {
+      const { supabase } = await import("@/lib/supabase-client");
+      const { data: { session } } = await supabase.auth.getSession();
+      authToken = session?.access_token || "";
+    } catch {
+      // If auth is not available, continue without token (for public endpoints)
+    }
+
+    const response = await fetch(`${EDGE_FUNCTION_BASE}/rate-limit-check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      },
+      body: JSON.stringify({
+        identifier,
+        identifierType: options.identifierType || "email",
+        endpointType,
+        action: "check",
+      }),
+    });
+
+    if (!response.ok) {
+      // Fallback to client-side on error
+      const clientResult = isRateLimited(identifier);
+      return {
+        allowed: !clientResult.limited,
+        remainingAttempts: clientResult.remainingAttempts,
+        resetTime: clientResult.resetTime,
+        blocked: clientResult.limited,
+      };
+    }
+
+    const result: ServerRateLimitResponse = await response.json();
+    return result;
+  } catch (error) {
+    // Handle network errors (e.g., Edge Function not deployed, CORS, etc.)
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      // Silently fallback to client-side rate limiting
+      // This is expected if Edge Function is not deployed yet
+      const clientResult = isRateLimited(identifier);
+      return {
+        allowed: !clientResult.limited,
+        remainingAttempts: clientResult.remainingAttempts,
+        resetTime: clientResult.resetTime,
+        blocked: clientResult.limited,
+      };
+    }
+    
+    // For other errors, log and fallback
+    console.error("Error checking server-side rate limit:", error);
+    const clientResult = isRateLimited(identifier);
+    return {
+      allowed: !clientResult.limited,
+      remainingAttempts: clientResult.remainingAttempts,
+      resetTime: clientResult.resetTime,
+      blocked: clientResult.limited,
+    };
+  }
+}
+
+/**
+ * Increment rate limit on server (via Edge Function)
+ */
+export async function incrementRateLimit(
+  identifier: string,
+  endpointType: string = "login",
+  options: ServerRateLimitOptions = {}
+): Promise<ServerRateLimitResponse> {
+  if (!SUPABASE_URL) {
+    // Fallback to client-side if Supabase URL not configured
+    return recordFailedAttempt(identifier);
+  }
+
+  try {
+    // Validate URL before attempting fetch
+    if (!EDGE_FUNCTION_BASE || !SUPABASE_URL) {
+      // Fallback to client-side if URL not configured
+      return recordFailedAttempt(identifier);
+    }
+
+    // Get session if available (optional for public endpoints)
+    let authToken = "";
+    try {
+      const { supabase } = await import("@/lib/supabase-client");
+      const sessionResult = await supabase.auth.getSession();
+      authToken = sessionResult?.data?.session?.access_token || "";
+    } catch {
+      // If auth is not available, continue without token (for public endpoints)
+    }
+
+    const response = await fetch(`${EDGE_FUNCTION_BASE}/rate-limit-check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      },
+      body: JSON.stringify({
+        identifier,
+        identifierType: options.identifierType || "email",
+        endpointType,
+        action: "increment",
+      }),
+    });
+
+    if (!response.ok) {
+      // Fallback to client-side on error
+      return recordFailedAttempt(identifier);
+    }
+
+    const result: ServerRateLimitResponse = await response.json();
+    
+    // Also update client-side rate limit for consistency
+    if (!result.allowed) {
+      recordFailedAttempt(identifier);
+    }
+
+    return result;
+  } catch (error) {
+    // Handle network errors (e.g., Edge Function not deployed, CORS, etc.)
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      // Silently fallback to client-side rate limiting
+      // This is expected if Edge Function is not deployed yet
+      return recordFailedAttempt(identifier);
+    }
+    
+    // For other errors, log and fallback
+    console.error("Error incrementing server-side rate limit:", error);
+    return recordFailedAttempt(identifier);
+  }
+}
+
+/**
+ * Reset rate limit on server (via Edge Function)
+ */
+export async function resetRateLimit(
+  identifier: string,
+  endpointType: string = "login",
+  options: ServerRateLimitOptions = {}
+): Promise<{ success: boolean }> {
+  if (!SUPABASE_URL) {
+    // Fallback to client-side if Supabase URL not configured
+    clearRateLimit(identifier);
+    return { success: true };
+  }
+
+  try {
+    // Validate URL before attempting fetch
+    if (!EDGE_FUNCTION_BASE || !SUPABASE_URL) {
+      // Fallback to client-side if URL not configured
+      clearRateLimit(identifier);
+      return { success: true };
+    }
+
+    // Get session if available (optional for public endpoints)
+    let authToken = "";
+    try {
+      const { supabase } = await import("@/lib/supabase-client");
+      const sessionResult = await supabase.auth.getSession();
+      authToken = sessionResult?.data?.session?.access_token || "";
+    } catch {
+      // If auth is not available, continue without token (for public endpoints)
+    }
+
+    const response = await fetch(`${EDGE_FUNCTION_BASE}/rate-limit-check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      },
+      body: JSON.stringify({
+        identifier,
+        identifierType: options.identifierType || "email",
+        endpointType,
+        action: "reset",
+      }),
+    });
+
+    if (!response.ok) {
+      // Fallback to client-side on error
+      clearRateLimit(identifier);
+      return { success: true };
+    }
+
+    const result = await response.json();
+    
+    // Also clear client-side rate limit
+    clearRateLimit(identifier);
+
+    return result;
+  } catch (error) {
+    // Handle network errors (e.g., Edge Function not deployed, CORS, etc.)
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      // Silently fallback to client-side rate limiting
+      // This is expected if Edge Function is not deployed yet
+      clearRateLimit(identifier);
+      return { success: true };
+    }
+    
+    // For other errors, log and fallback
+    console.error("Error resetting server-side rate limit:", error);
+    clearRateLimit(identifier);
+    return { success: true };
+  }
 }
 

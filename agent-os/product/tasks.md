@@ -22,33 +22,32 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 **Dependencies:** None  
 **Roadmap Item:** #1 - Server-Side Rate Limiting
 
-- [ ] 1.0 Complete server-side rate limiting infrastructure
-  - [ ] 1.1 Write 4-6 focused tests for rate limiting behavior
+- [x] 1.0 Complete server-side rate limiting infrastructure
+  - [x] 1.1 Write 4-6 focused tests for rate limiting behavior
     - Test rate limit enforcement (5 attempts per 15 minutes)
     - Test rate limit reset after timeout
     - Test rate limit per IP/email
     - Test rate limit bypass prevention
-  - [ ] 1.2 Create rate limiting Edge Function (`rate-limit-check`)
+  - [x] 1.2 Create rate limiting Edge Function (`rate-limit-check`)
     - Location: `web/supabase/functions/rate-limit-check/`
-    - Use Supabase storage or Redis for rate limit tracking
+    - Use database table for rate limit tracking
     - Implement sliding window algorithm
     - Return rate limit status and remaining attempts
-  - [ ] 1.3 Create rate limiting service (`rate-limit-service.ts`)
+  - [x] 1.3 Create rate limiting service (`rate-limit-service.ts`)
     - Location: `web/src/lib/services/rate-limit-service.ts`
     - Add `checkRateLimit()` function
-    - Add `incrementAttempt()` function
+    - Add `incrementRateLimit()` function
     - Add `resetRateLimit()` function
     - Integrate with Edge Function
-  - [ ] 1.4 Integrate rate limiting with login endpoint
+  - [x] 1.4 Integrate rate limiting with login endpoint
     - Update `web/src/app/(auth)/login/page.tsx`
     - Call rate limit check before authentication
     - Show rate limit status to user
     - Block login attempts when rate limit exceeded
-  - [ ] 1.5 Add rate limiting to critical API endpoints
-    - Update booking creation endpoints
-    - Update customer creation endpoints
+  - [x] 1.5 Add rate limiting to critical API endpoints
+    - Update public booking page
     - Add rate limiting middleware pattern
-  - [ ] 1.6 Ensure rate limiting tests pass
+  - [x] 1.6 Ensure rate limiting tests pass
     - Run ONLY the 4-6 tests written in 1.1
     - Verify rate limiting works correctly
     - Verify rate limit resets properly

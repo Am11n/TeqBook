@@ -21,6 +21,9 @@ import {
   isRateLimited,
   formatTimeRemaining,
   getTimeUntilReset,
+  checkRateLimit,
+  incrementRateLimit,
+  resetRateLimit,
 } from "@/lib/services/rate-limit-service";
 import { initSession } from "@/lib/services/session-service";
 import { logSecurity, logError } from "@/lib/services/logger";
@@ -51,18 +54,38 @@ export default function LoginPage() {
     setStatus("loading");
     setError(null);
 
-    // Check rate limiting before attempting login
+    // Check server-side rate limiting before attempting login
     if (email) {
-      const rateLimitCheck = isRateLimited(email);
-      setRateLimitInfo(rateLimitCheck);
+      try {
+        const serverRateLimit = await checkRateLimit(email, "login");
+        setRateLimitInfo({
+          limited: !serverRateLimit.allowed,
+          remainingAttempts: serverRateLimit.remainingAttempts,
+          resetTime: serverRateLimit.resetTime,
+        });
 
-      if (rateLimitCheck.limited) {
-        const timeRemaining = getTimeUntilReset(rateLimitCheck.resetTime);
-        setError(
-          `Too many failed login attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`
-        );
-        setStatus("error");
-        return;
+        if (!serverRateLimit.allowed) {
+          const timeRemaining = getTimeUntilReset(serverRateLimit.resetTime);
+          setError(
+            `Too many failed login attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+          );
+          setStatus("error");
+          return;
+        }
+      } catch (error) {
+        // Fallback to client-side check if server check fails
+        console.error("Error checking server-side rate limit:", error);
+        const clientRateLimit = isRateLimited(email);
+        setRateLimitInfo(clientRateLimit);
+
+        if (clientRateLimit.limited) {
+          const timeRemaining = getTimeUntilReset(clientRateLimit.resetTime);
+          setError(
+            `Too many failed login attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+          );
+          setStatus("error");
+          return;
+        }
       }
     }
 
@@ -80,41 +103,69 @@ export default function LoginPage() {
     }
 
     if (signInError) {
-      // Record failed attempt
+      // Record failed attempt on server
       if (email) {
-        const rateLimitResult = recordFailedAttempt(email);
-        setRateLimitInfo({
-          limited: rateLimitResult.blocked,
-          remainingAttempts: rateLimitResult.remainingAttempts,
-          resetTime: rateLimitResult.resetTime,
-        });
+        try {
+          const serverRateLimit = await incrementRateLimit(email, "login");
+          setRateLimitInfo({
+            limited: !serverRateLimit.allowed,
+            remainingAttempts: serverRateLimit.remainingAttempts,
+            resetTime: serverRateLimit.resetTime,
+          });
 
-        if (rateLimitResult.blocked) {
-          const timeRemaining = getTimeUntilReset(rateLimitResult.resetTime);
-          setError(
-            `Too many failed login attempts. Your account has been temporarily blocked. Please try again in ${formatTimeRemaining(timeRemaining)}.`
-          );
-          setStatus("error");
-          return;
-        }
+          if (!serverRateLimit.allowed) {
+            const timeRemaining = getTimeUntilReset(serverRateLimit.resetTime);
+            setError(
+              `Too many failed login attempts. Your account has been temporarily blocked. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+            );
+            setStatus("error");
+            return;
+          }
+        } catch (error) {
+          // Fallback to client-side if server increment fails
+          console.error("Error incrementing server-side rate limit:", error);
+          const clientRateLimit = recordFailedAttempt(email);
+          setRateLimitInfo({
+            limited: clientRateLimit.blocked,
+            remainingAttempts: clientRateLimit.remainingAttempts,
+            resetTime: clientRateLimit.resetTime,
+          });
 
-        if (rateLimitResult.remainingAttempts < MAX_LOGIN_ATTEMPTS) {
-          // Show warning about remaining attempts
-          const timeRemaining = getTimeUntilReset(rateLimitResult.resetTime);
-          let errorMessage = signInError;
-          
-          if (signInError.includes("Invalid login credentials")) {
-            errorMessage = `Invalid email or password. ${rateLimitResult.remainingAttempts} attempt${rateLimitResult.remainingAttempts !== 1 ? "s" : ""} remaining.`;
-          } else if (signInError.includes("Email not confirmed")) {
-            errorMessage = "Please confirm your email address before logging in. Check your inbox for a confirmation email.";
-          } else if (signInError.includes("User not found")) {
-            errorMessage = "No account found with this email address.";
+          if (clientRateLimit.blocked) {
+            const timeRemaining = getTimeUntilReset(clientRateLimit.resetTime);
+            setError(
+              `Too many failed login attempts. Your account has been temporarily blocked. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+            );
+            setStatus("error");
+            return;
           }
           
-          setError(errorMessage);
-          setStatus("error");
-          logError("Login error", signInError, { email });
-          return;
+          // Show warning about remaining attempts if not blocked
+          if (email) {
+            const currentRateLimit = rateLimitInfo || {
+              limited: false,
+              remainingAttempts: MAX_LOGIN_ATTEMPTS,
+              resetTime: null,
+            };
+            
+            if (currentRateLimit.remainingAttempts < MAX_LOGIN_ATTEMPTS && !currentRateLimit.limited) {
+              const timeRemaining = getTimeUntilReset(currentRateLimit.resetTime);
+              let errorMessage = signInError;
+              
+              if (signInError.includes("Invalid login credentials")) {
+                errorMessage = `Invalid email or password. ${currentRateLimit.remainingAttempts} attempt${currentRateLimit.remainingAttempts !== 1 ? "s" : ""} remaining.`;
+              } else if (signInError.includes("Email not confirmed")) {
+                errorMessage = "Please confirm your email address before logging in. Check your inbox for a confirmation email.";
+              } else if (signInError.includes("User not found")) {
+                errorMessage = "No account found with this email address.";
+              }
+              
+              setError(errorMessage);
+              setStatus("error");
+              logError("Login error", signInError, { email });
+              return;
+            }
+          }
         }
       }
 
@@ -137,9 +188,14 @@ export default function LoginPage() {
     }
 
     if (!signInData?.user) {
-      // Record failed attempt
+      // Record failed attempt on server
       if (email) {
-        recordFailedAttempt(email);
+        try {
+          await incrementRateLimit(email, "login");
+        } catch (error) {
+          // Fallback to client-side
+          recordFailedAttempt(email);
+        }
       }
       setError("Login failed. Please try again.");
       setStatus("error");
@@ -153,9 +209,14 @@ export default function LoginPage() {
       return;
     }
 
-    // Clear rate limit on successful login
+    // Clear rate limit on successful login (both server and client)
     if (email) {
-      clearRateLimit(email);
+      try {
+        await resetRateLimit(email, "login");
+      } catch (error) {
+        // Fallback to client-side
+        clearRateLimit(email);
+      }
       setRateLimitInfo(null);
     }
 
