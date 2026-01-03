@@ -10,6 +10,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -66,6 +67,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper to extract identifier (same logic as in rate-limit.ts)
+function extractIdentifier(
+  req: Request,
+  user: { id: string } | null
+): { identifier: string; identifierType: "ip" | "user_id" } {
+  if (user?.id) {
+    return { identifier: user.id, identifierType: "user_id" };
+  }
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+  return { identifier: ip, identifierType: "ip" };
+}
+
 interface CreateCustomerRequest {
   salon_id: string;
   email: string;
@@ -109,6 +123,29 @@ serve(async (req) => {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
+      );
+    }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      req,
+      {
+        endpointType: "billing-create-customer",
+        supabaseUrl,
+        supabaseServiceKey,
+      },
+      user
+    );
+
+    if (!rateLimitResult.allowed) {
+      const { identifier, identifierType } = extractIdentifier(req, user);
+      return createRateLimitErrorResponse(
+        rateLimitResult,
+        identifier,
+        identifierType,
+        "billing-create-customer",
+        supabaseUrl,
+        supabaseServiceKey
       );
     }
 
@@ -167,7 +204,11 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          ...rateLimitResult.headers,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {

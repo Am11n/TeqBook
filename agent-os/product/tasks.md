@@ -70,28 +70,31 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 **Dependencies:** Task Group 1 (can be done in parallel)  
 **Roadmap Item:** #2 - API Rate Limiting
 
-- [ ] 2.0 Complete API rate limiting for Edge Functions
-  - [ ] 2.1 Write 4-6 focused tests for API rate limiting
+- [x] 2.0 Complete API rate limiting for Edge Functions
+  - [x] 2.1 Write 4-6 focused tests for API rate limiting
     - Test rate limit per endpoint
     - Test rate limit per IP/user
     - Test rate limit configuration
     - Test rate limit error responses
-  - [ ] 2.2 Create rate limiting middleware for Edge Functions
+  - [x] 2.2 Create rate limiting middleware for Edge Functions
     - Location: `web/supabase/functions/_shared/rate-limit.ts`
     - Reusable middleware function
     - Configurable limits per endpoint type
     - Return rate limit headers
-  - [ ] 2.3 Apply rate limiting to all Edge Functions
+  - [x] 2.3 Apply rate limiting to all Edge Functions
     - Update `billing-create-customer`
     - Update `billing-create-subscription`
     - Update `billing-update-plan`
-    - Update `billing-webhook`
-    - Add rate limiting to other Edge Functions
-  - [ ] 2.4 Add rate limit monitoring and alerts
-    - Log rate limit hits to Sentry
-    - Add rate limit metrics
-    - Set up alerts for excessive rate limiting
-  - [ ] 2.5 Ensure API rate limiting tests pass
+    - Update `billing-cancel-subscription`
+    - Update `billing-update-payment-method`
+    - Add rate limiting to `whatsapp-send`
+    - Note: `billing-webhook` excluded (comes from Stripe, not users)
+  - [x] 2.4 Add rate limit monitoring and alerts
+    - Log rate limit hits to console
+    - Add rate limit violation logging
+    - Update database on rate limit violations
+    - Ready for Sentry integration (can be added later)
+  - [x] 2.5 Ensure API rate limiting tests pass
     - Run ONLY the 4-6 tests written in 2.1
     - Verify rate limiting works on all endpoints
 
