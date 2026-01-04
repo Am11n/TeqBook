@@ -2,10 +2,39 @@
 // This file runs before each test file
 
 import { vi } from "vitest";
+import { config } from "dotenv";
+import { resolve } from "path";
 
-// Set environment variables for tests
+// Load environment variables from .env.local (preferred) or .env
+// .env.local takes precedence if both exist
+const envResult = config({ path: resolve(process.cwd(), ".env") });
+const envLocalResult = config({ path: resolve(process.cwd(), ".env.local") });
+
+// Debug: Log if env files were loaded (only in test mode)
+if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+  if (envResult.error && envLocalResult.error) {
+    console.warn("[Test Setup] No .env or .env.local file found. Integration tests may be skipped.");
+  } else {
+    const loadedFrom = envLocalResult.error ? ".env" : ".env.local";
+    console.log(`[Test Setup] Environment variables loaded from ${loadedFrom}`);
+  }
+}
+
+// Set environment variables for tests (with fallbacks for unit tests)
 process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key";
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+// Debug: Check if required variables are set (for integration tests)
+if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== "https://test.supabase.co";
+  const hasAnonKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== "test-anon-key";
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (hasUrl || hasAnonKey || hasServiceKey) {
+    console.log(`[Test Setup] Supabase config: URL=${hasUrl ? "✓" : "✗"}, AnonKey=${hasAnonKey ? "✓" : "✗"}, ServiceKey=${hasServiceKey ? "✓" : "✗"}`);
+  }
+}
 
 // Mock Next.js router
 vi.mock("next/navigation", () => ({

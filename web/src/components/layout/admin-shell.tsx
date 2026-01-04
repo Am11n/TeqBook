@@ -24,6 +24,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -160,6 +161,7 @@ function AdminShellContent({ children }: AdminShellProps) {
   const managementItems = [
     { href: "/admin/salons", label: "Salons", icon: Building2 },
     { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
   ];
 
   const analyticsItems = [

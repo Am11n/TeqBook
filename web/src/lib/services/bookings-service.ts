@@ -13,6 +13,7 @@ import {
   deleteBooking as deleteBookingRepo,
 } from "@/lib/repositories/bookings";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
+import { logInfo, logError, logWarn } from "@/lib/services/logger";
 
 /**
  * Get bookings for current salon with business logic
@@ -76,22 +77,57 @@ export async function getAvailableTimeSlots(
 export async function createBooking(
   input: CreateBookingInput
 ): Promise<{ data: Booking | null; error: string | null }> {
-  // Validation
-  if (!input.salon_id || !input.employee_id || !input.service_id || !input.start_time || !input.customer_full_name) {
-    return { data: null, error: "All required fields must be provided" };
-  }
+  const correlationId = crypto.randomUUID();
+  const logContext = {
+    correlationId,
+    salonId: input.salon_id,
+    employeeId: input.employee_id,
+    serviceId: input.service_id,
+    startTime: input.start_time,
+    customerName: input.customer_full_name,
+    isWalkIn: input.is_walk_in || false,
+  };
 
-  // Validate start time is in the future (for non-walk-in bookings)
-  if (!input.is_walk_in) {
-    const startTime = new Date(input.start_time);
-    const now = new Date();
-    if (startTime < now) {
-      return { data: null, error: "Booking start time must be in the future" };
+  try {
+    // Validation
+    if (!input.salon_id || !input.employee_id || !input.service_id || !input.start_time || !input.customer_full_name) {
+      logWarn("Booking creation failed: missing required fields", logContext);
+      return { data: null, error: "All required fields must be provided" };
     }
-  }
 
-  // Call repository
-  return await createBookingRepo(input);
+    // Validate start time is in the future (for non-walk-in bookings)
+    if (!input.is_walk_in) {
+      const startTime = new Date(input.start_time);
+      const now = new Date();
+      if (startTime < now) {
+        logWarn("Booking creation failed: start time in the past", logContext);
+        return { data: null, error: "Booking start time must be in the future" };
+      }
+    }
+
+    // Call repository
+    const result = await createBookingRepo(input);
+
+    if (result.error) {
+      logError("Booking creation failed", new Error(result.error), {
+        ...logContext,
+        error: result.error,
+      });
+    } else if (result.data) {
+      logInfo("Booking created successfully", {
+        ...logContext,
+        bookingId: result.data.id,
+      });
+    }
+
+    return result;
+  } catch (error) {
+    logError("Booking creation exception", error, logContext);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
 }
 
 /**
@@ -102,19 +138,54 @@ export async function updateBookingStatus(
   bookingId: string,
   status: string
 ): Promise<{ data: Booking | null; error: string | null }> {
-  // Validation
-  if (!salonId || !bookingId || !status) {
-    return { data: null, error: "All parameters are required" };
-  }
+  const correlationId = crypto.randomUUID();
+  const logContext = {
+    correlationId,
+    salonId,
+    bookingId,
+    status,
+  };
 
-  // Validate status is valid
-  const validStatuses = ["pending", "confirmed", "completed", "cancelled", "no-show", "scheduled"];
-  if (!validStatuses.includes(status)) {
-    return { data: null, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` };
-  }
+  try {
+    // Validation
+    if (!salonId || !bookingId || !status) {
+      logWarn("Booking status update failed: missing required parameters", logContext);
+      return { data: null, error: "All parameters are required" };
+    }
 
-  // Call repository
-  return await updateBookingStatusRepo(salonId, bookingId, status);
+    // Validate status is valid
+    const validStatuses = ["pending", "confirmed", "completed", "cancelled", "no-show", "scheduled"];
+    if (!validStatuses.includes(status)) {
+      logWarn("Booking status update failed: invalid status", {
+        ...logContext,
+        validStatuses,
+      });
+      return { data: null, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` };
+    }
+
+    // Call repository
+    const result = await updateBookingStatusRepo(salonId, bookingId, status);
+
+    if (result.error) {
+      logError("Booking status update failed", new Error(result.error), {
+        ...logContext,
+        error: result.error,
+      });
+    } else if (result.data) {
+      logInfo("Booking status updated successfully", {
+        ...logContext,
+        newStatus: result.data.status,
+      });
+    }
+
+    return result;
+  } catch (error) {
+    logError("Booking status update exception", error, logContext);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
 }
 
 /**
@@ -125,21 +196,46 @@ export async function cancelBooking(
   bookingId: string,
   reason?: string | null
 ): Promise<{ error: string | null }> {
-  // Validation
-  if (!salonId || !bookingId) {
-    return { error: "Salon ID and Booking ID are required" };
-  }
+  const correlationId = crypto.randomUUID();
+  const logContext = {
+    correlationId,
+    salonId,
+    bookingId,
+    reason: reason || null,
+  };
 
-  // Call repository to update status
-  const result = await updateBookingStatusRepo(salonId, bookingId, "cancelled");
-  
-  // If we have a reason and the update was successful, update notes
-  if (!result.error && reason) {
-    // We need to update notes separately - for now, we'll just update status
-    // In a full implementation, we might want to add a cancellation_reason field
-  }
+  try {
+    // Validation
+    if (!salonId || !bookingId) {
+      logWarn("Booking cancellation failed: missing required parameters", logContext);
+      return { error: "Salon ID and Booking ID are required" };
+    }
 
-  return result;
+    // Call repository to update status
+    const result = await updateBookingStatusRepo(salonId, bookingId, "cancelled");
+    
+    if (result.error) {
+      logError("Booking cancellation failed", new Error(result.error), {
+        ...logContext,
+        error: result.error,
+      });
+    } else {
+      logInfo("Booking cancelled successfully", logContext);
+    }
+    
+    // If we have a reason and the update was successful, update notes
+    if (!result.error && reason) {
+      // We need to update notes separately - for now, we'll just update status
+      // In a full implementation, we might want to add a cancellation_reason field
+    }
+
+    return result;
+  } catch (error) {
+    logError("Booking cancellation exception", error, logContext);
+    return {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
 }
 
 /**
@@ -149,12 +245,38 @@ export async function deleteBooking(
   salonId: string,
   bookingId: string
 ): Promise<{ error: string | null }> {
-  // Validation
-  if (!salonId || !bookingId) {
-    return { error: "Salon ID and Booking ID are required" };
-  }
+  const correlationId = crypto.randomUUID();
+  const logContext = {
+    correlationId,
+    salonId,
+    bookingId,
+  };
 
-  // Call repository
-  return await deleteBookingRepo(salonId, bookingId);
+  try {
+    // Validation
+    if (!salonId || !bookingId) {
+      logWarn("Booking deletion failed: missing required parameters", logContext);
+      return { error: "Salon ID and Booking ID are required" };
+    }
+
+    // Call repository
+    const result = await deleteBookingRepo(salonId, bookingId);
+
+    if (result.error) {
+      logError("Booking deletion failed", new Error(result.error), {
+        ...logContext,
+        error: result.error,
+      });
+    } else {
+      logInfo("Booking deleted successfully", logContext);
+    }
+
+    return result;
+  } catch (error) {
+    logError("Booking deletion exception", error, logContext);
+    return {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
 }
 

@@ -4,6 +4,8 @@
 // Service for interacting with Stripe billing via Edge Functions
 
 import { supabase } from "@/lib/supabase-client";
+import { logBillingEvent } from "@/lib/services/audit-log-service";
+import { logError, logInfo, logWarn } from "@/lib/services/logger";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
@@ -164,11 +166,47 @@ export async function createStripeSubscription(
     );
 
     if (fetchError) {
+      logError("Failed to create Stripe subscription", new Error(fetchError), {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        customerId,
+        plan,
+        error: fetchError,
+      });
       return { data: null, error: fetchError };
+    }
+
+    // Log subscription creation
+    if (result && session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "subscription_created",
+        resourceId: result.subscription_id,
+        metadata: { plan, customer_id: customerId },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+
+      logInfo("Stripe subscription created successfully", {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        subscriptionId: result.subscription_id,
+        plan,
+        customerId,
+      });
     }
 
     return { data: result, error: null };
   } catch (error) {
+    logError("Exception creating Stripe subscription", error, {
+      correlationId: crypto.randomUUID(),
+      salonId,
+      customerId,
+      plan,
+    });
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -219,11 +257,46 @@ export async function updateSubscriptionPlan(
     );
 
     if (fetchError) {
+      logError("Failed to update subscription plan", new Error(fetchError), {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        subscriptionId,
+        newPlan,
+        error: fetchError,
+      });
       return { data: null, error: fetchError };
+    }
+
+    // Log plan change
+    if (result && session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "plan_changed",
+        resourceId: subscriptionId,
+        metadata: { new_plan: newPlan },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+
+      logInfo("Subscription plan updated successfully", {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        subscriptionId,
+        newPlan,
+      });
     }
 
     return { data: result, error: null };
   } catch (error) {
+    logError("Exception updating subscription plan", error, {
+      correlationId: crypto.randomUUID(),
+      salonId,
+      subscriptionId,
+      newPlan,
+    });
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -272,11 +345,44 @@ export async function cancelSubscription(
     );
 
     if (fetchError) {
+      logError("Failed to cancel subscription", new Error(fetchError), {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        subscriptionId,
+        error: fetchError,
+      });
       return { data: null, error: fetchError };
+    }
+
+    // Log subscription cancellation
+    if (result && session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "subscription_cancelled",
+        resourceId: subscriptionId,
+        metadata: { cancel_at_period_end: result.cancel_at_period_end },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+
+      logInfo("Subscription cancelled successfully", {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        subscriptionId,
+        cancelAtPeriodEnd: result.cancel_at_period_end,
+      });
     }
 
     return { data: result, error: null };
   } catch (error) {
+    logError("Exception cancelling subscription", error, {
+      correlationId: crypto.randomUUID(),
+      salonId,
+      subscriptionId,
+    });
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -323,11 +429,22 @@ export async function getPaymentMethodSetupIntent(
     );
 
     if (fetchError) {
+      logError("Failed to get payment method setup intent", new Error(fetchError), {
+        correlationId: crypto.randomUUID(),
+        salonId,
+        customerId,
+        error: fetchError,
+      });
       return { data: null, error: fetchError };
     }
 
     return { data: result, error: null };
   } catch (error) {
+    logError("Exception getting payment method setup intent", error, {
+      correlationId: crypto.randomUUID(),
+      salonId,
+      customerId,
+    });
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
