@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useFeatures } from "@/lib/hooks/use-features";
 import {
@@ -40,88 +40,110 @@ export function useBookings({ translations }: UseBookingsOptions) {
     setMounted(true);
   }, []);
 
+  // Use ref to track if we're currently loading to prevent infinite loops
+  const isLoadingRef = useRef(false);
+  const lastSalonIdRef = useRef<string | null>(null);
+
   const loadBookings = useCallback(async () => {
+    // Prevent concurrent loads
+    if (isLoadingRef.current) {
+      return;
+    }
+
+    // Prevent reloading if salon hasn't changed
+    if (lastSalonIdRef.current === salon?.id && salon?.id) {
+      return;
+    }
+
+    isLoadingRef.current = true;
+    lastSalonIdRef.current = salon?.id || null;
     setLoading(true);
     setError(null);
 
     if (!salon?.id) {
       setError(translations.noSalon);
       setLoading(false);
+      isLoadingRef.current = false;
       return;
     }
 
-    const [
-      { data: bookingsData, error: bookingsError },
-      { data: employeesData, error: employeesError },
-      { data: servicesData, error: servicesError },
-      { data: productsData, error: productsError },
-      { data: shiftsData, error: shiftsError },
-    ] = await Promise.all([
-      getBookingsForCurrentSalon(salon.id),
-      getEmployeesForCurrentSalon(salon.id),
-      getActiveServicesForCurrentSalon(salon.id),
-      // Only load products if INVENTORY feature is available
-      mounted && hasFeature("INVENTORY")
-        ? getProductsForSalon(salon.id, { activeOnly: true })
-        : Promise.resolve({ data: [], error: null }),
-      getShiftsForCurrentSalon(salon.id),
-    ]);
+    try {
+      const [
+        { data: bookingsData, error: bookingsError },
+        { data: employeesData, error: employeesError },
+        { data: servicesData, error: servicesError },
+        { data: productsData, error: productsError },
+        { data: shiftsData, error: shiftsError },
+      ] = await Promise.all([
+        getBookingsForCurrentSalon(salon.id),
+        getEmployeesForCurrentSalon(salon.id),
+        getActiveServicesForCurrentSalon(salon.id),
+        // Only load products if INVENTORY feature is available
+        mounted && hasFeature("INVENTORY")
+          ? getProductsForSalon(salon.id, { activeOnly: true })
+          : Promise.resolve({ data: [], error: null }),
+        getShiftsForCurrentSalon(salon.id),
+      ]);
 
-    const hasInventoryFeature = mounted && hasFeature("INVENTORY");
-    if (
-      bookingsError ||
-      employeesError ||
-      servicesError ||
-      (hasInventoryFeature && productsError) ||
-      shiftsError
-    ) {
-      setError(
-        bookingsError ??
-          employeesError ??
-          servicesError ??
-          (hasInventoryFeature ? productsError : null) ??
-          shiftsError ??
-          translations.loadError
+      const hasInventoryFeature = mounted && hasFeature("INVENTORY");
+      if (
+        bookingsError ||
+        employeesError ||
+        servicesError ||
+        (hasInventoryFeature && productsError) ||
+        shiftsError
+      ) {
+        setError(
+          bookingsError ??
+            employeesError ??
+            servicesError ??
+            (hasInventoryFeature ? productsError : null) ??
+            shiftsError ??
+            translations.loadError
+        );
+        setLoading(false);
+        isLoadingRef.current = false;
+        return;
+      }
+
+      // Load products for each booking only if INVENTORY feature is available
+      const bookingsWithProducts = await Promise.all(
+        (bookingsData ?? []).map(async (booking) => {
+          if (hasInventoryFeature) {
+            const { data: bookingProducts } = await getProductsForBooking(booking.id);
+            return {
+              ...booking,
+              products: bookingProducts?.map((bp) => ({
+                id: bp.id,
+                product_id: bp.product_id,
+                quantity: bp.quantity,
+                price_cents: bp.price_cents,
+                product: {
+                  id: bp.product.id,
+                  name: bp.product.name,
+                  price_cents: bp.product.price_cents,
+                },
+              })) || null,
+            };
+          }
+          return { ...booking, products: null };
+        })
       );
+      setBookings(bookingsWithProducts);
+      setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
+      setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
+      // Only set products if INVENTORY feature is available
+      if (mounted && hasFeature("INVENTORY")) {
+        setProducts(productsData ?? []);
+      } else {
+        setProducts([]);
+      }
+      setShifts(shiftsData ?? []);
       setLoading(false);
-      return;
+    } finally {
+      isLoadingRef.current = false;
     }
-
-    // Load products for each booking only if INVENTORY feature is available
-    const bookingsWithProducts = await Promise.all(
-      (bookingsData ?? []).map(async (booking) => {
-        if (hasInventoryFeature) {
-          const { data: bookingProducts } = await getProductsForBooking(booking.id);
-          return {
-            ...booking,
-            products: bookingProducts?.map((bp) => ({
-              id: bp.id,
-              product_id: bp.product_id,
-              quantity: bp.quantity,
-              price_cents: bp.price_cents,
-              product: {
-                id: bp.product.id,
-                name: bp.product.name,
-                price_cents: bp.product.price_cents,
-              },
-            })) || null,
-          };
-        }
-        return { ...booking, products: null };
-      })
-    );
-    setBookings(bookingsWithProducts);
-    setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
-    setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
-    // Only set products if INVENTORY feature is available
-    if (mounted && hasFeature("INVENTORY")) {
-      setProducts(productsData ?? []);
-    } else {
-      setProducts([]);
-    }
-    setShifts(shiftsData ?? []);
-    setLoading(false);
-  }, [salon?.id, mounted, hasFeature, translations.noSalon, translations.loadError]);
+  }, [salon?.id, mounted, hasFeature]);
 
   useEffect(() => {
     if (!isReady) {
@@ -136,8 +158,11 @@ export function useBookings({ translations }: UseBookingsOptions) {
       return;
     }
 
-    loadBookings();
-  }, [isReady, salon?.id, salonLoading, salonError, translations.noSalon, loadBookings]);
+    // Only load if salon ID has changed or we haven't loaded yet
+    if (salon?.id && (lastSalonIdRef.current !== salon.id || !isLoadingRef.current)) {
+      loadBookings();
+    }
+  }, [isReady, salon?.id, salonLoading, salonError, loadBookings]);
 
   const hasInventory = mounted && hasFeature("INVENTORY");
 

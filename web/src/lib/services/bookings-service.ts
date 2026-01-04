@@ -14,6 +14,10 @@ import {
 } from "@/lib/repositories/bookings";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
+import { sendBookingConfirmation } from "@/lib/services/email-service";
+import { scheduleReminders, cancelReminders } from "@/lib/services/reminder-service";
+import { getSalonById } from "@/lib/repositories/salons";
+import { getCustomerById } from "@/lib/repositories/customers";
 
 /**
  * Get bookings for current salon with business logic
@@ -118,6 +122,114 @@ export async function createBooking(
         ...logContext,
         bookingId: result.data.id,
       });
+
+      // Send booking confirmation email if customer email is provided
+      if (input.customer_email && result.data) {
+        try {
+          // Get salon info for language and name
+          const salonResult = await getSalonById(input.salon_id);
+          const salon = salonResult.data;
+          
+          // Prepare booking data for email template
+          const bookingForEmail: Booking & {
+            customer_full_name: string;
+            service?: { name: string | null } | null;
+            employee?: { name: string | null } | null;
+            salon?: { name: string | null } | null;
+          } = {
+            ...result.data,
+            customer_full_name: input.customer_full_name,
+            service: result.data.services,
+            employee: result.data.employees ? { name: result.data.employees.full_name } : null,
+            salon: salon ? { name: salon.name } : null,
+          };
+
+          // If we're in a browser, call the API route instead of sending email directly
+          if (typeof window !== "undefined") {
+            // Call API route for email and reminders
+            logInfo("Calling send-notifications API route from browser", {
+              ...logContext,
+              bookingId: result.data!.id,
+              customerEmail: input.customer_email,
+            });
+
+            fetch("/api/bookings/send-notifications", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                booking: bookingForEmail,
+                customerEmail: input.customer_email,
+                salonId: input.salon_id,
+                language: salon?.preferred_language || "en",
+              }),
+            })
+              .then(async (response) => {
+                const responseData = await response.json();
+                if (!response.ok) {
+                  logWarn("send-notifications API route returned error", {
+                    ...logContext,
+                    bookingId: result.data!.id,
+                    status: response.status,
+                    error: responseData.error,
+                  });
+                } else {
+                  logInfo("send-notifications API route succeeded", {
+                    ...logContext,
+                    bookingId: result.data!.id,
+                    emailResult: responseData.email,
+                    reminderResult: responseData.reminders,
+                  });
+                }
+              })
+              .catch((fetchError) => {
+                logWarn("Failed to call send-notifications API route", {
+                  ...logContext,
+                  bookingId: result.data!.id,
+                  fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+                });
+              });
+          } else {
+            // Server-side: send email and schedule reminders directly
+            await sendBookingConfirmation({
+              booking: bookingForEmail,
+              recipientEmail: input.customer_email,
+              language: salon?.preferred_language || "en",
+              salonId: input.salon_id,
+            }).catch((emailError) => {
+              logWarn("Failed to send booking confirmation email", {
+                ...logContext,
+                bookingId: result.data!.id,
+                emailError: emailError instanceof Error ? emailError.message : "Unknown error",
+              });
+            });
+
+            // Schedule reminders (24h and 2h before appointment)
+            if (result.data) {
+              await scheduleReminders({
+                bookingId: result.data.id,
+                bookingStartTime: result.data.start_time,
+                salonId: input.salon_id,
+                timezone: salon?.preferred_language ? undefined : "UTC", // TODO: Get timezone from salon
+              }).catch((reminderError: unknown) => {
+                logWarn("Failed to schedule reminders", {
+                  ...logContext,
+                  bookingId: result.data!.id,
+                  reminderError: reminderError instanceof Error ? reminderError.message : "Unknown error",
+                });
+              });
+            }
+          }
+        } catch (emailError) {
+          // Don't fail booking creation if email fails
+          logWarn("Exception sending booking confirmation email", {
+            ...logContext,
+            bookingId: result.data.id,
+            emailError: emailError instanceof Error ? emailError.message : "Unknown error",
+          });
+        }
+      }
     }
 
     return result;
@@ -211,6 +323,14 @@ export async function cancelBooking(
       return { error: "Salon ID and Booking ID are required" };
     }
 
+    // Cancel reminders first
+    await cancelReminders(bookingId).catch((reminderError) => {
+      logWarn("Failed to cancel reminders", {
+        ...logContext,
+        reminderError: reminderError instanceof Error ? reminderError.message : "Unknown error",
+      });
+    });
+
     // Call repository to update status
     const result = await updateBookingStatusRepo(salonId, bookingId, "cancelled");
     
@@ -258,6 +378,14 @@ export async function deleteBooking(
       logWarn("Booking deletion failed: missing required parameters", logContext);
       return { error: "Salon ID and Booking ID are required" };
     }
+
+    // Cancel reminders first
+    await cancelReminders(bookingId).catch((reminderError) => {
+      logWarn("Failed to cancel reminders", {
+        ...logContext,
+        reminderError: reminderError instanceof Error ? reminderError.message : "Unknown error",
+      });
+    });
 
     // Call repository
     const result = await deleteBookingRepo(salonId, bookingId);

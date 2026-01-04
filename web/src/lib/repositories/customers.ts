@@ -77,6 +77,36 @@ export async function createCustomer(
 }
 
 /**
+ * Get customer by ID
+ */
+export async function getCustomerById(
+  customerId: string
+): Promise<{ data: Customer | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("customers")
+      .select("id, full_name, email, phone, notes, gdpr_consent")
+      .eq("id", customerId)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!data) {
+      return { data: null, error: "Customer not found" };
+    }
+
+    return { data: data as Customer, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Delete a customer
  */
 export async function deleteCustomer(
