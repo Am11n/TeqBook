@@ -310,8 +310,10 @@ describe("Audit Log Service", () => {
         offset: 0,
       });
 
+      expect(result.data).toBeDefined();
+      expect(result.data).not.toBeNull();
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].action).toBe("login_failed");
+      expect(result.data![0].action).toBe("login_failed");
     });
 
     it("should filter audit logs by date range", async () => {
@@ -401,7 +403,9 @@ describe("Audit Log Service", () => {
       });
 
       expect(result.data).toBeDefined();
-      expect(result.data.length).toBeGreaterThanOrEqual(0);
+      if (result.data) {
+        expect(result.data.length).toBeGreaterThanOrEqual(0);
+      }
     });
   });
 });

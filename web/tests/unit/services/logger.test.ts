@@ -6,6 +6,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { logger, logDebug, logInfo, logWarn, logError, logSecurity } from "@/lib/services/logger";
 
+// Helper to set NODE_ENV (since it's read-only)
+function setNodeEnv(value: string) {
+  Object.defineProperty(process, "env", {
+    value: { ...process.env, NODE_ENV: value },
+    writable: true,
+    configurable: true,
+  });
+}
+
 // Mock console methods - use mockImplementation to preserve call tracking
 let consoleDebugSpy: ReturnType<typeof vi.spyOn>;
 let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
@@ -34,10 +43,10 @@ describe("Logger Service", () => {
     
     vi.clearAllMocks();
     // Reset environment - set to development for most tests
-    process.env.NODE_ENV = "development";
+    setNodeEnv("development");
     process.env.NEXT_PUBLIC_SENTRY_DSN = undefined;
     // Mock window for browser environment tests
-    global.window = {} as Window;
+    (global as any).window = {} as any;
   });
 
   afterEach(() => {
@@ -56,7 +65,7 @@ describe("Logger Service", () => {
     it("should not log debug messages in production mode", async () => {
       // Temporarily change NODE_ENV and re-import logger
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       
       // Clear module cache and re-import
       vi.resetModules();
@@ -66,7 +75,7 @@ describe("Logger Service", () => {
       expect(consoleDebugSpy).not.toHaveBeenCalled();
       
       // Restore
-      process.env.NODE_ENV = originalEnv;
+      setNodeEnv(originalEnv);
       vi.resetModules();
     });
 
@@ -80,7 +89,7 @@ describe("Logger Service", () => {
 
     it("should not log info messages in production mode", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       
       vi.resetModules();
       const { logInfo: prodLogInfo } = await import("@/lib/services/logger");
@@ -88,7 +97,7 @@ describe("Logger Service", () => {
       prodLogInfo("Info message", { key: "value" });
       expect(consoleInfoSpy).not.toHaveBeenCalled();
       
-      process.env.NODE_ENV = originalEnv;
+      setNodeEnv(originalEnv);
       vi.resetModules();
     });
 
@@ -219,7 +228,7 @@ describe("Logger Service", () => {
   describe("Sentry Integration", () => {
     beforeEach(() => {
       // Mock window object for browser environment
-      global.window = {} as Window;
+      (global as any).window = {} as any;
       process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/test";
       // Reset Sentry mocks
       mockSentry.captureMessage.mockClear();
@@ -228,7 +237,7 @@ describe("Logger Service", () => {
 
     it("should send warnings to Sentry in production", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       
       // Re-import logger to get new instance with production mode
       vi.resetModules();
@@ -255,13 +264,13 @@ describe("Logger Service", () => {
       );
       
       // Restore
-      process.env.NODE_ENV = originalEnv;
+      setNodeEnv(originalEnv);
       vi.resetModules();
     });
 
     it("should send errors to Sentry in production", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       
       vi.resetModules();
       const { logError: prodLogError } = await import("@/lib/services/logger");
@@ -288,12 +297,12 @@ describe("Logger Service", () => {
       );
       
       // Restore
-      process.env.NODE_ENV = originalEnv;
+      setNodeEnv(originalEnv);
       vi.resetModules();
     });
 
     it("should send security events to Sentry when configured", async () => {
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       logSecurity("Security event", { userId: "123", action: "login_failed" });
       
       // Wait for async Sentry import
@@ -319,7 +328,7 @@ describe("Logger Service", () => {
     });
 
     it("should not send to Sentry if DSN is not configured", async () => {
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       delete process.env.NEXT_PUBLIC_SENTRY_DSN;
       logWarn("Warning message", { key: "value" });
       
@@ -330,7 +339,7 @@ describe("Logger Service", () => {
     });
 
     it("should handle Sentry import errors gracefully", async () => {
-      process.env.NODE_ENV = "production";
+      setNodeEnv("production");
       // Mock failed import
       vi.doMock("@sentry/nextjs", () => {
         throw new Error("Sentry not available");
