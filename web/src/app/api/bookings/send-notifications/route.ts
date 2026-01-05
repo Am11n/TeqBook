@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
-import { logError, logWarn } from "@/lib/services/logger";
+import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import type { Booking } from "@/lib/types";
 
 export async function POST(request: NextRequest) {

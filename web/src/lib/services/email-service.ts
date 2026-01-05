@@ -143,13 +143,40 @@ export async function sendEmail(
           error: null,
         } as { data: { id: string } | null; error: { message: string } | null };
       } else {
-        providerResponse = await client.emails.send({
+        // Prepare email with best practices for deliverability
+        const emailOptions: {
+          from: string;
+          to: string;
+          subject: string;
+          html: string;
+          text?: string;
+          reply_to?: string;
+          headers?: Record<string, string>;
+          tags?: Array<{ name: string; value: string }>;
+        } = {
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: input.to,
           subject: input.subject,
           html: input.html,
           text: input.text || input.html.replace(/<[^>]*>/g, ""), // Strip HTML for text version
-        });
+          // Add reply-to header (better deliverability than noreply)
+          reply_to: process.env.EMAIL_REPLY_TO || FROM_EMAIL.replace("noreply", "support"),
+          // Add headers to improve deliverability
+          headers: {
+            "X-Entity-Ref-ID": logContext.correlationId,
+            "List-Unsubscribe": `<mailto:${process.env.EMAIL_UNSUBSCRIBE || FROM_EMAIL.replace("noreply", "unsubscribe")}?subject=unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            "Precedence": "bulk", // Indicates transactional email
+            "X-Auto-Response-Suppress": "All", // Prevents auto-replies
+          },
+          // Add tags for better tracking and deliverability
+          tags: [
+            { name: "email_type", value: input.emailType || "other" },
+            { name: "salon_id", value: input.salonId || "unknown" },
+          ],
+        };
+
+        providerResponse = await client.emails.send(emailOptions);
 
         if (providerResponse.error) {
           throw new Error(providerResponse.error.message || "Email sending failed");

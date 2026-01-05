@@ -288,9 +288,12 @@ export async function checkRateLimit(
         endpointType,
         action: "check",
       }),
+    }).catch(() => {
+      // Network error (CORS, connection refused, etc.) - fallback to client-side
+      return null;
     });
 
-    if (!response.ok) {
+    if (!response || !response.ok) {
       // Fallback to client-side on error
       const clientResult = isRateLimited(identifier);
       return {
@@ -372,9 +375,12 @@ export async function incrementRateLimit(
         endpointType,
         action: "increment",
       }),
+    }).catch(() => {
+      // Network error (CORS, connection refused, etc.) - fallback to client-side
+      return null;
     });
 
-    if (!response.ok) {
+    if (!response || !response.ok) {
       // Fallback to client-side on error
       return recordFailedAttempt(identifier);
     }
@@ -446,9 +452,12 @@ export async function resetRateLimit(
         endpointType,
         action: "reset",
       }),
+    }).catch(() => {
+      // Network error (CORS, connection refused, etc.) - fallback to client-side
+      return null;
     });
 
-    if (!response.ok) {
+    if (!response || !response.ok) {
       // Fallback to client-side on error
       clearRateLimit(identifier);
       return { success: true };
