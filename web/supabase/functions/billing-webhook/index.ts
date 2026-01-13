@@ -60,9 +60,47 @@ serve(async (req) => {
       apiVersion: "2024-11-20.acacia",
     });
 
-    // Verify webhook signature
+    // Verify webhook signature and prevent replay attacks
     let event: Stripe.Event;
     try {
+      // Extract timestamp from signature header to check for replay attacks
+      // Stripe signature format: t=timestamp,v1=signature,v0=signature
+      const signatureParts = signature.split(",");
+      const timestampPart = signatureParts.find((part) => part.startsWith("t="));
+      
+      if (timestampPart) {
+        const timestamp = parseInt(timestampPart.split("=")[1]);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const age = currentTime - timestamp;
+        
+        // Reject webhooks older than 5 minutes (300 seconds) to prevent replay attacks
+        // Stripe SDK also validates this, but we add explicit check for clarity
+        if (age > 300) {
+          console.error("Webhook timestamp too old (replay attack):", { age, timestamp, currentTime });
+          return new Response(
+            JSON.stringify({ error: "Webhook timestamp too old - possible replay attack" }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+        
+        // Reject webhooks with future timestamps
+        if (age < -300) {
+          console.error("Webhook timestamp in future:", { age, timestamp, currentTime });
+          return new Response(
+            JSON.stringify({ error: "Webhook timestamp in future" }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+      }
+
+      // Verify webhook signature using Stripe SDK
+      // This validates the signature and also checks timestamp (within 5 minutes)
       event = stripe.webhooks.constructEvent(
         body,
         signature,
