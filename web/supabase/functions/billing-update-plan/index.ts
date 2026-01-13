@@ -249,7 +249,7 @@ serve(async (req) => {
       );
     }
 
-    // Check subscription status - cannot update incomplete subscriptions
+    // Check subscription status - cannot update incomplete or canceled subscriptions
     if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
       return new Response(
         JSON.stringify({
@@ -257,6 +257,23 @@ serve(async (req) => {
           details: `Subscription is in '${subscription.status}' status. Please complete the payment first before changing plans.`,
           hint: "Go to Stripe Dashboard and complete the payment, or cancel this subscription and create a new one.",
           subscription_status: subscription.status,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Check if subscription is canceled
+    if (subscription.status === "canceled" || subscription.canceled_at) {
+      return new Response(
+        JSON.stringify({
+          error: "Cannot update canceled subscription",
+          details: "This subscription has been canceled and can only update cancellation_details and metadata.",
+          hint: "Please create a new subscription with the desired plan instead.",
+          subscription_status: subscription.status,
+          canceled_at: subscription.canceled_at,
         }),
         {
           status: 400,

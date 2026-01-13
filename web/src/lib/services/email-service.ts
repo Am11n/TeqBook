@@ -80,6 +80,25 @@ export interface SendPaymentFailureInput {
   userId?: string | null; // Optional: user ID to check preferences
 }
 
+export interface SendPaymentRetryInput {
+  salonName: string;
+  recipientEmail: string;
+  retryAttempt: number;
+  language?: string;
+  salonId?: string | null;
+  userId?: string | null;
+}
+
+export interface SendPaymentWarningInput {
+  salonName: string;
+  recipientEmail: string;
+  gracePeriodEndsAt: string;
+  daysRemaining: number;
+  language?: string;
+  salonId?: string | null;
+  userId?: string | null;
+}
+
 /**
  * Send a generic email
  */
@@ -375,3 +394,101 @@ export async function sendPaymentFailure(
   });
 }
 
+/**
+ * Send payment retry email
+ * Checks user preferences before sending
+ */
+export async function sendPaymentRetry(
+  input: SendPaymentRetryInput
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  // Check preferences if userId is provided
+  if (input.userId) {
+    const shouldSend = await shouldSendNotification({
+      userId: input.userId,
+      notificationType: "email",
+      emailType: "payment_failure", // Use same preference as payment failure
+      salonId: input.salonId || null,
+    });
+
+    if (!shouldSend) {
+      logWarn("Payment retry email blocked by user preferences", {
+        userId: input.userId,
+        salonId: input.salonId,
+      });
+      return { data: null, error: "Email blocked by user preferences" };
+    }
+  }
+
+  const language = normalizeLocale(input.language || "en");
+  
+  // Use payment failure template with retry context
+  const { renderPaymentFailureTemplate } = await import("@/lib/templates/email/payment-failure");
+  const { html, text, subject } = renderPaymentFailureTemplate({
+    salonName: input.salonName,
+    failureReason: `Retry attempt ${input.retryAttempt} of 3`,
+    language,
+  });
+
+  return await sendEmail({
+    to: input.recipientEmail,
+    subject: `${subject} - Retry Attempt ${input.retryAttempt}`,
+    html,
+    text,
+    salonId: input.salonId,
+    emailType: "payment_failure",
+    metadata: {
+      retry_attempt: input.retryAttempt,
+      language,
+    },
+  });
+}
+
+/**
+ * Send payment access restriction warning email
+ * Checks user preferences before sending
+ */
+export async function sendPaymentWarning(
+  input: SendPaymentWarningInput
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  // Check preferences if userId is provided
+  if (input.userId) {
+    const shouldSend = await shouldSendNotification({
+      userId: input.userId,
+      notificationType: "email",
+      emailType: "payment_failure", // Use same preference as payment failure
+      salonId: input.salonId || null,
+    });
+
+    if (!shouldSend) {
+      logWarn("Payment warning email blocked by user preferences", {
+        userId: input.userId,
+        salonId: input.salonId,
+      });
+      return { data: null, error: "Email blocked by user preferences" };
+    }
+  }
+
+  const language = normalizeLocale(input.language || "en");
+  
+  // Use payment failure template with warning context
+  const { renderPaymentFailureTemplate } = await import("@/lib/templates/email/payment-failure");
+  const { html, text, subject } = renderPaymentFailureTemplate({
+    salonName: input.salonName,
+    failureReason: `Access will be restricted in ${input.daysRemaining} day(s) if payment is not updated`,
+    language,
+  });
+
+  return await sendEmail({
+    to: input.recipientEmail,
+    subject: `Urgent: Payment Required - ${input.daysRemaining} Day(s) Remaining`,
+    html,
+    text,
+    salonId: input.salonId,
+    emailType: "payment_failure",
+    metadata: {
+      grace_period_ends_at: input.gracePeriodEndsAt,
+      days_remaining: input.daysRemaining,
+      language,
+    },
+  });
+}

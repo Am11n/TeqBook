@@ -1,0 +1,7 @@
+# Supabase Configuration
+# This file configures Supabase Edge Functions
+
+[functions.billing-webhook]
+# Disable JWT verification for webhook endpoint
+# Webhooks use Stripe signature verification instead
+verify_jwt = false

@@ -3,7 +3,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, X, CheckCircle2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CreditCard, X, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
 import type { Salon } from "@/lib/types";
 
@@ -65,6 +66,38 @@ export function CurrentPlanCard({
             </Badge>
           )}
         </div>
+
+        {/* Payment Status */}
+        {hasSubscription && (salon as any)?.payment_status && (salon as any).payment_status !== "active" && (
+          <div className="mt-4 pt-4 border-t">
+            <Alert variant={(salon as any).payment_status === "restricted" ? "destructive" : "default"}>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <div className="font-semibold">
+                    {(salon as any).payment_status === "failed" && "Payment Failed"}
+                    {(salon as any).payment_status === "grace_period" && "Payment Failed - Grace Period"}
+                    {(salon as any).payment_status === "restricted" && "Access Restricted"}
+                  </div>
+                  {(salon as any).payment_failure_count > 0 && (
+                    <div className="text-sm">
+                      Retry attempts: {(salon as any).payment_failure_count} / 3
+                    </div>
+                  )}
+                  {(salon as any).payment_failed_at && (salon as any).payment_status === "grace_period" && (
+                    <div className="text-sm flex items-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      Grace period ends:{" "}
+                      {new Date(
+                        new Date((salon as any).payment_failed_at).getTime() + 7 * 24 * 60 * 60 * 1000
+                      ).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         {/* Subscription Status */}
         {hasSubscription && salon?.current_period_end && (

@@ -6,6 +6,7 @@
 import { supabase } from "@/lib/supabase-client";
 import { logBillingEvent } from "@/lib/services/audit-log-service";
 import { logError, logInfo, logWarn } from "@/lib/services/logger";
+import { sendPaymentFailure } from "@/lib/services/email-service";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
@@ -452,3 +453,391 @@ export async function getPaymentMethodSetupIntent(
   }
 }
 
+// =====================================================
+// Payment Failure Handling
+// =====================================================
+
+/**
+ * Configuration constants for payment failure handling
+ */
+const MAX_RETRY_ATTEMPTS = 3;
+const GRACE_PERIOD_DAYS = 7;
+const RETRY_DELAY_HOURS = 24; // Retry after 24 hours
+
+/**
+ * Handle payment failure - update salon status and send notifications
+ */
+export async function handlePaymentFailure(
+  salonId: string,
+  subscriptionId: string,
+  failureReason: string
+): Promise<{ data: { retry_attempt: number; grace_period_ends_at: string | null } | null; error: string | null }> {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      return { data: null, error: "Not authenticated" };
+    }
+
+    // Get current salon data
+    const { data: salon, error: salonError } = await supabase
+      .from("salons")
+      .select("id, name, billing_customer_id, payment_failure_count, payment_failed_at, payment_status")
+      .eq("id", salonId)
+      .single();
+
+    if (salonError || !salon) {
+      return { data: null, error: salonError?.message || "Salon not found" };
+    }
+
+    // Get salon owner email
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id, email")
+      .eq("salon_id", salonId)
+      .eq("role", "owner")
+      .single();
+
+    const currentFailureCount = (salon.payment_failure_count || 0) + 1;
+    const now = new Date().toISOString();
+    const gracePeriodEndsAt = salon.payment_failed_at
+      ? new Date(new Date(salon.payment_failed_at).getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString()
+      : new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+    // Update salon with payment failure
+    const updateData: any = {
+      payment_failure_count: currentFailureCount,
+      last_payment_retry_at: now,
+    };
+
+    // Set payment_failed_at if this is the first failure
+    if (!salon.payment_failed_at) {
+      updateData.payment_failed_at = now;
+    }
+
+    // Update payment status
+    if (currentFailureCount >= MAX_RETRY_ATTEMPTS) {
+      const daysSinceFirstFailure = salon.payment_failed_at
+        ? Math.floor((Date.now() - new Date(salon.payment_failed_at).getTime()) / (24 * 60 * 60 * 1000))
+        : 0;
+
+      if (daysSinceFirstFailure >= GRACE_PERIOD_DAYS) {
+        updateData.payment_status = "restricted";
+      } else {
+        updateData.payment_status = "grace_period";
+      }
+    } else {
+      updateData.payment_status = "failed";
+    }
+
+    const { error: updateError } = await supabase
+      .from("salons")
+      .update(updateData)
+      .eq("id", salonId);
+
+    if (updateError) {
+      logError("Failed to update salon payment failure status", updateError, {
+        salonId,
+        subscriptionId,
+        failureReason,
+      });
+      return { data: null, error: updateError.message };
+    }
+
+    // Send payment failure email
+    if (profile?.email) {
+      await sendPaymentFailure({
+        recipientEmail: profile.email,
+        salonName: salon.name || "Your Salon",
+        failureReason,
+        salonId,
+        userId: profile.user_id,
+        language: "en", // TODO: Get from salon preferences
+      }).catch((err) => {
+        logWarn("Failed to send payment failure email", {
+          salonId,
+          email: profile.email,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
+      });
+    }
+
+    // Log billing event
+    if (session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "payment_failed",
+        resourceId: subscriptionId,
+        metadata: {
+          failure_reason: failureReason,
+          retry_attempt: currentFailureCount,
+          grace_period_ends_at: gracePeriodEndsAt,
+        },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+    }
+
+    logInfo("Payment failure handled", {
+      salonId,
+      subscriptionId,
+      failureCount: currentFailureCount,
+      status: updateData.payment_status,
+    });
+
+    return {
+      data: {
+        retry_attempt: currentFailureCount,
+        grace_period_ends_at: gracePeriodEndsAt,
+      },
+      error: null,
+    };
+  } catch (error) {
+    logError("Exception handling payment failure", error, {
+      salonId,
+      subscriptionId,
+      failureReason,
+    });
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Retry failed payment
+ */
+export async function retryFailedPayment(
+  salonId: string,
+  subscriptionId: string
+): Promise<{ data: { success: boolean; retry_attempt: number } | null; error: string | null }> {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      return { data: null, error: "Not authenticated" };
+    }
+
+    // Get salon data
+    const { data: salon, error: salonError } = await supabase
+      .from("salons")
+      .select("id, billing_customer_id, payment_failure_count, last_payment_retry_at")
+      .eq("id", salonId)
+      .single();
+
+    if (salonError || !salon) {
+      return { data: null, error: salonError?.message || "Salon not found" };
+    }
+
+    // Check if max retries reached
+    if ((salon.payment_failure_count || 0) >= MAX_RETRY_ATTEMPTS) {
+      return {
+        data: null,
+        error: `Maximum retry attempts (${MAX_RETRY_ATTEMPTS}) reached. Please update your payment method.`,
+      };
+    }
+
+    // Check if enough time has passed since last retry
+    if (salon.last_payment_retry_at) {
+      const hoursSinceLastRetry =
+        (Date.now() - new Date(salon.last_payment_retry_at).getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLastRetry < RETRY_DELAY_HOURS) {
+        const hoursRemaining = Math.ceil(RETRY_DELAY_HOURS - hoursSinceLastRetry);
+        return {
+          data: null,
+          error: `Please wait ${hoursRemaining} more hour(s) before retrying.`,
+        };
+      }
+    }
+
+    // Note: Actual payment retry would be done via Stripe API
+    // This function would trigger Stripe to retry the payment
+    // For now, we'll just update the retry timestamp
+    const { error: updateError } = await supabase
+      .from("salons")
+      .update({
+        last_payment_retry_at: new Date().toISOString(),
+      })
+      .eq("id", salonId);
+
+    if (updateError) {
+      return { data: null, error: updateError.message };
+    }
+
+    // Log retry attempt
+    if (session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "payment_retry_attempted",
+        resourceId: subscriptionId,
+        metadata: {
+          retry_attempt: (salon.payment_failure_count || 0) + 1,
+        },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+    }
+
+    logInfo("Payment retry initiated", {
+      salonId,
+      subscriptionId,
+      retryAttempt: (salon.payment_failure_count || 0) + 1,
+    });
+
+    return {
+      data: {
+        success: true,
+        retry_attempt: (salon.payment_failure_count || 0) + 1,
+      },
+      error: null,
+    };
+  } catch (error) {
+    logError("Exception retrying failed payment", error, {
+      salonId,
+      subscriptionId,
+    });
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Check if salon has access based on payment status and grace period
+ */
+export async function checkSalonPaymentAccess(
+  salonId: string
+): Promise<{ data: { hasAccess: boolean; reason: string | null; gracePeriodEndsAt: string | null } | null; error: string | null }> {
+  try {
+    const { data: salon, error: salonError } = await supabase
+      .from("salons")
+      .select("id, payment_status, payment_failed_at, payment_failure_count, billing_subscription_id")
+      .eq("id", salonId)
+      .single();
+
+    if (salonError || !salon) {
+      return { data: null, error: salonError?.message || "Salon not found" };
+    }
+
+    // If no subscription, access is allowed (free tier or trial)
+    if (!salon.billing_subscription_id) {
+      return {
+        data: {
+          hasAccess: true,
+          reason: null,
+          gracePeriodEndsAt: null,
+        },
+        error: null,
+      };
+    }
+
+    // If payment status is active, access is allowed
+    if (salon.payment_status === "active" || !salon.payment_status) {
+      return {
+        data: {
+          hasAccess: true,
+          reason: null,
+          gracePeriodEndsAt: null,
+        },
+        error: null,
+      };
+    }
+
+    // If payment failed, check grace period
+    if (salon.payment_failed_at) {
+      const daysSinceFailure = Math.floor(
+        (Date.now() - new Date(salon.payment_failed_at).getTime()) / (24 * 60 * 60 * 1000)
+      );
+      const gracePeriodEndsAt = new Date(
+        new Date(salon.payment_failed_at).getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000
+      ).toISOString();
+
+      if (daysSinceFailure < GRACE_PERIOD_DAYS) {
+        // Still in grace period
+        return {
+          data: {
+            hasAccess: true,
+            reason: "grace_period",
+            gracePeriodEndsAt,
+          },
+          error: null,
+        };
+      } else {
+        // Grace period expired
+        return {
+          data: {
+            hasAccess: false,
+            reason: "payment_failed_grace_period_expired",
+            gracePeriodEndsAt,
+          },
+          error: null,
+        };
+      }
+    }
+
+    // Default: access allowed
+    return {
+      data: {
+        hasAccess: true,
+        reason: null,
+        gracePeriodEndsAt: null,
+      },
+      error: null,
+    };
+  } catch (error) {
+    logError("Exception checking salon payment access", error, {
+      salonId,
+    });
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Reset payment failure status when payment succeeds
+ */
+export async function resetPaymentFailureStatus(salonId: string): Promise<{ data: boolean | null; error: string | null }> {
+  try {
+    const { error: updateError } = await supabase
+      .from("salons")
+      .update({
+        payment_failure_count: 0,
+        payment_failed_at: null,
+        last_payment_retry_at: null,
+        payment_status: "active",
+      })
+      .eq("id", salonId);
+
+    if (updateError) {
+      return { data: null, error: updateError.message };
+    }
+
+    logInfo("Payment failure status reset", {
+      salonId,
+    });
+
+    return { data: true, error: null };
+  } catch (error) {
+    logError("Exception resetting payment failure status", error, {
+      salonId,
+    });
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}

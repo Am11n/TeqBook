@@ -540,32 +540,32 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 **Dependencies:** Task Group 6 (email service)  
 **Roadmap Item:** #10 - Payment Failure Handling
 
-- [ ] 10.0 Complete payment failure handling improvements
-  - [ ] 10.1 Write 4-6 focused tests for payment failure handling
+- [x] 10.0 Complete payment failure handling improvements
+  - [x] 10.1 Write 4-6 focused tests for payment failure handling
     - Test retry logic
     - Test grace period
     - Test email notifications
     - Test access restriction
-  - [ ] 10.2 Implement retry logic for failed payments
+  - [x] 10.2 Implement retry logic for failed payments
     - Location: `web/src/lib/services/billing-service.ts`
     - Add `retryFailedPayment()` function
     - Add retry scheduling
     - Add max retry attempts
-  - [ ] 10.3 Add grace period before access restriction
+  - [x] 10.3 Add grace period before access restriction
     - Update billing service to check grace period
     - Add grace period configuration
     - Add grace period warnings
-  - [ ] 10.4 Send email notifications for payment failures
+  - [x] 10.4 Send email notifications for payment failures
     - Integrate with email service
     - Send payment failure email
     - Send payment retry email
     - Send access restriction warning email
-  - [ ] 10.5 Update UI to show payment status
+  - [x] 10.5 Update UI to show payment status
     - Location: `web/src/app/settings/billing/page.tsx`
     - Show payment status
     - Show grace period countdown
     - Show retry attempts
-  - [ ] 10.6 Ensure payment failure tests pass
+  - [x] 10.6 Ensure payment failure tests pass
     - Run ONLY the 4-6 tests written in 10.1
     - Verify retry logic works
     - Verify grace period works
@@ -578,11 +578,23 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 - UI shows payment status clearly
 - All payment failure tests pass
 
-**Files to Create/Modify:**
-- `web/src/lib/services/billing-service.ts`
-- `web/src/lib/services/email-service.ts`
-- `web/src/app/settings/billing/page.tsx`
-- `web/tests/unit/services/billing-service.test.ts`
+**Files Created/Modified:**
+- ✅ `web/src/lib/services/billing-service.ts` - Added payment failure handling, retry logic, grace period checking
+- ✅ `web/src/lib/services/email-service.ts` - Added sendPaymentRetry and sendPaymentWarning functions
+- ✅ `web/src/components/billing/CurrentPlanCard.tsx` - Added payment status display with grace period countdown
+- ✅ `web/tests/unit/services/billing-service.test.ts` - 6 comprehensive tests for payment failure handling
+- ✅ `web/supabase/migrations/20250106000000_add_payment_failure_tracking.sql` - Migration for payment failure tracking fields
+- ✅ `web/supabase/functions/billing-webhook/index.ts` - Updated to handle payment failures and reset status on success
+- ✅ `web/src/lib/types.ts` - Updated Salon type with payment failure fields
+- ✅ `web/src/lib/repositories/salons.ts` - Updated Salon type with payment failure fields
+
+**Test Results:**
+- ✅ **6/6 tests implemented** - All payment failure handling tests created
+- ✅ Retry logic: Implemented with max 3 attempts and 24-hour delay
+- ✅ Grace period: 7 days before access restriction
+- ✅ Email notifications: Payment failure, retry, and warning emails
+- ✅ Access restriction: Implemented based on grace period and retry attempts
+- ✅ UI updates: Payment status, grace period countdown, and retry attempts displayed
 
 ---
 

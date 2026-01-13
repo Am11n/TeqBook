@@ -18,11 +18,12 @@ const TEST_WEBHOOK_SECRET = "whsec_" + TEST_SECRET_BYTES.toString("base64");
 const TEST_STRIPE_SECRET_KEY = "sk_test_1234567890abcdef1234567890abcdef";
 
 // Sample webhook event payload
+// Using Partial<Stripe.Event> and type assertion to allow flexible event creation for testing
 const createTestEvent = (type: string, data: any): Stripe.Event => {
   return {
     id: `evt_test_${Date.now()}`,
     object: "event",
-    api_version: "2024-11-20.acacia",
+    api_version: "2024-11-20.acacia" as any, // Type assertion needed as Stripe types may not include all API versions
     created: Math.floor(Date.now() / 1000),
     data: {
       object: data,
@@ -35,7 +36,7 @@ const createTestEvent = (type: string, data: any): Stripe.Event => {
       idempotency_key: null,
     },
     type: type as Stripe.Event.Type,
-  };
+  } as Stripe.Event;
 };
 
 // Helper to create a valid webhook signature (matching Stripe's exact algorithm)
@@ -99,7 +100,7 @@ describe("Webhook Signature Verification", () => {
 
   beforeEach(() => {
     stripe = new Stripe(TEST_STRIPE_SECRET_KEY, {
-      apiVersion: "2024-11-20.acacia",
+      apiVersion: "2024-11-20.acacia" as any, // Type assertion needed as Stripe types may not include all API versions
     });
   });
 

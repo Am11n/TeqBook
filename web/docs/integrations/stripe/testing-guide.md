@@ -336,11 +336,26 @@ Test hele flyten:
 
 ---
 
+## Test 7: Payment Failure Handling
+
+For omfattende testing av payment failure handling, se den dedikerte guiden:
+
+📖 **[Payment Failure Testing Guide](./payment-failure-testing-guide.md)**
+
+Denne guiden dekker:
+- Simulering av payment failures via Stripe Dashboard
+- Testing av retry logic og grace period
+- Testing av email notifications
+- End-to-end test scenarios
+- Troubleshooting tips
+
+---
+
 ## Neste Steg
 
 Etter testing:
 - Implementer Stripe Elements i UI for betalingsbekreftelse
 - Legg til subscription management i settings-siden
 - Implementer trial period hvis ønskelig
-- Legg til email-notifikasjoner for betalingsfeil
+- Test payment failure handling (se [Payment Failure Testing Guide](./payment-failure-testing-guide.md))
 

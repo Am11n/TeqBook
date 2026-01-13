@@ -25,6 +25,11 @@ serve(async (req) => {
   }
 
   try {
+    // For webhooks, we verify using Stripe signature, not Supabase auth
+    // However, Supabase may require apikey header for Edge Functions
+    // Check if apikey is provided (optional for webhooks, but may be required by Supabase)
+    const apikey = req.headers.get("apikey") || new URL(req.url).searchParams.get("apikey");
+    
     // Get environment variables
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -100,8 +105,9 @@ serve(async (req) => {
       }
 
       // Verify webhook signature using Stripe SDK
+      // In Deno/Edge Functions, we must use constructEventAsync instead of constructEvent
       // This validates the signature and also checks timestamp (within 5 minutes)
-      event = stripe.webhooks.constructEvent(
+      event = await stripe.webhooks.constructEventAsync(
         body,
         signature,
         stripeWebhookSecret
@@ -188,16 +194,22 @@ serve(async (req) => {
           const salonId = subscription.metadata.salon_id;
 
           if (salonId) {
-            // Update current_period_end if needed
+            // Update current_period_end and reset payment failure status
             const { error: updateError } = await supabase
               .from("salons")
               .update({
                 current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                payment_failure_count: 0,
+                payment_failed_at: null,
+                last_payment_retry_at: null,
+                payment_status: "active",
               })
               .eq("id", salonId);
 
             if (updateError) {
               console.error("Error updating salon after payment:", updateError);
+            } else {
+              console.log(`Payment succeeded for invoice ${invoice.id}, reset payment failure status for salon ${salonId}`);
             }
           }
         }
@@ -209,16 +221,172 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = invoice.subscription as string;
 
-        if (subscriptionId) {
-          // You might want to notify the salon owner or update a status
-          console.log(`Payment failed for subscription ${subscriptionId}, invoice ${invoice.id}`);
-          // TODO: Send notification email or update status
+        console.log("Processing invoice.payment_failed event:", {
+          invoice_id: invoice.id,
+          subscription_id: subscriptionId,
+          customer_id: invoice.customer,
+        });
+
+        if (!subscriptionId) {
+          console.warn("Invoice has no subscription ID - cannot process payment failure without subscription");
+          break;
+        }
+
+        try {
+          // Retrieve subscription to get salon_id
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          
+          // Get salon_id from subscription metadata (can be reassigned if found via customer_id)
+          let salonId = subscription.metadata.salon_id;
+
+          console.log("Retrieved subscription:", {
+            subscription_id: subscription.id,
+            salon_id: salonId,
+            metadata: subscription.metadata,
+          });
+
+          // If subscription metadata doesn't have salon_id, try to find salon via customer_id
+          
+          if (!salonId && invoice.customer) {
+            console.log("Subscription missing salon_id in metadata, trying to find salon via customer_id:", {
+              customer_id: invoice.customer,
+            });
+            
+            // Try to find salon by billing_customer_id
+            const { data: salonByCustomer } = await supabase
+              .from("salons")
+              .select("id")
+              .eq("billing_customer_id", invoice.customer as string)
+              .maybeSingle();
+            
+            if (salonByCustomer) {
+              salonId = salonByCustomer.id;
+              console.log("Found salon via customer_id:", salonId);
+              
+              // Update subscription metadata with salon_id for future webhooks
+              try {
+                await stripe.subscriptions.update(subscriptionId, {
+                  metadata: {
+                    ...subscription.metadata,
+                    salon_id: salonId,
+                  },
+                });
+                console.log("Updated subscription metadata with salon_id");
+              } catch (updateError) {
+                console.warn("Failed to update subscription metadata:", updateError);
+              }
+            } else {
+              console.warn("Could not find salon by customer_id:", {
+                customer_id: invoice.customer,
+                subscription_id: subscriptionId,
+              });
+            }
+          }
+          
+          if (!salonId) {
+            console.warn("Cannot process payment failure - no salon_id found:", {
+              subscription_id: subscriptionId,
+              customer_id: invoice.customer,
+              subscription_metadata: subscription.metadata,
+            });
+            break;
+          }
+
+          // At this point, salonId is guaranteed to be set
+          // Get failure reason from invoice
+          const failureReason = invoice.last_payment_error?.message || "payment_failed";
+          
+          // Get current salon data
+          const { data: salon } = await supabase
+            .from("salons")
+            .select("id, name, billing_customer_id, payment_failure_count, payment_failed_at, payment_status")
+            .eq("id", salonId)
+            .single();
+
+          if (salon) {
+            const currentFailureCount = (salon.payment_failure_count || 0) + 1;
+            const now = new Date().toISOString();
+            const GRACE_PERIOD_DAYS = 7;
+            const MAX_RETRY_ATTEMPTS = 3;
+            
+            // Calculate grace period end
+            const gracePeriodEndsAt = salon.payment_failed_at
+              ? new Date(new Date(salon.payment_failed_at).getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString()
+              : new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+            // Update salon with payment failure
+            const updateData: any = {
+              payment_failure_count: currentFailureCount,
+              last_payment_retry_at: now,
+            };
+
+            // Set payment_failed_at if this is the first failure
+            if (!salon.payment_failed_at) {
+              updateData.payment_failed_at = now;
+            }
+
+            // Update payment status
+            if (currentFailureCount >= MAX_RETRY_ATTEMPTS) {
+              const daysSinceFirstFailure = salon.payment_failed_at
+                ? Math.floor((Date.now() - new Date(salon.payment_failed_at).getTime()) / (24 * 60 * 60 * 1000))
+                : 0;
+
+              if (daysSinceFirstFailure >= GRACE_PERIOD_DAYS) {
+                updateData.payment_status = "restricted";
+              } else {
+                updateData.payment_status = "grace_period";
+              }
+            } else {
+              updateData.payment_status = "failed";
+            }
+
+            const { error: updateError } = await supabase
+              .from("salons")
+              .update(updateData)
+              .eq("id", salonId);
+
+            if (updateError) {
+              console.error("Error updating salon payment failure status:", {
+                error: updateError,
+                salonId,
+                updateData,
+              });
+            } else {
+              console.log(`Payment failed for subscription ${subscriptionId}, invoice ${invoice.id}. Updated salon ${salonId} with failure count ${currentFailureCount}`, {
+                salonId,
+                payment_status: updateData.payment_status,
+                payment_failure_count: currentFailureCount,
+              });
+              
+              // Get salon owner email and send notification
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("user_id, email")
+                .eq("salon_id", salonId)
+                .eq("role", "owner")
+                .single();
+
+              if (profile?.email) {
+                // Note: Email sending would be done via Edge Function or background job
+                // For now, we log it - email service integration can be added later
+                console.log(`Should send payment failure email to ${profile.email} for salon ${salonId}`);
+              }
+            }
+          } else {
+            console.warn("Salon not found in database:", salonId);
+          }
+        } catch (subscriptionError) {
+          console.error("Error retrieving subscription:", {
+            subscription_id: subscriptionId,
+            error: subscriptionError instanceof Error ? subscriptionError.message : "Unknown error",
+          });
         }
         break;
       }
 
-      default:
+      default: {
         console.log(`Unhandled event type: ${event.type}`);
+      }
     }
 
     return new Response(
