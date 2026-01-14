@@ -75,7 +75,7 @@ describe("Plan Limits Service", () => {
 
     it("should return base limit + addon quantity when addon exists", async () => {
       vi.mocked(addonsRepo.getAddonByType).mockResolvedValue({
-        data: { id: "addon-1", salon_id: salonId, addon_type: "extra_staff", qty: 3, active: true },
+        data: { id: "addon-1", salon_id: salonId, type: "extra_staff", qty: 3, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         error: null,
       });
 
@@ -106,7 +106,10 @@ describe("Plan Limits Service", () => {
 
     it("should allow adding employee when under limit", async () => {
       vi.mocked(employeesRepo.getEmployeesForCurrentSalon).mockResolvedValue({
-        data: [{ id: "emp-1" }, { id: "emp-2" }], // 2 employees
+        data: [
+          { id: "emp-1", full_name: "Employee 1", email: null, phone: null, role: null, preferred_language: "en", is_active: true },
+          { id: "emp-2", full_name: "Employee 2", email: null, phone: null, role: null, preferred_language: "en", is_active: true },
+        ], // 2 employees
         error: null,
       });
       vi.mocked(addonsRepo.getAddonByType).mockResolvedValue({
@@ -124,13 +127,14 @@ describe("Plan Limits Service", () => {
     });
 
     it("should prevent adding employee when at limit", async () => {
+      const employeeMock = { full_name: "Employee", email: null, phone: null, role: null, preferred_language: "en", is_active: true };
       vi.mocked(employeesRepo.getEmployeesForCurrentSalon).mockResolvedValue({
         data: [
-          { id: "emp-1" },
-          { id: "emp-2" },
-          { id: "emp-3" },
-          { id: "emp-4" },
-          { id: "emp-5" },
+          { id: "emp-1", ...employeeMock },
+          { id: "emp-2", ...employeeMock },
+          { id: "emp-3", ...employeeMock },
+          { id: "emp-4", ...employeeMock },
+          { id: "emp-5", ...employeeMock },
         ], // 5 employees
         error: null,
       });
@@ -149,8 +153,9 @@ describe("Plan Limits Service", () => {
     });
 
     it("should allow unlimited employees for business plan", async () => {
+      const employeeMock = { id: "emp", full_name: "Employee", email: null, phone: null, role: null, preferred_language: "en", is_active: true };
       vi.mocked(employeesRepo.getEmployeesForCurrentSalon).mockResolvedValue({
-        data: Array(100).fill({ id: "emp" }), // 100 employees
+        data: Array(100).fill(employeeMock), // 100 employees
         error: null,
       });
 
@@ -260,8 +265,9 @@ describe("Plan Limits Service", () => {
     describe("Employee limit enforcement at creation", () => {
       it("should enforce employee limit when creating new employee", async () => {
         // Mock: Salon has 4 employees, limit is 5 (pro plan)
+        const employeeMock = { id: "emp", full_name: "Employee", email: null, phone: null, role: null, preferred_language: "en", is_active: true };
         vi.mocked(employeesRepo.getEmployeesForCurrentSalon).mockResolvedValue({
-          data: Array(4).fill({ id: "emp" }),
+          data: Array(4).fill(employeeMock),
           error: null,
         });
         vi.mocked(addonsRepo.getAddonByType).mockResolvedValue({
@@ -277,8 +283,9 @@ describe("Plan Limits Service", () => {
 
       it("should block employee creation when at limit", async () => {
         // Mock: Salon has 5 employees, limit is 5 (pro plan)
+        const employeeMock = { id: "emp", full_name: "Employee", email: null, phone: null, role: null, preferred_language: "en", is_active: true };
         vi.mocked(employeesRepo.getEmployeesForCurrentSalon).mockResolvedValue({
-          data: Array(5).fill({ id: "emp" }),
+          data: Array(5).fill(employeeMock),
           error: null,
         });
         vi.mocked(addonsRepo.getAddonByType).mockResolvedValue({
@@ -325,7 +332,7 @@ describe("Plan Limits Service", () => {
       it("should include addon quantity in effective limit", async () => {
         // Starter plan: 2 employees base, +3 from addon = 5 total
         vi.mocked(addonsRepo.getAddonByType).mockResolvedValue({
-          data: { id: "addon-1", salon_id: salonId, addon_type: "extra_staff", qty: 3, active: true },
+          data: { id: "addon-1", salon_id: salonId, type: "extra_staff", qty: 3, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
           error: null,
         });
 
