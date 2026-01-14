@@ -55,10 +55,7 @@ describe("Reports Service", () => {
 
     it("should call repository when feature is available", async () => {
       const mockResult = {
-        total: 100,
-        confirmed: 80,
-        cancelled: 10,
-        completed: 10,
+        total_count: 100,
       };
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({
@@ -90,7 +87,7 @@ describe("Reports Service", () => {
       });
 
       vi.mocked(reportsRepo.getTotalBookings).mockResolvedValue({
-        data: { total: 0, confirmed: 0, cancelled: 0, completed: 0 },
+        data: { total_count: 0 },
         error: null,
       });
 
@@ -147,8 +144,8 @@ describe("Reports Service", () => {
 
     it("should call repository when feature is available", async () => {
       const mockResult = [
-        { month: "2025-01", revenue: 10000 },
-        { month: "2025-02", revenue: 15000 },
+        { month: "2025-01", revenue_cents: 10000, booking_count: 10 },
+        { month: "2025-02", revenue_cents: 15000, booking_count: 15 },
       ];
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({
@@ -234,8 +231,8 @@ describe("Reports Service", () => {
 
     it("should call repository when feature is available", async () => {
       const mockResult = [
-        { service_id: "service-1", service_name: "Haircut", count: 50 },
-        { service_id: "service-2", service_name: "Color", count: 30 },
+        { service_id: "service-1", service_name: "Haircut", booking_count: 50, revenue_cents: 50000 },
+        { service_id: "service-2", service_name: "Color", booking_count: 30, revenue_cents: 30000 },
       ];
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({
@@ -297,9 +294,11 @@ describe("Reports Service", () => {
 
     it("should call repository when feature is available", async () => {
       const mockResult = {
-        total_capacity: 100,
-        utilised_capacity: 75,
+        total_hours_booked: 75,
+        total_hours_available: 100,
         utilisation_percentage: 75,
+        total_bookings: 50,
+        average_booking_duration_minutes: 90,
       };
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({

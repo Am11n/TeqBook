@@ -39,7 +39,9 @@ describe("Salons Service", () => {
         id: "salon-1",
         name: "Test Salon",
         slug: "test-salon",
-        plan: "base" as const,
+        is_public: true,
+        preferred_language: "en",
+        plan: "starter" as const,
       };
 
       vi.mocked(salonsRepo.getSalonBySlug).mockResolvedValue({
@@ -81,7 +83,9 @@ describe("Salons Service", () => {
         id: "salon-1",
         name: "Test Salon",
         slug: "test-salon",
-        plan: "base" as const,
+        is_public: true,
+        preferred_language: "en",
+        plan: "starter" as const,
       };
 
       vi.mocked(salonsRepo.getSalonById).mockResolvedValue({
@@ -142,14 +146,14 @@ describe("Salons Service", () => {
       const result = await updateSalonSettings(
         "salon-1",
         { supported_languages: ["en", "nb", "ar", "so", "ti", "am"] },
-        "base"
+        "starter"
       );
 
       expect(result.error).toContain("Language limit reached");
       expect(result.limitReached).toBe(true);
       expect(vi.mocked(planLimitsService.canAddLanguage)).toHaveBeenCalledWith(
         "salon-1",
-        "base",
+        "starter",
         ["en", "nb", "ar", "so", "ti", "am"]
       );
       expect(vi.mocked(salonsRepo.updateSalon)).not.toHaveBeenCalled();
@@ -166,7 +170,7 @@ describe("Salons Service", () => {
       const result = await updateSalonSettings(
         "salon-1",
         { supported_languages: ["en"] },
-        "base"
+        "starter"
       );
 
       expect(result.error).toBe("Failed to check limits");
@@ -188,13 +192,13 @@ describe("Salons Service", () => {
       const result = await updateSalonSettings(
         "salon-1",
         { supported_languages: ["en", "nb"] },
-        "base"
+        "starter"
       );
 
       expect(result.error).toBeNull();
       expect(vi.mocked(planLimitsService.canAddLanguage)).toHaveBeenCalledWith(
         "salon-1",
-        "base",
+        "starter",
         ["en", "nb"]
       );
       expect(vi.mocked(salonsRepo.updateSalon)).toHaveBeenCalledWith("salon-1", {
@@ -207,7 +211,7 @@ describe("Salons Service", () => {
         error: null,
       });
 
-      const result = await updateSalonSettings("salon-1", { name: "New Name" }, "base");
+      const result = await updateSalonSettings("salon-1", { name: "New Name" }, "starter");
 
       expect(result.error).toBeNull();
       expect(vi.mocked(planLimitsService.canAddLanguage)).not.toHaveBeenCalled();
@@ -238,7 +242,7 @@ describe("Salons Service", () => {
       const result = await updateSalonSettings(
         "salon-1",
         { supported_languages: undefined },
-        "base"
+        "starter"
       );
 
       expect(result.error).toBeNull();
@@ -288,7 +292,7 @@ describe("Salons Service", () => {
         error: null,
       });
 
-      const result = await updateSalon("salon-1", { name: "New Name" }, "base");
+      const result = await updateSalon("salon-1", { name: "New Name" }, "starter");
 
       expect(result.error).toBeNull();
       expect(vi.mocked(salonsRepo.updateSalon)).toHaveBeenCalledWith("salon-1", {

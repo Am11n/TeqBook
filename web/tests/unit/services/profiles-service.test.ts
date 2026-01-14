@@ -25,12 +25,11 @@ describe("Profiles Service", () => {
 
     it("should call repository with valid userId", async () => {
       const mockProfile = {
-        id: "profile-1",
         user_id: "user-1",
-        first_name: "John",
-        last_name: "Doe",
-        preferred_language: "en",
+        salon_id: "salon-1",
+        is_superadmin: false,
         role: "owner",
+        preferred_language: "en",
       };
 
       vi.mocked(profilesRepo.getProfileByUserId).mockResolvedValue({

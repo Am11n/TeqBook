@@ -61,7 +61,11 @@ describe("Products Service", () => {
           salon_id: "salon-1",
           name: "Shampoo",
           price_cents: 10000,
+          stock: 10,
+          sku: null,
           is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
       ];
 
@@ -129,7 +133,11 @@ describe("Products Service", () => {
         salon_id: "salon-1",
         name: "Shampoo",
         price_cents: 10000,
+        stock: 10,
+        sku: null,
         is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       vi.mocked(productsRepo.getProductById).mockResolvedValue({
@@ -249,7 +257,11 @@ describe("Products Service", () => {
         salon_id: "salon-1",
         name: "Shampoo",
         price_cents: 10000,
+        stock: 10,
+        sku: null,
         is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({
@@ -351,7 +363,11 @@ describe("Products Service", () => {
         salon_id: "salon-1",
         name: "New Name",
         price_cents: 15000,
+        stock: 10,
+        sku: null,
         is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       vi.mocked(featureFlagsService.hasFeature).mockResolvedValue({
