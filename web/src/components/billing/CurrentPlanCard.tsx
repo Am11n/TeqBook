@@ -73,7 +73,10 @@ export function CurrentPlanCard({
                 </Badge>
               );
             } else if (salon?.current_period_end) {
-              const periodEnd = new Date(salon.current_period_end);
+              const periodEndStr = salon.current_period_end;
+              if (!periodEndStr) return null;
+              
+              const periodEnd = new Date(periodEndStr);
               if (periodEnd > new Date()) {
                 return (
                   <Badge variant="secondary" className="text-xs">
@@ -82,12 +85,13 @@ export function CurrentPlanCard({
                   </Badge>
                 );
               } else if (periodEnd <= new Date()) {
-              return (
-                <Badge variant="destructive" className="text-xs">
-                  <Ban className="h-3 w-3 mr-1" />
-                  Cancelled
-                </Badge>
-              );
+                return (
+                  <Badge variant="destructive" className="text-xs">
+                    <Ban className="h-3 w-3 mr-1" />
+                    Cancelled
+                  </Badge>
+                );
+              }
             }
             return null;
           })()}
