@@ -33,7 +33,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockData,
         error: null,
-      });
+      } as any);
 
       const result = await getTotalBookings(mockSalonId);
 
@@ -52,7 +52,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [],
         error: null,
-      });
+      } as any);
 
       const result = await getTotalBookings(mockSalonId);
 
@@ -64,7 +64,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [{ total_count: 50 }],
         error: null,
-      });
+      } as any);
 
       await getTotalBookings(mockSalonId, {
         status: "confirmed",
@@ -85,8 +85,8 @@ describe("Reports Repository", () => {
     it("should return error when RPC fails", async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: "RPC error" },
-      });
+        error: { message: "RPC error" } as any,
+      } as any);
 
       const result = await getTotalBookings(mockSalonId);
 
@@ -105,7 +105,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockData,
         error: null,
-      });
+      } as any);
 
       const result = await getRevenueByMonth(mockSalonId);
 
@@ -120,7 +120,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
         error: null,
-      });
+      } as any);
 
       const result = await getRevenueByMonth(mockSalonId);
 
@@ -132,7 +132,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [],
         error: null,
-      });
+      } as any);
 
       await getRevenueByMonth(mockSalonId, {
         startDate: "2025-01-01",
@@ -151,8 +151,8 @@ describe("Reports Repository", () => {
     it("should return error when RPC returns error", async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: "Database error" },
-      });
+        error: { message: "Database error" } as any,
+      } as any);
 
       const result = await getRevenueByMonth(mockSalonId);
 
@@ -181,7 +181,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockData,
         error: null,
-      });
+      } as any);
 
       const result = await getBookingsPerService(mockSalonId);
 
@@ -206,7 +206,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
         error: null,
-      });
+      } as any);
 
       const result = await getBookingsPerService(mockSalonId);
 
@@ -218,7 +218,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [],
         error: null,
-      });
+      } as any);
 
       await getBookingsPerService(mockSalonId, {
         startDate: "2025-01-01",
@@ -237,8 +237,8 @@ describe("Reports Repository", () => {
     it("should return error when RPC returns error", async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: "Database error" },
-      });
+        error: { message: "Database error" } as any,
+      } as any);
 
       const result = await getBookingsPerService(mockSalonId);
 
@@ -262,7 +262,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockData,
         error: null,
-      });
+      } as any);
 
       const result = await getCapacityUtilisation(mockSalonId);
 
@@ -280,7 +280,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [],
         error: null,
-      });
+      } as any);
 
       const result = await getCapacityUtilisation(mockSalonId);
 
@@ -298,7 +298,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
         error: null,
-      });
+      } as any);
 
       const result = await getCapacityUtilisation(mockSalonId);
 
@@ -316,7 +316,7 @@ describe("Reports Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: [],
         error: null,
-      });
+      } as any);
 
       await getCapacityUtilisation(mockSalonId, {
         startDate: "2025-01-01",
@@ -335,8 +335,8 @@ describe("Reports Repository", () => {
     it("should return error when RPC fails", async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: "RPC error" },
-      });
+        error: { message: "RPC error" } as any,
+      } as any);
 
       const result = await getCapacityUtilisation(mockSalonId);
 

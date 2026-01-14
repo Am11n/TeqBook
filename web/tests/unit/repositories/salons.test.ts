@@ -201,7 +201,7 @@ describe("Salons Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockSalonId,
         error: null,
-      });
+      } as any);
 
       const input = {
         salon_name: "New Salon",
@@ -229,8 +229,8 @@ describe("Salons Repository", () => {
     it("should return error when RPC fails", async () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
-        error: { message: "RPC error" },
-      });
+        error: { message: "RPC error" } as any,
+      } as any);
 
       const result = await createSalonForCurrentUser({
         salon_name: "New Salon",
@@ -248,7 +248,7 @@ describe("Salons Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: null,
         error: null,
-      });
+      } as any);
 
       const result = await createSalonForCurrentUser({
         salon_name: "New Salon",
@@ -266,7 +266,7 @@ describe("Salons Repository", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: "salon-id",
         error: null,
-      });
+      } as any);
 
       await createSalonForCurrentUser({
         salon_name: "New Salon",
