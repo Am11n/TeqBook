@@ -23,6 +23,19 @@ export type Profile = {
         bookingReminder?: boolean;
         bookingCancellation?: boolean;
         newBooking?: boolean;
+        paymentFailure?: boolean;
+        paymentRetry?: boolean;
+        accessRestrictionWarning?: boolean;
+      };
+      sms?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+      };
+      whatsapp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
       };
     };
   } | null;

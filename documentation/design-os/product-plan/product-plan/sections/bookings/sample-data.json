@@ -1,0 +1,378 @@
+{
+  "_meta": {
+    "models": {
+      "bookings": "Appointments scheduled between customers and employees for specific services at designated times.",
+      "services": "Services offered by the salon, such as haircuts, styling, treatments, and other offerings.",
+      "employees": "Staff members who work at the salon and can be assigned to bookings and shifts.",
+      "customers": "People who book appointments and receive services at the salon."
+    },
+    "relationships": [
+      "Each Booking belongs to one Customer, one Service, and one Employee",
+      "Bookings reference Services and Employees by ID for filtering and display",
+      "Customers can have multiple Bookings over time"
+    ]
+  },
+  "services": [
+    {
+      "id": "svc-001",
+      "name": "Classic Haircut",
+      "description": "Traditional men's haircut with clippers and scissors",
+      "duration": 30,
+      "price": 25.00,
+      "category": "Haircut"
+    },
+    {
+      "id": "svc-002",
+      "name": "Premium Haircut & Style",
+      "description": "Full haircut with styling, includes wash and finish",
+      "duration": 45,
+      "price": 45.00,
+      "category": "Haircut"
+    },
+    {
+      "id": "svc-003",
+      "name": "Beard Trim",
+      "description": "Professional beard shaping and trimming",
+      "duration": 20,
+      "price": 18.00,
+      "category": "Grooming"
+    },
+    {
+      "id": "svc-004",
+      "name": "Haircut & Beard Combo",
+      "description": "Complete grooming package with haircut and beard trim",
+      "duration": 50,
+      "price": 55.00,
+      "category": "Package"
+    },
+    {
+      "id": "svc-005",
+      "name": "Hair Color",
+      "description": "Full hair coloring service with consultation",
+      "duration": 90,
+      "price": 85.00,
+      "category": "Color"
+    },
+    {
+      "id": "svc-006",
+      "name": "Hair Wash & Style",
+      "description": "Wash, condition, and style without cut",
+      "duration": 30,
+      "price": 20.00,
+      "category": "Styling"
+    },
+    {
+      "id": "svc-007",
+      "name": "Fade Haircut",
+      "description": "Modern fade haircut with precise blending",
+      "duration": 35,
+      "price": 30.00,
+      "category": "Haircut"
+    },
+    {
+      "id": "svc-008",
+      "name": "Hot Towel Shave",
+      "description": "Traditional hot towel straight razor shave with pre-shave treatment",
+      "duration": 40,
+      "price": 40.00,
+      "category": "Grooming"
+    }
+  ],
+  "employees": [
+    {
+      "id": "emp-001",
+      "name": "Marcus Johnson",
+      "email": "marcus@teqbook.com",
+      "phone": "+1 (555) 234-5678",
+      "specialties": ["Haircut", "Fade"],
+      "avatarUrl": null
+    },
+    {
+      "id": "emp-002",
+      "name": "Sarah Chen",
+      "email": "sarah@teqbook.com",
+      "phone": "+1 (555) 234-5679",
+      "specialties": ["Haircut", "Color", "Styling"],
+      "avatarUrl": null
+    },
+    {
+      "id": "emp-003",
+      "name": "David Rodriguez",
+      "email": "david@teqbook.com",
+      "phone": "+1 (555) 234-5680",
+      "specialties": ["Haircut", "Beard Trim", "Hot Towel Shave"],
+      "avatarUrl": null
+    },
+    {
+      "id": "emp-004",
+      "name": "Emma Williams",
+      "email": "emma@teqbook.com",
+      "phone": "+1 (555) 234-5681",
+      "specialties": ["Haircut", "Color", "Styling"],
+      "avatarUrl": null
+    },
+    {
+      "id": "emp-005",
+      "name": "James Anderson",
+      "email": "james@teqbook.com",
+      "phone": "+1 (555) 234-5682",
+      "specialties": ["Haircut", "Fade", "Beard Trim"],
+      "avatarUrl": null
+    }
+  ],
+  "customers": [
+    {
+      "id": "cust-001",
+      "name": "Michael Thompson",
+      "email": "michael.thompson@email.com",
+      "phone": "+1 (555) 123-4567",
+      "notes": "Prefers shorter on the sides, regular customer"
+    },
+    {
+      "id": "cust-002",
+      "name": "Jennifer Martinez",
+      "email": "j.martinez@email.com",
+      "phone": "+1 (555) 123-4568",
+      "notes": "Likes to try different colors, comes monthly"
+    },
+    {
+      "id": "cust-003",
+      "name": "Robert Lee",
+      "email": "robert.lee@email.com",
+      "phone": "+1 (555) 123-4569",
+      "notes": "Always books fade haircut, very particular about length"
+    },
+    {
+      "id": "cust-004",
+      "name": "Amanda Davis",
+      "email": "amanda.davis@email.com",
+      "phone": "+1 (555) 123-4570",
+      "notes": "New customer, interested in color services"
+    },
+    {
+      "id": "cust-005",
+      "name": "Christopher Brown",
+      "email": "chris.brown@email.com",
+      "phone": "+1 (555) 123-4571",
+      "notes": "Books haircut and beard combo every 3 weeks"
+    },
+    {
+      "id": "cust-006",
+      "name": "Jessica Wilson",
+      "email": "jessica.wilson@email.com",
+      "phone": "+1 (555) 123-4572",
+      "notes": "Prefers premium haircut service, tip well"
+    },
+    {
+      "id": "cust-007",
+      "name": "Daniel Garcia",
+      "email": "daniel.garcia@email.com",
+      "phone": "+1 (555) 123-4573",
+      "notes": "First-time customer"
+    },
+    {
+      "id": "cust-008",
+      "name": "Lisa Anderson",
+      "email": "lisa.anderson@email.com",
+      "phone": "+1 (555) 123-4574",
+      "notes": "Regular for styling services, prefers Sarah or Emma"
+    },
+    {
+      "id": "cust-009",
+      "name": "Matthew Taylor",
+      "email": "matthew.taylor@email.com",
+      "phone": "+1 (555) 123-4575",
+      "notes": "Books hot towel shave monthly, very satisfied customer"
+    },
+    {
+      "id": "cust-010",
+      "name": "Nicole White",
+      "email": "nicole.white@email.com",
+      "phone": "+1 (555) 123-4576",
+      "notes": "Interested in color treatments, consultation needed"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "book-001",
+      "customerId": "cust-001",
+      "customerName": "Michael Thompson",
+      "serviceId": "svc-001",
+      "serviceName": "Classic Haircut",
+      "employeeId": "emp-001",
+      "employeeName": "Marcus Johnson",
+      "date": "2024-12-20",
+      "time": "10:00",
+      "duration": 30,
+      "status": "confirmed",
+      "notes": "Regular appointment, prefers shorter on sides",
+      "createdAt": "2024-12-15T09:00:00Z"
+    },
+    {
+      "id": "book-002",
+      "customerId": "cust-002",
+      "customerName": "Jennifer Martinez",
+      "serviceId": "svc-005",
+      "serviceName": "Hair Color",
+      "employeeId": "emp-002",
+      "employeeName": "Sarah Chen",
+      "date": "2024-12-20",
+      "time": "14:00",
+      "duration": 90,
+      "status": "confirmed",
+      "notes": "Monthly color touch-up, wants to try auburn highlights",
+      "createdAt": "2024-12-10T14:30:00Z"
+    },
+    {
+      "id": "book-003",
+      "customerId": "cust-003",
+      "customerName": "Robert Lee",
+      "serviceId": "svc-007",
+      "serviceName": "Fade Haircut",
+      "employeeId": "emp-001",
+      "employeeName": "Marcus Johnson",
+      "date": "2024-12-20",
+      "time": "11:30",
+      "duration": 35,
+      "status": "in-progress",
+      "notes": "Very particular about fade length, #2 guard on sides",
+      "createdAt": "2024-12-18T10:15:00Z"
+    },
+    {
+      "id": "book-004",
+      "customerId": "cust-005",
+      "customerName": "Christopher Brown",
+      "serviceId": "svc-004",
+      "serviceName": "Haircut & Beard Combo",
+      "employeeId": "emp-003",
+      "employeeName": "David Rodriguez",
+      "date": "2024-12-20",
+      "time": "15:30",
+      "duration": 50,
+      "status": "pending",
+      "notes": "Regular 3-week appointment",
+      "createdAt": "2024-12-19T08:00:00Z"
+    },
+    {
+      "id": "book-005",
+      "customerId": "cust-006",
+      "customerName": "Jessica Wilson",
+      "serviceId": "svc-002",
+      "serviceName": "Premium Haircut & Style",
+      "employeeId": "emp-004",
+      "employeeName": "Emma Williams",
+      "date": "2024-12-21",
+      "time": "10:00",
+      "duration": 45,
+      "status": "confirmed",
+      "notes": "Special occasion styling needed",
+      "createdAt": "2024-12-16T11:20:00Z"
+    },
+    {
+      "id": "book-006",
+      "customerId": "cust-009",
+      "customerName": "Matthew Taylor",
+      "serviceId": "svc-008",
+      "serviceName": "Hot Towel Shave",
+      "employeeId": "emp-003",
+      "employeeName": "David Rodriguez",
+      "date": "2024-12-21",
+      "time": "13:00",
+      "duration": 40,
+      "status": "confirmed",
+      "notes": "Monthly shave, prefers extra hot towels",
+      "createdAt": "2024-12-12T15:45:00Z"
+    },
+    {
+      "id": "book-007",
+      "customerId": "cust-004",
+      "customerName": "Amanda Davis",
+      "serviceId": "svc-005",
+      "serviceName": "Hair Color",
+      "employeeId": "emp-002",
+      "employeeName": "Sarah Chen",
+      "date": "2024-12-21",
+      "time": "15:00",
+      "duration": 90,
+      "status": "pending",
+      "notes": "New customer, needs color consultation first",
+      "createdAt": "2024-12-19T16:30:00Z"
+    },
+    {
+      "id": "book-008",
+      "customerId": "cust-008",
+      "customerName": "Lisa Anderson",
+      "serviceId": "svc-006",
+      "serviceName": "Hair Wash & Style",
+      "employeeId": "emp-004",
+      "employeeName": "Emma Williams",
+      "date": "2024-12-21",
+      "time": "11:00",
+      "duration": 30,
+      "status": "completed",
+      "notes": "Regular styling appointment, always satisfied",
+      "createdAt": "2024-12-14T09:00:00Z"
+    },
+    {
+      "id": "book-009",
+      "customerId": "cust-007",
+      "customerName": "Daniel Garcia",
+      "serviceId": "svc-001",
+      "serviceName": "Classic Haircut",
+      "employeeId": "emp-005",
+      "employeeName": "James Anderson",
+      "date": "2024-12-19",
+      "time": "14:00",
+      "duration": 30,
+      "status": "completed",
+      "notes": "First visit, very happy with results",
+      "createdAt": "2024-12-17T10:00:00Z"
+    },
+    {
+      "id": "book-010",
+      "customerId": "cust-001",
+      "customerName": "Michael Thompson",
+      "serviceId": "svc-003",
+      "serviceName": "Beard Trim",
+      "employeeId": "emp-001",
+      "employeeName": "Marcus Johnson",
+      "date": "2024-12-19",
+      "time": "16:00",
+      "duration": 20,
+      "status": "cancelled",
+      "notes": "Customer called to cancel, will reschedule",
+      "createdAt": "2024-12-15T09:30:00Z"
+    },
+    {
+      "id": "book-011",
+      "customerId": "cust-002",
+      "customerName": "Jennifer Martinez",
+      "serviceId": "svc-002",
+      "serviceName": "Premium Haircut & Style",
+      "employeeId": "emp-002",
+      "employeeName": "Sarah Chen",
+      "date": "2024-12-18",
+      "time": "10:30",
+      "duration": 45,
+      "status": "no-show",
+      "notes": "Customer did not arrive, no call",
+      "createdAt": "2024-12-10T12:00:00Z"
+    },
+    {
+      "id": "book-012",
+      "customerId": "cust-010",
+      "customerName": "Nicole White",
+      "serviceId": "svc-005",
+      "serviceName": "Hair Color",
+      "employeeId": "emp-002",
+      "employeeName": "Sarah Chen",
+      "date": "2024-12-22",
+      "time": "10:00",
+      "duration": 90,
+      "status": "pending",
+      "notes": "Color consultation needed, first-time color service",
+      "createdAt": "2024-12-19T14:00:00Z"
+    }
+  ]
+}
+

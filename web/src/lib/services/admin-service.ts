@@ -6,6 +6,7 @@
 
 import { supabase } from "@/lib/supabase-client";
 import { getUserEmails } from "@/lib/repositories/admin";
+import { logAdminEvent } from "@/lib/services/audit-log-service";
 
 export type AdminSalon = {
   id: string;
@@ -244,6 +245,21 @@ export async function updateSalonPlan(
       return { error: error.message };
     }
 
+    // Log plan update
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await logAdminEvent({
+        userId: user.id,
+        action: "salon_plan_updated",
+        resourceId: salonId,
+        metadata: { plan },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
+    }
+
     return { error: null };
   } catch (err) {
     return {
@@ -269,6 +285,21 @@ export async function setSalonActive(
 
     if (error) {
       return { error: error.message };
+    }
+
+    // Log salon activation/deactivation
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await logAdminEvent({
+        userId: user.id,
+        action: isActive ? "salon_activated" : "salon_deactivated",
+        resourceId: salonId,
+        metadata: { is_active: isActive },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail if audit logging fails
+      });
     }
 
     return { error: null };

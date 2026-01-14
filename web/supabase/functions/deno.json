@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["deno.window"],
-    "strict": true
+    "lib": ["deno.window", "deno.ns", "deno.unstable"],
+    "strict": true,
+    "types": ["deno"]
   },
   "imports": {
     "stripe": "https://esm.sh/stripe@14.21.0",

@@ -24,6 +24,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -56,7 +57,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
 function AdminShellContent({ children }: AdminShellProps) {
   const { locale, setLocale } = useLocale();
-  const { isSuperAdmin, profile } = useCurrentSalon();
+  const { isSuperAdmin, profile, salon } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -160,6 +161,7 @@ function AdminShellContent({ children }: AdminShellProps) {
   const managementItems = [
     { href: "/admin/salons", label: "Salons", icon: Building2 },
     { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
   ];
 
   const analyticsItems = [
@@ -245,31 +247,7 @@ function AdminShellContent({ children }: AdminShellProps) {
         <div className="flex items-center gap-2 pr-6">
           {/* Language selector (Desktop) */}
           <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
-            <select
-              value={locale}
-              onChange={(e) => {
-                const newLocale = e.target.value as AppLocale;
-                setLocale(newLocale);
-              }}
-              className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"
-              style={{ backgroundImage: 'none' }}
-            >
-              <option value="nb">🇳🇴</option>
-              <option value="en">🇬🇧</option>
-              <option value="ar">🇸🇦</option>
-              <option value="so">🇸🇴</option>
-              <option value="ti">🇪🇷</option>
-              <option value="am">🇪🇹</option>
-              <option value="tr">🇹🇷</option>
-              <option value="pl">🇵🇱</option>
-              <option value="vi">🇻🇳</option>
-              <option value="tl">🇵🇭</option>
-              <option value="zh">🇨🇳</option>
-              <option value="fa">🇮🇷</option>
-              <option value="dar">🇦🇫</option>
-              <option value="ur">🇵🇰</option>
-              <option value="hi">🇮🇳</option>
-            </select>
+            <LanguageSelector locale={locale} salon={salon} setLocale={setLocale} />
           </div>
 
           {/* User avatar with dropdown */}
@@ -620,6 +598,65 @@ type NavLinkProps = {
   collapsed?: boolean;
   className?: string;
 };
+
+// Language selector component for admin shell
+function LanguageSelector({
+  locale,
+  salon,
+  setLocale,
+}: {
+  locale: string;
+  salon: any;
+  setLocale: (locale: AppLocale) => void;
+}) {
+  // Map of all available languages with their flags
+  const languageMap: Record<AppLocale, string> = {
+    nb: "🇳🇴",
+    en: "🇬🇧",
+    ar: "🇸🇦",
+    so: "🇸🇴",
+    ti: "🇪🇷",
+    am: "🇪🇹",
+    tr: "🇹🇷",
+    pl: "🇵🇱",
+    vi: "🇻🇳",
+    tl: "🇵🇭",
+    zh: "🇨🇳",
+    fa: "🇮🇷",
+    dar: "🇦🇫",
+    ur: "🇵🇰",
+    hi: "🇮🇳",
+  };
+
+  // Get supported languages from salon, fallback to default if not set
+  // For super admins, show all languages
+  const supportedLanguages = salon?.supported_languages && salon.supported_languages.length > 0
+    ? salon.supported_languages
+    : ["en", "nb"]; // Default fallback
+
+  // Ensure current locale is in supported languages, otherwise use first supported language
+  const currentLocale = supportedLanguages.includes(locale as AppLocale)
+    ? locale
+    : (supportedLanguages[0] || "en");
+
+  return (
+    <select
+      value={currentLocale}
+      onChange={(e) => {
+        const newLocale = e.target.value as AppLocale;
+        setLocale(newLocale);
+      }}
+      className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"
+      style={{ backgroundImage: 'none' }}
+    >
+      {supportedLanguages.map((lang: string) => (
+        <option key={lang} value={lang}>
+          {languageMap[lang as AppLocale] || lang}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 const NavLink = memo(function NavLink({ href, label, icon: Icon, isActive = false, collapsed = false, className }: NavLinkProps) {
   const content = (

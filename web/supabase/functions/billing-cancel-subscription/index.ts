@@ -10,6 +10,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
+
+function extractIdentifier(
+  req: Request,
+  user: { id: string } | null
+): { identifier: string; identifierType: "ip" | "user_id" } {
+  if (user?.id) {
+    return { identifier: user.id, identifierType: "user_id" };
+  }
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+  return { identifier: ip, identifierType: "ip" };
+}
 
 // Inline authentication function
 async function authenticateRequest(
@@ -72,7 +85,7 @@ interface CancelSubscriptionRequest {
   subscription_id: string;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { 
@@ -115,6 +128,29 @@ serve(async (req) => {
       );
     }
 
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      req,
+      {
+        endpointType: "billing-cancel-subscription",
+        supabaseUrl,
+        supabaseServiceKey,
+      },
+      user
+    );
+
+    if (!rateLimitResult.allowed) {
+      const { identifier, identifierType } = extractIdentifier(req, user);
+      return createRateLimitErrorResponse(
+        rateLimitResult,
+        identifier,
+        identifierType,
+        "billing-cancel-subscription",
+        supabaseUrl,
+        supabaseServiceKey
+      );
+    }
+
     // Parse request body
     const body: CancelSubscriptionRequest = await req.json();
 
@@ -140,12 +176,15 @@ serve(async (req) => {
     });
 
     // Update salon using service role key
+    // Store current_period_end so we can show when subscription ends
+    // Set billing_subscription_id to null so frontend knows subscription is cancelled
+    // This allows the alert to show even though subscription still exists in Stripe until period end
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { error: updateError } = await supabase
       .from("salons")
       .update({
-        // Keep subscription_id until period ends, but mark for cancellation
-        // You might want to add a cancellation_requested_at field
+        billing_subscription_id: null, // Clear subscription ID so frontend shows cancellation alert
+        current_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
       })
       .eq("id", body.salon_id);
 
@@ -164,7 +203,11 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          ...rateLimitResult.headers,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {
@@ -172,12 +215,13 @@ serve(async (req) => {
     
     // Handle Stripe-specific errors
     if (error instanceof Stripe.errors.StripeError) {
+      const stripeError = error as Stripe.errors.StripeError;
       return new Response(
         JSON.stringify({
           error: "Stripe error",
-          details: error.message,
-          type: error.type,
-          code: error.code,
+          details: stripeError.message,
+          type: stripeError.type,
+          code: stripeError.code,
         }),
         {
           status: 400,

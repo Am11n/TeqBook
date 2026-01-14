@@ -217,6 +217,11 @@ export type Salon = {
   billing_subscription_id?: string | null;
   current_period_end?: string | null;
   trial_end?: string | null;
+  // Payment failure tracking
+  payment_failure_count?: number | null;
+  payment_failed_at?: string | null;
+  last_payment_retry_at?: string | null;
+  payment_status?: "active" | "failed" | "grace_period" | "restricted" | null;
 };
 
 export type Profile = {

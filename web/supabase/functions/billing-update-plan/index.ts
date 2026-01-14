@@ -11,6 +11,235 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// =====================================================
+// Rate Limiting (Inlined - Supabase Dashboard doesn't support _shared folder)
+// =====================================================
+
+interface RateLimitResult {
+  allowed: boolean;
+  remainingAttempts: number;
+  resetTime: number | null;
+  blocked: boolean;
+  headers: Record<string, string>;
+}
+
+const RATE_LIMIT_CONFIG = {
+  maxAttempts: 20,
+  windowMs: 60 * 60 * 1000, // 1 hour
+  blockDurationMs: 60 * 60 * 1000, // 1 hour
+};
+
+async function checkRateLimit(
+  req: Request,
+  supabaseUrl: string,
+  supabaseServiceKey: string,
+  user: { id: string } | null
+): Promise<RateLimitResult> {
+  const identifier = user?.id || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  const identifierType = user?.id ? "user_id" : "ip";
+  const endpointType = "billing-update-plan";
+  const normalizedIdentifier = identifier.trim();
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_CONFIG.windowMs);
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Get or create rate limit entry
+  const { data: entry, error: fetchError } = await supabase
+    .from("rate_limit_entries")
+    .select("*")
+    .eq("identifier", normalizedIdentifier)
+    .eq("identifier_type", identifierType)
+    .eq("endpoint_type", endpointType)
+    .maybeSingle();
+
+  if (fetchError && fetchError.code !== "PGRST116") {
+    // Fail open - allow the request if we can't check rate limit
+    return {
+      allowed: true,
+      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      resetTime: null,
+      blocked: false,
+      headers: {
+        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+      },
+    };
+  }
+
+  // If entry doesn't exist, create it
+  if (!entry) {
+    const resetAt = new Date(now.getTime() + RATE_LIMIT_CONFIG.windowMs);
+    const { error: createError } = await supabase
+      .from("rate_limit_entries")
+      .insert({
+        identifier: normalizedIdentifier,
+        identifier_type: identifierType,
+        endpoint_type: endpointType,
+        attempts: 0,
+        reset_at: resetAt.toISOString(),
+        blocked_until: null,
+      });
+
+    if (createError) {
+      // Fail open
+      return {
+        allowed: true,
+        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+        resetTime: null,
+        blocked: false,
+        headers: {
+          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+          "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        },
+      };
+    }
+
+    return {
+      allowed: true,
+      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      resetTime: resetAt.getTime(),
+      blocked: false,
+      headers: {
+        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
+      },
+    };
+  }
+
+  // Check if currently blocked
+  if (entry.blocked_until) {
+    const blockedUntil = new Date(entry.blocked_until);
+    if (blockedUntil > now) {
+      const retryAfter = Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000);
+      return {
+        allowed: false,
+        remainingAttempts: 0,
+        resetTime: blockedUntil.getTime(),
+        blocked: true,
+        headers: {
+          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
+          "Retry-After": retryAfter.toString(),
+        },
+      };
+    }
+  }
+
+  // Check if window has expired
+  const resetAt = new Date(entry.reset_at);
+  if (resetAt < now) {
+    const newResetAt = new Date(now.getTime() + RATE_LIMIT_CONFIG.windowMs);
+    const { error: updateError } = await supabase
+      .from("rate_limit_entries")
+      .update({
+        attempts: 0,
+        reset_at: newResetAt.toISOString(),
+        blocked_until: null,
+      })
+      .eq("id", entry.id);
+
+    if (updateError) {
+      return {
+        allowed: true,
+        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+        resetTime: null,
+        blocked: false,
+        headers: {
+          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+          "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        },
+      };
+    }
+
+    return {
+      allowed: true,
+      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      resetTime: newResetAt.getTime(),
+      blocked: false,
+      headers: {
+        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Reset": Math.floor(newResetAt.getTime() / 1000).toString(),
+      },
+    };
+  }
+
+  // Check if limit exceeded
+  if (entry.attempts >= RATE_LIMIT_CONFIG.maxAttempts) {
+    const blockedUntil = new Date(now.getTime() + RATE_LIMIT_CONFIG.blockDurationMs);
+    await supabase
+      .from("rate_limit_entries")
+      .update({
+        blocked_until: blockedUntil.toISOString(),
+      })
+      .eq("id", entry.id);
+
+    const retryAfter = Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000);
+    return {
+      allowed: false,
+      remainingAttempts: 0,
+      resetTime: blockedUntil.getTime(),
+      blocked: true,
+      headers: {
+        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
+        "Retry-After": retryAfter.toString(),
+      },
+    };
+  }
+
+  // Within limit, increment attempts
+  const newAttempts = entry.attempts + 1;
+  await supabase
+    .from("rate_limit_entries")
+    .update({
+      attempts: newAttempts,
+      last_attempt_at: now.toISOString(),
+    })
+    .eq("id", entry.id);
+
+  const remainingAttempts = Math.max(0, RATE_LIMIT_CONFIG.maxAttempts - newAttempts);
+  return {
+    allowed: true,
+    remainingAttempts,
+    resetTime: resetAt.getTime(),
+    blocked: false,
+    headers: {
+      "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
+      "X-RateLimit-Remaining": remainingAttempts.toString(),
+      "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
+    },
+  };
+}
+
+function createRateLimitErrorResponse(result: RateLimitResult): Response {
+  const retryAfter = result.resetTime
+    ? Math.ceil((result.resetTime - Date.now()) / 1000)
+    : 900;
+
+  return new Response(
+    JSON.stringify({
+      error: "Rate limit exceeded",
+      message: "Too many requests. Please try again later.",
+      retryAfter,
+      blockedUntil: result.resetTime ? new Date(result.resetTime).toISOString() : null,
+    }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        ...result.headers,
+        "Retry-After": retryAfter.toString(),
+      },
+    }
+  );
+}
+
+
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
   req: Request,
@@ -120,6 +349,18 @@ serve(async (req) => {
       );
     }
 
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      req,
+      supabaseUrl,
+      supabaseServiceKey,
+      user
+    );
+
+    if (!rateLimitResult.allowed) {
+      return createRateLimitErrorResponse(rateLimitResult);
+    }
+
     // Parse request body
     const body: UpdatePlanRequest = await req.json();
 
@@ -213,7 +454,7 @@ serve(async (req) => {
       );
     }
 
-    // Check subscription status - cannot update incomplete subscriptions
+    // Check subscription status - cannot update incomplete or canceled subscriptions
     if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
       return new Response(
         JSON.stringify({
@@ -221,6 +462,30 @@ serve(async (req) => {
           details: `Subscription is in '${subscription.status}' status. Please complete the payment first before changing plans.`,
           hint: "Go to Stripe Dashboard and complete the payment, or cancel this subscription and create a new one.",
           subscription_status: subscription.status,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Check if subscription is canceled or scheduled for cancellation
+    if (
+      subscription.status === "canceled" || 
+      subscription.canceled_at || 
+      subscription.cancel_at_period_end
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "Cannot update canceled subscription",
+          details: subscription.status === "canceled" 
+            ? "This subscription has been canceled and can only update cancellation_details and metadata."
+            : "This subscription is scheduled for cancellation and cannot be updated.",
+          hint: "Please create a new subscription with the desired plan instead.",
+          subscription_status: subscription.status,
+          canceled_at: subscription.canceled_at,
+          cancel_at_period_end: subscription.cancel_at_period_end,
         }),
         {
           status: 400,
@@ -252,7 +517,34 @@ serve(async (req) => {
       updateParams.proration_behavior = "always_invoice";
     }
 
-    const updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams);
+    let updatedSubscription: Stripe.Subscription;
+    try {
+      updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams);
+    } catch (updateError) {
+      // Handle Stripe errors, especially for canceled subscriptions
+      if (updateError instanceof Stripe.errors.StripeError) {
+        if (
+          updateError.message.includes("canceled subscription") ||
+          updateError.code === "resource_missing" ||
+          updateError.type === "invalid_request_error"
+        ) {
+          return new Response(
+            JSON.stringify({
+              error: "Cannot update subscription",
+              details: updateError.message,
+              code: updateError.code,
+              type: updateError.type,
+              hint: "This subscription may have been canceled. Please create a new subscription with the desired plan instead.",
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+      }
+      throw updateError;
+    }
 
     // Calculate new current period end
     const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
@@ -281,7 +573,11 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          ...rateLimitResult.headers,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {

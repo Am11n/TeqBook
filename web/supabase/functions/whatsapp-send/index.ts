@@ -6,6 +6,19 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { authenticateRequest } from "../_shared/auth.ts";
+import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
+
+function extractIdentifier(
+  req: Request,
+  user: { id: string } | null
+): { identifier: string; identifierType: "ip" | "user_id" } {
+  if (user?.id) {
+    return { identifier: user.id, identifierType: "user_id" };
+  }
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown";
+  return { identifier: ip, identifierType: "ip" };
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,6 +59,30 @@ serve(async (req) => {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
+      );
+    }
+
+    // Check rate limit
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const rateLimitResult = await checkRateLimit(
+      req,
+      {
+        endpointType: "whatsapp-send",
+        supabaseUrl,
+        supabaseServiceKey,
+      },
+      user
+    );
+
+    if (!rateLimitResult.allowed) {
+      const { identifier, identifierType } = extractIdentifier(req, user);
+      return createRateLimitErrorResponse(
+        rateLimitResult,
+        identifier,
+        identifierType,
+        "whatsapp-send",
+        supabaseUrl,
+        supabaseServiceKey
       );
     }
 
@@ -115,7 +152,11 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          ...rateLimitResult.headers,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {

@@ -1,0 +1,207 @@
+{
+  "_meta": {
+    "models": {
+      "employees": "Staff members who work at the salon and can be assigned to bookings and shifts.",
+      "pendingInvites": "Email invitations sent to people who haven't yet accepted and joined the team.",
+      "roles": "Permission levels that determine what users can access and do within the system."
+    },
+    "relationships": [
+      "Each Employee has one Role that determines their permissions",
+      "Employees are linked to Users who can log into the system",
+      "Pending Invites are sent to email addresses and include a Role assignment",
+      "Once an invite is accepted, a new Employee and User are created"
+    ]
+  },
+  "roles": [
+    {
+      "id": "role-admin",
+      "name": "Admin",
+      "description": "Full system access including team management, settings, and all business operations",
+      "permissions": {
+        "manageTeam": true,
+        "manageBookings": true,
+        "manageCustomers": true,
+        "manageServices": true,
+        "viewReports": true,
+        "manageSettings": true,
+        "manageBilling": true,
+        "assignRoles": true
+      }
+    },
+    {
+      "id": "role-manager",
+      "name": "Manager",
+      "description": "Can manage bookings, customers, and team schedules, but cannot change system settings",
+      "permissions": {
+        "manageTeam": false,
+        "manageBookings": true,
+        "manageCustomers": true,
+        "manageServices": true,
+        "viewReports": true,
+        "manageSettings": false,
+        "manageBilling": false,
+        "assignRoles": false
+      }
+    },
+    {
+      "id": "role-staff",
+      "name": "Staff",
+      "description": "Can view and manage their own bookings and customer interactions",
+      "permissions": {
+        "manageTeam": false,
+        "manageBookings": false,
+        "manageCustomers": false,
+        "manageServices": false,
+        "viewReports": false,
+        "manageSettings": false,
+        "manageBilling": false,
+        "assignRoles": false
+      }
+    }
+  ],
+  "pendingInvites": [
+    {
+      "id": "inv-001",
+      "email": "sophia.martinez@email.com",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "invitedBy": "Alex Morgan",
+      "invitedAt": "2024-12-18T10:30:00Z",
+      "expiresAt": "2024-12-25T10:30:00Z"
+    },
+    {
+      "id": "inv-002",
+      "email": "ryan.patel@email.com",
+      "roleId": "role-manager",
+      "roleName": "Manager",
+      "invitedBy": "Alex Morgan",
+      "invitedAt": "2024-12-19T14:15:00Z",
+      "expiresAt": "2024-12-26T14:15:00Z"
+    },
+    {
+      "id": "inv-003",
+      "email": "olivia.chen@email.com",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "invitedBy": "Sarah Chen",
+      "invitedAt": "2024-12-20T09:00:00Z",
+      "expiresAt": "2024-12-27T09:00:00Z"
+    },
+    {
+      "id": "inv-004",
+      "email": "michael.thompson@email.com",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "invitedBy": "Alex Morgan",
+      "invitedAt": "2024-12-15T16:45:00Z",
+      "expiresAt": "2024-12-22T16:45:00Z"
+    }
+  ],
+  "employees": [
+    {
+      "id": "emp-001",
+      "userId": "user-001",
+      "name": "Alex Morgan",
+      "email": "alex.morgan@teqbook.com",
+      "phone": "+1 (555) 234-5601",
+      "roleId": "role-admin",
+      "roleName": "Admin",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-01-15T08:00:00Z",
+      "lastActiveAt": "2024-12-20T14:30:00Z"
+    },
+    {
+      "id": "emp-002",
+      "userId": "user-002",
+      "name": "Sarah Chen",
+      "email": "sarah.chen@teqbook.com",
+      "phone": "+1 (555) 234-5602",
+      "roleId": "role-manager",
+      "roleName": "Manager",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-02-01T08:00:00Z",
+      "lastActiveAt": "2024-12-20T13:15:00Z"
+    },
+    {
+      "id": "emp-003",
+      "userId": "user-003",
+      "name": "Marcus Johnson",
+      "email": "marcus.johnson@teqbook.com",
+      "phone": "+1 (555) 234-5603",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-03-10T08:00:00Z",
+      "lastActiveAt": "2024-12-20T12:00:00Z"
+    },
+    {
+      "id": "emp-004",
+      "userId": "user-004",
+      "name": "Emma Williams",
+      "email": "emma.williams@teqbook.com",
+      "phone": "+1 (555) 234-5604",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-04-05T08:00:00Z",
+      "lastActiveAt": "2024-12-20T11:45:00Z"
+    },
+    {
+      "id": "emp-005",
+      "userId": "user-005",
+      "name": "David Rodriguez",
+      "email": "david.rodriguez@teqbook.com",
+      "phone": "+1 (555) 234-5605",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-05-20T08:00:00Z",
+      "lastActiveAt": "2024-12-19T17:30:00Z"
+    },
+    {
+      "id": "emp-006",
+      "userId": "user-006",
+      "name": "James Anderson",
+      "email": "james.anderson@teqbook.com",
+      "phone": "+1 (555) 234-5606",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "active",
+      "avatarUrl": null,
+      "joinedAt": "2024-06-12T08:00:00Z",
+      "lastActiveAt": "2024-12-19T16:00:00Z"
+    },
+    {
+      "id": "emp-007",
+      "userId": null,
+      "name": "Jessica Kim",
+      "email": "jessica.kim@email.com",
+      "phone": "+1 (555) 234-5607",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "invited",
+      "avatarUrl": null,
+      "joinedAt": null,
+      "lastActiveAt": null
+    },
+    {
+      "id": "emp-008",
+      "userId": "user-008",
+      "name": "Robert Lee",
+      "email": "robert.lee@teqbook.com",
+      "phone": "+1 (555) 234-5608",
+      "roleId": "role-staff",
+      "roleName": "Staff",
+      "status": "disabled",
+      "avatarUrl": null,
+      "joinedAt": "2024-07-08T08:00:00Z",
+      "lastActiveAt": "2024-11-15T10:00:00Z"
+    }
+  ]
+}
+

@@ -1,6 +1,7 @@
 import { useState, useMemo, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { getAvailableSlots, createBooking } from "@/lib/repositories/bookings";
+import { getAvailableSlots } from "@/lib/repositories/bookings";
+import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
 import type { Booking } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";

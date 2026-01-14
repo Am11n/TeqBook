@@ -208,6 +208,28 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     setError(null);
     setSuccessMessage(null);
 
+    // Check rate limiting for public booking (by IP or email)
+    try {
+      const { checkRateLimit } = await import("@/lib/services/rate-limit-service");
+      const identifier = customerEmail || "anonymous";
+      const rateLimitCheck = await checkRateLimit(identifier, "booking", {
+        identifierType: customerEmail ? "email" : "ip",
+      });
+
+      if (!rateLimitCheck.allowed) {
+        const { getTimeUntilReset, formatTimeRemaining } = await import("@/lib/services/rate-limit-service");
+        const timeRemaining = getTimeUntilReset(rateLimitCheck.resetTime);
+        setError(
+          `Too many booking attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`
+        );
+        setSaving(false);
+        return;
+      }
+    } catch (rateLimitError) {
+      // If rate limit check fails, allow the booking (fail open)
+      console.error("Error checking rate limit:", rateLimitError);
+    }
+
     try {
       const { data: bookingData, error: bookingError } = await createBooking({
         salon_id: salon.id,

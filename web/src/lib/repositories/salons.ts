@@ -31,6 +31,11 @@ export type Salon = {
   billing_subscription_id?: string | null;
   current_period_end?: string | null;
   trial_end?: string | null;
+  // Payment failure tracking
+  payment_failure_count?: number | null;
+  payment_failed_at?: string | null;
+  last_payment_retry_at?: string | null;
+  payment_status?: "active" | "failed" | "grace_period" | "restricted" | null;
 };
 
 /**
@@ -73,7 +78,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
       .eq("id", salonId)
       .maybeSingle();
 

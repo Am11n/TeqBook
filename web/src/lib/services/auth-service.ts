@@ -8,6 +8,7 @@
 import { supabase } from "@/lib/supabase-client";
 import type { User, AuthChangeEvent } from "@supabase/supabase-js";
 import { logSecurity, logError } from "@/lib/services/logger";
+import { logAuthEvent, logSecurityEvent } from "@/lib/services/audit-log-service";
 
 // Re-export User type for use in UI layer
 export type { User };
@@ -132,10 +133,26 @@ export async function signUp(
  */
 export async function signOut(): Promise<{ error: string | null }> {
   try {
+    // Get current user before signing out
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       return { error: error.message };
+    }
+
+    // Log sign out
+    if (user) {
+      await logAuthEvent({
+        userId: user.id,
+        action: "logout",
+        metadata: {},
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {
+        // Don't fail logout if audit logging fails
+      });
     }
 
     return { error: null };
@@ -222,6 +239,18 @@ export async function updatePassword(
     }
 
     logSecurity("Password updated successfully", { userId: user.id });
+
+    // Log password update to audit log
+    await logSecurityEvent({
+      userId: user.id,
+      action: "password_updated",
+      metadata: {},
+      ipAddress: null,
+      userAgent: null,
+    }).catch(() => {
+      // Don't fail if audit logging fails
+    });
+
     return { error: null };
   } catch (err) {
     logError("Exception updating password", err);

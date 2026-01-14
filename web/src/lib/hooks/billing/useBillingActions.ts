@@ -81,12 +81,52 @@ export function useBillingActions() {
       );
 
       if (updateError || !updateData) {
-        // Check if error is about incomplete subscription
+        // Check if error is about incomplete or canceled subscription
         const errorMessage = updateError || "Failed to update plan";
-        if (errorMessage.includes("incomplete")) {
-          setError(
-            "Cannot change plan while payment is pending. Please complete your payment first, or cancel this subscription and create a new one with the desired plan."
+        
+        // Check for various invalid subscription states
+        if (
+          errorMessage.includes("incomplete") ||
+          errorMessage.includes("incomplete_expired") ||
+          errorMessage.includes("canceled") || 
+          errorMessage.includes("A canceled subscription") ||
+          errorMessage.includes("cancel_at_period_end") ||
+          errorMessage.includes("scheduled for cancellation")
+        ) {
+          // Subscription is in invalid state, treat it as if it doesn't exist
+          // and create a new one
+          console.log("Subscription is in invalid state, creating new subscription instead");
+          
+          if (!salon?.billing_customer_id) {
+            setError("Cannot create subscription: missing customer ID");
+            setActionLoading(false);
+            return { success: false, clientSecret: null };
+          }
+
+          const { data: subscriptionData, error: subscriptionError } = await createStripeSubscription(
+            salon.id,
+            salon.billing_customer_id,
+            selectedPlan
           );
+
+          if (subscriptionError || !subscriptionData) {
+            setError(
+              subscriptionError || 
+              "Your previous subscription is no longer valid. Failed to create a new subscription. Please try again."
+            );
+            setActionLoading(false);
+            return { success: false, clientSecret: null };
+          }
+
+          // If we got a client_secret, return it to show payment form
+          if (subscriptionData.client_secret) {
+            setActionLoading(false);
+            return { success: true, clientSecret: subscriptionData.client_secret };
+          } else {
+            await refreshSalon();
+            setActionLoading(false);
+            return { success: true, clientSecret: null };
+          }
         } else {
           setError(errorMessage);
         }
@@ -115,11 +155,27 @@ export function useBillingActions() {
     );
 
     if (cancelError || !data) {
+      // Check if subscription is already canceled or in invalid state
+      const errorMessage = cancelError || "Failed to cancel subscription";
+      
+      if (
+        errorMessage.includes("canceled") ||
+        errorMessage.includes("A canceled subscription") ||
+        errorMessage.includes("incomplete_expired")
+      ) {
+        // Subscription is already canceled or expired, just refresh to clear it from UI
+        console.log("Subscription is already canceled or expired, refreshing salon data");
+        await refreshSalon();
+        setActionLoading(false);
+        return true;
+      }
+      
       setError(cancelError || "Failed to cancel subscription");
       setActionLoading(false);
       return false;
     }
 
+    // After cancellation, refresh salon to get updated current_period_end
     await refreshSalon();
     setActionLoading(false);
     return true;
