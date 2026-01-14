@@ -5,19 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Field } from "@/components/form/Field";
+import { LimitWarning, LimitIndicator } from "@/components/limit-warning";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
+import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
+import { useRouter } from "next/navigation";
 import { logError } from "@/lib/services/logger";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
   const { salon, profile, user, refreshSalon } = useCurrentSalon();
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [languageLimit, setLanguageLimit] = useState<number | null>(null);
   
   const [salonName, setSalonName] = useState("");
   const [salonType, setSalonType] = useState("");
@@ -73,6 +78,18 @@ export default function GeneralSettingsPage() {
       setUserRole(profile.role || "owner");
     }
   }, [salon, profile]);
+
+  // Load language limit
+  useEffect(() => {
+    async function loadLimit() {
+      if (!salon?.id || !salon?.plan) return;
+      
+      const { limit } = await getEffectiveLimit(salon.id, salon.plan, "languages");
+      setLanguageLimit(limit);
+    }
+    
+    loadLimit();
+  }, [salon?.id, salon?.plan]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -197,7 +214,27 @@ export default function GeneralSettingsPage() {
           label={t.supportedLanguagesLabel}
           description={t.supportedLanguagesHint}
         >
-          <div className="max-w-md space-y-2">
+          <div className="max-w-md space-y-4">
+            {/* Language Limit Warning */}
+            {languageLimit !== null && (
+              <LimitWarning
+                currentCount={supportedLanguages.length}
+                limit={languageLimit}
+                limitType="languages"
+                onUpgrade={() => router.push("/settings/billing")}
+              />
+            )}
+
+            {/* Language Limit Indicator */}
+            {languageLimit !== null && (
+              <LimitIndicator
+                currentCount={supportedLanguages.length}
+                limit={languageLimit}
+                limitType="languages"
+              />
+            )}
+
+            <div className="space-y-2">
             {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
               const langLabels: Record<typeof lang, string> = {
                 nb: "🇳🇴 Norsk",
@@ -239,6 +276,7 @@ export default function GeneralSettingsPage() {
                 </label>
               );
             })}
+            </div>
           </div>
         </Field>
 

@@ -3,8 +3,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CreditCard, X, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CreditCard, X, CheckCircle2, AlertTriangle, Clock, Ban } from "lucide-react";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
 import type { Salon } from "@/lib/types";
 
@@ -59,13 +59,186 @@ export function CurrentPlanCard({
             <p className="font-semibold">{activePlan.name}</p>
             <p className="text-sm text-muted-foreground">{activePlan.price} / month</p>
           </div>
-          {hasSubscription && (
-            <Badge variant="default" className="text-xs">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Active
-            </Badge>
-          )}
+          {(() => {
+            // Check if subscription is scheduled for cancellation
+            // If hasSubscription is true but current_period_end is in the future and close (within 30 days),
+            // it might be scheduled for cancellation
+            // For now, we'll show "Active" if hasSubscription is true
+            // The alert below will handle showing cancellation info
+            if (hasSubscription) {
+              return (
+                <Badge variant="default" className="text-xs">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  Active
+                </Badge>
+              );
+            } else if (salon?.current_period_end && new Date(salon.current_period_end) > new Date()) {
+              return (
+                <Badge variant="secondary" className="text-xs">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Cancelling
+                </Badge>
+              );
+            } else if (salon?.current_period_end && new Date(salon.current_period_end) <= new Date()) {
+              return (
+                <Badge variant="destructive" className="text-xs">
+                  <Ban className="h-3 w-3 mr-1" />
+                  Cancelled
+                </Badge>
+              );
+            }
+            return null;
+          })()}
         </div>
+
+        {/* Subscription Cancelled Alert - Show if subscription is cancelled or scheduled for cancellation */}
+        {/* Show alert when current_period_end exists and subscription is cancelled (no subscription ID) */}
+        {/* This will show after cancellation when billing_subscription_id is set to null */}
+        {salon?.current_period_end && !hasSubscription && (
+          <div className="mt-4 pt-4 border-t">
+            <Alert variant={new Date(salon.current_period_end) <= new Date() ? "destructive" : "default"}>
+              {new Date(salon.current_period_end) <= new Date() ? (
+                <Ban className="h-4 w-4" />
+              ) : (
+                <Clock className="h-4 w-4" />
+              )}
+              <AlertTitle className="text-base font-semibold">
+                {new Date(salon.current_period_end) <= new Date()
+                  ? "Subscription Cancelled"
+                  : "Subscription Cancelling"}
+              </AlertTitle>
+              <AlertDescription className="mt-2">
+                {new Date(salon.current_period_end) <= new Date() ? (
+                  <div className="space-y-3">
+                    <div className="text-sm">
+                      Din subscription har blitt kansellert og tilgangen sluttet{" "}
+                      <span className="font-semibold text-base">
+                        {new Date(salon.current_period_end).toLocaleDateString("nb-NO", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                      .
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={onShowPlanDialog}
+                        disabled={actionLoading}
+                      >
+                        Opprett ny subscription
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="text-sm">
+                      Din subscription vil bli kansellert og tilgangen slutter{" "}
+                      <span className="font-semibold text-base">
+                        {new Date(salon.current_period_end).toLocaleDateString("nb-NO", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                      .
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Du vil fortsatt ha tilgang til da. Hvis du vil fornye din subscription, trykk på knappen under.
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={onShowPlanDialog}
+                        disabled={actionLoading}
+                      >
+                        Forny subscription
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
+        {/* Fallback: Show alert if subscription was cancelled but current_period_end is not set */}
+        {!hasSubscription && !salon?.current_period_end && salon?.plan && (
+          <div className="mt-4 pt-4 border-t">
+            <Alert variant={new Date(salon.current_period_end) <= new Date() ? "destructive" : "default"}>
+              {new Date(salon.current_period_end) <= new Date() ? (
+                <Ban className="h-4 w-4" />
+              ) : (
+                <Clock className="h-4 w-4" />
+              )}
+              <AlertTitle className="text-base font-semibold">
+                {new Date(salon.current_period_end) <= new Date()
+                  ? "Subscription Cancelled"
+                  : "Subscription Cancelling"}
+              </AlertTitle>
+              <AlertDescription className="mt-2">
+                {new Date(salon.current_period_end) <= new Date() ? (
+                  <div className="space-y-3">
+                    <div className="text-sm">
+                      Your subscription has been cancelled and access ended on{" "}
+                      <span className="font-semibold text-base">
+                        {new Date(salon.current_period_end).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                      .
+                    </div>
+                    <div className="text-sm font-medium">
+                      Please create a new subscription to continue using the service.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="text-sm">
+                      Your subscription will be cancelled and access will end on{" "}
+                      <span className="font-semibold text-base">
+                        {new Date(salon.current_period_end).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                      .
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      You will continue to have access until then. You can renew your subscription before this date to continue without interruption.
+                    </div>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Show alert even if current_period_end is not set but subscription is cancelled */}
+        {!hasSubscription && !salon?.current_period_end && salon?.plan && (
+          <div className="mt-4 pt-4 border-t">
+            <Alert variant="destructive">
+              <Ban className="h-4 w-4" />
+              <AlertTitle className="text-base font-semibold">Subscription Cancelled</AlertTitle>
+              <AlertDescription className="mt-2">
+                <div className="space-y-3">
+                  <div className="text-sm">
+                    Your subscription has been cancelled and access has ended.
+                  </div>
+                  <div className="text-sm font-medium">
+                    Please create a new subscription to continue using the service.
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         {/* Payment Status */}
         {hasSubscription && (salon as any)?.payment_status && (salon as any).payment_status !== "active" && (
@@ -100,20 +273,34 @@ export function CurrentPlanCard({
         )}
 
         {/* Subscription Status */}
-        {hasSubscription && salon?.current_period_end && (
+        {(hasSubscription || salon?.current_period_end) && (
           <div className="mt-4 pt-4 border-t space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Next billing date:</span>
-              <span className="font-medium">
-                {new Date(salon.current_period_end).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Subscription ID:</span>
-              <span className="font-mono text-xs text-muted-foreground">
-                {salon.billing_subscription_id?.substring(0, 20)}...
-              </span>
-            </div>
+            {salon?.current_period_end && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {hasSubscription 
+                    ? "Next billing date:" 
+                    : new Date(salon.current_period_end) <= new Date()
+                    ? "Access ended:"
+                    : "Access ends:"}
+                </span>
+                <span className="font-semibold text-base">
+                  {new Date(salon.current_period_end).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+            )}
+            {hasSubscription && salon?.billing_subscription_id && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Subscription ID:</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {salon.billing_subscription_id.substring(0, 20)}...
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -134,13 +321,33 @@ export function CurrentPlanCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-4 flex gap-3">
-        <Button variant="outline" onClick={onShowPlanDialog} disabled={actionLoading}>
-          {hasSubscription ? "Change Plan" : "Subscribe"}
-        </Button>
-
-        {hasSubscription && (
+      <div className="mt-4 flex gap-3 flex-wrap">
+        {!hasSubscription && salon?.current_period_end && new Date(salon.current_period_end) > new Date() ? (
+          // Subscription is cancelling - show renew button prominently
+          <Button 
+            variant="default" 
+            onClick={onShowPlanDialog} 
+            disabled={actionLoading}
+            className="flex-1 min-w-[200px]"
+          >
+            Renew Subscription
+          </Button>
+        ) : !hasSubscription ? (
+          // Subscription is cancelled - show subscribe button prominently
+          <Button 
+            variant="default" 
+            onClick={onShowPlanDialog} 
+            disabled={actionLoading}
+            className="flex-1 min-w-[200px]"
+          >
+            Subscribe Now
+          </Button>
+        ) : (
+          // Active subscription - show normal buttons
           <>
+            <Button variant="outline" onClick={onShowPlanDialog} disabled={actionLoading}>
+              Change Plan
+            </Button>
             <Button variant="outline" onClick={onUpdatePaymentMethod} disabled={actionLoading}>
               <CreditCard className="h-4 w-4 mr-2" />
               Update Payment Method

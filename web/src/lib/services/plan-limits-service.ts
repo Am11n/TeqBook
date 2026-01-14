@@ -129,6 +129,9 @@ export async function canAddEmployee(
 
 /**
  * Check if salon can add more languages
+ * 
+ * Note: This function checks if the provided language list is within the plan limit.
+ * It allows saving the same number of languages (e.g., 5/5) as long as it's within the limit.
  */
 export async function canAddLanguage(
   salonId: string,
@@ -150,8 +153,9 @@ export async function canAddLanguage(
       return { canAdd: true, currentCount, limit: null, error: null };
     }
 
-    // Check if under limit
-    const canAdd = currentCount < limit;
+    // Check if within limit (allows saving same number of languages, e.g., 5/5)
+    // This allows users to save their current languages even if they're at the limit
+    const canAdd = currentCount <= limit;
 
     return { canAdd, currentCount, limit, error: null };
   } catch (err) {

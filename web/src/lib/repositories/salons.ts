@@ -78,7 +78,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
       .eq("id", salonId)
       .maybeSingle();
 

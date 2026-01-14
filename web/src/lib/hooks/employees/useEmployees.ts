@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
   getEmployeesWithServicesMap,
-  toggleEmployeeActive,
   deleteEmployee,
 } from "@/lib/repositories/employees";
+import {
+  toggleEmployeeActive,
+} from "@/lib/services/employees-service";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import type { Employee, Service } from "@/lib/types";
 
@@ -77,10 +79,19 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
   const handleToggleActive = async (employeeId: string, currentStatus: boolean) => {
     if (!salon?.id) return;
 
-    const { error: toggleError } = await toggleEmployeeActive(salon.id, employeeId, !currentStatus);
+    const { error: toggleError, limitReached } = await toggleEmployeeActive(
+      salon.id,
+      employeeId,
+      currentStatus,
+      salon.plan
+    );
 
     if (toggleError) {
       setError(toggleError);
+      if (limitReached) {
+        // TODO: Show upgrade modal
+        // For now, error message already contains upgrade info
+      }
       return;
     }
 

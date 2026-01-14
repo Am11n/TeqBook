@@ -139,6 +139,26 @@ serve(async (req) => {
           break;
         }
 
+        // If subscription is canceled, clear subscription_id but keep current_period_end
+        if (subscription.status === "canceled" || subscription.canceled_at) {
+          const { error: updateError } = await supabase
+            .from("salons")
+            .update({
+              billing_subscription_id: null,
+              current_period_end: subscription.current_period_end 
+                ? new Date(subscription.current_period_end * 1000).toISOString()
+                : null,
+            })
+            .eq("id", salonId);
+
+          if (updateError) {
+            console.error("Error updating salon after subscription cancellation:", updateError);
+          } else {
+            console.log(`Cleared subscription for salon ${salonId} - subscription was canceled`);
+          }
+          break;
+        }
+
         // Update salon with subscription details
         const { error: updateError } = await supabase
           .from("salons")
@@ -219,7 +239,7 @@ serve(async (req) => {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.subscription as string | null;
 
         console.log("Processing invoice.payment_failed event:", {
           invoice_id: invoice.id,
@@ -227,71 +247,96 @@ serve(async (req) => {
           customer_id: invoice.customer,
         });
 
-        if (!subscriptionId) {
-          console.warn("Invoice has no subscription ID - cannot process payment failure without subscription");
+        let salonId: string | null = null;
+
+        // Try to find salon_id via subscription metadata first (if subscription exists)
+        if (subscriptionId) {
+          try {
+            // Retrieve subscription to get salon_id
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            
+            // Get salon_id from subscription metadata
+            salonId = subscription.metadata.salon_id || null;
+
+            console.log("Retrieved subscription:", {
+              subscription_id: subscription.id,
+              salon_id: salonId,
+              metadata: subscription.metadata,
+            });
+
+            // If subscription metadata doesn't have salon_id, try to find salon via customer_id
+            if (!salonId && invoice.customer) {
+              console.log("Subscription missing salon_id in metadata, trying to find salon via customer_id:", {
+                customer_id: invoice.customer,
+              });
+              
+              // Try to find salon by billing_customer_id
+              const { data: salonByCustomer } = await supabase
+                .from("salons")
+                .select("id")
+                .eq("billing_customer_id", invoice.customer as string)
+                .maybeSingle();
+              
+              if (salonByCustomer) {
+                salonId = salonByCustomer.id;
+                console.log("Found salon via customer_id:", salonId);
+                
+                // Update subscription metadata with salon_id for future webhooks
+                try {
+                  await stripe.subscriptions.update(subscriptionId, {
+                    metadata: {
+                      ...subscription.metadata,
+                      salon_id: salonId,
+                    },
+                  });
+                  console.log("Updated subscription metadata with salon_id");
+                } catch (updateError) {
+                  console.warn("Failed to update subscription metadata:", updateError);
+                }
+              }
+            }
+          } catch (subscriptionError) {
+            console.error("Error retrieving subscription:", {
+              subscription_id: subscriptionId,
+              error: subscriptionError instanceof Error ? subscriptionError.message : "Unknown error",
+            });
+            // Continue to try finding salon via customer_id even if subscription retrieval fails
+          }
+        }
+
+        // Fallback: If no subscription or subscription doesn't have salon_id, try to find salon directly via customer_id
+        if (!salonId && invoice.customer) {
+          console.log("No subscription or subscription missing salon_id, trying to find salon directly via customer_id:", {
+            customer_id: invoice.customer,
+            has_subscription: !!subscriptionId,
+          });
+          
+          const { data: salonByCustomer } = await supabase
+            .from("salons")
+            .select("id")
+            .eq("billing_customer_id", invoice.customer as string)
+            .maybeSingle();
+          
+          if (salonByCustomer) {
+            salonId = salonByCustomer.id;
+            console.log("Found salon directly via customer_id:", salonId);
+          } else {
+            console.warn("Could not find salon by customer_id:", {
+              customer_id: invoice.customer,
+              subscription_id: subscriptionId,
+            });
+          }
+        }
+        
+        if (!salonId) {
+          console.warn("Cannot process payment failure - no salon_id found:", {
+            subscription_id: subscriptionId,
+            customer_id: invoice.customer,
+          });
           break;
         }
 
         try {
-          // Retrieve subscription to get salon_id
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          
-          // Get salon_id from subscription metadata (can be reassigned if found via customer_id)
-          let salonId = subscription.metadata.salon_id;
-
-          console.log("Retrieved subscription:", {
-            subscription_id: subscription.id,
-            salon_id: salonId,
-            metadata: subscription.metadata,
-          });
-
-          // If subscription metadata doesn't have salon_id, try to find salon via customer_id
-          
-          if (!salonId && invoice.customer) {
-            console.log("Subscription missing salon_id in metadata, trying to find salon via customer_id:", {
-              customer_id: invoice.customer,
-            });
-            
-            // Try to find salon by billing_customer_id
-            const { data: salonByCustomer } = await supabase
-              .from("salons")
-              .select("id")
-              .eq("billing_customer_id", invoice.customer as string)
-              .maybeSingle();
-            
-            if (salonByCustomer) {
-              salonId = salonByCustomer.id;
-              console.log("Found salon via customer_id:", salonId);
-              
-              // Update subscription metadata with salon_id for future webhooks
-              try {
-                await stripe.subscriptions.update(subscriptionId, {
-                  metadata: {
-                    ...subscription.metadata,
-                    salon_id: salonId,
-                  },
-                });
-                console.log("Updated subscription metadata with salon_id");
-              } catch (updateError) {
-                console.warn("Failed to update subscription metadata:", updateError);
-              }
-            } else {
-              console.warn("Could not find salon by customer_id:", {
-                customer_id: invoice.customer,
-                subscription_id: subscriptionId,
-              });
-            }
-          }
-          
-          if (!salonId) {
-            console.warn("Cannot process payment failure - no salon_id found:", {
-              subscription_id: subscriptionId,
-              customer_id: invoice.customer,
-              subscription_metadata: subscription.metadata,
-            });
-            break;
-          }
-
           // At this point, salonId is guaranteed to be set
           // Get failure reason from invoice
           const failureReason = invoice.last_payment_error?.message || "payment_failed";
@@ -352,8 +397,10 @@ serve(async (req) => {
                 updateData,
               });
             } else {
-              console.log(`Payment failed for subscription ${subscriptionId}, invoice ${invoice.id}. Updated salon ${salonId} with failure count ${currentFailureCount}`, {
+              console.log(`Payment failed for invoice ${invoice.id}. Updated salon ${salonId} with failure count ${currentFailureCount}`, {
                 salonId,
+                subscription_id: subscriptionId || null,
+                customer_id: invoice.customer,
                 payment_status: updateData.payment_status,
                 payment_failure_count: currentFailureCount,
               });
@@ -375,10 +422,12 @@ serve(async (req) => {
           } else {
             console.warn("Salon not found in database:", salonId);
           }
-        } catch (subscriptionError) {
-          console.error("Error retrieving subscription:", {
-            subscription_id: subscriptionId,
-            error: subscriptionError instanceof Error ? subscriptionError.message : "Unknown error",
+        } catch (error) {
+          console.error("Error processing payment failure:", {
+            salonId,
+            invoice_id: invoice.id,
+            customer_id: invoice.customer,
+            error: error instanceof Error ? error.message : "Unknown error",
           });
         }
         break;

@@ -595,6 +595,9 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 - ✅ Email notifications: Payment failure, retry, and warning emails
 - ✅ Access restriction: Implemented based on grace period and retry attempts
 - ✅ UI updates: Payment status, grace period countdown, and retry attempts displayed
+- ✅ Webhook handler: Fully implemented with fallback logic to find salon via customer_id if subscription metadata is missing salon_id
+- ✅ Webhook signature verification: Using `constructEventAsync` for Deno compatibility
+- ✅ JWT verification disabled: Webhook endpoint configured with `verify_jwt = false` in config.toml
 
 ---
 
@@ -602,32 +605,32 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 **Dependencies:** None  
 **Roadmap Item:** #11 - Plan Limits Enforcement Verification
 
-- [ ] 11.0 Complete plan limits enforcement verification
-  - [ ] 11.1 Write 6-8 focused tests for plan limits
+- [x] 11.0 Complete plan limits enforcement verification
+  - [x] 11.1 Write 6-8 focused tests for plan limits
     - Test employee limit enforcement
     - Test language limit enforcement
     - Test feature limit enforcement
     - Test limit warnings
-  - [ ] 11.2 Audit all plan limit checks
+  - [x] 11.2 Audit all plan limit checks
     - Review `plan-limits-service.ts`
     - Review all services that check limits
     - Document all limit checks
     - Identify any gaps
-  - [ ] 11.3 Fix any edge cases in limit enforcement
+  - [x] 11.3 Fix any edge cases in limit enforcement
     - Fix limit checks that may have edge cases
     - Add limit checks where missing
     - Ensure limits are enforced consistently
-  - [ ] 11.4 Add comprehensive tests for all limits
+  - [x] 11.4 Add comprehensive tests for all limits
     - Test each plan's limits
     - Test limit enforcement at creation
     - Test limit enforcement at update
     - Test limit warnings
-  - [ ] 11.5 Update UI to show limit warnings
+  - [x] 11.5 Update UI to show limit warnings
     - Location: `web/src/components/limit-warning.tsx`
     - Show limit warnings when approaching limits
     - Show upgrade prompts when limits reached
     - Add limit indicators to relevant pages
-  - [ ] 11.6 Ensure plan limit tests pass
+  - [x] 11.6 Ensure plan limit tests pass
     - Run ONLY the 6-8 tests written in 11.1
     - Verify all limits are enforced
     - Verify limit warnings work
@@ -638,12 +641,25 @@ This task breakdown converts the 16 "Next Iteration" roadmap items into concrete
 - Upgrade prompts appear when limits are reached
 - All plan limit tests pass
 
-**Files to Create/Modify:**
-- `web/src/lib/services/plan-limits-service.ts`
-- `web/src/lib/services/employees-service.ts`
-- `web/src/lib/services/salons-service.ts`
-- `web/src/components/limit-warning.tsx`
-- `web/tests/unit/services/plan-limits-service.test.ts`
+**Files Created/Modified:**
+- ✅ `web/src/lib/services/plan-limits-service.ts` - Fixed language limit check to allow saving same number (5/5)
+- ✅ `web/src/lib/services/employees-service.ts` - Added limit check when reactivating inactive employees
+- ✅ `web/src/lib/services/salons-service.ts` - Already enforces language limits
+- ✅ `web/src/components/limit-warning.tsx` - New component for limit warnings and indicators
+- ✅ `web/src/components/layout/dashboard/DashboardHeader.tsx` - Updated to show only supported languages
+- ✅ `web/src/components/layout/admin-shell.tsx` - Updated to show only supported languages
+- ✅ `web/src/app/employees/page.tsx` - Added limit warnings and indicators
+- ✅ `web/src/app/settings/general/page.tsx` - Added limit warnings and indicators
+- ✅ `web/tests/unit/services/plan-limits-service.test.ts` - 18 comprehensive tests (all passing)
+- ✅ `web/docs/backend/plan-limits-audit.md` - Complete audit documentation
+
+**Test Results:**
+- ✅ **18/18 tests implemented** - All plan limit tests created
+- ✅ Employee limit enforcement: Working (creation and reactivation)
+- ✅ Language limit enforcement: Working (allows 5/5, blocks 6/5)
+- ✅ Addon support: Working (base limit + addon quantity)
+- ✅ UI warnings: Implemented (warnings at 80% and 100% of limit)
+- ✅ Limit indicators: Implemented (visual progress bars)
 
 ---
 

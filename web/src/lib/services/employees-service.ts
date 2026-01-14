@@ -119,8 +119,9 @@ export async function createEmployee(
 export async function updateEmployee(
   salonId: string,
   employeeId: string,
-  input: UpdateEmployeeInput
-): Promise<{ data: Employee | null; error: string | null }> {
+  input: UpdateEmployeeInput,
+  salonPlan?: PlanType | null
+): Promise<{ data: Employee | null; error: string | null; limitReached?: boolean }> {
   // Validation
   if (!salonId || !employeeId) {
     return { data: null, error: "Salon ID and Employee ID are required" };
@@ -136,8 +137,49 @@ export async function updateEmployee(
     return { data: null, error: "Phone number must be at least 8 characters" };
   }
 
+  // Check plan limits if reactivating an inactive employee
+  // This prevents bypassing limits by deactivating and reactivating employees
+  if (input.is_active === true && salonPlan !== undefined) {
+    // Get current employee to check if it's being reactivated
+    const { data: employeeData } = await getEmployeeWithServices(salonId, employeeId);
+    const currentEmployee = employeeData?.employee;
+    
+    // If employee was inactive and is being reactivated, check limit
+    if (currentEmployee && currentEmployee.is_active === false) {
+      const { canAdd, currentCount, limit, error: limitError } = await canAddEmployee(
+        salonId,
+        salonPlan
+      );
+
+      if (limitError) {
+        return { data: null, error: limitError };
+      }
+
+      if (!canAdd && limit !== null) {
+        return {
+          data: null,
+          error: `Employee limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more staff seats.`,
+          limitReached: true,
+        };
+      }
+    }
+  }
+
   // Call repository
   return await updateEmployeeRepo(salonId, employeeId, input);
+}
+
+/**
+ * Toggle employee active status
+ */
+export async function toggleEmployeeActive(
+  salonId: string,
+  employeeId: string,
+  currentStatus: boolean,
+  salonPlan?: PlanType | null
+): Promise<{ data: Employee | null; error: string | null; limitReached?: boolean }> {
+  // Use updateEmployee which includes limit checking for reactivation
+  return await updateEmployee(salonId, employeeId, { is_active: !currentStatus }, salonPlan);
 }
 
 /**

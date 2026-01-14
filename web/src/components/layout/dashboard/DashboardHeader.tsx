@@ -151,10 +151,39 @@ function LanguageSelector({
 }) {
   const { setLocale } = useLocale();
 
+  // Map of all available languages with their flags
+  const languageMap: Record<AppLocale, string> = {
+    nb: "🇳🇴",
+    en: "🇬🇧",
+    ar: "🇸🇦",
+    so: "🇸🇴",
+    ti: "🇪🇷",
+    am: "🇪🇹",
+    tr: "🇹🇷",
+    pl: "🇵🇱",
+    vi: "🇻🇳",
+    tl: "🇵🇭",
+    zh: "🇨🇳",
+    fa: "🇮🇷",
+    dar: "🇦🇫",
+    ur: "🇵🇰",
+    hi: "🇮🇳",
+  };
+
+  // Get supported languages from salon, fallback to default if not set
+  const supportedLanguages = salon?.supported_languages && salon.supported_languages.length > 0
+    ? salon.supported_languages
+    : ["en", "nb"]; // Default fallback
+
+  // Ensure current locale is in supported languages, otherwise use first supported language
+  const currentLocale = supportedLanguages.includes(locale as AppLocale)
+    ? locale
+    : (supportedLanguages[0] || "en");
+
   return (
     <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
       <select
-        value={locale || "en"}
+        value={currentLocale}
         onChange={async (e) => {
           const newLocale = e.target.value as AppLocale;
           setLocale(newLocale);
@@ -169,21 +198,11 @@ function LanguageSelector({
         className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"
         style={{ backgroundImage: "none" }}
       >
-        <option value="nb">🇳🇴</option>
-        <option value="en">🇬🇧</option>
-        <option value="ar">🇸🇦</option>
-        <option value="so">🇸🇴</option>
-        <option value="ti">🇪🇷</option>
-        <option value="am">🇪🇹</option>
-        <option value="tr">🇹🇷</option>
-        <option value="pl">🇵🇱</option>
-        <option value="vi">🇻🇳</option>
-        <option value="tl">🇵🇭</option>
-        <option value="zh">🇨🇳</option>
-        <option value="fa">🇮🇷</option>
-        <option value="dar">🇦🇫</option>
-        <option value="ur">🇵🇰</option>
-        <option value="hi">🇮🇳</option>
+        {supportedLanguages.map((lang) => (
+          <option key={lang} value={lang}>
+            {languageMap[lang as AppLocale] || lang}
+          </option>
+        ))}
       </select>
     </div>
   );

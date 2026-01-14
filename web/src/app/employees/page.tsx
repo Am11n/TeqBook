@@ -1,22 +1,35 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LimitWarning, LimitIndicator } from "@/components/limit-warning";
 import { useLocale } from "@/components/locale-provider";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useEmployees } from "@/lib/hooks/employees/useEmployees";
+import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { CreateEmployeeForm } from "@/components/employees/CreateEmployeeForm";
 import { EmployeesTable } from "@/components/employees/EmployeesTable";
 import { EmployeesCardView } from "@/components/employees/EmployeesCardView";
+import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
+import { useRouter } from "next/navigation";
 
 export default function EmployeesPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].employees;
+  const { salon } = useCurrentSalon();
+  const router = useRouter();
+  const [employeeLimit, setEmployeeLimit] = useState<number | null>(null);
+
+  const handleUpgrade = () => {
+    router.push("/settings/billing");
+  };
 
   const {
     employees,
@@ -34,6 +47,18 @@ export default function EmployeesPage() {
     },
   });
 
+  // Load employee limit
+  useEffect(() => {
+    async function loadLimit() {
+      if (!salon?.id || !salon?.plan) return;
+      
+      const { limit } = await getEffectiveLimit(salon.id, salon.plan, "employees");
+      setEmployeeLimit(limit);
+    }
+    
+    loadLimit();
+  }, [salon?.id, salon?.plan]);
+
   return (
     <ErrorBoundary>
       <PageLayout title={t.title} description={t.description}>
@@ -44,6 +69,27 @@ export default function EmployeesPage() {
               onDismiss={() => setError(null)}
               variant="destructive"
             />
+          )}
+
+          {/* Employee Limit Warning */}
+          {employeeLimit !== null && (
+            <LimitWarning
+              currentCount={employees.length}
+              limit={employeeLimit}
+              limitType="employees"
+              onUpgrade={handleUpgrade}
+            />
+          )}
+
+          {/* Employee Limit Indicator */}
+          {employeeLimit !== null && (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <LimitIndicator
+                currentCount={employees.length}
+                limit={employeeLimit}
+                limitType="employees"
+              />
+            </div>
           )}
 
           <CreateEmployeeForm

@@ -85,7 +85,7 @@ interface CancelSubscriptionRequest {
   subscription_id: string;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { 
@@ -129,7 +129,6 @@ serve(async (req) => {
     }
 
     // Check rate limit
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const rateLimitResult = await checkRateLimit(
       req,
       {
@@ -177,12 +176,15 @@ serve(async (req) => {
     });
 
     // Update salon using service role key
+    // Store current_period_end so we can show when subscription ends
+    // Set billing_subscription_id to null so frontend knows subscription is cancelled
+    // This allows the alert to show even though subscription still exists in Stripe until period end
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { error: updateError } = await supabase
       .from("salons")
       .update({
-        // Keep subscription_id until period ends, but mark for cancellation
-        // You might want to add a cancellation_requested_at field
+        billing_subscription_id: null, // Clear subscription ID so frontend shows cancellation alert
+        current_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
       })
       .eq("id", body.salon_id);
 
@@ -213,12 +215,13 @@ serve(async (req) => {
     
     // Handle Stripe-specific errors
     if (error instanceof Stripe.errors.StripeError) {
+      const stripeError = error as Stripe.errors.StripeError;
       return new Response(
         JSON.stringify({
           error: "Stripe error",
-          details: error.message,
-          type: error.type,
-          code: error.code,
+          details: stripeError.message,
+          type: stripeError.type,
+          code: stripeError.code,
         }),
         {
           status: 400,
