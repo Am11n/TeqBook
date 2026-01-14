@@ -70,13 +70,16 @@ vi.mock("@/lib/repositories/email-log", () => ({
 
       expect(result.error).toBeNull();
       expect(result.data).toBeDefined();
-      expect(mockResend.emails.send).toHaveBeenCalledWith({
-        from: expect.any(String),
-        to: "test@example.com",
-        subject: "Test Email",
-        html: "<p>Test content</p>",
-        text: "Test content",
-      });
+      // Email options include deliverability headers/tags; only assert the critical fields here.
+      expect(mockResend.emails.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          from: expect.stringContaining("<"),
+          to: "test@example.com",
+          subject: "Test Email",
+          html: "<p>Test content</p>",
+          text: "Test content",
+        })
+      );
     });
 
     it("should handle email sending errors", async () => {
