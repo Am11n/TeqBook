@@ -116,7 +116,7 @@ export async function createProduct(
       resourceId: result.data.id,
       productName: result.data.name,
       priceCents: result.data.price_cents,
-      stockQuantity: result.data.stock_quantity ?? undefined,
+      stockQuantity: result.data.stock ?? undefined,
       isActive: result.data.is_active,
     }).catch(() => {
       // Silent fail - don't block product creation if audit fails
@@ -178,7 +178,7 @@ export async function updateProduct(
       resourceId: productId,
       productName: result.data.name,
       priceCents: result.data.price_cents,
-      stockQuantity: result.data.stock_quantity ?? undefined,
+      stockQuantity: result.data.stock ?? undefined,
       isActive: result.data.is_active,
     }).catch(() => {
       // Silent fail - don't block product update if audit fails
