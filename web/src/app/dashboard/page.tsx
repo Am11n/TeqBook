@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   // Show loading state during SSR or before mount
   if (!mounted) {
     return (
+      <ErrorBoundary>
       <DashboardShell>
         <div className="mb-10">
           <Skeleton className="h-10 w-64 mb-2" />
@@ -47,10 +49,12 @@ export default function DashboardPage() {
           ))}
         </div>
       </DashboardShell>
+      </ErrorBoundary>
     );
   }
 
   return (
+    <ErrorBoundary>
     <DashboardShell>
       <DashboardHeader ownerName={ownerName} translations={t} />
 
@@ -118,5 +122,6 @@ export default function DashboardPage() {
         }}
       />
     </DashboardShell>
+    </ErrorBoundary>
   );
 }

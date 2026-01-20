@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase-client";
 import type { User, AuthChangeEvent } from "@supabase/supabase-js";
 import { logSecurity, logError } from "@/lib/services/logger";
 import { logAuthEvent, logSecurityEvent } from "@/lib/services/audit-log-service";
+import { clearErrorContext } from "@/lib/services/error-tracking-service";
 
 // Re-export User type for use in UI layer
 export type { User };
@@ -154,6 +155,9 @@ export async function signOut(): Promise<{ error: string | null }> {
         // Don't fail logout if audit logging fails
       });
     }
+
+    // Clear error tracking context
+    clearErrorContext();
 
     return { error: null };
   } catch (err) {

@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -74,6 +75,7 @@ export default function ProductsPage() {
 
   if (!isReady) {
     return (
+      <ErrorBoundary>
       <PageLayout
         title={t.title}
         description={t.description}
@@ -84,10 +86,12 @@ export default function ProductsPage() {
           <div className="h-64 w-full animate-pulse rounded bg-muted" />
         </div>
       </PageLayout>
+      </ErrorBoundary>
     );
   }
 
   return (
+    <ErrorBoundary>
     <PageLayout
       title={t.title}
       description={t.description}
@@ -140,6 +144,7 @@ export default function ProductsPage() {
         translations={t}
       />
     </PageLayout>
+    </ErrorBoundary>
   );
 }
 
