@@ -7,6 +7,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useShifts } from "@/lib/hooks/shifts/useShifts";
@@ -83,6 +84,7 @@ export default function ShiftsPage() {
   };
 
   return (
+    <ErrorBoundary>
     <DashboardShell>
       <PageHeader title={t.title} description={t.description} />
 
@@ -181,5 +183,6 @@ export default function ShiftsPage() {
         onSubmit={editShift.handleSubmit}
       />
     </DashboardShell>
+    </ErrorBoundary>
   );
 }

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Field } from "@/components/form/Field";
 import { LimitWarning, LimitIndicator } from "@/components/limit-warning";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
@@ -172,15 +173,18 @@ export default function GeneralSettingsPage() {
 
   if (!salon) {
     return (
+      <ErrorBoundary>
       <Card className="p-6">
         <p className="text-sm text-muted-foreground">
           No salon found. Please complete onboarding first.
         </p>
       </Card>
+      </ErrorBoundary>
     );
   }
 
   return (
+    <ErrorBoundary>
     <Card className="p-6">
       <form onSubmit={handleSubmit} className="space-y-6" data-testid="settings-form">
         <Field
@@ -422,6 +426,7 @@ export default function GeneralSettingsPage() {
         </Button>
       </form>
     </Card>
+    </ErrorBoundary>
   );
 }
 
