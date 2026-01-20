@@ -14,6 +14,7 @@ import {
   toggleServiceActive,
 } from "@/lib/repositories/services";
 import type { Service, CreateServiceInput, UpdateServiceInput } from "@/lib/types";
+import { logServiceEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get services for current salon
@@ -112,7 +113,23 @@ export async function createService(
   }
 
   // Call repository
-  return await createServiceRepo(input);
+  const result = await createServiceRepo(input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logServiceEvent("create", {
+      salonId: input.salon_id,
+      resourceId: result.data.id,
+      serviceName: result.data.name,
+      priceCents: result.data.price_cents,
+      durationMinutes: result.data.duration_minutes,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block service creation if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -139,7 +156,23 @@ export async function updateService(
   }
 
   // Call repository
-  return await updateServiceRepo(salonId, serviceId, input);
+  const result = await updateServiceRepo(salonId, serviceId, input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logServiceEvent("update", {
+      salonId,
+      resourceId: serviceId,
+      serviceName: result.data.name,
+      priceCents: result.data.price_cents,
+      durationMinutes: result.data.duration_minutes,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block service update if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -155,7 +188,19 @@ export async function deleteService(
   }
 
   // Call repository
-  return await deleteServiceRepo(salonId, serviceId);
+  const result = await deleteServiceRepo(salonId, serviceId);
+
+  // Log to audit trail on success
+  if (!result.error) {
+    logServiceEvent("delete", {
+      salonId,
+      resourceId: serviceId,
+    }).catch(() => {
+      // Silent fail - don't block service deletion if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -172,6 +217,21 @@ export async function toggleServiceStatus(
   }
 
   // Call repository
-  return await toggleServiceActive(salonId, serviceId, currentStatus);
+  const result = await toggleServiceActive(salonId, serviceId, currentStatus);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    const action = result.data.is_active ? "activate" : "deactivate";
+    logServiceEvent(action, {
+      salonId,
+      resourceId: serviceId,
+      serviceName: result.data.name,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block service toggle if audit fails
+    });
+  }
+
+  return result;
 }
 

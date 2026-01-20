@@ -14,6 +14,7 @@ import {
 } from "@/lib/repositories/employees";
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
 import { canAddEmployee } from "./plan-limits-service";
+import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get employees for current salon
@@ -110,7 +111,22 @@ export async function createEmployee(
   }
 
   // Call repository
-  return await createEmployeeRepo(input);
+  const result = await createEmployeeRepo(input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logEmployeeEvent("create", {
+      salonId: input.salon_id,
+      resourceId: result.data.id,
+      employeeName: result.data.full_name,
+      role: result.data.role || undefined,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block employee creation if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -166,7 +182,28 @@ export async function updateEmployee(
   }
 
   // Call repository
-  return await updateEmployeeRepo(salonId, employeeId, input);
+  const result = await updateEmployeeRepo(salonId, employeeId, input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    // Determine the action based on what changed
+    let action: "update" | "activate" | "deactivate" = "update";
+    if (input.is_active !== undefined) {
+      action = input.is_active ? "activate" : "deactivate";
+    }
+
+    logEmployeeEvent(action, {
+      salonId,
+      resourceId: employeeId,
+      employeeName: result.data.full_name,
+      role: result.data.role || undefined,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block employee update if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -195,7 +232,19 @@ export async function deleteEmployee(
   }
 
   // Call repository
-  return await deleteEmployeeRepo(salonId, employeeId);
+  const result = await deleteEmployeeRepo(salonId, employeeId);
+
+  // Log to audit trail on success
+  if (!result.error) {
+    logEmployeeEvent("delete", {
+      salonId,
+      resourceId: employeeId,
+    }).catch(() => {
+      // Silent fail - don't block employee deletion if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**

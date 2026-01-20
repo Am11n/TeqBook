@@ -18,6 +18,7 @@ import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders, cancelReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getCustomerById } from "@/lib/repositories/customers";
+import { logBookingEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get bookings for current salon with business logic
@@ -121,6 +122,23 @@ export async function createBooking(
       logInfo("Booking created successfully", {
         ...logContext,
         bookingId: result.data.id,
+      });
+
+      // Log to audit trail
+      logBookingEvent("create", {
+        salonId: input.salon_id,
+        resourceId: result.data.id,
+        customerName: input.customer_full_name,
+        serviceName: result.data.services?.name || undefined,
+        employeeName: result.data.employees?.full_name || undefined,
+        startTime: result.data.start_time,
+        status: result.data.status,
+      }).catch((auditError) => {
+        logWarn("Failed to log booking creation to audit trail", {
+          ...logContext,
+          bookingId: result.data!.id,
+          auditError: auditError instanceof Error ? auditError.message : "Unknown error",
+        });
       });
 
       // Send booking confirmation email if customer email is provided
@@ -288,6 +306,19 @@ export async function updateBookingStatus(
         ...logContext,
         newStatus: result.data.status,
       });
+
+      // Log to audit trail
+      logBookingEvent("status_change", {
+        salonId,
+        resourceId: bookingId,
+        status: result.data.status,
+        previousStatus: status !== result.data.status ? status : undefined,
+      }).catch((auditError) => {
+        logWarn("Failed to log booking status change to audit trail", {
+          ...logContext,
+          auditError: auditError instanceof Error ? auditError.message : "Unknown error",
+        });
+      });
     }
 
     return result;
@@ -341,6 +372,19 @@ export async function cancelBooking(
       });
     } else {
       logInfo("Booking cancelled successfully", logContext);
+
+      // Log to audit trail
+      logBookingEvent("status_change", {
+        salonId,
+        resourceId: bookingId,
+        status: "cancelled",
+        metadata: reason ? { cancellation_reason: reason } : undefined,
+      }).catch((auditError) => {
+        logWarn("Failed to log booking cancellation to audit trail", {
+          ...logContext,
+          auditError: auditError instanceof Error ? auditError.message : "Unknown error",
+        });
+      });
     }
     
     // If we have a reason and the update was successful, update notes
@@ -397,6 +441,17 @@ export async function deleteBooking(
       });
     } else {
       logInfo("Booking deleted successfully", logContext);
+
+      // Log to audit trail
+      logBookingEvent("delete", {
+        salonId,
+        resourceId: bookingId,
+      }).catch((auditError) => {
+        logWarn("Failed to log booking deletion to audit trail", {
+          ...logContext,
+          auditError: auditError instanceof Error ? auditError.message : "Unknown error",
+        });
+      });
     }
 
     return result;

@@ -11,6 +11,7 @@ import {
 } from "@/lib/repositories/shifts";
 import type { Shift, CreateShiftInput } from "@/lib/types";
 import * as featureFlagsService from "@/lib/services/feature-flags-service";
+import { logShiftEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get shifts for current salon
@@ -91,7 +92,23 @@ export async function createShift(
   }
 
   // Call repository
-  return await createShiftRepo(input);
+  const result = await createShiftRepo(input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logShiftEvent("create", {
+      salonId: input.salon_id,
+      resourceId: result.data.id,
+      employeeId: result.data.employee_id,
+      dayOfWeek: result.data.weekday,
+      startTime: result.data.start_time,
+      endTime: result.data.end_time,
+    }).catch(() => {
+      // Silent fail - don't block shift creation if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -123,6 +140,18 @@ export async function deleteShift(
   }
 
   // Call repository
-  return await deleteShiftRepo(salonId, shiftId);
+  const result = await deleteShiftRepo(salonId, shiftId);
+
+  // Log to audit trail on success
+  if (!result.error) {
+    logShiftEvent("delete", {
+      salonId,
+      resourceId: shiftId,
+    }).catch(() => {
+      // Silent fail - don't block shift deletion if audit fails
+    });
+  }
+
+  return result;
 }
 
