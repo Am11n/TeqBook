@@ -112,7 +112,11 @@ describeIf("Bookings Repository Integration Tests", () => {
       const booking = data!.find((b) => b.id === bookingId);
       expect(booking).toBeDefined();
       expect(booking!.employees).toBeDefined();
-      expect((booking!.employees as { id: string; full_name: string }).id).toBe(employeeId);
+      // employees can be an array or single object depending on the query
+      const employee = Array.isArray(booking!.employees) 
+        ? booking!.employees[0] 
+        : booking!.employees;
+      expect((employee as { id: string; full_name: string }).id).toBe(employeeId);
     });
 
     it("should filter bookings by date range", async () => {

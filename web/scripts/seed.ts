@@ -406,12 +406,12 @@ async function seed(force = false) {
 
     console.log("\n✨ Seed completed successfully!");
     console.log(`\n📋 Summary:`);
-    console.log(`   Salon: ${salon.name} (slug: ${salon.slug})`);
+    console.log(`   Salon: ${salonName} (slug: ${TEST_SALON_SLUG})`);
     console.log(`   Employees: ${employees?.length || 0}`);
     console.log(`   Services: ${services?.length || 0}`);
     console.log(`   Customers: ${customers?.length || 0}`);
     console.log(`   Products: ${products?.length || 0}`);
-    console.log(`\n🔗 Public booking page: /book/${salon.slug}`);
+    console.log(`\n🔗 Public booking page: /book/${TEST_SALON_SLUG}`);
   } catch (error) {
     console.error("❌ Seed failed:", error);
     process.exit(1);

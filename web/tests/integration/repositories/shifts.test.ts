@@ -401,7 +401,11 @@ describeIf("Shifts Repository Integration Tests", () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data!.employee).toBeDefined();
-      expect((data!.employee as { id: string }).id).toBe(employeeId);
+      // employee can be an array or single object depending on the query
+      const employee = Array.isArray(data!.employee) 
+        ? data!.employee[0] 
+        : data!.employee;
+      expect((employee as { id: string }).id).toBe(employeeId);
     });
 
     it("should filter shifts by employee", async () => {

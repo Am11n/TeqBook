@@ -91,6 +91,14 @@ export default function GeneralSettingsPage() {
     loadLimit();
   }, [salon?.id, salon?.plan]);
 
+  // Reset user preferred language if it's removed from supported languages
+  useEffect(() => {
+    if (supportedLanguages.length > 0 && !supportedLanguages.includes(userPreferredLanguage)) {
+      // Set to first supported language or default language
+      setUserPreferredLanguage(defaultLanguage || supportedLanguages[0] || "en");
+    }
+  }, [supportedLanguages, userPreferredLanguage, defaultLanguage]);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!salon?.id) return;
@@ -120,25 +128,39 @@ export default function GeneralSettingsPage() {
 
       // Update user profile preferred_language if changed
       if (user?.id && userPreferredLanguage !== profile?.preferred_language) {
+        logError("Updating user preferred language", { 
+          userId: user.id, 
+          from: profile?.preferred_language, 
+          to: userPreferredLanguage 
+        });
+        
         const { error: profileError } = await updateProfile(user.id, {
           preferred_language: userPreferredLanguage || null,
         });
 
         if (profileError) {
+          // Log detailed error for debugging
+          logError("Failed to update user preferred language", { 
+            profileError, 
+            userId: user.id,
+            attemptedLanguage: userPreferredLanguage
+          });
           setError(profileError);
           setSaving(false);
           return;
         }
 
-        // Update locale if user changed their preferred language
-        if (userPreferredLanguage && userPreferredLanguage !== locale) {
-          setLocale(userPreferredLanguage as AppLocale);
-        }
       }
 
       setSaved(true);
-      // Refresh salon data without full page reload
+      // Refresh salon data - this will also update locale from the new profile.preferred_language
       await refreshSalon();
+      
+      // Ensure locale is set to the user's choice (in case refreshSalon didn't pick it up immediately)
+      if (userPreferredLanguage && userPreferredLanguage !== locale) {
+        setLocale(userPreferredLanguage as AppLocale);
+      }
+      
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       logError("Error saving settings", err);
@@ -337,8 +359,8 @@ export default function GeneralSettingsPage() {
               onChange={(e) => setUserPreferredLanguage(e.target.value)}
               className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
-                const langLabels: Record<typeof lang, string> = {
+              {(supportedLanguages.length > 0 ? supportedLanguages : ["en"]).map((lang) => {
+                const langLabels: Record<string, string> = {
                   nb: "🇳🇴 Norsk",
                   en: "🇬🇧 English",
                   ar: "🇸🇦 العربية",
@@ -357,7 +379,7 @@ export default function GeneralSettingsPage() {
                 };
                 return (
                   <option key={lang} value={lang}>
-                    {langLabels[lang]}
+                    {langLabels[lang] || lang}
                   </option>
                 );
               })}
