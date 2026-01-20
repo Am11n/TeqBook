@@ -15,6 +15,7 @@ import {
   type UpdateProductInput,
 } from "@/lib/repositories/products";
 import * as featureFlagsService from "@/lib/services/feature-flags-service";
+import { logProductEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get products for current salon
@@ -106,7 +107,23 @@ export async function createProduct(
   }
 
   // Call repository
-  return await createProductRepo(input);
+  const result = await createProductRepo(input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logProductEvent("create", {
+      salonId: input.salon_id,
+      resourceId: result.data.id,
+      productName: result.data.name,
+      priceCents: result.data.price_cents,
+      stockQuantity: result.data.stock ?? undefined,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block product creation if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -152,7 +169,23 @@ export async function updateProduct(
   }
 
   // Call repository
-  return await updateProductRepo(salonId, productId, updates);
+  const result = await updateProductRepo(salonId, productId, updates);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logProductEvent("update", {
+      salonId,
+      resourceId: productId,
+      productName: result.data.name,
+      priceCents: result.data.price_cents,
+      stockQuantity: result.data.stock ?? undefined,
+      isActive: result.data.is_active,
+    }).catch(() => {
+      // Silent fail - don't block product update if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -188,6 +221,18 @@ export async function deleteProduct(
   }
 
   // Call repository
-  return await deleteProductRepo(salonId, productId);
+  const result = await deleteProductRepo(salonId, productId);
+
+  // Log to audit trail on success
+  if (!result.error) {
+    logProductEvent("delete", {
+      salonId,
+      resourceId: productId,
+    }).catch(() => {
+      // Silent fail - don't block product deletion if audit fails
+    });
+  }
+
+  return result;
 }
 

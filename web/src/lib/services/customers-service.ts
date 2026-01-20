@@ -10,6 +10,7 @@ import {
   deleteCustomer as deleteCustomerRepo,
 } from "@/lib/repositories/customers";
 import type { Customer, CreateCustomerInput } from "@/lib/types";
+import { logCustomerEvent } from "@/lib/services/audit-trail-service";
 
 /**
  * Get customers for current salon
@@ -54,7 +55,22 @@ export async function createCustomer(
   }
 
   // Call repository
-  return await createCustomerRepo(input);
+  const result = await createCustomerRepo(input);
+
+  // Log to audit trail on success
+  if (!result.error && result.data) {
+    logCustomerEvent("create", {
+      salonId: input.salon_id,
+      resourceId: result.data.id,
+      customerName: result.data.full_name,
+      email: result.data.email || undefined,
+      phone: result.data.phone || undefined,
+    }).catch(() => {
+      // Silent fail - don't block customer creation if audit fails
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -70,6 +86,18 @@ export async function deleteCustomer(
   }
 
   // Call repository
-  return await deleteCustomerRepo(salonId, customerId);
+  const result = await deleteCustomerRepo(salonId, customerId);
+
+  // Log to audit trail on success
+  if (!result.error) {
+    logCustomerEvent("delete", {
+      salonId,
+      resourceId: customerId,
+    }).catch(() => {
+      // Silent fail - don't block customer deletion if audit fails
+    });
+  }
+
+  return result;
 }
 
