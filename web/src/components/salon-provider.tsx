@@ -112,28 +112,33 @@ export function SalonProvider({ children }: SalonProviderProps) {
 
           salon = salonData;
 
-          // 4. Set locale from salon's preferred_language if available
-          if (salon?.preferred_language) {
-            const validLocales: AppLocale[] = [
-              "nb",
-              "en",
-              "ar",
-              "so",
-              "ti",
-              "am",
-              "tr",
-              "pl",
-              "vi",
-              "zh",
-              "tl",
-              "fa",
-              "dar",
-              "ur",
-              "hi",
-            ];
-            if (validLocales.includes(salon.preferred_language as AppLocale)) {
-              setLocale(salon.preferred_language as AppLocale);
-            }
+          // 4. Set locale from user's preferred_language (profile) or fall back to salon's preferred_language
+          const validLocales: AppLocale[] = [
+            "nb",
+            "en",
+            "ar",
+            "so",
+            "ti",
+            "am",
+            "tr",
+            "pl",
+            "vi",
+            "zh",
+            "tl",
+            "fa",
+            "dar",
+            "ur",
+            "hi",
+          ];
+          
+          // Priority: user's profile.preferred_language > salon.preferred_language > 'en'
+          const userLocale = profile?.preferred_language;
+          const salonLocale = salon?.preferred_language;
+          
+          if (userLocale && validLocales.includes(userLocale as AppLocale)) {
+            setLocale(userLocale as AppLocale);
+          } else if (salonLocale && validLocales.includes(salonLocale as AppLocale)) {
+            setLocale(salonLocale as AppLocale);
           }
         } catch (err) {
           console.warn("Exception loading salon data:", err);
