@@ -26,6 +26,11 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
+    "seed:force": "tsx scripts/seed.ts --force",
+    "create:e2e-users": "tsx scripts/create-e2e-users.ts",
+    "create:e2e-users:cleanup": "tsx scripts/create-e2e-users.ts --cleanup",
+    "setup:e2e": "npm run create:e2e-users",
+    "setup:e2e:clean": "npm run create:e2e-users -- --cleanup",
     "migrate:local": "tsx scripts/migrate-local.ts",
     "reset:db": "tsx scripts/reset-db.ts"
   },
