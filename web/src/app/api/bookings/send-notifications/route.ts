@@ -3,6 +3,8 @@ import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
+import { sendNewBookingNotification } from "@/lib/services/unified-notification-service";
+import { supabase } from "@/lib/supabase-client";
 import type { Booking } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
       salon: salon ? { name: salon.name } : booking.salon,
     };
 
-    // Send confirmation email (don't fail if email fails)
+    // Send confirmation email to customer (don't fail if email fails)
     logInfo("Attempting to send booking confirmation email", {
       bookingId: booking.id,
       recipientEmail: customerEmail,
@@ -104,9 +106,64 @@ export async function POST(request: NextRequest) {
       return { error: reminderError instanceof Error ? reminderError.message : "Unknown error" };
     });
 
+    // Send in-app notification to salon owner and managers about new booking
+    let inAppResult = null;
+    try {
+      // Find salon owners and managers to notify
+      const { data: salonStaff } = await supabase
+        .from("profiles")
+        .select("user_id, role")
+        .eq("salon_id", salonId)
+        .in("role", ["owner", "manager"]);
+
+      if (salonStaff && salonStaff.length > 0) {
+        logInfo("Sending in-app notifications to salon staff", {
+          bookingId: booking.id,
+          staffCount: salonStaff.length,
+          staffIds: salonStaff.map(s => s.user_id),
+        });
+
+        // Send notification to each owner/manager
+        const notificationResults = await Promise.allSettled(
+          salonStaff.map((staff) =>
+            sendNewBookingNotification({
+              booking: bookingForEmail,
+              salonId,
+              recipientUserId: staff.user_id,
+              recipientEmail: null, // Don't send email (they get in-app notification)
+              language: language || salon?.preferred_language || "en",
+            })
+          )
+        );
+
+        const successCount = notificationResults.filter(
+          (r) => r.status === "fulfilled" && r.value?.success
+        ).length;
+
+        inAppResult = {
+          success: successCount > 0,
+          sent: successCount,
+          total: salonStaff.length,
+        };
+
+        logInfo("In-app notification results", {
+          bookingId: booking.id,
+          successCount,
+          totalStaff: salonStaff.length,
+        });
+      }
+    } catch (inAppError) {
+      logWarn("Failed to send in-app notifications to salon staff", {
+        bookingId: booking.id,
+        inAppError: inAppError instanceof Error ? inAppError.message : "Unknown error",
+      });
+      inAppResult = { success: false, error: inAppError instanceof Error ? inAppError.message : "Unknown error" };
+    }
+
     return NextResponse.json({
       email: emailResult,
       reminders: reminderResult,
+      inApp: inAppResult,
     });
   } catch (error) {
     logError("Exception in send-notifications API route", error, {});

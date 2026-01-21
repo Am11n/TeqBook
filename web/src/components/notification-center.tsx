@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Calendar, Users, Settings, Info } from "lucide-react";
+import { Bell, Calendar, Users, Settings, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,63 +9,30 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-// Using native Date formatting instead of date-fns
-
-type Notification = {
-  id: string;
-  type: "system" | "booking" | "staff" | "info";
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  actionUrl?: string;
-};
-
-// Mock notifications - replace with real data from Supabase
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "system",
-    title: "New dashboard update",
-    message: "We've released new features for better booking management.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-    read: false,
-    actionUrl: "/updates",
-  },
-  {
-    id: "2",
-    type: "booking",
-    title: "New booking created",
-    message: "Alex Johnson booked a haircut for tomorrow at 2:00 PM",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    read: false,
-    actionUrl: "/bookings",
-  },
-  {
-    id: "3",
-    type: "staff",
-    title: "Staff update",
-    message: "Sarah updated her availability for next week",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-    read: true,
-    actionUrl: "/employees",
-  },
-];
+import { useNotifications } from "@/lib/hooks/notifications/useNotifications";
+import type { InAppNotification } from "@/lib/types/notifications";
 
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications({
+    enablePolling: true,
+    pollingInterval: 60000, // Poll every minute
+  });
+
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Only render on client to avoid hydration mismatch
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const getIcon = (type: Notification["type"]) => {
+  const getIcon = (type: InAppNotification["type"]) => {
     switch (type) {
       case "booking":
         return Calendar;
@@ -78,14 +45,39 @@ export function NotificationCenter() {
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const handleNotificationClick = async (notification: InAppNotification) => {
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
+    if (notification.action_url) {
+      window.location.href = notification.action_url;
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
+  };
+
+  // Format timestamp relative to now
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   };
 
   // Don't render until mounted to avoid hydration mismatch
@@ -132,7 +124,7 @@ export function NotificationCenter() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
               className="h-7 text-xs text-slate-600 hover:text-slate-900"
             >
               Mark all read
@@ -141,7 +133,12 @@ export function NotificationCenter() {
         </div>
 
         <div className="max-h-[400px] overflow-y-auto">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <div className="px-4 py-8 text-center">
+              <Loader2 className="h-5 w-5 animate-spin mx-auto text-slate-400" />
+              <p className="mt-2 text-sm text-slate-500">Loading...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-slate-500">
               No notifications
             </div>
@@ -150,17 +147,13 @@ export function NotificationCenter() {
               {notifications.map((notification) => {
                 const Icon = getIcon(notification.type);
                 return (
-                  <div
+                  <button
                     key={notification.id}
-                    className={`px-4 py-3 transition-colors hover:bg-slate-50/60 ${
+                    type="button"
+                    className={`w-full px-4 py-3 transition-colors hover:bg-slate-50/60 text-left ${
                       !notification.read ? "bg-blue-50/30" : ""
                     }`}
-                    onClick={() => {
-                      markAsRead(notification.id);
-                      if (notification.actionUrl) {
-                        window.location.href = notification.actionUrl;
-                      }
-                    }}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100/60">
@@ -176,19 +169,14 @@ export function NotificationCenter() {
                           )}
                         </div>
                         <p className="mt-1 text-xs text-slate-600 line-clamp-2">
-                          {notification.message}
+                          {notification.body}
                         </p>
                         <p className="mt-1 text-[10px] text-slate-400">
-                          {notification.timestamp.toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
+                          {formatTimestamp(notification.created_at)}
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -214,4 +202,3 @@ export function NotificationCenter() {
     </Popover>
   );
 }
-
