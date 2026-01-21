@@ -548,6 +548,29 @@ export type ProductsMessages = {
   skuPlaceholder: string;
 };
 
+export type NotificationsMessages = {
+  title: string;
+  noNotifications: string;
+  markAllRead: string;
+  viewAll: string;
+  justNow: string;
+  minutesAgo: string;
+  hoursAgo: string;
+  daysAgo: string;
+  bookingConfirmedTitle: string;
+  bookingConfirmedBody: string;
+  bookingChangedTitle: string;
+  bookingChangedBody: string;
+  bookingCancelledTitle: string;
+  bookingCancelledBody: string;
+  reminder24hTitle: string;
+  reminder24hBody: string;
+  reminder2hTitle: string;
+  reminder2hBody: string;
+  newBookingTitle: string;
+  newBookingBody: string;
+};
+
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
@@ -564,6 +587,7 @@ export type TranslationNamespaces = {
   settings: SettingsMessages;
   admin: AdminMessages;
   products: ProductsMessages;
+  notifications: NotificationsMessages;
 };
 
 import { nb } from "./nb";

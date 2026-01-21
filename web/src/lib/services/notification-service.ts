@@ -6,7 +6,7 @@
 import { getProfileByUserId, updateUserPreferences } from "@/lib/repositories/profiles";
 import { logWarn } from "@/lib/services/logger";
 
-export type NotificationType = "email" | "sms" | "whatsapp";
+export type NotificationType = "email" | "sms" | "whatsapp" | "inApp";
 export type EmailNotificationType = 
   | "booking_confirmation"
   | "booking_reminder"
@@ -15,6 +15,13 @@ export type EmailNotificationType =
   | "payment_retry"
   | "access_restriction_warning"
   | "new_booking";
+
+export type InAppNotificationPreferenceType =
+  | "bookingConfirmation"
+  | "bookingReminder"
+  | "bookingCancellation"
+  | "newBooking"
+  | "systemAnnouncements";
 
 export interface NotificationPreferences {
   email: {
@@ -25,6 +32,13 @@ export interface NotificationPreferences {
     paymentFailure?: boolean;
     paymentRetry?: boolean;
     accessRestrictionWarning?: boolean;
+  };
+  inApp?: {
+    bookingConfirmation?: boolean;
+    bookingReminder?: boolean;
+    bookingCancellation?: boolean;
+    newBooking?: boolean;
+    systemAnnouncements?: boolean;
   };
   sms?: {
     bookingConfirmation?: boolean;
@@ -59,6 +73,13 @@ export function getDefaultPreferences(): NotificationPreferences {
       paymentFailure: true,
       paymentRetry: true,
       accessRestrictionWarning: true,
+    },
+    inApp: {
+      bookingConfirmation: true,
+      bookingReminder: true,
+      bookingCancellation: true,
+      newBooking: true,
+      systemAnnouncements: true,
     },
     sms: {
       bookingConfirmation: false,
@@ -129,6 +150,23 @@ export async function shouldSendNotification(
       return preferenceValue === true || preferenceValue === undefined;
     }
 
+    // Check in-app preferences
+    if (input.notificationType === "inApp" && input.emailType) {
+      const inAppPrefs = preferences.inApp || defaults.inApp;
+      const preferenceKey = mapEmailTypeToPreference(input.emailType) as keyof NonNullable<NotificationPreferences["inApp"]>;
+      
+      // Check if preference is explicitly set
+      const preferenceValue = inAppPrefs?.[preferenceKey];
+      
+      // If preference is explicitly false, don't send
+      if (preferenceValue === false) {
+        return false;
+      }
+      
+      // In-app notifications are opt-in by default (true)
+      return preferenceValue === true || preferenceValue === undefined;
+    }
+
     // For SMS and WhatsApp, check if enabled (default is false)
     if (input.notificationType === "sms") {
       const smsPrefs = preferences.sms || defaults.sms;
@@ -146,7 +184,7 @@ export async function shouldSendNotification(
              whatsappPrefs?.bookingCancellation === true;
     }
 
-    // Default to true for email (opt-in by default)
+    // Default to true for email and in-app (opt-in by default)
     return true;
   } catch (error) {
     logWarn("Exception checking notification preferences", {
@@ -210,6 +248,10 @@ export async function getNotificationPreferences(
       email: {
         ...defaults.email,
         ...(preferences as NotificationPreferences).email,
+      },
+      inApp: {
+        ...defaults.inApp,
+        ...(preferences as NotificationPreferences).inApp,
       },
       sms: {
         ...defaults.sms,

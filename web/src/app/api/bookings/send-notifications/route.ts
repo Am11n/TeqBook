@@ -3,6 +3,7 @@ import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
+import { supabase } from "@/lib/supabase-client";
 import type { Booking } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       salon: salon ? { name: salon.name } : booking.salon,
     };
 
-    // Send confirmation email (don't fail if email fails)
+    // Send confirmation email to customer (don't fail if email fails)
     logInfo("Attempting to send booking confirmation email", {
       bookingId: booking.id,
       recipientEmail: customerEmail,
@@ -104,9 +105,64 @@ export async function POST(request: NextRequest) {
       return { error: reminderError instanceof Error ? reminderError.message : "Unknown error" };
     });
 
+    // Send in-app notification to salon owner and managers about new booking
+    // Using database function to bypass RLS issues
+    let inAppResult = null;
+    try {
+      const customerName = booking.customer_full_name || "Customer";
+      const serviceName = booking.service?.name || booking.services?.name || "Service";
+      const bookingTime = booking.start_time;
+
+      logInfo("Calling notify_salon_staff_new_booking", {
+        bookingId: booking.id,
+        salonId,
+        customerName,
+        serviceName,
+        bookingTime,
+      });
+
+      const { data: notifiedCount, error: notifyError } = await supabase.rpc(
+        "notify_salon_staff_new_booking",
+        {
+          p_salon_id: salonId,
+          p_customer_name: customerName,
+          p_service_name: serviceName,
+          p_booking_time: bookingTime,
+          p_booking_id: booking.id,
+        }
+      );
+
+      if (notifyError) {
+        logWarn("Failed to notify salon staff via RPC", {
+          bookingId: booking.id,
+          error: notifyError.message,
+        });
+        inAppResult = {
+          success: false,
+          error: notifyError.message,
+        };
+      } else {
+        logInfo("Salon staff notified successfully", {
+          bookingId: booking.id,
+          notifiedCount,
+        });
+        inAppResult = {
+          success: true,
+          sent: notifiedCount,
+        };
+      }
+    } catch (inAppError) {
+      logWarn("Failed to send in-app notifications to salon staff", {
+        bookingId: booking.id,
+        inAppError: inAppError instanceof Error ? inAppError.message : "Unknown error",
+      });
+      inAppResult = { success: false, error: inAppError instanceof Error ? inAppError.message : "Unknown error" };
+    }
+
     return NextResponse.json({
       email: emailResult,
       reminders: reminderResult,
+      inApp: inAppResult,
     });
   } catch (error) {
     logError("Exception in send-notifications API route", error, {});

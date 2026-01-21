@@ -337,7 +337,12 @@ export async function updateBookingStatus(
 export async function cancelBooking(
   salonId: string,
   bookingId: string,
-  reason?: string | null
+  reason?: string | null,
+  options?: {
+    booking?: Booking;
+    customerEmail?: string;
+    language?: string;
+  }
 ): Promise<{ error: string | null }> {
   const correlationId = crypto.randomUUID();
   const logContext = {
@@ -385,6 +390,56 @@ export async function cancelBooking(
           auditError: auditError instanceof Error ? auditError.message : "Unknown error",
         });
       });
+
+      // Send cancellation notifications if booking data is provided
+      if (options?.booking && typeof window !== "undefined") {
+        // Get salon info for email template
+        const salonResult = await getSalonById(salonId);
+        const salon = salonResult.data;
+
+        const bookingForNotification = {
+          ...options.booking,
+          customer_full_name: options.booking.customers?.full_name || "Customer",
+          service: options.booking.services,
+          employee: options.booking.employees ? { name: options.booking.employees.full_name } : null,
+          salon: salon ? { name: salon.name } : null,
+        };
+
+        fetch("/api/bookings/send-cancellation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            booking: bookingForNotification,
+            customerEmail: options.customerEmail,
+            salonId,
+            language: options.language || salon?.preferred_language || "en",
+            cancelledBy: "salon",
+          }),
+        })
+          .then(async (response) => {
+            const responseData = await response.json();
+            if (!response.ok) {
+              logWarn("send-cancellation API route returned error", {
+                ...logContext,
+                status: response.status,
+                error: responseData.error,
+              });
+            } else {
+              logInfo("send-cancellation API route succeeded", {
+                ...logContext,
+                result: responseData,
+              });
+            }
+          })
+          .catch((fetchError) => {
+            logWarn("Failed to call send-cancellation API route", {
+              ...logContext,
+              fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+            });
+          });
+      }
     }
     
     // If we have a reason and the update was successful, update notes

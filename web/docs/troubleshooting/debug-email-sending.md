@@ -54,7 +54,7 @@ Kjør denne kommandoen i terminalen (erstatt med din faktiske API key):
 
 ```bash
 curl -X POST https://api.resend.com/emails \
-  -H "Authorization: Bearer re_Yw8mo7K5_8Nj8cDquLR9if1z7YskF2LiG" \
+  -H "Authorization: Bearer $RESEND_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "noreply@teqbook.app",

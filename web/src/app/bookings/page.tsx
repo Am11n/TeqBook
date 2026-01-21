@@ -66,7 +66,11 @@ export default function BookingsPage() {
     const { error: cancelError } = await cancelBooking(
       salon.id,
       bookingToCancel.id,
-      reason || null
+      reason || null,
+      {
+        booking: bookingToCancel,
+        customerEmail: undefined, // We don't have customer email in booking object
+      }
     );
 
     if (cancelError) {

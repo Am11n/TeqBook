@@ -34,6 +34,12 @@ function getResendClient(): Resend | null {
   return resendClient;
 }
 
+export interface EmailAttachment {
+  filename: string;
+  content: string | Buffer;
+  contentType?: string;
+}
+
 export interface SendEmailInput {
   to: string;
   subject: string;
@@ -42,6 +48,7 @@ export interface SendEmailInput {
   salonId?: string | null;
   emailType?: EmailType;
   metadata?: Record<string, unknown>;
+  attachments?: EmailAttachment[];
 }
 
 export interface SendBookingConfirmationInput {
@@ -172,6 +179,7 @@ export async function sendEmail(
           reply_to?: string;
           headers?: Record<string, string>;
           tags?: Array<{ name: string; value: string }>;
+          attachments?: Array<{ filename: string; content: string | Buffer; content_type?: string }>;
         } = {
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: input.to,
@@ -194,6 +202,15 @@ export async function sendEmail(
             { name: "salon_id", value: input.salonId || "unknown" },
           ],
         };
+
+        // Add attachments if provided (e.g., ICS calendar invites)
+        if (input.attachments && input.attachments.length > 0) {
+          emailOptions.attachments = input.attachments.map((att) => ({
+            filename: att.filename,
+            content: att.content,
+            content_type: att.contentType,
+          }));
+        }
 
         providerResponse = await client.emails.send(emailOptions);
 
@@ -342,6 +359,69 @@ export async function sendBookingReminder(
       booking_id: input.booking.id,
       reminder_type: input.reminderType,
       language,
+    },
+  });
+}
+
+export interface SendBookingCancellationInput {
+  booking: Booking & {
+    customer_full_name: string;
+    service?: { name: string | null } | null;
+    employee?: { name: string | null } | null;
+    salon?: { name: string | null } | null;
+  };
+  recipientEmail: string;
+  language?: string;
+  salonId?: string | null;
+  userId?: string | null;
+  cancellationReason?: string | null;
+}
+
+/**
+ * Send booking cancellation email
+ * Checks user preferences before sending
+ */
+export async function sendBookingCancellation(
+  input: SendBookingCancellationInput
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  // Check preferences if userId is provided
+  if (input.userId) {
+    const shouldSend = await shouldSendNotification({
+      userId: input.userId,
+      notificationType: "email",
+      emailType: "booking_cancellation",
+      salonId: input.salonId || null,
+    });
+
+    if (!shouldSend) {
+      logWarn("Booking cancellation email blocked by user preferences", {
+        userId: input.userId,
+        bookingId: input.booking.id,
+      });
+      return { data: null, error: "Email blocked by user preferences" };
+    }
+  }
+
+  const language = normalizeLocale(input.language || "en");
+  const { renderBookingCancellationTemplate } = await import("@/lib/templates/email/booking-cancellation");
+
+  const { html, text, subject } = renderBookingCancellationTemplate({
+    booking: input.booking,
+    language,
+    cancellationReason: input.cancellationReason,
+  });
+
+  return await sendEmail({
+    to: input.recipientEmail,
+    subject,
+    html,
+    text,
+    salonId: input.salonId,
+    emailType: "booking_cancellation",
+    metadata: {
+      booking_id: input.booking.id,
+      language,
+      cancellation_reason: input.cancellationReason,
     },
   });
 }

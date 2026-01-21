@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useMemo,
+  useCallback,
   ReactNode,
 } from "react";
 import type { AppLocale } from "@/i18n/translations";
@@ -27,16 +28,17 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
   // Default to "en", will be set by SalonProvider when salon data loads
   const [locale, setLocaleState] = useState<Locale>("en");
 
-  const setLocale = (value: Locale) => {
+  // Memoize setLocale to prevent infinite loops in useEffect dependencies
+  const setLocale = useCallback((value: Locale) => {
     setLocaleState(value);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
       locale,
       setLocale,
     }),
-    [locale],
+    [locale, setLocale],
   );
 
   return (

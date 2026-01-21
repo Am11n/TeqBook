@@ -27,6 +27,13 @@ export type Profile = {
         paymentRetry?: boolean;
         accessRestrictionWarning?: boolean;
       };
+      inApp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+        systemAnnouncements?: boolean;
+      };
       sms?: {
         bookingConfirmation?: boolean;
         bookingReminder?: boolean;
@@ -116,6 +123,13 @@ export async function updateUserPreferences(
         bookingCancellation?: boolean;
         newBooking?: boolean;
       };
+      inApp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+        systemAnnouncements?: boolean;
+      };
     };
   }
 ): Promise<{ error: string | null }> {
@@ -139,6 +153,10 @@ export async function updateUserPreferences(
         email: {
           ...currentPreferences.notifications?.email,
           ...preferences.notifications?.email,
+        },
+        inApp: {
+          ...currentPreferences.notifications?.inApp,
+          ...preferences.notifications?.inApp,
         },
       },
     };
