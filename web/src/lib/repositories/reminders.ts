@@ -113,8 +113,38 @@ export async function getRemindersToSend(
     }
 
     // Transform data to include booking info
-    const reminders: ReminderWithBooking[] = (data || []).map((reminder: any) => {
-      const booking = reminder.bookings;
+    // Note: Supabase may return nested relations as arrays or single objects depending on query
+    interface RawBookingData {
+      id: string;
+      start_time: string;
+      salon_id?: string;
+      customers?: { full_name: string | null; email?: string | null } | { full_name: string | null; email?: string | null }[] | null;
+      services?: { name: string | null } | { name: string | null }[] | null;
+      employees?: { full_name: string | null } | { full_name: string | null }[] | null;
+      salons?: { id?: string; name: string | null; preferred_language?: string | null } | { id?: string; name: string | null; preferred_language?: string | null }[] | null;
+    }
+    interface RawReminderData {
+      id: string;
+      booking_id: string;
+      reminder_type: ReminderType;
+      scheduled_at: string;
+      sent_at: string | null;
+      status: ReminderStatus;
+      error_message: string | null;
+      created_at: string;
+      updated_at: string;
+      bookings?: RawBookingData | RawBookingData[] | null;
+    }
+    const reminders: ReminderWithBooking[] = ((data as unknown as RawReminderData[]) || []).map((reminder) => {
+      // Handle both array and single object returns from Supabase
+      const bookingRaw = Array.isArray(reminder.bookings) ? reminder.bookings[0] : reminder.bookings;
+      const booking = bookingRaw ? {
+        ...bookingRaw,
+        customers: Array.isArray(bookingRaw.customers) ? bookingRaw.customers[0] : bookingRaw.customers,
+        services: Array.isArray(bookingRaw.services) ? bookingRaw.services[0] : bookingRaw.services,
+        employees: Array.isArray(bookingRaw.employees) ? bookingRaw.employees[0] : bookingRaw.employees,
+        salons: Array.isArray(bookingRaw.salons) ? bookingRaw.salons[0] : bookingRaw.salons,
+      } : null;
       return {
         id: reminder.id,
         booking_id: reminder.booking_id,

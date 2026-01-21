@@ -6,6 +6,7 @@
 import type { PlanType } from "@/lib/types";
 import * as addonsRepo from "@/lib/repositories/addons";
 import * as employeesRepo from "@/lib/repositories/employees";
+import { cacheGetOrSet, cacheDelete, CacheKeys, CacheTTL } from "@/lib/services/cache-service";
 
 export type PlanLimits = {
   employees: number | null; // null = unlimited
@@ -43,6 +44,7 @@ export function getPlanLimits(plan: PlanType | null | undefined): PlanLimits {
 
 /**
  * Get effective limit (plan limit + addons)
+ * Results are cached for 5 minutes
  */
 export async function getEffectiveLimit(
   salonId: string,
@@ -50,36 +52,56 @@ export async function getEffectiveLimit(
   limitType: "employees" | "languages"
 ): Promise<{ limit: number | null; error: string | null }> {
   try {
-    const planLimits = getPlanLimits(plan);
-    const baseLimit = planLimits[limitType];
+    const cacheKey = `${CacheKeys.planLimits(salonId)}:${limitType}`;
+    
+    // Try to get from cache
+    const cachedResult = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        const planLimits = getPlanLimits(plan);
+        const baseLimit = planLimits[limitType];
 
-    // If unlimited, return null
-    if (baseLimit === null) {
-      return { limit: null, error: null };
-    }
+        // If unlimited, return null
+        if (baseLimit === null) {
+          return { limit: null as number | null, error: null as string | null };
+        }
 
-    // Get addon for this limit type
-    const addonType = limitType === "employees" ? "extra_staff" : "extra_languages";
-    const { data: addon, error: addonError } = await addonsRepo.getAddonByType(
-      salonId,
-      addonType
+        // Get addon for this limit type
+        const addonType = limitType === "employees" ? "extra_staff" : "extra_languages";
+        const { data: addon, error: addonError } = await addonsRepo.getAddonByType(
+          salonId,
+          addonType
+        );
+
+        if (addonError) {
+          return { limit: null as number | null, error: addonError };
+        }
+
+        // Calculate effective limit
+        const addonQty = addon?.qty || 0;
+        const effectiveLimit = baseLimit + addonQty;
+
+        return { limit: effectiveLimit, error: null as string | null };
+      },
+      CacheTTL.MEDIUM // 5 minutes
     );
 
-    if (addonError) {
-      return { limit: null, error: addonError };
-    }
-
-    // Calculate effective limit
-    const addonQty = addon?.qty || 0;
-    const effectiveLimit = baseLimit + addonQty;
-
-    return { limit: effectiveLimit, error: null };
+    return cachedResult;
   } catch (err) {
     return {
       limit: null,
       error: err instanceof Error ? err.message : "Unknown error",
     };
   }
+}
+
+/**
+ * Invalidate plan limits cache for a salon
+ * Call this when addons or plan changes
+ */
+export function invalidatePlanLimitsCache(salonId: string): void {
+  cacheDelete(`${CacheKeys.planLimits(salonId)}:employees`);
+  cacheDelete(`${CacheKeys.planLimits(salonId)}:languages`);
 }
 
 /**

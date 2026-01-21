@@ -36,7 +36,7 @@ export async function getAddonsForSalon(
   try {
     const { data, error } = await supabase
       .from("addons")
-      .select("*")
+      .select("id, salon_id, type, qty, created_at, updated_at")
       .eq("salon_id", salonId)
       .order("type", { ascending: true });
 
@@ -63,7 +63,7 @@ export async function getAddonByType(
   try {
     const { data, error } = await supabase
       .from("addons")
-      .select("*")
+      .select("id, salon_id, type, qty, created_at, updated_at")
       .eq("salon_id", salonId)
       .eq("type", type)
       .maybeSingle();

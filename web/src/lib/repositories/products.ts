@@ -50,7 +50,7 @@ export async function getProductsForCurrentSalon(
 
     let query = supabase
       .from("products")
-      .select("*", { count: "exact" })
+      .select("id, salon_id, name, price_cents, stock, sku, is_active, created_at, updated_at", { count: "exact" })
       .eq("salon_id", salonId)
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -84,7 +84,7 @@ export async function getProductById(
   try {
     const { data, error } = await supabase
       .from("products")
-      .select("*")
+      .select("id, salon_id, name, price_cents, stock, sku, is_active, created_at, updated_at")
       .eq("id", productId)
       .eq("salon_id", salonId)
       .maybeSingle();
@@ -224,7 +224,7 @@ export async function getProductsForBooking(
         product_id,
         quantity,
         price_cents,
-        products (*)
+        products (id, salon_id, name, price_cents, stock, sku, is_active, created_at, updated_at)
       `
       )
       .eq("booking_id", bookingId);
@@ -286,7 +286,7 @@ export async function addProductToBooking(
         product_id,
         quantity,
         price_cents,
-        products (*)
+        products (id, salon_id, name, price_cents, stock, sku, is_active, created_at, updated_at)
       `
       )
       .single();
@@ -333,7 +333,7 @@ export async function updateBookingProduct(
         product_id,
         quantity,
         price_cents,
-        products (*)
+        products (id, salon_id, name, price_cents, stock, sku, is_active, created_at, updated_at)
       `
       )
       .single();

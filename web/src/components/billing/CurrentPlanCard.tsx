@@ -220,28 +220,28 @@ export function CurrentPlanCard({
         )}
 
         {/* Payment Status */}
-        {hasSubscription && (salon as any)?.payment_status && (salon as any).payment_status !== "active" && (
+        {hasSubscription && salon?.payment_status && salon.payment_status !== "active" && (
           <div className="mt-4 pt-4 border-t">
-            <Alert variant={(salon as any).payment_status === "restricted" ? "destructive" : "default"}>
+            <Alert variant={salon.payment_status === "restricted" ? "destructive" : "default"}>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 <div className="space-y-2">
                   <div className="font-semibold">
-                    {(salon as any).payment_status === "failed" && "Payment Failed"}
-                    {(salon as any).payment_status === "grace_period" && "Payment Failed - Grace Period"}
-                    {(salon as any).payment_status === "restricted" && "Access Restricted"}
+                    {salon.payment_status === "failed" && "Payment Failed"}
+                    {salon.payment_status === "grace_period" && "Payment Failed - Grace Period"}
+                    {salon.payment_status === "restricted" && "Access Restricted"}
                   </div>
-                  {(salon as any).payment_failure_count > 0 && (
+                  {salon.payment_failure_count && salon.payment_failure_count > 0 && (
                     <div className="text-sm">
-                      Retry attempts: {(salon as any).payment_failure_count} / 3
+                      Retry attempts: {salon.payment_failure_count} / 3
                     </div>
                   )}
-                  {(salon as any).payment_failed_at && (salon as any).payment_status === "grace_period" && (
+                  {salon.payment_failed_at && salon.payment_status === "grace_period" && (
                     <div className="text-sm flex items-center gap-2">
                       <Clock className="h-3 w-3" />
                       Grace period ends:{" "}
                       {new Date(
-                        new Date((salon as any).payment_failed_at).getTime() + 7 * 24 * 60 * 60 * 1000
+                        new Date(salon.payment_failed_at).getTime() + 7 * 24 * 60 * 60 * 1000
                       ).toLocaleDateString()}
                     </div>
                   )}

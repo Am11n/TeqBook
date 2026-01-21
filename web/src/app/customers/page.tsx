@@ -27,6 +27,8 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Field } from "@/components/form/Field";
 import type { Customer } from "@/lib/types";
+import { useFeatures } from "@/lib/hooks/use-features";
+import Link from "next/link";
 
 export default function CustomersPage() {
   const { locale } = useLocale();
@@ -62,6 +64,8 @@ export default function CustomersPage() {
                                 : "en";
   const t = translations[appLocale].customers;
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const { hasFeature } = useFeatures();
+  const canViewHistory = hasFeature("CUSTOMER_HISTORY");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -304,15 +308,28 @@ export default function CustomersPage() {
                           ? t.mobileConsentYes
                           : t.mobileConsentNo}
                       </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(customer.id)}
-                      >
-                        {t.delete}
-                      </Button>
+                      <div className="flex gap-2">
+                        {canViewHistory && (
+                          <Link href={`/customers/${customer.id}/history`}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                            >
+                              History
+                            </Button>
+                          </Link>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => handleDelete(customer.id)}
+                        >
+                          {t.delete}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -353,15 +370,28 @@ export default function CustomersPage() {
                             : t.consentNo}
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:bg-red-50"
-                            onClick={() => handleDelete(customer.id)}
-                          >
-                            {t.delete}
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            {canViewHistory && (
+                              <Link href={`/customers/${customer.id}/history`}>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  History
+                                </Button>
+                              </Link>
+                            )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:bg-red-50"
+                              onClick={() => handleDelete(customer.id)}
+                            >
+                              {t.delete}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

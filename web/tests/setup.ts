@@ -4,6 +4,7 @@
 import { vi } from "vitest";
 import { config } from "dotenv";
 import { resolve } from "path";
+import "@testing-library/jest-dom";
 
 // Load environment variables from .env.local (preferred) or .env
 // .env.local takes precedence if both exist

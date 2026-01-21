@@ -33,7 +33,7 @@ export async function getAllFeatures(): Promise<{
   try {
     const { data, error } = await supabase
       .from("features")
-      .select("*")
+      .select("id, key, name, description, created_at, updated_at")
       .order("key");
 
     if (error) {
@@ -59,7 +59,7 @@ export async function getFeatureByKey(key: FeatureKey): Promise<{
   try {
     const { data, error } = await supabase
       .from("features")
-      .select("*")
+      .select("id, key, name, description, created_at, updated_at")
       .eq("key", key)
       .maybeSingle();
 

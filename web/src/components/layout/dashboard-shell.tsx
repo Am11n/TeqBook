@@ -159,8 +159,8 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-white">
       {/* Header */}
       <DashboardHeader
-        salon={salon as any}
-        profile={profile as any}
+        salon={salon}
+        profile={profile}
         userRole={userRole}
         locale={appLocale}
         onMobileNavOpen={() => setMobileNavOpen(true)}

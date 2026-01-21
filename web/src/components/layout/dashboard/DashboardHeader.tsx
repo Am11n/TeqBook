@@ -8,12 +8,12 @@ import { NotificationCenter } from "@/components/notification-center";
 import { useLocale } from "@/components/locale-provider";
 import { updateSalonSettings } from "@/lib/services/salons-service";
 import { UserMenu } from "./UserMenu";
-import type { Salon } from "@/lib/types";
+import type { Salon, Profile } from "@/lib/types";
 import type { AppLocale } from "@/i18n/translations";
 
 interface DashboardHeaderProps {
-  salon: any; // Salon type from useCurrentSalon
-  profile: any; // Profile type from useCurrentSalon
+  salon: Salon | null;
+  profile: Profile | null;
   userRole: string | null;
   locale: string;
   onMobileNavOpen: () => void;

@@ -9,46 +9,50 @@ import * as featuresRepo from "@/lib/repositories/features";
 import * as salonsRepo from "@/lib/repositories/salons";
 import * as profilesService from "@/lib/services/profiles-service";
 import { hasPermission, type UserRole } from "@/lib/utils/access-control";
+import { cacheGetOrSet, cacheDelete, CacheKeys, CacheTTL } from "@/lib/services/cache-service";
 
 /**
  * Check if a salon has access to a specific feature
+ * Results are cached for 5 minutes
  */
 export async function hasFeature(
   salonId: string,
   featureKey: FeatureKey
 ): Promise<{ hasFeature: boolean; error: string | null }> {
   try {
-    // Get salon to find plan
-    const { data: salon, error: salonError } = await salonsRepo.getSalonById(salonId);
+    const cacheKey = `${CacheKeys.salonFeatures(salonId)}:${featureKey}`;
+    
+    const result = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        // Get salon to find plan
+        const { data: salon, error: salonError } = await salonsRepo.getSalonById(salonId);
 
-    if (salonError || !salon) {
-      return { hasFeature: false, error: salonError || "Salon not found" };
-    }
+        if (salonError || !salon) {
+          return { hasFeature: false, error: salonError || "Salon not found" };
+        }
 
-    const plan = (salon.plan || "starter") as PlanType;
+        const plan = (salon.plan || "starter") as PlanType;
 
-    // Get features for this plan
-    const { data: planFeatures, error: featuresError } =
-      await featuresRepo.getFeaturesForPlan(plan);
+        // Get features for this plan (also cached)
+        const { data: planFeatures, error: featuresError } =
+          await getFeaturesForPlanCached(plan);
 
-    if (featuresError) {
-      return { hasFeature: false, error: featuresError };
-    }
+        if (featuresError) {
+          return { hasFeature: false, error: featuresError };
+        }
 
-    // Check if feature is in plan
-    const hasFeature = planFeatures?.some(
-      (pf) => pf.feature.key === featureKey
-    ) || false;
+        // Check if feature is in plan
+        const hasFeatureResult = planFeatures?.some(
+          (pf) => pf.feature.key === featureKey
+        ) || false;
 
-    // TODO: Check custom_feature_overrides if implemented
-    // if (salon.custom_feature_overrides) {
-    //   const overrides = salon.custom_feature_overrides as Record<string, boolean>;
-    //   if (overrides[featureKey] !== undefined) {
-    //     return { hasFeature: overrides[featureKey], error: null };
-    //   }
-    // }
+        return { hasFeature: hasFeatureResult, error: null as string | null };
+      },
+      CacheTTL.MEDIUM // 5 minutes
+    );
 
-    return { hasFeature, error: null };
+    return result;
   } catch (err) {
     return {
       hasFeature: false,
@@ -58,46 +62,76 @@ export async function hasFeature(
 }
 
 /**
+ * Get features for a plan with caching
+ */
+async function getFeaturesForPlanCached(
+  planType: PlanType
+): Promise<{ data: Array<{ feature: { key: FeatureKey } }> | null; error: string | null }> {
+  const cacheKey = CacheKeys.planFeatures(planType);
+  
+  return cacheGetOrSet(
+    cacheKey,
+    async () => {
+      const result = await featuresRepo.getFeaturesForPlan(planType);
+      return {
+        data: result.data as Array<{ feature: { key: FeatureKey } }> | null,
+        error: result.error,
+      };
+    },
+    CacheTTL.LONG // 15 minutes - plan features rarely change
+  );
+}
+
+/**
  * Get all features available for a salon based on its plan
+ * Results are cached for 5 minutes
  */
 export async function getFeaturesForSalon(
   salonId: string
 ): Promise<{ features: FeatureKey[]; error: string | null }> {
   try {
-    // Get salon to find plan
-    const { data: salon, error: salonError } = await salonsRepo.getSalonById(salonId);
+    const cacheKey = `${CacheKeys.salonFeatures(salonId)}:all`;
+    
+    return cacheGetOrSet(
+      cacheKey,
+      async () => {
+        // Get salon to find plan
+        const { data: salon, error: salonError } = await salonsRepo.getSalonById(salonId);
 
-    if (salonError || !salon) {
-      return { features: [], error: salonError || "Salon not found" };
-    }
+        if (salonError || !salon) {
+          return { features: [] as FeatureKey[], error: salonError || "Salon not found" };
+        }
 
-    const plan = (salon.plan || "starter") as PlanType;
+        const plan = (salon.plan || "starter") as PlanType;
 
-    // Get feature keys for this plan
-    const { data: featureKeys, error: featuresError } =
-      await featuresRepo.getFeatureKeysForPlan(plan);
+        // Get feature keys for this plan
+        const { data: featureKeys, error: featuresError } =
+          await featuresRepo.getFeatureKeysForPlan(plan);
 
-    if (featuresError) {
-      return { features: [], error: featuresError };
-    }
+        if (featuresError) {
+          return { features: [] as FeatureKey[], error: featuresError };
+        }
 
-    // TODO: Merge with custom_feature_overrides if implemented
-    // if (salon.custom_feature_overrides) {
-    //   const overrides = salon.custom_feature_overrides as Record<string, boolean>;
-    //   const additionalFeatures = Object.keys(overrides)
-    //     .filter((key) => overrides[key] === true)
-    //     .filter((key) => !featureKeys?.includes(key as FeatureKey))
-    //     .map((key) => key as FeatureKey);
-    //   return { features: [...(featureKeys || []), ...additionalFeatures], error: null };
-    // }
-
-    return { features: featureKeys || [], error: null };
+        return { features: featureKeys || [], error: null as string | null };
+      },
+      CacheTTL.MEDIUM // 5 minutes
+    );
   } catch (err) {
     return {
       features: [],
       error: err instanceof Error ? err.message : "Unknown error",
     };
   }
+}
+
+/**
+ * Invalidate feature cache for a salon
+ * Call this when plan changes
+ */
+export function invalidateFeatureCache(salonId: string): void {
+  // Invalidate all feature-related cache for this salon
+  cacheDelete(`${CacheKeys.salonFeatures(salonId)}:all`);
+  // Note: Individual feature checks are invalidated by prefix in cache-service
 }
 
 /**

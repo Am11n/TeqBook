@@ -44,7 +44,8 @@ export type FeatureKey =
   | "ROLES_ACCESS"
   | "EXPORTS"
   | "CUSTOMER_HISTORY"
-  | "ONLINE_PAYMENTS";
+  | "ONLINE_PAYMENTS"
+  | "ADVANCED_PERMISSIONS";
 
 export type NotificationType = 
   | "sms"
@@ -159,13 +160,41 @@ export type Salon = {
 export type Profile = {
   user_id: string;
   salon_id: string | null;
-  is_superadmin: boolean;
+  is_superadmin?: boolean;
   role?: string | null;
   first_name?: string | null;
   last_name?: string | null;
   avatar_url?: string | null;
   user_preferences?: {
     sidebarCollapsed?: boolean;
+    notifications?: {
+      email?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+        paymentFailure?: boolean;
+        paymentRetry?: boolean;
+        accessRestrictionWarning?: boolean;
+      };
+      inApp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+        systemAnnouncements?: boolean;
+      };
+      sms?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+      };
+      whatsapp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+      };
+    };
     [key: string]: unknown;
   } | null;
   preferred_language?: string | null;

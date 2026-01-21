@@ -100,7 +100,7 @@ export async function getNotificationsForUser(
 
     let query = supabase
       .from("notifications")
-      .select("*")
+      .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -279,7 +279,7 @@ export async function getNotificationById(
 
     const { data, error } = await supabase
       .from("notifications")
-      .select("*")
+      .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
       .eq("id", notificationId)
       .eq("user_id", userId)
       .single();

@@ -5,48 +5,10 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import type { Profile } from "@/lib/types";
 
-export type Profile = {
-  user_id: string;
-  salon_id: string | null;
-  is_superadmin: boolean;
-  role?: string | null;
-  preferred_language?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  avatar_url?: string | null;
-  user_preferences?: {
-    sidebarCollapsed?: boolean;
-    notifications?: {
-      email?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-        newBooking?: boolean;
-        paymentFailure?: boolean;
-        paymentRetry?: boolean;
-        accessRestrictionWarning?: boolean;
-      };
-      inApp?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-        newBooking?: boolean;
-        systemAnnouncements?: boolean;
-      };
-      sms?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-      };
-      whatsapp?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-      };
-    };
-  } | null;
-};
+// Re-export Profile for backward compatibility
+export type { Profile };
 
 /**
  * Get profile by user ID

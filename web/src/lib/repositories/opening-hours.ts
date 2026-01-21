@@ -31,7 +31,7 @@ export async function getOpeningHoursForSalon(
   try {
     const { data, error } = await supabase
       .from("opening_hours")
-      .select("*")
+      .select("id, salon_id, day_of_week, open_time, close_time, is_closed")
       .eq("salon_id", salonId)
       .order("day_of_week", { ascending: true });
 

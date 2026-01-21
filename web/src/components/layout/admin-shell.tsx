@@ -606,7 +606,7 @@ function LanguageSelector({
   setLocale,
 }: {
   locale: string;
-  salon: any;
+  salon: { supported_languages?: string[] | null } | null;
   setLocale: (locale: AppLocale) => void;
 }) {
   // Map of all available languages with their flags
