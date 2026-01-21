@@ -3,7 +3,6 @@ import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
-import { sendNewBookingNotification } from "@/lib/services/unified-notification-service";
 import { supabase } from "@/lib/supabase-client";
 import type { Booking } from "@/lib/types";
 
@@ -107,50 +106,50 @@ export async function POST(request: NextRequest) {
     });
 
     // Send in-app notification to salon owner and managers about new booking
+    // Using database function to bypass RLS issues
     let inAppResult = null;
     try {
-      // Find salon owners and managers to notify
-      const { data: salonStaff } = await supabase
-        .from("profiles")
-        .select("user_id, role")
-        .eq("salon_id", salonId)
-        .in("role", ["owner", "manager"]);
+      const customerName = booking.customer_full_name || "Customer";
+      const serviceName = booking.service?.name || booking.services?.name || "Service";
+      const bookingTime = booking.start_time;
 
-      if (salonStaff && salonStaff.length > 0) {
-        logInfo("Sending in-app notifications to salon staff", {
+      logInfo("Calling notify_salon_staff_new_booking", {
+        bookingId: booking.id,
+        salonId,
+        customerName,
+        serviceName,
+        bookingTime,
+      });
+
+      const { data: notifiedCount, error: notifyError } = await supabase.rpc(
+        "notify_salon_staff_new_booking",
+        {
+          p_salon_id: salonId,
+          p_customer_name: customerName,
+          p_service_name: serviceName,
+          p_booking_time: bookingTime,
+          p_booking_id: booking.id,
+        }
+      );
+
+      if (notifyError) {
+        logWarn("Failed to notify salon staff via RPC", {
           bookingId: booking.id,
-          staffCount: salonStaff.length,
-          staffIds: salonStaff.map(s => s.user_id),
+          error: notifyError.message,
         });
-
-        // Send notification to each owner/manager
-        const notificationResults = await Promise.allSettled(
-          salonStaff.map((staff) =>
-            sendNewBookingNotification({
-              booking: bookingForEmail,
-              salonId,
-              recipientUserId: staff.user_id,
-              recipientEmail: null, // Don't send email (they get in-app notification)
-              language: language || salon?.preferred_language || "en",
-            })
-          )
-        );
-
-        const successCount = notificationResults.filter(
-          (r) => r.status === "fulfilled" && r.value?.success
-        ).length;
-
         inAppResult = {
-          success: successCount > 0,
-          sent: successCount,
-          total: salonStaff.length,
+          success: false,
+          error: notifyError.message,
         };
-
-        logInfo("In-app notification results", {
+      } else {
+        logInfo("Salon staff notified successfully", {
           bookingId: booking.id,
-          successCount,
-          totalStaff: salonStaff.length,
+          notifiedCount,
         });
+        inAppResult = {
+          success: true,
+          sent: notifiedCount,
+        };
       }
     } catch (inAppError) {
       logWarn("Failed to send in-app notifications to salon staff", {

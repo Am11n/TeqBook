@@ -38,7 +38,12 @@ export async function createNotification(
   input: CreateInAppNotificationInput
 ): Promise<{ data: InAppNotification | null; error: string | null }> {
   try {
-    
+    console.log("[Notifications Repo] Creating notification:", {
+      user_id: input.user_id,
+      salon_id: input.salon_id,
+      type: input.type,
+      title: input.title,
+    });
 
     const { data, error } = await supabase
       .from("notifications")
@@ -56,14 +61,23 @@ export async function createNotification(
       .single();
 
     if (error) {
+      console.error("[Notifications Repo] Insert error:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       return { data: null, error: error.message };
     }
+
+    console.log("[Notifications Repo] Notification created:", data?.id);
 
     return {
       data: mapRowToNotification(data as NotificationRow),
       error: null,
     };
   } catch (error) {
+    console.error("[Notifications Repo] Exception:", error);
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
