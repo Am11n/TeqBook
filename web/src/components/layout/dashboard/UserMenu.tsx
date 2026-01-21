@@ -17,10 +17,11 @@ import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { canAccessSettings } from "@/lib/utils/access-control";
 import { getRoleDisplayName } from "@/lib/utils/access-control";
 import { getInitials } from "@/lib/utils/dashboard/dashboard-utils";
+import type { Salon, Profile } from "@/lib/types";
 
 interface UserMenuProps {
-  profile: any; // Profile type from useCurrentSalon
-  salon: any; // Salon type from useCurrentSalon
+  profile: Profile | null;
+  salon: Salon | null;
   userRole: string | null;
   isMobile?: boolean;
 }

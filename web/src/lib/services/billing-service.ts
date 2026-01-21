@@ -11,11 +11,44 @@ import { sendPaymentFailure } from "@/lib/services/email-service";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
 
+// Response types for Edge Functions
+interface CreateCustomerResponse {
+  customer_id: string;
+  email: string;
+}
+
+interface CreateSubscriptionResponse {
+  subscription_id: string;
+  plan: string;
+  current_period_end: string;
+  status: string;
+  client_secret?: string;
+}
+
+interface UpdatePlanResponse {
+  plan: string;
+  subscription_id: string;
+  current_period_end: string;
+  status: string;
+}
+
+interface CancelSubscriptionResponse {
+  subscription_id: string;
+  status: string;
+  cancel_at_period_end: boolean;
+  current_period_end: string;
+}
+
+interface SetupPaymentMethodResponse {
+  client_secret: string;
+  setup_intent_id: string;
+}
+
 // Helper function to safely fetch and parse JSON
-async function safeFetch(
+async function safeFetch<T>(
   url: string,
   options: RequestInit
-): Promise<{ data: any; error: string | null }> {
+): Promise<{ data: T | null; error: string | null }> {
   try {
     // Validate URL
     if (!SUPABASE_URL) {
@@ -93,7 +126,7 @@ export async function createStripeCustomer(
       return { data: null, error: "Not authenticated" };
     }
 
-    const { data: result, error: fetchError } = await safeFetch(
+    const { data: result, error: fetchError } = await safeFetch<CreateCustomerResponse>(
       `${EDGE_FUNCTION_BASE}/billing-create-customer`,
       {
         method: "POST",
@@ -149,7 +182,7 @@ export async function createStripeSubscription(
       return { data: null, error: "Not authenticated" };
     }
 
-    const { data: result, error: fetchError } = await safeFetch(
+    const { data: result, error: fetchError } = await safeFetch<CreateSubscriptionResponse>(
       `${EDGE_FUNCTION_BASE}/billing-create-subscription`,
       {
         method: "POST",
@@ -240,7 +273,7 @@ export async function updateSubscriptionPlan(
       return { data: null, error: "Not authenticated" };
     }
 
-    const { data: result, error: fetchError } = await safeFetch(
+    const { data: result, error: fetchError } = await safeFetch<UpdatePlanResponse>(
       `${EDGE_FUNCTION_BASE}/billing-update-plan`,
       {
         method: "POST",
@@ -329,7 +362,7 @@ export async function cancelSubscription(
       return { data: null, error: "Not authenticated" };
     }
 
-    const { data: result, error: fetchError } = await safeFetch(
+    const { data: result, error: fetchError } = await safeFetch<CancelSubscriptionResponse>(
       `${EDGE_FUNCTION_BASE}/billing-cancel-subscription`,
       {
         method: "POST",
@@ -413,7 +446,7 @@ export async function getPaymentMethodSetupIntent(
       return { data: null, error: "Not authenticated" };
     }
 
-    const { data: result, error: fetchError } = await safeFetch(
+    const { data: result, error: fetchError } = await safeFetch<SetupPaymentMethodResponse>(
       `${EDGE_FUNCTION_BASE}/billing-update-payment-method`,
       {
         method: "POST",
@@ -507,7 +540,12 @@ export async function handlePaymentFailure(
       : new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     // Update salon with payment failure
-    const updateData: any = {
+    const updateData: {
+      payment_failure_count: number;
+      last_payment_retry_at: string;
+      payment_failed_at?: string;
+      payment_status?: "failed" | "grace_period" | "restricted";
+    } = {
       payment_failure_count: currentFailureCount,
       last_payment_retry_at: now,
     };

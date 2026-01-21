@@ -37,8 +37,9 @@ export async function generateTOTPSecret(): Promise<{
       return { data: null, error: "Failed to get TOTP data from response" };
     }
 
-    // Access secret via type assertion since it exists at runtime but may not be in types
-    const secret = (totpData as any).secret || "";
+    // JUSTIFIED ANY: Supabase SDK types don't expose 'secret' on TOTP enrollment response,
+    // but it exists at runtime. This is a known SDK limitation.
+    const secret = (totpData as { secret?: string }).secret || "";
 
     return {
       data: {
@@ -67,9 +68,9 @@ export async function verifyTOTPEnrollment(
   code: string
 ): Promise<{ data: boolean | null; error: string | null }> {
   try {
-    // For enrollment verification, we need to pass factorId and code
-    // TypeScript types may require challengeId, but enrollment works with just factorId
-    const { data, error } = await (supabase.auth.mfa.verify as any)({
+    // JUSTIFIED ANY: Supabase MFA verify types require challengeId, but enrollment
+    // verification works with factorId alone. This is a known SDK type limitation.
+    const { data, error } = await (supabase.auth.mfa.verify as (params: { factorId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
       factorId,
       code,
     });
@@ -135,8 +136,9 @@ export async function verifyTOTPChallenge(
   code: string
 ): Promise<{ data: boolean | null; error: string | null }> {
   try {
-    // Use type assertion to work around TypeScript type limitations
-    const { data, error } = await (supabase.auth.mfa.verify as any)({
+    // JUSTIFIED TYPE ASSERTION: Supabase MFA verify types don't match runtime behavior.
+    // challengeId-only verification works at runtime.
+    const { data, error } = await (supabase.auth.mfa.verify as (params: { challengeId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
       challengeId,
       code,
     });

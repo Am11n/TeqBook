@@ -1,0 +1,561 @@
+openapi: 3.1.0
+info:
+  title: TeqBook API
+  description: |
+    API documentation for TeqBook salon booking system.
+    
+    ## Authentication
+    All endpoints require authentication via Bearer token (Supabase JWT).
+    Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+    ## Rate Limiting
+    API endpoints are rate limited. Check response headers for rate limit info:
+    - `X-RateLimit-Remaining`: Remaining requests in window
+    - `X-RateLimit-Reset`: Time when window resets
+  version: 1.0.0
+  contact:
+    name: TeqBook Support
+
+servers:
+  - url: https://{project-ref}.supabase.co/functions/v1
+    description: Supabase Edge Functions
+    variables:
+      project-ref:
+        default: your-project-ref
+        description: Your Supabase project reference
+  - url: /api
+    description: Next.js API Routes
+
+tags:
+  - name: Billing
+    description: Stripe billing and subscription management
+  - name: Notifications
+    description: In-app notification management
+  - name: Bookings
+    description: Booking notifications and operations
+  - name: Reminders
+    description: Automated reminder processing
+
+paths:
+  # =====================================================
+  # Billing Edge Functions
+  # =====================================================
+  
+  /billing-create-customer:
+    post:
+      tags: [Billing]
+      summary: Create Stripe Customer
+      description: Creates a Stripe customer for a salon
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salon_id, email]
+              properties:
+                salon_id:
+                  type: string
+                  format: uuid
+                  description: Salon ID
+                email:
+                  type: string
+                  format: email
+                  description: Customer email
+                name:
+                  type: string
+                  description: Customer name (optional)
+      responses:
+        '200':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  customer_id:
+                    type: string
+                    description: Stripe customer ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /billing-create-subscription:
+    post:
+      tags: [Billing]
+      summary: Create Subscription
+      description: Creates a Stripe subscription for a salon
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salon_id, customer_id, plan]
+              properties:
+                salon_id:
+                  type: string
+                  format: uuid
+                  description: Salon ID
+                customer_id:
+                  type: string
+                  description: Stripe customer ID
+                plan:
+                  type: string
+                  enum: [starter, pro, business]
+                  description: Subscription plan
+      responses:
+        '200':
+          description: Subscription created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  subscription_id:
+                    type: string
+                  plan:
+                    type: string
+                  current_period_end:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                  client_secret:
+                    type: string
+                    description: Payment intent client secret for frontend
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /billing-update-plan:
+    post:
+      tags: [Billing]
+      summary: Update Subscription Plan
+      description: Updates the subscription plan for a salon
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salon_id, new_plan]
+              properties:
+                salon_id:
+                  type: string
+                  format: uuid
+                new_plan:
+                  type: string
+                  enum: [starter, pro, business]
+      responses:
+        '200':
+          description: Plan updated successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /billing-cancel-subscription:
+    post:
+      tags: [Billing]
+      summary: Cancel Subscription
+      description: Cancels a subscription (at period end)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salon_id]
+              properties:
+                salon_id:
+                  type: string
+                  format: uuid
+                immediate:
+                  type: boolean
+                  default: false
+                  description: Cancel immediately instead of at period end
+      responses:
+        '200':
+          description: Subscription cancelled
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /billing-update-payment-method:
+    post:
+      tags: [Billing]
+      summary: Update Payment Method
+      description: Updates the default payment method for a subscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [salon_id, payment_method_id]
+              properties:
+                salon_id:
+                  type: string
+                  format: uuid
+                payment_method_id:
+                  type: string
+                  description: Stripe payment method ID
+      responses:
+        '200':
+          description: Payment method updated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /billing-webhook:
+    post:
+      tags: [Billing]
+      summary: Stripe Webhook
+      description: |
+        Handles Stripe webhook events.
+        **Not for direct API calls - used by Stripe only.**
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+        '400':
+          description: Invalid webhook signature
+
+  # =====================================================
+  # Notification Endpoints
+  # =====================================================
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get Notifications
+      description: Get notifications for the current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Max notifications to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Offset for pagination
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Return only unread notifications
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  unreadCount:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/{id}/read:
+    post:
+      tags: [Notifications]
+      summary: Mark Notification as Read
+      description: Mark a specific notification as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notification marked as read
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Notification not found
+
+  /notifications/mark-all-read:
+    post:
+      tags: [Notifications]
+      summary: Mark All as Read
+      description: Mark all notifications as read for the current user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                    description: Number of notifications marked as read
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get Unread Count
+      description: Get count of unread notifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # =====================================================
+  # Booking Notifications
+  # =====================================================
+
+  /bookings/send-notifications:
+    post:
+      tags: [Bookings]
+      summary: Send Booking Notifications
+      description: Send notification for a new booking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [booking_id]
+              properties:
+                booking_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Notifications sent
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /bookings/send-cancellation:
+    post:
+      tags: [Bookings]
+      summary: Send Cancellation Notification
+      description: Send notification for a cancelled booking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [booking_id]
+              properties:
+                booking_id:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+                  description: Cancellation reason (optional)
+      responses:
+        '200':
+          description: Cancellation notification sent
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # =====================================================
+  # Background Jobs
+  # =====================================================
+
+  /process-reminders:
+    post:
+      tags: [Reminders]
+      summary: Process Reminders
+      description: |
+        Processes scheduled reminders. 
+        **Triggered by cron job, not for direct API calls.**
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reminders processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processed:
+                    type: integer
+                  errors:
+                    type: integer
+
+  /rate-limit-check:
+    post:
+      tags: [Utilities]
+      summary: Check Rate Limit
+      description: Check rate limit status for an endpoint
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint:
+                  type: string
+                  description: Endpoint to check
+      responses:
+        '200':
+          description: Rate limit status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allowed:
+                    type: boolean
+                  remaining:
+                    type: integer
+                  reset_at:
+                    type: string
+                    format: date-time
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token
+
+  schemas:
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        salon_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [booking_confirmed, booking_cancelled, booking_reminder, payment_received, system]
+        title:
+          type: string
+        body:
+          type: string
+        read:
+          type: boolean
+        metadata:
+          type: object
+        action_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Unauthorized
+            details: Missing or invalid Authorization header
+
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Bad Request
+            details: Missing required field
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Rate limit exceeded
+            details: Too many requests
+      headers:
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: string
+            format: date-time

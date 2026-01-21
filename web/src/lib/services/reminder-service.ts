@@ -181,13 +181,13 @@ export async function processReminders(
         const language = reminder.booking.salon?.preferred_language || "en";
         
         // Send reminder email
-        const bookingForEmail: any = {
+        const bookingForEmail = {
           id: reminder.booking.id,
           start_time: reminder.booking.start_time,
           end_time: reminder.booking.start_time, // TODO: Calculate from service duration
-          status: "confirmed",
+          status: "confirmed" as const,
           is_walk_in: false,
-          notes: null,
+          notes: null as string | null,
           customer_full_name: reminder.booking.customer_full_name,
           service: reminder.booking.service,
           employee: reminder.booking.employee,

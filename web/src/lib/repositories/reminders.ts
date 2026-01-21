@@ -113,7 +113,27 @@ export async function getRemindersToSend(
     }
 
     // Transform data to include booking info
-    const reminders: ReminderWithBooking[] = (data || []).map((reminder: any) => {
+    interface RawReminderData {
+      id: string;
+      booking_id: string;
+      reminder_type: ReminderType;
+      scheduled_at: string;
+      sent_at: string | null;
+      status: ReminderStatus;
+      error_message: string | null;
+      created_at: string;
+      updated_at: string;
+      bookings?: {
+        id: string;
+        start_time: string;
+        salon_id?: string;
+        customers?: { full_name: string | null; email?: string | null } | null;
+        services?: { name: string | null } | null;
+        employees?: { full_name: string | null } | null;
+        salons?: { id?: string; name: string | null; preferred_language?: string | null } | null;
+      } | null;
+    }
+    const reminders: ReminderWithBooking[] = (data as RawReminderData[] || []).map((reminder) => {
       const booking = reminder.bookings;
       return {
         id: reminder.id,
