@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
       results.customerEmail = {
         success: emailResult.success,
-        error: emailResult.channels?.email?.error,
+        error: 'channels' in emailResult ? emailResult.channels?.email?.error : emailResult.error,
       };
     }
 

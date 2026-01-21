@@ -36,6 +36,13 @@ export async function updatePreferencesForUser(
         bookingCancellation?: boolean;
         newBooking?: boolean;
       };
+      inApp?: {
+        bookingConfirmation?: boolean;
+        bookingReminder?: boolean;
+        bookingCancellation?: boolean;
+        newBooking?: boolean;
+        systemAnnouncements?: boolean;
+      };
     };
   }
 ): Promise<{ error: string | null }> {
