@@ -89,7 +89,9 @@ export async function calculateCLV(
     let lastVisit: string | null = null;
 
     for (const booking of visits) {
-      totalSpent += ((booking.services as { price_cents: number })?.price_cents || 0) / 100;
+      // Handle both array and single object returns from Supabase
+      const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+      totalSpent += ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
       if (!firstVisit) firstVisit = booking.start_time;
       lastVisit = booking.start_time;
     }

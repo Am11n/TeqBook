@@ -274,6 +274,7 @@ export function getPermissionMatrix(): {
       owner: DEFAULT_PERMISSIONS.owner,
       manager: DEFAULT_PERMISSIONS.manager,
       staff: DEFAULT_PERMISSIONS.staff,
+      superadmin: DEFAULT_PERMISSIONS.owner, // Superadmins have full permissions
     },
   };
 }

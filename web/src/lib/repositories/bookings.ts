@@ -353,17 +353,22 @@ export async function getBookingHistoryForCustomer(
     }
 
     // Transform to flat structure
-    const history: CustomerBookingHistoryItem[] = (data || []).map((booking) => ({
-      id: booking.id,
-      start_time: booking.start_time,
-      end_time: booking.end_time,
-      status: booking.status,
-      is_walk_in: booking.is_walk_in,
-      notes: booking.notes,
-      service_name: (booking.services as { name: string } | null)?.name || null,
-      service_price_cents: (booking.services as { price_cents: number } | null)?.price_cents || null,
-      employee_name: (booking.employees as { full_name: string } | null)?.full_name || null,
-    }));
+    const history: CustomerBookingHistoryItem[] = (data || []).map((booking) => {
+      // Handle both single object and array returns from Supabase
+      const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+      const employees = Array.isArray(booking.employees) ? booking.employees[0] : booking.employees;
+      return {
+        id: booking.id,
+        start_time: booking.start_time,
+        end_time: booking.end_time,
+        status: booking.status,
+        is_walk_in: booking.is_walk_in,
+        notes: booking.notes,
+        service_name: (services as { name: string } | null)?.name || null,
+        service_price_cents: (services as { price_cents: number } | null)?.price_cents || null,
+        employee_name: (employees as { full_name: string } | null)?.full_name || null,
+      };
+    });
 
     return { data: history, error: null, total: count ?? undefined };
   } catch (err) {
@@ -422,14 +427,16 @@ export async function getBookingStatsForCustomer(
 
     // Calculate total spent (only completed bookings)
     const totalSpentCents = completedBookings.reduce((sum, b) => {
-      const price = (b.services as { price_cents: number } | null)?.price_cents || 0;
+      const services = Array.isArray(b.services) ? b.services[0] : b.services;
+      const price = (services as { price_cents: number } | null)?.price_cents || 0;
       return sum + price;
     }, 0);
 
     // Find favorite service (most frequent)
     const serviceCount: Record<string, number> = {};
     completedBookings.forEach((b) => {
-      const serviceName = (b.services as { name: string } | null)?.name;
+      const services = Array.isArray(b.services) ? b.services[0] : b.services;
+      const serviceName = (services as { name: string } | null)?.name;
       if (serviceName) {
         serviceCount[serviceName] = (serviceCount[serviceName] || 0) + 1;
       }
@@ -439,7 +446,8 @@ export async function getBookingStatsForCustomer(
     // Find favorite employee (most frequent)
     const employeeCount: Record<string, number> = {};
     completedBookings.forEach((b) => {
-      const employeeName = (b.employees as { full_name: string } | null)?.full_name;
+      const employees = Array.isArray(b.employees) ? b.employees[0] : b.employees;
+      const employeeName = (employees as { full_name: string } | null)?.full_name;
       if (employeeName) {
         employeeCount[employeeName] = (employeeCount[employeeName] || 0) + 1;
       }

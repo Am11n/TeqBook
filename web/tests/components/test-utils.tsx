@@ -59,6 +59,7 @@ export const mockService = (overrides = {}) => ({
   duration_minutes: 30,
   price_cents: 35000,
   sort_order: 0,
+  is_active: true,
   ...overrides,
 });
 
@@ -97,6 +98,7 @@ export const mockShift = (overrides = {}) => ({
   start_time: "09:00",
   end_time: "17:00",
   is_available: true,
+  weekday: new Date().getDay(),
   ...overrides,
 });
 

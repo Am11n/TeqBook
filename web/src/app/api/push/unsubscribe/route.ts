@@ -5,12 +5,10 @@
 // Endpoint for removing push subscriptions
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase-client";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
     // Get authenticated user
     const {
       data: { user },

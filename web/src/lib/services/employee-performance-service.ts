@@ -103,7 +103,9 @@ export async function getEmployeeMetrics(
     let totalRevenue = 0;
     for (const booking of allBookings) {
       if (booking.status === "completed") {
-        totalRevenue += ((booking.services as { price_cents: number })?.price_cents || 0) / 100;
+        // Handle both array and single object returns from Supabase
+        const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+        totalRevenue += ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
       }
     }
     const averageRevenue = completed > 0 ? totalRevenue / completed : 0;
@@ -131,7 +133,9 @@ export async function getEmployeeMetrics(
     let bookedMinutes = 0;
     for (const booking of allBookings) {
       if (booking.status === "completed" || booking.status === "confirmed") {
-        bookedMinutes += (booking.services as { duration_minutes: number })?.duration_minutes || 0;
+        // Handle both array and single object returns from Supabase
+        const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+        bookedMinutes += ((services as { duration_minutes: number } | null)?.duration_minutes || 0);
       }
     }
     const bookedHours = bookedMinutes / 60;
@@ -155,12 +159,16 @@ export async function getEmployeeMetrics(
     const serviceCounts: Record<string, { name: string; count: number; revenue: number }> = {};
     for (const booking of allBookings) {
       if (booking.status === "completed" && booking.services) {
-        const service = booking.services as { id: string; name: string; price_cents: number };
-        if (!serviceCounts[service.id]) {
-          serviceCounts[service.id] = { name: service.name, count: 0, revenue: 0 };
+        // Handle both array and single object returns from Supabase
+        const servicesRaw = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+        const service = servicesRaw as { id: string; name: string; price_cents: number } | null;
+        if (service) {
+          if (!serviceCounts[service.id]) {
+            serviceCounts[service.id] = { name: service.name, count: 0, revenue: 0 };
+          }
+          serviceCounts[service.id].count++;
+          serviceCounts[service.id].revenue += service.price_cents / 100;
         }
-        serviceCounts[service.id].count++;
-        serviceCounts[service.id].revenue += service.price_cents / 100;
       }
     }
 
@@ -191,7 +199,9 @@ export async function getEmployeeMetrics(
 
     let prevRevenue = 0;
     for (const booking of prevBookings || []) {
-      prevRevenue += ((booking.services as { price_cents: number })?.price_cents || 0) / 100;
+      // Handle both array and single object returns from Supabase
+      const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+      prevRevenue += ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
     }
 
     const metrics: EmployeePerformanceMetrics = {

@@ -139,7 +139,9 @@ export async function getDailyRevenue(
     
     for (const booking of data || []) {
       const date = booking.start_time.split("T")[0];
-      const revenue = (booking.services as { price_cents: number })?.price_cents || 0;
+      // Handle both array and single object returns from Supabase
+      const services = Array.isArray(booking.services) ? booking.services[0] : booking.services;
+      const revenue = ((services as { price_cents: number } | null)?.price_cents || 0);
       dailyTotals[date] = (dailyTotals[date] || 0) + revenue / 100; // Convert to currency
     }
 

@@ -5,7 +5,10 @@
 // Orchestrates repository calls and handles domain rules
 
 import { getProfileByUserId, updateUserPreferences, updateProfile as updateProfileRepo } from "@/lib/repositories/profiles";
-import type { Profile } from "@/lib/repositories/profiles";
+import type { Profile } from "@/lib/types";
+
+// Re-export Profile type for consumers
+export type { Profile };
 
 /**
  * Get profile by user ID

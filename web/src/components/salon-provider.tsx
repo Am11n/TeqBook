@@ -20,16 +20,7 @@ import type { Salon } from "@/lib/types";
 
 // Component is client-side only
 
-type Profile = {
-  user_id: string;
-  salon_id: string | null;
-  is_superadmin?: boolean;
-  role?: string | null;
-  preferred_language?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  avatar_url?: string | null;
-};
+import type { Profile } from "@/lib/types";
 
 type SalonContextValue =
   | { status: "loading" }

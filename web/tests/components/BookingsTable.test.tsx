@@ -141,7 +141,7 @@ describe("BookingsTable", () => {
       const booking = mockBooking({ status: "confirmed" });
       const onCancelBooking = vi.fn();
 
-      const { user } = render(
+      render(
         <BookingsTable
           {...defaultProps}
           bookings={[booking]}

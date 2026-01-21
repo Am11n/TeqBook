@@ -70,7 +70,7 @@ export async function verifyTOTPEnrollment(
   try {
     // JUSTIFIED ANY: Supabase MFA verify types require challengeId, but enrollment
     // verification works with factorId alone. This is a known SDK type limitation.
-    const { data, error } = await (supabase.auth.mfa.verify as (params: { factorId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
+    const { data, error } = await (supabase.auth.mfa.verify as unknown as (params: { factorId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
       factorId,
       code,
     });
@@ -138,7 +138,7 @@ export async function verifyTOTPChallenge(
   try {
     // JUSTIFIED TYPE ASSERTION: Supabase MFA verify types don't match runtime behavior.
     // challengeId-only verification works at runtime.
-    const { data, error } = await (supabase.auth.mfa.verify as (params: { challengeId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
+    const { data, error } = await (supabase.auth.mfa.verify as unknown as (params: { challengeId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
       challengeId,
       code,
     });

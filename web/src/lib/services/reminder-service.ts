@@ -188,6 +188,11 @@ export async function processReminders(
           status: "confirmed" as const,
           is_walk_in: false,
           notes: null as string | null,
+          // Required Booking properties
+          customers: { full_name: reminder.booking.customer_full_name },
+          employees: reminder.booking.employee ? { full_name: reminder.booking.employee.name } : null,
+          services: reminder.booking.service || null,
+          // Extended properties for email
           customer_full_name: reminder.booking.customer_full_name,
           service: reminder.booking.service,
           employee: reminder.booking.employee,

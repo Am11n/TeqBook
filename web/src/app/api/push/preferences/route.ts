@@ -5,13 +5,11 @@
 // Endpoint for managing notification preferences
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase-client";
 
 // GET - Retrieve preferences
 export async function GET() {
   try {
-    const supabase = await createClient();
-
     // Get authenticated user
     const {
       data: { user },
@@ -68,8 +66,6 @@ export async function GET() {
 // PUT - Update preferences
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
     // Get authenticated user
     const {
       data: { user },

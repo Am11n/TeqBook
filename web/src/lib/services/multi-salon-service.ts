@@ -132,12 +132,16 @@ export async function getUserSalons(): Promise<GetSalonsResult> {
     const salons: SalonSummary[] = [];
 
     for (const ownership of ownerships || []) {
-      const salon = ownership.salon as {
+      // Handle both array and single object returns from Supabase
+      const salonRaw = Array.isArray(ownership.salon) ? ownership.salon[0] : ownership.salon;
+      const salon = salonRaw as {
         id: string;
         name: string;
         logo_url: string | null;
         is_active: boolean;
-      };
+      } | null;
+      
+      if (!salon) continue;
 
       // Get today's bookings count
       const { count: bookingsCount } = await supabase
@@ -157,7 +161,11 @@ export async function getUserSalons(): Promise<GetSalonsResult> {
         .lt("start_time", `${today}T23:59:59`);
 
       const todayRevenue = (revenueData || []).reduce(
-        (sum, b) => sum + ((b.services as { price_cents: number })?.price_cents || 0) / 100,
+        (sum, b) => {
+          // Handle both array and single object returns from Supabase
+          const services = Array.isArray(b.services) ? b.services[0] : b.services;
+          return sum + ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
+        },
         0
       );
 
@@ -283,7 +291,11 @@ export async function compareSalons(
             .lte("start_time", endDate);
 
           value = (revenueData || []).reduce(
-            (sum, b) => sum + ((b.services as { price_cents: number })?.price_cents || 0) / 100,
+            (sum, b) => {
+              // Handle both array and single object returns from Supabase
+              const services = Array.isArray(b.services) ? b.services[0] : b.services;
+              return sum + ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
+            },
             0
           );
 
@@ -296,7 +308,11 @@ export async function compareSalons(
             .lte("start_time", prevEndDate.toISOString().split("T")[0]);
 
           previousValue = (prevRevenueData || []).reduce(
-            (sum, b) => sum + ((b.services as { price_cents: number })?.price_cents || 0) / 100,
+            (sum, b) => {
+              // Handle both array and single object returns from Supabase
+              const services = Array.isArray(b.services) ? b.services[0] : b.services;
+              return sum + ((services as { price_cents: number } | null)?.price_cents || 0) / 100;
+            },
             0
           );
           break;
