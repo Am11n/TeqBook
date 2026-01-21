@@ -303,7 +303,13 @@ export const vi: TranslationNamespaces = {
     active: "Đang làm",
     inactive: "Tạm dừng",
     delete: "Xóa",
+    edit: "Chỉnh sửa",
     addButton: "Thêm nhân viên",
+    editTitle: "Chỉnh sửa nhân viên",
+    editDescription: "Cập nhật thông tin và dịch vụ của nhân viên.",
+    cancel: "Hủy",
+    save: "Lưu",
+    saving: "Đang lưu…",
   },
   
   services: {

@@ -302,7 +302,13 @@ export const tr: TranslationNamespaces = {
     active: "Aktif",
     inactive: "Pasif",
     delete: "Sil",
+    edit: "Düzenle",
     addButton: "Çalışan ekle",
+    editTitle: "Çalışanı düzenle",
+    editDescription: "Çalışan bilgilerini ve hizmetlerini güncelleyin.",
+    cancel: "İptal",
+    save: "Kaydet",
+    saving: "Kaydediliyor…",
   },
   
   services: {

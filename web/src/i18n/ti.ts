@@ -301,7 +301,13 @@ export const ti: TranslationNamespaces = {
     active: "ኣንቀሳቃሲ",
     inactive: "ዘይኣንቀሳቃሲ",
     delete: "ሰርዝ",
+    edit: "ኣስተኻኽል",
     addButton: "ሰራሕተኛ ጨምር",
+    editTitle: "ሰራሕተኛ ኣስተኻኽል",
+    editDescription: "ናይ ሰራሕተኛ ሓበሬታን ኣገልግሎታትን ኣዘምን።",
+    cancel: "ይቕሬታ",
+    save: "ዓቅብ",
+    saving: "ይዕቀብ ኣሎ…",
   },
   
   services: {

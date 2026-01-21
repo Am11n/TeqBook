@@ -295,7 +295,13 @@ export const ar: TranslationNamespaces = {
     active: "فعّال",
     inactive: "غير فعّال",
     delete: "حذف",
+    edit: "تعديل",
     addButton: "إضافة موظف",
+    editTitle: "تعديل موظف",
+    editDescription: "تحديث معلومات الموظف والخدمات.",
+    cancel: "إلغاء",
+    save: "حفظ",
+    saving: "جارٍ الحفظ…",
   },
   services: {
     title: "الخدمات",

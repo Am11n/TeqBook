@@ -303,7 +303,13 @@ export const so: TranslationNamespaces = {
     active: "Firfircoon",
     inactive: "Aan firfircoonayn",
     delete: "Tirtir",
+    edit: "Tafatir",
     addButton: "Ku dar shaqaale",
+    editTitle: "Tafatir shaqaalaha",
+    editDescription: "Cusboonaysii macluumaadka shaqaalaha iyo adeegyada.",
+    cancel: "Ka noqo",
+    save: "Kaydi",
+    saving: "Waa la kaydiyaa…",
   },
   
   services: {

@@ -284,7 +284,13 @@ export const zh: TranslationNamespaces = {
     active: "启用",
     inactive: "停用",
     delete: "删除",
+    edit: "编辑",
     addButton: "添加员工",
+    editTitle: "编辑员工",
+    editDescription: "更新员工信息和服务。",
+    cancel: "取消",
+    save: "保存",
+    saving: "保存中…",
   },
   services: {
     title: "服务",

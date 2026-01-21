@@ -326,7 +326,13 @@ export const dar: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیرفعال",
     delete: "حذف",
+    edit: "ویرایش",
     addButton: "اضافه کردن کارمند",
+    editTitle: "ویرایش کارمند",
+    editDescription: "معلومات و خدمات کارمند را به‌روز کنید.",
+    cancel: "لغو",
+    save: "ذخیره",
+    saving: "در حال ذخیره…",
   },
   customers: {
     title: "مشتریان",

@@ -326,7 +326,13 @@ export const fa: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیرفعال",
     delete: "حذف",
+    edit: "ویرایش",
     addButton: "افزودن کارمند",
+    editTitle: "ویرایش کارمند",
+    editDescription: "اطلاعات و خدمات کارمند را به‌روزرسانی کنید.",
+    cancel: "لغو",
+    save: "ذخیره",
+    saving: "در حال ذخیره…",
   },
   customers: {
     title: "مشتریان",

@@ -362,7 +362,13 @@ export const pl: TranslationNamespaces = {
     active: "Aktywny",
     inactive: "Nieaktywny",
     delete: "Usuń",
+    edit: "Edytuj",
     addButton: "Dodaj pracownika",
+    editTitle: "Edytuj pracownika",
+    editDescription: "Zaktualizuj informacje i usługi pracownika.",
+    cancel: "Anuluj",
+    save: "Zapisz",
+    saving: "Zapisywanie…",
   },
   
   services: {

@@ -295,7 +295,13 @@ export const am: TranslationNamespaces = {
     active: "ንቁ",
     inactive: "ዝቅተኛ",
     delete: "ሰርዝ",
+    edit: "አርም",
     addButton: "ሰራተኛ ያክሉ",
+    editTitle: "ሰራተኛ አርም",
+    editDescription: "የሰራተኛ መረጃና አገልግሎቶችን ያዘምኑ።",
+    cancel: "ይቅር",
+    save: "አስቀምጥ",
+    saving: "በማስቀመጥ ላይ…",
   },
   services: {
     title: "አገልግሎቶች",

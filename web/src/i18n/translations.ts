@@ -296,7 +296,13 @@ export type EmployeesMessages = {
   active: string;
   inactive: string;
   delete: string;
+  edit: string;
   addButton: string;
+  editTitle: string;
+  editDescription: string;
+  cancel: string;
+  save: string;
+  saving: string;
   updateError: string;
 };
 

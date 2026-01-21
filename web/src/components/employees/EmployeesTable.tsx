@@ -16,6 +16,7 @@ interface EmployeesTableProps {
   employeeServicesMap: Record<string, Service[]>;
   onToggleActive: (employeeId: string, currentStatus: boolean) => void;
   onDelete: (employeeId: string) => void;
+  onEdit: (employee: Employee) => void;
   translations: {
     colName: string;
     colRole: string;
@@ -26,6 +27,7 @@ interface EmployeesTableProps {
     active: string;
     inactive: string;
     delete: string;
+    edit: string;
   };
 }
 
@@ -34,6 +36,7 @@ export function EmployeesTable({
   employeeServicesMap,
   onToggleActive,
   onDelete,
+  onEdit,
   translations,
 }: EmployeesTableProps) {
   return (
@@ -84,15 +87,25 @@ export function EmployeesTable({
                 </Button>
               </TableCell>
               <TableCell className="text-right text-xs">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50"
-                  onClick={() => onDelete(employee.id)}
-                >
-                  {translations.delete}
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(employee)}
+                  >
+                    {translations.edit}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={() => onDelete(employee.id)}
+                  >
+                    {translations.delete}
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
