@@ -60,7 +60,7 @@ export function useServices({ translations }: UseServicesOptions) {
   const handleToggleActive = async (serviceId: string, currentStatus: boolean) => {
     if (!salon?.id) return;
 
-    const { error: toggleError } = await toggleServiceActive(salon.id, serviceId, !currentStatus);
+    const { error: toggleError } = await toggleServiceActive(salon.id, serviceId, currentStatus);
 
     if (toggleError) {
       setError(toggleError);
