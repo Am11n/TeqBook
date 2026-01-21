@@ -8,10 +8,12 @@ interface EmployeesCardViewProps {
   employeeServicesMap: Record<string, Service[]>;
   onToggleActive: (employeeId: string, currentStatus: boolean) => void;
   onDelete: (employeeId: string) => void;
+  onEdit: (employee: Employee) => void;
   translations: {
     active: string;
     inactive: string;
     delete: string;
+    edit: string;
   };
 }
 
@@ -20,6 +22,7 @@ export function EmployeesCardView({
   employeeServicesMap,
   onToggleActive,
   onDelete,
+  onEdit,
   translations,
 }: EmployeesCardViewProps) {
   return (
@@ -57,7 +60,15 @@ export function EmployeesCardView({
               </div>
             )}
           </div>
-          <div className="mt-2 flex justify-end">
+          <div className="mt-2 flex justify-end gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(employee)}
+            >
+              {translations.edit}
+            </Button>
             <Button
               type="button"
               variant="ghost"

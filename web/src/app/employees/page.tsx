@@ -16,8 +16,10 @@ import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { CreateEmployeeForm } from "@/components/employees/CreateEmployeeForm";
 import { EmployeesTable } from "@/components/employees/EmployeesTable";
 import { EmployeesCardView } from "@/components/employees/EmployeesCardView";
+import { EditEmployeeDialog } from "@/components/employees/EditEmployeeDialog";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
 import { useRouter } from "next/navigation";
+import type { Employee } from "@/lib/types";
 
 export default function EmployeesPage() {
   const { locale } = useLocale();
@@ -29,6 +31,15 @@ export default function EmployeesPage() {
 
   const handleUpgrade = () => {
     router.push("/settings/billing");
+  };
+
+  // Edit employee state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  const handleEdit = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setEditDialogOpen(true);
   };
 
   const {
@@ -126,10 +137,12 @@ export default function EmployeesPage() {
                   employeeServicesMap={employeeServicesMap}
                   onToggleActive={handleToggleActive}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                   translations={{
                     active: t.active,
                     inactive: t.inactive,
                     delete: t.delete,
+                    edit: t.edit,
                   }}
                 />
                 <EmployeesTable
@@ -137,6 +150,7 @@ export default function EmployeesPage() {
                   employeeServicesMap={employeeServicesMap}
                   onToggleActive={handleToggleActive}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                   translations={{
                     colName: t.colName,
                     colRole: t.colRole,
@@ -147,11 +161,40 @@ export default function EmployeesPage() {
                     active: t.active,
                     inactive: t.inactive,
                     delete: t.delete,
+                    edit: t.edit,
                   }}
                 />
               </>
             )}
           </div>
+
+          {/* Edit Employee Dialog */}
+          <EditEmployeeDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            employee={editingEmployee}
+            employeeServices={editingEmployee ? (employeeServicesMap[editingEmployee.id] || []) : []}
+            allServices={services}
+            onEmployeeUpdated={loadEmployees}
+            translations={{
+              editTitle: t.editTitle,
+              editDescription: t.editDescription,
+              nameLabel: t.nameLabel,
+              namePlaceholder: t.namePlaceholder,
+              emailLabel: t.emailLabel,
+              emailPlaceholder: t.emailPlaceholder,
+              phoneLabel: t.phoneLabel,
+              phonePlaceholder: t.phonePlaceholder,
+              roleLabel: t.roleLabel,
+              rolePlaceholder: t.rolePlaceholder,
+              preferredLanguageLabel: t.preferredLanguageLabel,
+              servicesLabel: t.servicesLabel,
+              servicesPlaceholder: t.servicesPlaceholder,
+              cancel: t.cancel,
+              save: t.save,
+              saving: t.saving,
+            }}
+          />
         </div>
       </PageLayout>
     </ErrorBoundary>

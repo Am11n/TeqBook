@@ -299,7 +299,13 @@ export const nb: TranslationNamespaces = {
     active: "Aktiv",
     inactive: "Inaktiv",
     delete: "Slett",
+    edit: "Rediger",
     addButton: "Legg til ansatt",
+    editTitle: "Rediger ansatt",
+    editDescription: "Oppdater ansattinformasjon og tjenester.",
+    cancel: "Avbryt",
+    save: "Lagre",
+    saving: "Lagrer…",
   },
   services: {
     title: "Tjenester",

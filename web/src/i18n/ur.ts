@@ -301,7 +301,13 @@ export const ur: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیر فعال",
     delete: "حذف کریں",
+    edit: "ترمیم کریں",
     addButton: "ملازم شامل کریں",
+    editTitle: "ملازم میں ترمیم کریں",
+    editDescription: "ملازم کی معلومات اور سروسز کو اپ ڈیٹ کریں۔",
+    cancel: "منسوخ کریں",
+    save: "محفوظ کریں",
+    saving: "محفوظ ہو رہا ہے…",
   },
   
   services: {

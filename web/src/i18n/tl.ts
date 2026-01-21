@@ -303,7 +303,13 @@ export const tl: TranslationNamespaces = {
     active: "Aktibo",
     inactive: "Hindi aktibo",
     delete: "Tanggalin",
+    edit: "I-edit",
     addButton: "Magdagdag ng empleyado",
+    editTitle: "I-edit ang empleyado",
+    editDescription: "I-update ang impormasyon at mga serbisyo ng empleyado.",
+    cancel: "Kanselahin",
+    save: "I-save",
+    saving: "Sine-save…",
   },
   
   services: {

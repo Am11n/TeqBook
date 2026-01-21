@@ -297,7 +297,13 @@ export const hi: TranslationNamespaces = {
     active: "सक्रिय",
     inactive: "निष्क्रिय",
     delete: "हटाएँ",
+    edit: "संपादित करें",
     addButton: "कर्मचारी जोड़ें",
+    editTitle: "कर्मचारी संपादित करें",
+    editDescription: "कर्मचारी जानकारी और सेवाएँ अपडेट करें।",
+    cancel: "रद्द करें",
+    save: "सहेजें",
+    saving: "सहेज रहे हैं…",
   },
   services: {
     title: "सेवाएँ",
