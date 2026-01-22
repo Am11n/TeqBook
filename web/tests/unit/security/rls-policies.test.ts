@@ -41,9 +41,9 @@ describe("RLS UPDATE Policies with WITH CHECK", () => {
   describe("UPDATE attempting to change salon_id", () => {
     it("should reject UPDATE that changes salon_id", () => {
       // Mock: User tries to change salon_id from salon-1 to salon-2
-      const originalSalonId = "salon-1";
-      const newSalonId = "salon-2";
-      const userSalonId = "salon-1";
+      const originalSalonId: string = "salon-1";
+      const newSalonId: string = "salon-2";
+      const userSalonId: string = "salon-1";
 
       // WITH CHECK should verify NEW.salon_id matches user's salon
       const updateAllowed = newSalonId === userSalonId;
@@ -64,8 +64,8 @@ describe("RLS UPDATE Policies with WITH CHECK", () => {
 
     it("should trigger immutability trigger when salon_id changes", () => {
       // Mock trigger behavior
-      const oldSalonId = "salon-1";
-      const newSalonId = "salon-2";
+      const oldSalonId: string = "salon-1";
+      const newSalonId: string = "salon-2";
 
       // Trigger should raise exception
       const shouldRaiseException = oldSalonId !== newSalonId;
@@ -79,8 +79,8 @@ describe("RLS UPDATE Policies with WITH CHECK", () => {
   describe("UPDATE by unauthorized user", () => {
     it("should reject UPDATE by user without salon access", () => {
       // Mock: User from salon-1 tries to update booking from salon-2
-      const userSalonId = "salon-1";
-      const bookingSalonId = "salon-2";
+      const userSalonId: string = "salon-1";
+      const bookingSalonId: string = "salon-2";
 
       // USING clause should check OLD.salon_id matches user's salon
       const canSeeRow = bookingSalonId === userSalonId;
@@ -101,8 +101,8 @@ describe("RLS UPDATE Policies with WITH CHECK", () => {
 
   describe("salon_id immutability trigger", () => {
     it("should prevent salon_id change via trigger", () => {
-      const oldSalonId = "salon-1";
-      const newSalonId = "salon-2";
+      const oldSalonId: string = "salon-1";
+      const newSalonId: string = "salon-2";
 
       // Trigger function should check: OLD.salon_id != NEW.salon_id
       const salonIdChanged = oldSalonId !== newSalonId;

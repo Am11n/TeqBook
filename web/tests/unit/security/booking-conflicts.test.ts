@@ -38,8 +38,14 @@ describe("Booking Conflict Prevention", () => {
         error: {
           message: "Time slot is already booked. Please select another time.",
           code: "P0001",
-        },
-      });
+          details: null,
+          hint: null,
+          name: "PostgrestError",
+        } as any,
+        count: null,
+        status: 400,
+        statusText: "Bad Request",
+      } as any);
 
       const result = await createBooking(mockInput);
 
@@ -75,7 +81,10 @@ describe("Booking Conflict Prevention", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockBooking,
         error: null,
-      });
+        count: null,
+        status: 200,
+        statusText: "OK",
+      } as any);
 
       const result = await createBooking(mockInput);
 
@@ -113,7 +122,10 @@ describe("Booking Conflict Prevention", () => {
       vi.mocked(supabase.rpc).mockResolvedValue({
         data: mockBooking,
         error: null,
-      });
+        count: null,
+        status: 200,
+        statusText: "OK",
+      } as any);
 
       const result = await createBooking(mockInput);
 
@@ -151,15 +163,24 @@ describe("Booking Conflict Prevention", () => {
             services: { name: "Service 1" },
           },
           error: null,
-        })
+          count: null,
+          status: 200,
+          statusText: "OK",
+        } as any)
         // Second call fails due to conflict (FOR UPDATE lock prevents it)
         .mockResolvedValueOnce({
           data: null,
           error: {
             message: "Time slot is already booked. Please select another time.",
             code: "P0001",
-          },
-        });
+            details: null,
+            hint: null,
+            name: "PostgrestError",
+          } as any,
+          count: null,
+          status: 400,
+          statusText: "Bad Request",
+        } as any);
 
       const result1 = await createBooking(mockInput);
       const result2 = await createBooking(mockInput);
@@ -192,8 +213,14 @@ describe("Booking Conflict Prevention", () => {
         error: {
           message: "Time slot is already booked. Please select another time.",
           code: "P0001",
-        },
-      });
+          details: null,
+          hint: null,
+          name: "PostgrestError",
+        } as any,
+        count: null,
+        status: 400,
+        statusText: "Bad Request",
+      } as any);
 
       const result = await createBooking(mockInput);
 
@@ -218,8 +245,14 @@ describe("Booking Conflict Prevention", () => {
         error: {
           message: "Service not found or does not belong to salon",
           code: "P0001",
-        },
-      });
+          details: null,
+          hint: null,
+          name: "PostgrestError",
+        } as any,
+        count: null,
+        status: 400,
+        statusText: "Bad Request",
+      } as any);
 
       const result = await createBooking(mockInput);
 

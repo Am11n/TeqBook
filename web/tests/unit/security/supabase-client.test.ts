@@ -7,7 +7,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 describe("Supabase Client Production Hardening", () => {
   const originalEnv = process.env;
-  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     vi.resetModules();
@@ -16,12 +15,15 @@ describe("Supabase Client Production Hardening", () => {
 
   afterEach(() => {
     process.env = originalEnv;
-    process.env.NODE_ENV = originalNodeEnv;
   });
 
   describe("Production environment", () => {
     it("should throw error if Supabase credentials missing in production", async () => {
-      process.env.NODE_ENV = "production";
+      Object.defineProperty(process.env, "NODE_ENV", {
+        value: "production",
+        writable: true,
+        configurable: true,
+      });
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -34,7 +36,11 @@ describe("Supabase Client Production Hardening", () => {
     });
 
     it("should throw clear error message identifying missing credentials", async () => {
-      process.env.NODE_ENV = "production";
+      Object.defineProperty(process.env, "NODE_ENV", {
+        value: "production",
+        writable: true,
+        configurable: true,
+      });
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -52,7 +58,11 @@ describe("Supabase Client Production Hardening", () => {
     });
 
     it("should succeed if credentials are present in production", async () => {
-      process.env.NODE_ENV = "production";
+      Object.defineProperty(process.env, "NODE_ENV", {
+        value: "production",
+        writable: true,
+        configurable: true,
+      });
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
 
@@ -66,7 +76,11 @@ describe("Supabase Client Production Hardening", () => {
 
   describe("Test environment", () => {
     it("should use fallback values in test environment when env vars missing", async () => {
-      process.env.NODE_ENV = "test";
+      Object.defineProperty(process.env, "NODE_ENV", {
+        value: "test",
+        writable: true,
+        configurable: true,
+      });
       process.env.VITEST = "true";
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -93,7 +107,11 @@ describe("Supabase Client Production Hardening", () => {
 
   describe("Development environment", () => {
     it("should warn but not throw in development when env vars missing", async () => {
-      process.env.NODE_ENV = "development";
+      Object.defineProperty(process.env, "NODE_ENV", {
+        value: "development",
+        writable: true,
+        configurable: true,
+      });
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
