@@ -94,10 +94,15 @@ const nextConfig: NextConfig = {
     const isDevelopment = process.env.NODE_ENV === "development";
     
     // CSP configuration - more permissive in development for HMR
+    // Production: Remove unsafe-eval (keep unsafe-inline for Tailwind CSS)
+    // Development: Allow unsafe-eval for HMR and development tools
     const cspDirectives = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline'",
+      // Remove unsafe-eval in production (keep unsafe-inline for Tailwind)
+      isDevelopment
+        ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com"
+        : "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline'", // Required for Tailwind CSS
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
       // In development, allow connections to localhost for HMR and WebSocket
@@ -172,15 +177,21 @@ const nextConfig: NextConfig = {
           },
           {
             // Simplified CSP for booking pages to allow iframe embedding
-            // Removed upgrade-insecure-requests which can cause issues in dev
+            // Production: Remove unsafe-eval (keep unsafe-inline for Tailwind)
+            // Development: Allow unsafe-eval for HMR
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
-              "style-src 'self' 'unsafe-inline'",
+              // Remove unsafe-eval in production
+              isDevelopment
+                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com"
+                : "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+              "style-src 'self' 'unsafe-inline'", // Required for Tailwind CSS
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+              isDevelopment
+                ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co https://api.stripe.com"
+                : "connect-src 'self' https://*.supabase.co https://api.stripe.com",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
               "frame-ancestors 'self'", // Critical: Allow same-origin iframe embedding
               "object-src 'none'",

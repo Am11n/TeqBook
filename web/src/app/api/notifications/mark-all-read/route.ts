@@ -3,22 +3,24 @@
 // =====================================================
 // POST /api/notifications/mark-all-read - Mark all notifications as read
 
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { NextRequest, NextResponse } from "next/server";
 import { markAllAsRead } from "@/lib/services/in-app-notification-service";
+import { authenticateUser } from "@/lib/api-auth";
+import { logError } from "@/lib/services/logger";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    // Get current user
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Authenticate user
+    const authResult = await authenticateUser(request);
 
-    if (authError || !user) {
+    if (authResult.error || !authResult.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
+
+    const user = authResult.user;
 
     // Mark all as read
     const result = await markAllAsRead(user.id);
@@ -35,7 +37,7 @@ export async function POST() {
       count: result.data 
     });
   } catch (error) {
-    console.error("Error marking all notifications as read:", error);
+    logError("Error marking all notifications as read", error, {});
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

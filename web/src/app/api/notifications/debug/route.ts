@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-client";
 
 export async function GET() {
+  // Block in production
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Debug endpoints are not available in production" },
+      { status: 403 }
+    );
+  }
+
   const debug: Record<string, unknown> = {};
   
   try {

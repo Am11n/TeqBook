@@ -3,6 +3,14 @@ import { supabase } from "@/lib/supabase-client";
 import { createInAppNotification } from "@/lib/services/in-app-notification-service";
 
 export async function GET(request: NextRequest) {
+  // Block in production
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Debug endpoints are not available in production" },
+      { status: 403 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const salonId = searchParams.get("salonId");
   

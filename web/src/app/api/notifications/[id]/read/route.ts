@@ -4,8 +4,9 @@
 // POST /api/notifications/[id]/read - Mark a single notification as read
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
 import { markAsRead } from "@/lib/services/in-app-notification-service";
+import { authenticateUser } from "@/lib/api-auth";
+import { logError } from "@/lib/services/logger";
 
 export async function POST(
   request: NextRequest,
@@ -21,16 +22,17 @@ export async function POST(
       );
     }
 
-    // Get current user
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Authenticate user
+    const authResult = await authenticateUser(request);
 
-    if (authError || !user) {
+    if (authResult.error || !authResult.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
+
+    const user = authResult.user;
 
     // Mark as read
     const result = await markAsRead(notificationId, user.id);
@@ -44,7 +46,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    logError("Error marking notification as read", error, {});
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

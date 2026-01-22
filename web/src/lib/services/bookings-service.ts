@@ -114,6 +114,18 @@ export async function createBooking(
     const result = await createBookingRepo(input);
 
     if (result.error) {
+      // Handle conflict errors specially
+      if (result.conflictError) {
+        logWarn("Booking creation failed: time slot conflict", {
+          ...logContext,
+          error: result.error,
+        });
+        return {
+          data: null,
+          error: "This time slot is no longer available. Please select another time.",
+        };
+      }
+
       logError("Booking creation failed", new Error(result.error), {
         ...logContext,
         error: result.error,

@@ -3,22 +3,24 @@
 // =====================================================
 // GET /api/notifications/unread-count - Get unread count for current user
 
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { NextRequest, NextResponse } from "next/server";
 import { getUnreadCount } from "@/lib/services/in-app-notification-service";
+import { authenticateUser } from "@/lib/api-auth";
+import { logError } from "@/lib/services/logger";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Get current user
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Authenticate user
+    const authResult = await authenticateUser(request);
 
-    if (authError || !user) {
+    if (authResult.error || !authResult.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
+
+    const user = authResult.user;
 
     // Get unread count
     const result = await getUnreadCount(user.id);
@@ -32,7 +34,7 @@ export async function GET() {
 
     return NextResponse.json({ count: result.data });
   } catch (error) {
-    console.error("Error fetching unread count:", error);
+    logError("Error fetching unread count", error, {});
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

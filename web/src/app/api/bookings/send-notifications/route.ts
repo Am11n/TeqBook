@@ -4,6 +4,8 @@ import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { supabase } from "@/lib/supabase-client";
+import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -45,6 +47,61 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Authenticate user and verify salon access
+    const authResult = await authenticateAndVerifySalon(request, salonId);
+    
+    if (authResult.error || !authResult.user || !authResult.hasAccess) {
+      const statusCode = !authResult.user ? 401 : 403;
+      logWarn("Unauthorized access attempt to send-notifications", {
+        userId: authResult.user?.id,
+        salonId,
+        error: authResult.error,
+      });
+      return NextResponse.json(
+        { error: authResult.error || "Unauthorized" },
+        { status: statusCode }
+      );
+    }
+
+    // Rate limiting: 10 requests per minute per user
+    const userId = authResult.user.id;
+    const rateLimitResult = await checkRateLimit(
+      userId,
+      "booking-notifications",
+      { identifierType: "user_id", endpointType: "booking-notifications" }
+    );
+
+    if (!rateLimitResult.allowed) {
+      logWarn("Rate limit exceeded for send-notifications", {
+        userId,
+        salonId,
+        remainingAttempts: rateLimitResult.remainingAttempts,
+      });
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "Retry-After": rateLimitResult.resetTime
+              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              : "60",
+          },
+        }
+      );
+    }
+
+    // Increment rate limit counter
+    await incrementRateLimit(
+      userId,
+      "booking-notifications",
+      { identifierType: "user_id", endpointType: "booking-notifications" }
+    );
 
     // Get salon info for language and name
     const salonResult = await getSalonById(salonId);

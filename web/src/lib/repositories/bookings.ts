@@ -123,13 +123,14 @@ export async function getAvailableSlots(
 }
 
 /**
- * Create a new booking
+ * Create a new booking atomically (prevents race conditions)
+ * Uses create_booking_atomic RPC function with SELECT ... FOR UPDATE
  */
 export async function createBooking(
   input: CreateBookingInput
-): Promise<{ data: Booking | null; error: string | null }> {
+): Promise<{ data: Booking | null; error: string | null; conflictError?: boolean }> {
   try {
-    const { data, error } = await supabase.rpc("create_booking_with_validation", {
+    const { data, error } = await supabase.rpc("create_booking_atomic", {
       p_salon_id: input.salon_id,
       p_employee_id: input.employee_id,
       p_service_id: input.service_id,
@@ -142,9 +143,14 @@ export async function createBooking(
     });
 
     if (error || !data) {
+      // Check if this is a conflict error
+      const isConflictError = error?.message?.toLowerCase().includes("already booked") ||
+                              error?.message?.toLowerCase().includes("time slot");
+
       return {
         data: null,
         error: error?.message ?? "Failed to create booking",
+        conflictError: isConflictError,
       };
     }
 
@@ -163,11 +169,17 @@ export async function createBooking(
         services: booking.services,
       } as Booking,
       error: null,
+      conflictError: false,
     };
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const isConflictError = errorMessage.toLowerCase().includes("already booked") ||
+                            errorMessage.toLowerCase().includes("time slot");
+
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: errorMessage,
+      conflictError: isConflictError,
     };
   }
 }

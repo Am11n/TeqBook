@@ -3,6 +3,8 @@ import { sendBookingNotification } from "@/lib/services/unified-notification-ser
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { supabase } from "@/lib/supabase-client";
+import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
 
 // Note: sendBookingNotification is still used for customer email
@@ -48,6 +50,75 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Authenticate user and verify salon access
+    const authResult = await authenticateAndVerifySalon(request, salonId);
+    
+    if (authResult.error || !authResult.user || !authResult.hasAccess) {
+      const statusCode = !authResult.user ? 401 : 403;
+      logWarn("Unauthorized access attempt to send-cancellation", {
+        userId: authResult.user?.id,
+        salonId,
+        bookingId: booking?.id,
+        error: authResult.error,
+      });
+      return NextResponse.json(
+        { error: authResult.error || "Unauthorized" },
+        { status: statusCode }
+      );
+    }
+
+    // Verify booking belongs to user's salon (if salon_id is present on booking)
+    if ("salon_id" in booking && booking.salon_id && booking.salon_id !== salonId) {
+      logWarn("Booking salon mismatch in send-cancellation", {
+        userId: authResult.user.id,
+        requestedSalonId: salonId,
+        bookingSalonId: booking.salon_id,
+      });
+      return NextResponse.json(
+        { error: "Booking does not belong to this salon" },
+        { status: 403 }
+      );
+    }
+
+    // Rate limiting: 10 requests per minute per user
+    const userId = authResult.user.id;
+    const rateLimitResult = await checkRateLimit(
+      userId,
+      "booking-cancellation",
+      { identifierType: "user_id", endpointType: "booking-cancellation" }
+    );
+
+    if (!rateLimitResult.allowed) {
+      logWarn("Rate limit exceeded for send-cancellation", {
+        userId,
+        salonId,
+        remainingAttempts: rateLimitResult.remainingAttempts,
+      });
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "Retry-After": rateLimitResult.resetTime
+              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              : "60",
+          },
+        }
+      );
+    }
+
+    // Increment rate limit counter
+    await incrementRateLimit(
+      userId,
+      "booking-cancellation",
+      { identifierType: "user_id", endpointType: "booking-cancellation" }
+    );
 
     // Get salon info for language and name
     const salonResult = await getSalonById(salonId);
