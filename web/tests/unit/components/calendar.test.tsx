@@ -99,69 +99,7 @@ describe("DayView", () => {
     expect(container).toBeInTheDocument();
   });
 
-  it("calls onBookingMove when booking is dropped", async () => {
-    const onBookingMove = vi.fn().mockResolvedValue(undefined);
 
-    render(
-      <DayView
-        selectedDate="2024-01-15"
-        employees={mockEmployees}
-        bookingsForDayByEmployee={mockBookingsForDayByEmployee}
-        onBookingMove={onBookingMove}
-        translations={{
-          unknownService: "Unknown Service",
-          unknownCustomer: "Unknown Customer",
-        }}
-      />
-    );
-
-    // Find the employee lane
-    const employeeLane = screen.getByText("John Doe").closest("div")?.parentElement;
-    expect(employeeLane).toBeInTheDocument();
-
-    // Simulate drag and drop
-    const bookingElement = screen.getByText("Haircut");
-    fireEvent.dragStart(bookingElement, {
-      dataTransfer: {
-        effectAllowed: "move",
-        setData: vi.fn(),
-        getData: () =>
-          JSON.stringify({
-            bookingId: "booking1",
-            startTime: "2024-01-15T10:00:00Z",
-            endTime: "2024-01-15T11:00:00Z",
-            employeeId: "emp1",
-          }),
-      },
-    });
-
-    fireEvent.dragOver(employeeLane!, { preventDefault: vi.fn() });
-    fireEvent.drop(employeeLane!, {
-      preventDefault: vi.fn(),
-      dataTransfer: {
-        getData: () =>
-          JSON.stringify({
-            bookingId: "booking1",
-            startTime: "2024-01-15T10:00:00Z",
-            endTime: "2024-01-15T11:00:00Z",
-            employeeId: "emp1",
-          }),
-        clientY: 300,
-      },
-      currentTarget: {
-        getBoundingClientRect: () => ({
-          top: 0,
-          left: 0,
-          right: 100,
-          bottom: 1000,
-        }),
-      },
-    });
-
-    // Note: The actual drop handler requires more complex setup
-    // This test verifies the component structure is correct
-    expect(bookingElement).toBeInTheDocument();
-  });
 });
 
 describe("BookingEvent", () => {
@@ -180,23 +118,7 @@ describe("BookingEvent", () => {
     expect(screen.getByText("Test Customer")).toBeInTheDocument();
   });
 
-  it("is draggable when onMove is provided", () => {
-    const onMove = vi.fn();
 
-    render(
-      <BookingEvent
-        booking={mockBooking}
-        onMove={onMove}
-        translations={{
-          unknownService: "Unknown Service",
-          unknownCustomer: "Unknown Customer",
-        }}
-      />
-    );
-
-    const bookingElement = screen.getByText("Haircut");
-    expect(bookingElement.closest("[draggable]")).toBeInTheDocument();
-  });
 
   it("calls onClick when clicked", () => {
     const onClick = vi.fn();

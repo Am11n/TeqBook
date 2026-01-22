@@ -37,9 +37,10 @@ export function useCalendar({ translations }: UseCalendarOptions) {
   // Load employees once
   useEffect(() => {
     if (!isReady || !salon?.id) return;
+    const salonId = salon.id;
 
     async function loadEmployees() {
-      const { data: employeesData, error: employeesError } = await getEmployeesForCurrentSalon(salon.id);
+      const { data: employeesData, error: employeesError } = await getEmployeesForCurrentSalon(salonId);
 
       if (employeesError) {
         setError(employeesError);
@@ -145,7 +146,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     if (!salon?.id) return;
 
     setLoading(true);
-    
+
     // Calculate date range based on view mode
     const date = new Date(selectedDate + "T00:00:00");
     const startOfPeriod = new Date(date);

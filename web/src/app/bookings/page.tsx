@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
@@ -20,7 +20,7 @@ import { CancelBookingDialog } from "@/components/bookings/CancelBookingDialog";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import type { Booking } from "@/lib/types";
 
-export default function BookingsPage() {
+function BookingsContent() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].bookings;
@@ -237,5 +237,13 @@ export default function BookingsPage() {
         />
       </PageLayout>
     </ErrorBoundary>
+  );
+}
+
+export default function BookingsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookingsContent />
+    </Suspense>
   );
 }

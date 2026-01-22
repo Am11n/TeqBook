@@ -15,7 +15,17 @@ const mockServices = [
 ];
 
 const mockProducts: Product[] = [
-  { id: "prod1", name: "Shampoo", price_cents: 10000, salon_id: "salon1" },
+  {
+    id: "prod1",
+    name: "Shampoo",
+    price_cents: 10000,
+    salon_id: "salon1",
+    stock: 10,
+    sku: "SHAMPOO-001",
+    is_active: true,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+  },
 ];
 
 const mockSlots = [

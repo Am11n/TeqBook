@@ -35,7 +35,7 @@ export async function getCustomersForCurrentSalon(
       return { data: null, error: error.message };
     }
 
-    return { data: data as Customer[], error: null, total: count ?? undefined };
+    return { data: data as unknown as Customer[], error: null, total: count ?? undefined };
   } catch (err) {
     return {
       data: null,
