@@ -37,5 +37,5 @@ const finalSupabaseAnonKey = supabaseAnonKey || (isTestEnvironment ? "test-anon-
  * Uses browser cookies for session management
  */
 export function createClient(): SupabaseClient {
-  return createBrowserClient(finalSupabaseUrl, finalSupabaseAnonKey);
+  return createBrowserClient(finalSupabaseUrl, finalSupabaseAnonKey) as unknown as SupabaseClient;
 }

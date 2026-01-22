@@ -12,7 +12,7 @@ import type { Customer, CreateCustomerInput } from "@/lib/types";
  */
 export async function getCustomersForCurrentSalon(
   salonId: string,
-  options?: { page?: number; pageSize?: number }
+  options?: { page?: number; pageSize?: number; includeCreatedAt?: boolean }
 ): Promise<{ data: Customer[] | null; error: string | null; total?: number }> {
   try {
     const page = options?.page ?? 0;
@@ -20,9 +20,13 @@ export async function getCustomersForCurrentSalon(
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
+    const selectFields = options?.includeCreatedAt
+      ? "id, full_name, email, phone, notes, gdpr_consent, created_at"
+      : "id, full_name, email, phone, notes, gdpr_consent";
+
     const { data, error, count } = await supabase
       .from("customers")
-      .select("id, full_name, email, phone, notes, gdpr_consent", { count: "exact" })
+      .select(selectFields, { count: "exact" })
       .eq("salon_id", salonId)
       .order("full_name", { ascending: true })
       .range(from, to);
@@ -98,6 +102,47 @@ export async function getCustomerById(
     }
 
     return { data: data as Customer, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Find customer by email or phone
+ */
+export async function findCustomerByEmailOrPhone(
+  salonId: string,
+  email?: string | null,
+  phone?: string | null
+): Promise<{ data: Customer | null; error: string | null }> {
+  try {
+    if (!email && !phone) {
+      return { data: null, error: null };
+    }
+
+    let query = supabase
+      .from("customers")
+      .select("id, full_name, email, phone, notes, gdpr_consent")
+      .eq("salon_id", salonId);
+
+    if (email && phone) {
+      query = query.or(`email.eq.${email},phone.eq.${phone}`);
+    } else if (email) {
+      query = query.eq("email", email);
+    } else if (phone) {
+      query = query.eq("phone", phone);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    return { data: data as Customer | null, error: null };
   } catch (err) {
     return {
       data: null,

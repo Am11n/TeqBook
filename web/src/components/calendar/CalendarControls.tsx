@@ -85,7 +85,12 @@ export function CalendarControls({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setSelectedDate(changeDate(selectedDate, viewMode === "day" ? -1 : -7))}
+          onClick={(e) => {
+            e.preventDefault();
+            const offset = viewMode === "day" ? -1 : -7;
+            const newDate = changeDate(selectedDate, offset);
+            setSelectedDate(newDate);
+          }}
         >
           {translations.prev}
         </Button>
@@ -93,7 +98,14 @@ export function CalendarControls({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
+          onClick={(e) => {
+            e.preventDefault();
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            setSelectedDate(`${year}-${month}-${day}`);
+          }}
         >
           {translations.today}
         </Button>
@@ -101,7 +113,12 @@ export function CalendarControls({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setSelectedDate(changeDate(selectedDate, viewMode === "day" ? 1 : 7))}
+          onClick={(e) => {
+            e.preventDefault();
+            const offset = viewMode === "day" ? 1 : 7;
+            const newDate = changeDate(selectedDate, offset);
+            setSelectedDate(newDate);
+          }}
         >
           {translations.next}
         </Button>

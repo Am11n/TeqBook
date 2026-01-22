@@ -30,10 +30,18 @@ export function validateCreateBooking(input: CreateBookingInput): { valid: boole
   }
 
   // Validate start time is in the future (for non-walk-in bookings)
+  // Compare dates properly to avoid timezone issues
+  // Note: input.start_time is an ISO string (UTC), so we compare in UTC
   if (!input.is_walk_in) {
     const startTime = new Date(input.start_time);
     const now = new Date();
-    if (startTime < now) {
+    
+    // Compare timestamps directly - this works correctly regardless of timezone
+    // since both dates are converted to the same reference (milliseconds since epoch)
+    const timeDiff = startTime.getTime() - now.getTime();
+    const oneMinute = 60 * 1000;
+    
+    if (timeDiff <= oneMinute) {
       return { valid: false, error: "Booking start time must be in the future" };
     }
   }

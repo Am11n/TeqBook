@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -24,6 +25,8 @@ export default function BookingsPage() {
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].bookings;
   const { salon } = useCurrentSalon();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -58,6 +61,24 @@ export default function BookingsPage() {
     setBookingToCancel(booking);
     setCancelDialogOpen(true);
     setCancelError(null);
+  };
+
+  // Check for "new" query parameter to open dialog
+  useEffect(() => {
+    const newParam = searchParams.get("new");
+    if (newParam === "true") {
+      setIsDialogOpen(true);
+      // Remove query parameter from URL
+      router.replace("/bookings", { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    // Remove query parameter if closing
+    if (!open && searchParams.get("new") === "true") {
+      router.replace("/bookings", { scroll: false });
+    }
   };
 
   const handleConfirmCancel = async (reason: string) => {
@@ -173,7 +194,7 @@ export default function BookingsPage() {
 
         <CreateBookingDialog
           open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
+          onOpenChange={handleDialogOpenChange}
           employees={employees}
           services={services}
           products={products}

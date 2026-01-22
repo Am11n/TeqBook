@@ -1,15 +1,13 @@
 -- =====================================================
--- Booking Conflict Prevention
+-- Fix create_booking_atomic: Remove updated_at reference
 -- =====================================================
--- Task Group 40: Atomic booking creation to prevent race conditions
--- Creates an atomic RPC function that uses SELECT ... FOR UPDATE
--- to lock rows and prevent double-booking
+-- The customers table does not have an updated_at column,
+-- so we need to remove the reference from the ON CONFLICT clause
 -- =====================================================
 
--- Drop existing function if it exists
+-- Drop and recreate the function without updated_at
 DROP FUNCTION IF EXISTS create_booking_atomic(UUID, UUID, UUID, TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, BOOLEAN);
 
--- Create atomic booking function with row-level locking
 CREATE OR REPLACE FUNCTION create_booking_atomic(
   p_salon_id UUID,
   p_employee_id UUID,
@@ -73,7 +71,7 @@ BEGIN
     RAISE EXCEPTION 'Time slot is already booked. Please select another time.';
   END IF;
 
-  -- Upsert customer
+  -- Upsert customer (without updated_at since that column doesn't exist)
   INSERT INTO customers (salon_id, full_name, email, phone, notes)
   VALUES (p_salon_id, p_customer_full_name, p_customer_email, p_customer_phone, p_customer_notes)
   ON CONFLICT (salon_id, email) WHERE email IS NOT NULL

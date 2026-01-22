@@ -38,8 +38,8 @@ const finalSupabaseAnonKey = supabaseAnonKey || (isTestEnvironment ? "test-anon-
  * Create a Supabase client for server components
  * Uses Next.js cookies() API for cookie-based session management
  */
-export function createClient(): SupabaseClient {
-  const cookieStore = cookies();
+export async function createClient(): Promise<SupabaseClient> {
+  const cookieStore = await cookies();
 
   return createServerClient(finalSupabaseUrl, finalSupabaseAnonKey, {
     cookies: {
@@ -58,7 +58,7 @@ export function createClient(): SupabaseClient {
         }
       },
     },
-  });
+  }) as unknown as SupabaseClient;
 }
 
 /**
@@ -84,5 +84,5 @@ export function createClientForRouteHandler(
         });
       },
     },
-  });
+  }) as unknown as SupabaseClient;
 }

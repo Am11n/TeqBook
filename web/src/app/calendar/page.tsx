@@ -11,15 +11,19 @@ import { useCalendar } from "@/lib/hooks/calendar/useCalendar";
 import { formatDayHeading, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
 import { CalendarControls } from "@/components/calendar/CalendarControls";
 import { CalendarDayView } from "@/components/calendar/CalendarDayView";
+import { DayView } from "@/components/calendar/DayView";
 import { CalendarWeekView } from "@/components/calendar/CalendarWeekView";
 import { CalendarMobileView } from "@/components/calendar/CalendarMobileView";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useState, useEffect } from "react";
+import { getOpeningHoursForSalon } from "@/lib/repositories/opening-hours";
 
 export default function CalendarPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].calendar;
-  const { error: salonError } = useCurrentSalon();
+  const { error: salonError, salon } = useCurrentSalon();
+  const [openingHours, setOpeningHours] = useState<{ open_time: string; close_time: string } | null>(null);
 
   const {
     employees,
@@ -33,12 +37,31 @@ export default function CalendarPage() {
     setSelectedDate,
     bookingsForDayByEmployee,
     hasBookingsForDay,
+    refreshBookings,
   } = useCalendar({
     translations: {
       noSalon: t.noSalon,
       loadError: t.loadError,
     },
   });
+
+  // Load opening hours
+  useEffect(() => {
+    if (salon?.id) {
+      getOpeningHoursForSalon(salon.id).then(({ data, error }) => {
+        if (data && data.length > 0) {
+          const selectedDateObj = new Date(selectedDate + "T00:00:00");
+          const dayOfWeek = selectedDateObj.getDay();
+          const dayHours = data.find((h) => h.day_of_week === dayOfWeek && !h.is_closed);
+          if (dayHours) {
+            setOpeningHours({ open_time: dayHours.open_time, close_time: dayHours.close_time });
+          } else {
+            setOpeningHours(null);
+          }
+        }
+      });
+    }
+  }, [salon?.id, selectedDate]);
 
   return (
     <ErrorBoundary>
@@ -74,7 +97,7 @@ export default function CalendarPage() {
             <p className="text-sm text-muted-foreground">{t.loading}</p>
           ) : employees.length === 0 ? (
             <EmptyState title={t.noEmployeesTitle} description={t.noEmployeesDescription} />
-          ) : !hasBookingsForDay ? (
+          ) : !hasBookingsForDay && viewMode === "day" ? (
             <EmptyState title={t.noBookingsTitle} description={t.noBookingsDescription} />
           ) : (
             <>
@@ -88,9 +111,11 @@ export default function CalendarPage() {
               />
 
               {viewMode === "day" ? (
-                <CalendarDayView
+                <DayView
+                  selectedDate={selectedDate}
                   employees={employees}
                   bookingsForDayByEmployee={bookingsForDayByEmployee}
+                  openingHours={openingHours}
                   translations={{
                     unknownService: t.unknownService,
                     unknownCustomer: t.unknownCustomer,

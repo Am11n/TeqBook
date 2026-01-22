@@ -24,12 +24,15 @@ type Employee = {
 type PerformanceData = {
   bookingsCount: number;
   newCustomersCount: number;
+  returningCustomersCount: number;
   topService: string | null;
   mostBookedStaff: string | null;
-  chartData: { day: string; bookings: number }[];
+  chartData: { label: string; bookings: number }[];
 };
 
-export function useDashboardData() {
+type TimeRange = "daily" | "weekly" | "monthly";
+
+export function useDashboardData(timeRange: TimeRange = "weekly") {
   const { salon, isReady, user } = useCurrentSalon();
   const [mounted, setMounted] = useState(false);
   const [todaysBookings, setTodaysBookings] = useState<Booking[]>([]);
@@ -52,33 +55,122 @@ export function useDashboardData() {
     }
   }, [user?.email]);
 
-  const loadPerformanceData = async (salonId: string) => {
+  const loadPerformanceData = async (salonId: string, range: TimeRange) => {
     const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    let startDate: Date;
+    let endDate: Date;
+    let chartData: { label: string; bookings: number }[] = [];
 
-    // Get this week's bookings
-    const { data: weekBookings } = await getCalendarBookings(salonId, {
-      startDate: startOfWeek.toISOString(),
-      endDate: endOfWeek.toISOString(),
-      pageSize: 100,
+    // Calculate date range based on time range
+    if (range === "daily") {
+      // Last 7 days
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Create chart data for each day
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+        chartData.push({
+          label: day.toLocaleDateString("nb-NO", { weekday: "short", day: "numeric" }),
+          bookings: 0,
+        });
+      }
+    } else if (range === "weekly") {
+      // Last 4 weeks
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 28);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Create chart data for each week
+      for (let i = 0; i < 4; i++) {
+        const weekStart = new Date(startDate);
+        weekStart.setDate(startDate.getDate() + i * 7);
+        chartData.push({
+          label: `Uke ${i + 1}`,
+          bookings: 0,
+        });
+      }
+    } else {
+      // Last 6 months
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Create chart data for each month
+      for (let i = 0; i < 6; i++) {
+        const month = new Date(startDate);
+        month.setMonth(startDate.getMonth() + i);
+        chartData.push({
+          label: month.toLocaleDateString("nb-NO", { month: "short" }),
+          bookings: 0,
+        });
+      }
+    }
+
+    // Get bookings for the period
+    const { data: periodBookings } = await getCalendarBookings(salonId, {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      pageSize: 500,
     });
 
-    // Get all customers to find new ones this week
+    // Get all customers with created_at for new customer calculation
     const { data: allCustomers } = await getCustomersForSalon(salonId, {
-      pageSize: 100,
+      pageSize: 1000,
+      includeCreatedAt: true,
+    });
+
+    // Filter new customers created in the period
+    const newCustomers = (allCustomers || []).filter((customer: any) => {
+      if (!customer.created_at) return false;
+      const createdDate = new Date(customer.created_at);
+      return createdDate >= startDate && createdDate <= endDate;
+    });
+
+    // Calculate returning customers (customers who had bookings before the period AND in the period)
+    const customerIdsInPeriod = new Set(
+      (periodBookings || [])
+        .map((booking: any) => booking.customer_id)
+        .filter(Boolean)
+    );
+
+    // Get bookings before the period to find returning customers
+    const { data: previousBookings } = await getCalendarBookings(salonId, {
+      startDate: new Date(0).toISOString(), // From beginning
+      endDate: startDate.toISOString(),
+      pageSize: 1000,
+    });
+
+    const customerIdsBeforePeriod = new Set(
+      (previousBookings || [])
+        .map((booking: any) => booking.customer_id)
+        .filter(Boolean)
+    );
+
+    // Returning customers are those who appear in both sets
+    let returningCustomersCount = 0;
+    customerIdsInPeriod.forEach((customerId) => {
+      if (customerIdsBeforePeriod.has(customerId)) {
+        returningCustomersCount++;
+      }
     });
 
     // Calculate statistics
-    const bookingsThisWeek = weekBookings || [];
-    const bookingsCount = bookingsThisWeek.length;
+    const bookingsInPeriod = periodBookings || [];
+    const bookingsCount = bookingsInPeriod.length;
 
     // Find top service
     const serviceCounts: Record<string, number> = {};
-    bookingsThisWeek.forEach((booking) => {
+    bookingsInPeriod.forEach((booking) => {
       const serviceName = booking.services?.name || "Unknown";
       serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
     });
@@ -87,38 +179,70 @@ export function useDashboardData() {
 
     // Find most booked staff
     const staffCounts: Record<string, number> = {};
-    bookingsThisWeek.forEach((booking) => {
+    bookingsInPeriod.forEach((booking) => {
       const staffName = booking.employees?.full_name || "Unknown";
       staffCounts[staffName] = (staffCounts[staffName] || 0) + 1;
     });
     const mostBookedStaff =
       Object.entries(staffCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
-    // Create chart data (bookings per day this week)
-    const chartData: { day: string; bookings: number }[] = [];
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(startOfWeek.getDate() + i);
-      const dayStart = new Date(day);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(day);
-      dayEnd.setHours(23, 59, 59, 999);
+    // Populate chart data with actual booking counts
+    if (range === "daily") {
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+        const dayStart = new Date(day);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(day);
+        dayEnd.setHours(23, 59, 59, 999);
 
-      const dayBookings = bookingsThisWeek.filter((booking) => {
-        const bookingDate = new Date(booking.start_time);
-        return bookingDate >= dayStart && bookingDate <= dayEnd;
-      });
+        const dayBookings = bookingsInPeriod.filter((booking) => {
+          const bookingDate = new Date(booking.start_time);
+          return bookingDate >= dayStart && bookingDate <= dayEnd;
+        });
 
-      chartData.push({
-        day: days[i],
-        bookings: dayBookings.length,
-      });
+        chartData[i].bookings = dayBookings.length;
+      }
+    } else if (range === "weekly") {
+      for (let i = 0; i < 4; i++) {
+        const weekStart = new Date(startDate);
+        weekStart.setDate(startDate.getDate() + i * 7);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        const weekBookings = bookingsInPeriod.filter((booking) => {
+          const bookingDate = new Date(booking.start_time);
+          return bookingDate >= weekStart && bookingDate <= weekEnd;
+        });
+
+        chartData[i].bookings = weekBookings.length;
+      }
+    } else {
+      for (let i = 0; i < 6; i++) {
+        const monthStart = new Date(startDate);
+        monthStart.setMonth(startDate.getMonth() + i);
+        monthStart.setDate(1);
+        monthStart.setHours(0, 0, 0, 0);
+        const monthEnd = new Date(monthStart);
+        monthEnd.setMonth(monthStart.getMonth() + 1);
+        monthEnd.setDate(0);
+        monthEnd.setHours(23, 59, 59, 999);
+
+        const monthBookings = bookingsInPeriod.filter((booking) => {
+          const bookingDate = new Date(booking.start_time);
+          return bookingDate >= monthStart && bookingDate <= monthEnd;
+        });
+
+        chartData[i].bookings = monthBookings.length;
+      }
     }
 
     setPerformanceData({
       bookingsCount,
-      newCustomersCount: allCustomers?.length || 0, // Simplified for now
+      newCustomersCount: newCustomers.length,
+      returningCustomersCount,
       topService,
       mostBookedStaff,
       chartData,
@@ -172,14 +296,14 @@ export function useDashboardData() {
         setEmployees(employeesData);
       }
 
-      // Load performance data for this week
-      await loadPerformanceData(salonId);
+      // Load performance data
+      await loadPerformanceData(salonId, timeRange);
 
       setLoading(false);
     }
 
     loadData();
-  }, [isReady, salon?.id]);
+  }, [isReady, salon?.id, timeRange]);
 
   return {
     mounted,

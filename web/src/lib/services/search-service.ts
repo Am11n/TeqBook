@@ -89,7 +89,7 @@ export async function searchSalonEntities(
     }
 
     // Search bookings
-    const { data: bookings } = await searchBookings(salonId, limit);
+    const { data: bookings } = await searchBookings(salonId, query, limit);
     if (bookings) {
       bookings.forEach((booking) => {
         const date = new Date(booking.start_time);
@@ -99,11 +99,12 @@ export async function searchSalonEntities(
         });
         const serviceName = booking.services?.[0]?.name || "Service";
         const customerName = booking.customers?.[0]?.full_name || "Walk-in";
+        const employeeName = booking.employees?.[0]?.full_name || "";
         allResults.push({
           id: `booking-${booking.id}`,
           type: "booking",
           label: `${serviceName} - ${customerName}`,
-          metadata: timeStr,
+          metadata: employeeName ? `${timeStr} • ${employeeName}` : timeStr,
           href: `/bookings?highlight=${booking.id}`,
         });
       });

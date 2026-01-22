@@ -5,14 +5,6 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/components/locale-provider";
@@ -29,6 +21,7 @@ import { Field } from "@/components/form/Field";
 import type { Customer } from "@/lib/types";
 import { useFeatures } from "@/lib/hooks/use-features";
 import Link from "next/link";
+import { CustomersTable } from "@/components/customers/CustomersTable";
 
 export default function CustomersPage() {
   const { locale } = useLocale();
@@ -336,68 +329,21 @@ export default function CustomersPage() {
               </div>
 
               {/* Desktop: tabellvisning */}
-              <div className="mt-4 hidden overflow-x-auto md:block">
-                <Table className="text-sm">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="pr-4">{t.colName}</TableHead>
-                      <TableHead className="pr-4">{t.colContact}</TableHead>
-                      <TableHead className="pr-4">{t.colNotes}</TableHead>
-                      <TableHead className="pr-4">{t.colGdpr}</TableHead>
-                      <TableHead className="text-right">
-                        {t.colActions}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {customers.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="pr-4">
-                          <div className="font-medium">
-                            {customer.full_name}
-                          </div>
-                        </TableCell>
-                        <TableCell className="pr-4 text-xs text-muted-foreground">
-                          {customer.email && <div>{customer.email}</div>}
-                          {customer.phone && <div>{customer.phone}</div>}
-                        </TableCell>
-                        <TableCell className="pr-4 text-xs text-muted-foreground">
-                          {customer.notes}
-                        </TableCell>
-                        <TableCell className="pr-4 text-xs text-muted-foreground">
-                          {customer.gdpr_consent
-                            ? t.consentYes
-                            : t.consentNo}
-                        </TableCell>
-                        <TableCell className="text-right text-xs">
-                          <div className="flex justify-end gap-2">
-                            {canViewHistory && (
-                              <Link href={`/customers/${customer.id}/history`}>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  History
-                                </Button>
-                              </Link>
-                            )}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:bg-red-50"
-                              onClick={() => handleDelete(customer.id)}
-                            >
-                              {t.delete}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <CustomersTable
+                customers={customers}
+                canViewHistory={canViewHistory}
+                onDelete={handleDelete}
+                translations={{
+                  colName: t.colName,
+                  colContact: t.colContact,
+                  colNotes: t.colNotes,
+                  colGdpr: t.colGdpr,
+                  colActions: t.colActions,
+                  consentYes: t.consentYes,
+                  consentNo: t.consentNo,
+                  delete: t.delete,
+                }}
+              />
             </>
           )}
         </div>

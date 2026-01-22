@@ -18,13 +18,15 @@ CREATE POLICY "Users can insert audit logs"
     -- Allow if user is authenticated
     auth.uid() IS NOT NULL AND (
       -- User can log their own actions (user_id matches or is null)
-      user_id IS NULL OR
-      user_id = auth.uid() OR
-      -- User can log actions for any salon they belong to
-      EXISTS (
-        SELECT 1 FROM profiles
-        WHERE profiles.user_id = auth.uid()
-          AND profiles.salon_id IS NOT NULL
+      (user_id IS NULL OR user_id = auth.uid()) AND (
+        -- User can log actions for salons they belong to
+        -- Check that the salon_id in the log matches a salon the user belongs to
+        salon_id IS NULL OR
+        EXISTS (
+          SELECT 1 FROM profiles
+          WHERE profiles.user_id = auth.uid()
+            AND profiles.salon_id = salon_id
+        )
       )
     )
   );

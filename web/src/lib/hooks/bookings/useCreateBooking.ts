@@ -1,9 +1,10 @@
-import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, FormEvent, useEffect, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getAvailableSlots } from "@/lib/repositories/bookings";
 import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
-import type { Booking } from "@/lib/types";
+import { findCustomerByEmailOrPhone, createCustomer } from "@/lib/services/customers-service";
+import type { Booking, Customer } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 
 interface UseCreateBookingOptions {
@@ -46,6 +47,16 @@ export function useCreateBooking({
     { productId: string; quantity: number }[]
   >([]);
   const [error, setError] = useState<string | null>(null);
+  
+  // Validation state
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldValid, setFieldValid] = useState<Record<string, boolean>>({});
+  
+  // Customer prefill state
+  const [existingCustomer, setExistingCustomer] = useState<Customer | null>(null);
+  const [checkingCustomer, setCheckingCustomer] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   const canLoadSlots = useMemo(
     () => !!(salon?.id && employeeId && serviceId && date),
@@ -98,6 +109,154 @@ export function useCreateBooking({
     setSlots(mapped);
     setLoadingSlots(false);
   }
+
+  // Auto-load slots when employee, service, and date are selected
+  // Reset slots when date changes to ensure we load fresh slots for the new date
+  useEffect(() => {
+    if (canLoadSlots && !loadingSlots && employeeId && serviceId && date) {
+      // Clear existing slots and selected slot when date changes
+      setSlots([]);
+      setSelectedSlot("");
+      handleLoadSlots();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId, serviceId, date]); // Auto-load when these change
+
+  // Validate fields inline
+  const validateField = useCallback((field: string, value: string) => {
+    const errors: Record<string, string> = {};
+    const valid: Record<string, boolean> = {};
+
+    switch (field) {
+      case "customerName":
+        if (!value || value.trim().length === 0) {
+          errors.customerName = "Name is required";
+          valid.customerName = false;
+        } else {
+          errors.customerName = ""; // Clear error when valid
+          valid.customerName = true;
+        }
+        break;
+      case "customerEmail":
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.customerEmail = "Invalid email format";
+          valid.customerEmail = false;
+        } else if (value) {
+          errors.customerEmail = ""; // Clear error when valid
+          valid.customerEmail = true;
+        }
+        break;
+      case "customerPhone":
+        if (value && value.trim().length < 8) {
+          errors.customerPhone = "Phone must be at least 8 characters";
+          valid.customerPhone = false;
+        } else if (value) {
+          errors.customerPhone = ""; // Clear error when valid
+          valid.customerPhone = true;
+        }
+        break;
+      case "employeeId":
+        if (!value) {
+          errors.employeeId = "Employee is required";
+          valid.employeeId = false;
+        } else {
+          errors.employeeId = ""; // Clear error when valid
+          valid.employeeId = true;
+        }
+        break;
+      case "serviceId":
+        if (!value) {
+          errors.serviceId = "Service is required";
+          valid.serviceId = false;
+        } else {
+          errors.serviceId = ""; // Clear error when valid
+          valid.serviceId = true;
+        }
+        break;
+      case "selectedSlot":
+        if (!value) {
+          errors.selectedSlot = "Time slot is required";
+          valid.selectedSlot = false;
+        } else {
+          errors.selectedSlot = ""; // Clear error when valid
+          valid.selectedSlot = true;
+        }
+        break;
+    }
+
+    setFieldErrors((prev) => ({ ...prev, ...errors }));
+    setFieldValid((prev) => ({ ...prev, ...valid }));
+  }, []);
+
+  // Check for existing customer when email or phone changes
+  useEffect(() => {
+    if (!salon?.id) return;
+    
+    const email = customerEmail.trim();
+    const phone = customerPhone.trim();
+    
+    if (!email && !phone) {
+      setExistingCustomer(null);
+      setShowQuickCreate(false);
+      return;
+    }
+
+    // Debounce customer lookup
+    const timeoutId = setTimeout(async () => {
+      setCheckingCustomer(true);
+      const { data, error } = await findCustomerByEmailOrPhone(salon.id, email || null, phone || null);
+      
+      if (error) {
+        setCheckingCustomer(false);
+        return;
+      }
+
+      if (data) {
+        setExistingCustomer(data);
+        setShowQuickCreate(false);
+        // Prefill customer data only if fields are empty
+        setCustomerName((prev) => prev || data.full_name);
+        setCustomerEmail((prev) => prev || data.email || "");
+        setCustomerPhone((prev) => prev || data.phone || "");
+      } else {
+        setExistingCustomer(null);
+        // Show quick create if we have email or phone but no customer found
+        if (email || phone) {
+          setShowQuickCreate(true);
+        } else {
+          setShowQuickCreate(false);
+        }
+      }
+      setCheckingCustomer(false);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [customerEmail, customerPhone, salon?.id]);
+
+  // Quick create customer
+  const handleQuickCreateCustomer = useCallback(async () => {
+    if (!salon?.id || !customerName.trim()) return;
+
+    setCreatingCustomer(true);
+    const { data, error } = await createCustomer({
+      salon_id: salon.id,
+      full_name: customerName.trim(),
+      email: customerEmail.trim() || null,
+      phone: customerPhone.trim() || null,
+      notes: null,
+      gdpr_consent: true, // Assume consent for quick create
+    });
+
+    if (error || !data) {
+      setError(error || "Failed to create customer");
+      setCreatingCustomer(false);
+      return;
+    }
+
+    setExistingCustomer(data);
+    setShowQuickCreate(false);
+    setCreatingCustomer(false);
+  }, [salon?.id, customerName, customerEmail, customerPhone]);
 
   async function handleCreateBooking(e: FormEvent) {
     e.preventDefault();
@@ -209,7 +368,23 @@ export function useCreateBooking({
     setIsWalkIn(false);
     setSelectedProducts([]);
     setError(null);
+    setFieldErrors({});
+    setFieldValid({});
+    setExistingCustomer(null);
+    setShowQuickCreate(false);
   }
+
+  // Check if form is valid
+  const isFormValid = useMemo(() => {
+    return !!(
+      employeeId &&
+      serviceId &&
+      selectedSlot &&
+      customerName.trim() &&
+      (!customerEmail || fieldValid.customerEmail !== false) &&
+      (!customerPhone || fieldValid.customerPhone !== false)
+    );
+  }, [employeeId, serviceId, selectedSlot, customerName, customerEmail, customerPhone, fieldValid]);
 
   return {
     // State
@@ -236,6 +411,17 @@ export function useCreateBooking({
     setSelectedProducts,
     error,
     setError,
+    // Validation
+    fieldErrors,
+    fieldValid,
+    validateField,
+    isFormValid,
+    // Customer prefill
+    existingCustomer,
+    checkingCustomer,
+    showQuickCreate,
+    creatingCustomer,
+    handleQuickCreateCustomer,
     // Computed
     canLoadSlots,
     // Actions

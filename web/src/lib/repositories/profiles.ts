@@ -72,6 +72,15 @@ export async function getProfileByUserId(
 }
 
 /**
+ * Get user preferences
+ */
+export async function getUserPreferences(
+  userId: string
+): Promise<{ data: Profile | null; error: string | null }> {
+  return getProfileByUserId(userId);
+}
+
+/**
  * Update user preferences
  */
 export async function updateUserPreferences(

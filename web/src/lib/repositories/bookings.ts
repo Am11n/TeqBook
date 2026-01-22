@@ -59,7 +59,7 @@ export async function getBookingsForCalendar(
     let query = supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, customers(full_name), employees(id, full_name), services(name)",
+        "id, start_time, end_time, status, is_walk_in, customer_id, customers(full_name), employees(id, full_name), services(name)",
         { count: "exact" }
       )
       .eq("salon_id", salonId);
@@ -200,6 +200,47 @@ export async function updateBookingStatus(
       .eq("salon_id", salonId)
       .select(
         "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)"
+      )
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        data: null,
+        error: error?.message ?? "Failed to update booking",
+      };
+    }
+
+    return { data: data as unknown as Booking, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Update booking (time, employee, etc.)
+ */
+export async function updateBooking(
+  salonId: string,
+  bookingId: string,
+  updates: {
+    start_time?: string;
+    end_time?: string;
+    employee_id?: string;
+    status?: string;
+    notes?: string | null;
+  }
+): Promise<{ data: Booking | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .select(
+        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(id, full_name), services(name)"
       )
       .maybeSingle();
 

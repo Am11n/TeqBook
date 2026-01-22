@@ -1,23 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
 
 type PerformanceData = {
   bookingsCount: number;
   newCustomersCount: number;
+  returningCustomersCount: number;
   topService: string | null;
   mostBookedStaff: string | null;
-  chartData: { day: string; bookings: number }[];
+  chartData: { label: string; bookings: number }[];
 };
+
+type TimeRange = "daily" | "weekly" | "monthly";
 
 interface PerformanceSnapshotCardProps {
   loading: boolean;
   performanceData: PerformanceData | null;
+  onTimeRangeChange?: (range: TimeRange) => void;
   translations: {
     totalBookingsThisWeek: string;
     returningCustomers: string;
-    revenueEstimate: string;
+    newCustomers: string;
     noInsightsYet: string;
   };
 }
@@ -25,8 +31,15 @@ interface PerformanceSnapshotCardProps {
 export function PerformanceSnapshotCard({
   loading,
   performanceData,
+  onTimeRangeChange,
   translations,
 }: PerformanceSnapshotCardProps) {
+  const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
+
+  const handleTimeRangeChange = (range: TimeRange) => {
+    setTimeRange(range);
+    onTimeRangeChange?.(range);
+  };
   if (loading) {
     return (
       <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
@@ -46,6 +59,34 @@ export function PerformanceSnapshotCard({
   if (!performanceData || performanceData.bookingsCount === 0) {
     return (
       <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+        {/* Time Range Selector */}
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Bookings Overview</h3>
+          <div className="flex gap-2">
+            <Button
+              variant={timeRange === "daily" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTimeRangeChange("daily")}
+            >
+              Daglig
+            </Button>
+            <Button
+              variant={timeRange === "weekly" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTimeRangeChange("weekly")}
+            >
+              Ukentlig
+            </Button>
+            <Button
+              variant={timeRange === "monthly" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleTimeRangeChange("monthly")}
+            >
+              Månedlig
+            </Button>
+          </div>
+        </div>
+
         {/* KPI Boxes */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
@@ -57,8 +98,8 @@ export function PerformanceSnapshotCard({
             <p className="text-2xl font-bold text-foreground">0</p>
           </div>
           <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
-            <p className="text-xs text-muted-foreground mb-1">{translations.revenueEstimate}</p>
-            <p className="text-2xl font-bold text-foreground">$0</p>
+            <p className="text-xs text-muted-foreground mb-1">{translations.newCustomers}</p>
+            <p className="text-2xl font-bold text-foreground">0</p>
           </div>
         </div>
 
@@ -86,6 +127,34 @@ export function PerformanceSnapshotCard({
 
   return (
     <div className="group mt-8 rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border min-h-[240px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+      {/* Time Range Selector */}
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Bookings Overview</h3>
+        <div className="flex gap-2">
+          <Button
+            variant={timeRange === "daily" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTimeRangeChange("daily")}
+          >
+            Daglig
+          </Button>
+          <Button
+            variant={timeRange === "weekly" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTimeRangeChange("weekly")}
+          >
+            Ukentlig
+          </Button>
+          <Button
+            variant={timeRange === "monthly" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTimeRangeChange("monthly")}
+          >
+            Månedlig
+          </Button>
+        </div>
+      </div>
+
       {/* KPI Boxes */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
@@ -94,11 +163,11 @@ export function PerformanceSnapshotCard({
         </div>
         <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
           <p className="text-xs text-muted-foreground mb-1">{translations.returningCustomers}</p>
-          <p className="text-2xl font-bold text-foreground">{performanceData.newCustomersCount}</p>
+          <p className="text-2xl font-bold text-foreground">{performanceData.returningCustomersCount ?? 0}</p>
         </div>
         <div className="rounded-xl bg-muted/50 border border-border px-4 py-3">
-          <p className="text-xs text-muted-foreground mb-1">{translations.revenueEstimate}</p>
-          <p className="text-2xl font-bold text-foreground">$0</p>
+          <p className="text-xs text-muted-foreground mb-1">{translations.newCustomers}</p>
+          <p className="text-2xl font-bold text-foreground">{performanceData.newCustomersCount}</p>
         </div>
       </div>
 
@@ -120,7 +189,7 @@ export function PerformanceSnapshotCard({
                 className="w-full rounded-t transition-all duration-300 bg-gradient-to-t from-blue-700 to-blue-500 opacity-80 hover:opacity-100"
                 style={{ height: `${height}%`, minHeight: "8px" }}
               />
-              <span className="text-[10px] text-muted-foreground">{data.day}</span>
+              <span className="text-[10px] text-muted-foreground">{data.label}</span>
               <span className="text-[10px] font-medium text-foreground">{data.bookings}</span>
             </div>
           );

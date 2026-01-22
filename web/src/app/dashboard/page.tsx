@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
@@ -15,11 +16,14 @@ import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { PerformanceSnapshotCard } from "@/components/dashboard/PerformanceSnapshotCard";
 import { AnnouncementsCard } from "@/components/dashboard/AnnouncementsCard";
 
+type TimeRange = "daily" | "weekly" | "monthly";
+
 export default function DashboardPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].home;
   const { hasFeature } = useFeatures();
+  const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
 
   const {
     mounted,
@@ -29,7 +33,7 @@ export default function DashboardPage() {
     loading,
     ownerName,
     performanceData,
-  } = useDashboardData();
+  } = useDashboardData(timeRange);
 
   // Only use features after mount to avoid hydration mismatch
   const featuresMounted = mounted;
@@ -102,10 +106,11 @@ export default function DashboardPage() {
         <PerformanceSnapshotCard
           loading={loading}
           performanceData={performanceData}
+          onTimeRangeChange={(range) => setTimeRange(range)}
           translations={{
             totalBookingsThisWeek: t.totalBookingsThisWeek,
             returningCustomers: t.returningCustomers,
-            revenueEstimate: t.revenueEstimate,
+            newCustomers: t.newCustomers || "Nye kunder",
             noInsightsYet: t.noInsightsYet,
           }}
         />
