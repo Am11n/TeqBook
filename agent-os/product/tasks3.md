@@ -26,24 +26,24 @@ This task breakdown addresses security vulnerabilities identified during code re
 
 | Category | Tasks | Status | Tests |
 |----------|-------|--------|-------|
-| API Security (38-39) | 2 | ⏳ Pending | 0/8-10 |
-| Database Security (40-42) | 3 | ⏳ Pending | 0/12-15 |
-| Infrastructure (43-44) | 2 | ⏳ Pending | 0/4-6 |
+| API Security (38-39) | 2 | ✅ Complete | 10/8-10 |
+| Database Security (40-42) | 3 | ✅ Complete | 12/12-15 |
+| Infrastructure (43-44) | 2 | ✅ Complete | 3/4-6 |
 
-**Total Tasks:** 7 (0 complete, 7 pending)
+**Total Tasks:** 7 (7 complete, 0 pending)
 
 ---
 
 ## Acceptance Criteria Summary
 
-- [ ] All API routes require authentication
-- [ ] Booking conflicts prevented at database level
-- [ ] RLS UPDATE policies have WITH CHECK clauses
-- [ ] salon_id immutable on all tenant tables
-- [ ] Supabase client fails hard in production
-- [ ] CSP hardened for production
-- [ ] No .bak files in repository
-- [ ] All security tests passing
+- [x] All API routes require authentication (Task 38-39 complete)
+- [x] Booking conflicts prevented at database level (Task 40 complete)
+- [x] RLS UPDATE policies have WITH CHECK clauses (Task 41 complete)
+- [x] salon_id immutable on all tenant tables (Task 41 complete)
+- [x] Supabase client fails hard in production (Task 43 complete)
+- [x] CSP hardened for production (Task 44 complete)
+- [x] No .bak files in repository (Task 44 complete)
+- [x] All security tests passing
 
 ---
 
@@ -56,42 +56,43 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** CRITICAL  
 **Risk:** Email spam attacks via unauthenticated endpoints
 
-- [ ] 38.0 Complete authentication for notification API routes
-  - [ ] 38.1 Write 4-6 focused tests for API authentication
+- [x] 38.0 Complete authentication for notification API routes
+  - [x] 38.1 Write 4-6 focused tests for API authentication
     - Test unauthenticated request returns 401
     - Test authenticated request with wrong salon returns 403
     - Test authenticated request with correct salon succeeds
     - Test rate limiting on endpoints
-  - [ ] 38.2 Add authentication to send-notifications route
+  - [x] 38.2 Add authentication to send-notifications route
     - Location: `web/src/app/api/bookings/send-notifications/route.ts`
     - Import and use `createClient` from `@/lib/supabase-server`
     - Verify user is authenticated via `supabase.auth.getUser()`
     - Verify user has access to the requested salonId
     - Return 401 for unauthenticated, 403 for unauthorized
-  - [ ] 38.3 Add authentication to send-cancellation route
+  - [x] 38.3 Add authentication to send-cancellation route
     - Location: `web/src/app/api/bookings/send-cancellation/route.ts`
     - Same authentication pattern as 38.2
     - Verify booking belongs to user's salon
-  - [ ] 38.4 Add rate limiting to both endpoints
+  - [x] 38.4 Add rate limiting to both endpoints
     - Use existing rate-limit-service.ts
     - Limit: 10 requests per minute per user
     - Return 429 when rate limit exceeded
-  - [ ] 38.5 Ensure API authentication tests pass
+  - [x] 38.5 Ensure API authentication tests pass
     - Run ONLY the 4-6 tests written in 38.1
     - Verify authentication works correctly
 
 **Acceptance Criteria:**
-- Unauthenticated requests return 401
-- Requests to wrong salon return 403
-- Rate limiting prevents abuse
-- All API authentication tests pass
+- [x] Unauthenticated requests return 401
+- [x] Requests to wrong salon return 403
+- [x] Rate limiting prevents abuse
+- [x] All API authentication tests pass
 
 **Files to Modify:**
-- `web/src/app/api/bookings/send-notifications/route.ts`
-- `web/src/app/api/bookings/send-cancellation/route.ts`
+- `web/src/app/api/bookings/send-notifications/route.ts` ✅
+- `web/src/app/api/bookings/send-cancellation/route.ts` ✅
 
 **Files to Create:**
-- `web/tests/unit/security/api-auth.test.ts`
+- `web/tests/unit/security/api-auth.test.ts` ✅
+- `web/src/lib/api-auth.ts` ✅ (Created authentication helper)
 
 ---
 
@@ -100,29 +101,29 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** HIGH  
 **Risk:** Other unauthenticated endpoints may exist
 
-- [ ] 39.0 Complete audit of all API routes
-  - [ ] 39.1 Inventory all API routes
+- [x] 39.0 Complete audit of all API routes
+  - [x] 39.1 Inventory all API routes
     - List all files in `web/src/app/api/`
     - Document which routes require auth vs public
     - Identify any other unauthenticated routes
-  - [ ] 39.2 Add authentication to notification routes
+  - [x] 39.2 Add authentication to notification routes
     - `api/notifications/route.ts` - verify auth
     - `api/notifications/[id]/read/route.ts` - verify auth
     - `api/notifications/mark-all-read/route.ts` - verify auth
     - `api/notifications/unread-count/route.ts` - verify auth
-  - [ ] 39.3 Review debug routes
+  - [x] 39.3 Review debug routes
     - `api/debug/notification-test/route.ts` - should be dev-only
     - `api/notifications/debug/route.ts` - should be dev-only
     - Add NODE_ENV check to block in production
-  - [ ] 39.4 Document API route security requirements
+  - [x] 39.4 Document API route security requirements
     - Create `web/docs/api/security.md`
     - Document auth requirements per route
     - Document rate limits per route
 
 **Acceptance Criteria:**
-- All API routes audited for authentication
-- Debug routes blocked in production
-- API security documentation created
+- [x] All API routes audited for authentication
+- [x] Debug routes blocked in production
+- [x] API security documentation created
 
 **Files to Modify:**
 - `web/src/app/api/notifications/route.ts`
@@ -144,38 +145,38 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** CRITICAL  
 **Risk:** Double-booking same employee at same time (race condition)
 
-- [ ] 40.0 Complete booking conflict prevention
-  - [ ] 40.1 Write 4-6 focused tests for conflict prevention
+- [x] 40.0 Complete booking conflict prevention
+  - [x] 40.1 Write 4-6 focused tests for conflict prevention
     - Test overlapping booking is rejected
     - Test adjacent booking is allowed
     - Test cancelled booking slot can be reused
     - Test concurrent booking attempts (race condition)
-  - [ ] 40.2 Create atomic booking RPC function
+  - [x] 40.2 Create atomic booking RPC function
     - Location: `web/supabase/migrations/20260123000001_booking_conflict_prevention.sql`
     - Create `create_booking_atomic()` function
     - Use `SELECT ... FOR UPDATE` to lock rows
     - Check for overlapping bookings atomically
     - Return booking_id on success, raise exception on conflict
-  - [ ] 40.3 Update booking repository to use RPC
+  - [x] 40.3 Update booking repository to use RPC
     - Location: `web/src/lib/repositories/bookings.ts`
     - Replace direct INSERT with RPC call
     - Handle conflict exception gracefully
     - Return user-friendly error message
-  - [ ] 40.4 Update booking service error handling
+  - [x] 40.4 Update booking service error handling
     - Location: `web/src/lib/services/bookings-service.ts`
     - Catch conflict errors from repository
     - Return structured error response
-  - [ ] 40.5 Update UI to show conflict errors
+  - [x] 40.5 Update UI to show conflict errors
     - Location: `web/src/app/bookings/new/page.tsx` (or similar)
     - Display "Time slot no longer available" message
     - Offer to refresh available slots
-  - [ ] 40.6 Ensure booking conflict tests pass
+  - [x] 40.6 Ensure booking conflict tests pass
 
 **Acceptance Criteria:**
-- Overlapping bookings rejected at database level
-- Race conditions handled atomically
-- User sees friendly error message
-- All conflict prevention tests pass
+- [x] Overlapping bookings rejected at database level
+- [x] Race conditions handled atomically
+- [x] User sees friendly error message
+- [x] All conflict prevention tests pass
 
 **Files to Create:**
 - `web/supabase/migrations/20260123000001_booking_conflict_prevention.sql`
@@ -192,12 +193,12 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** HIGH  
 **Risk:** Tenant escape by changing salon_id on existing rows
 
-- [ ] 41.0 Complete RLS UPDATE policy hardening
-  - [ ] 41.1 Write 4-6 focused tests for RLS
+- [x] 41.0 Complete RLS UPDATE policy hardening
+  - [x] 41.1 Write 4-6 focused tests for RLS
     - Test UPDATE with same salon_id succeeds
     - Test UPDATE attempting to change salon_id fails
     - Test UPDATE by unauthorized user fails
-  - [ ] 41.2 Create migration for WITH CHECK policies
+  - [x] 41.2 Create migration for WITH CHECK policies
     - Location: `web/supabase/migrations/20260123000002_rls_with_check.sql`
     - Add WITH CHECK to all UPDATE policies on:
       - `bookings`
@@ -210,20 +211,20 @@ This task breakdown addresses security vulnerabilities identified during code re
       - `booking_products`
       - `opening_hours`
       - `salon_addons`
-  - [ ] 41.3 Create salon_id immutability trigger
+  - [x] 41.3 Create salon_id immutability trigger
     - Create `prevent_salon_id_change()` function
     - Apply trigger to all tenant tables
     - Raise exception if OLD.salon_id != NEW.salon_id
-  - [ ] 41.4 Test RLS policies manually
+  - [x] 41.4 Test RLS policies manually
     - Use Supabase SQL editor
     - Attempt to change salon_id via UPDATE
     - Verify exception is raised
-  - [ ] 41.5 Ensure RLS tests pass
+  - [x] 41.5 Ensure RLS tests pass
 
 **Acceptance Criteria:**
-- All UPDATE policies have WITH CHECK
-- salon_id cannot be changed after INSERT
-- All RLS tests pass
+- [x] All UPDATE policies have WITH CHECK
+- [x] salon_id cannot be changed after INSERT
+- [x] All RLS tests pass
 
 **Files to Create:**
 - `web/supabase/migrations/20260123000002_rls_with_check.sql`
@@ -236,25 +237,25 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** MEDIUM  
 **Risk:** Staff can access more than intended via direct Supabase client
 
-- [ ] 42.0 Complete RBAC enhancement
-  - [ ] 42.1 Document current role permissions
+- [x] 42.0 Complete RBAC enhancement
+  - [x] 42.1 Document current role permissions
     - List what each role (owner/manager/staff) should access
     - Identify gaps between UI restrictions and DB access
-  - [ ] 42.2 Add role checks to critical RLS policies
+  - [x] 42.2 Add role checks to critical RLS policies
     - Update bookings DELETE policy to require owner/manager
     - Update customers DELETE policy to require owner/manager
     - Update services UPDATE/DELETE to require owner/manager
-  - [ ] 42.3 Create role-checking helper function
+  - [x] 42.3 Create role-checking helper function
     - Create `user_has_role(role_name)` SQL function
     - Return true if user's profile has matching role
-  - [ ] 42.4 Document RBAC matrix
+  - [x] 42.4 Document RBAC matrix
     - Create `web/docs/security/rbac-matrix.md`
     - Document what each role can do per table/action
 
 **Acceptance Criteria:**
-- Critical operations restricted by role
-- RBAC matrix documented
-- Staff cannot delete bookings/customers
+- [x] Critical operations restricted by role
+- [x] RBAC matrix documented
+- [x] Staff cannot delete bookings/customers
 
 **Files to Create:**
 - `web/supabase/migrations/20260123000003_rbac_policies.sql`
@@ -269,21 +270,21 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** HIGH  
 **Risk:** Silent failures in production if env vars missing
 
-- [ ] 43.0 Complete Supabase client hardening
-  - [ ] 43.1 Write 2-3 focused tests for client initialization
+- [x] 43.0 Complete Supabase client hardening
+  - [x] 43.1 Write 2-3 focused tests for client initialization
     - Test that missing env throws in production
     - Test that fallback works in test environment
-  - [ ] 43.2 Update supabase-client.ts
+  - [x] 43.2 Update supabase-client.ts
     - Location: `web/src/lib/supabase-client.ts`
     - Fail hard if `NODE_ENV === 'production'` and env vars missing
     - Only use fallback when `NODE_ENV === 'test'` or `VITEST` is set
     - Add clear error message for missing credentials
-  - [ ] 43.3 Ensure client tests pass
+  - [x] 43.3 Ensure client tests pass
 
 **Acceptance Criteria:**
-- Production build fails if Supabase credentials missing
-- Test environment continues to work with fallback
-- Clear error message identifies the problem
+- [x] Production build fails if Supabase credentials missing
+- [x] Test environment continues to work with fallback
+- [x] Clear error message identifies the problem
 
 **Files to Modify:**
 - `web/src/lib/supabase-client.ts`
@@ -298,28 +299,28 @@ This task breakdown addresses security vulnerabilities identified during code re
 **Priority:** LOW  
 **Risk:** XSS attacks via unsafe CSP, repo clutter
 
-- [ ] 44.0 Complete CSP hardening and cleanup
-  - [ ] 44.1 Create environment-specific CSP
+- [x] 44.0 Complete CSP hardening and cleanup
+  - [x] 44.1 Create environment-specific CSP
     - Location: `web/src/middleware.ts`
     - Keep `unsafe-inline` and `unsafe-eval` in development
     - Remove `unsafe-eval` in production (keep `unsafe-inline` for Tailwind)
     - Document CSP decisions
-  - [ ] 44.2 Update next.config.ts CSP
+  - [x] 44.2 Update next.config.ts CSP
     - Location: `web/next.config.ts`
     - Match CSP settings with middleware
     - Add comments explaining each directive
-  - [ ] 44.3 Delete .bak files
+  - [x] 44.3 Delete .bak files
     - Delete `web/.env.local.bak`
     - Delete all `web/src/i18n/*.bak` files (10 files)
-  - [ ] 44.4 Update .gitignore
+  - [x] 44.4 Update .gitignore
     - Location: `web/.gitignore`
     - Add `*.bak`, `*.tmp`, `*.orig` patterns
-  - [ ] 44.5 Verify no .bak files remain
+  - [x] 44.5 Verify no .bak files remain
 
 **Acceptance Criteria:**
-- CSP stricter in production than development
-- No .bak files in repository
-- .gitignore prevents future .bak commits
+- [x] CSP stricter in production than development
+- [x] No .bak files in repository
+- [x] .gitignore prevents future .bak commits
 
 **Files to Modify:**
 - `web/src/middleware.ts`

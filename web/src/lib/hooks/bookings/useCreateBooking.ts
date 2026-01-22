@@ -126,7 +126,21 @@ export function useCreateBooking({
     });
 
     if (rpcError || !bookingData) {
-      setError(rpcError ?? translations.createError);
+      // Check if this is a conflict error (time slot no longer available)
+      const isConflictError = rpcError?.toLowerCase().includes("no longer available") ||
+                             rpcError?.toLowerCase().includes("already booked") ||
+                             rpcError?.toLowerCase().includes("time slot");
+      
+      if (isConflictError) {
+        // For conflict errors, suggest refreshing slots
+        setError(
+          rpcError + " Please refresh available slots and try again."
+        );
+        // Optionally auto-refresh slots
+        // await handleLoadSlots();
+      } else {
+        setError(rpcError ?? translations.createError);
+      }
       setSavingBooking(false);
       return;
     }
