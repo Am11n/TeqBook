@@ -212,6 +212,7 @@ export const en: TranslationNamespaces = {
     // KPI labels
     totalBookingsThisWeek: "Total bookings this week",
     returningCustomers: "Returning customers",
+    newCustomers: "New customers",
     revenueEstimate: "Revenue estimate (manual payments)",
     // Staff empty state
     manageStaffPermissions: "Manage staff permissions and roles",

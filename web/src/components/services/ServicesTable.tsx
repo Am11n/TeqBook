@@ -1,16 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
 import { formatPrice, getCategoryLabel } from "@/lib/utils/services/services-utils";
 import type { Service } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
 interface ServicesTableProps {
   services: Service[];
@@ -43,64 +37,102 @@ export function ServicesTable({
   onDelete,
   translations,
 }: ServicesTableProps) {
+  const columns: ColumnDefinition<Service>[] = [
+    {
+      id: "name",
+      label: translations.colName,
+      render: (service) => (
+        <div className="font-medium">{service.name}</div>
+      ),
+    },
+    {
+      id: "category",
+      label: translations.colCategory,
+      render: (service) => (
+        <div className="text-xs text-muted-foreground">
+          {getCategoryLabel(service.category, translations)}
+        </div>
+      ),
+    },
+    {
+      id: "duration",
+      label: translations.colDuration,
+      render: (service) => (
+        <div className="text-xs text-muted-foreground">
+          {service.duration_minutes} min
+        </div>
+      ),
+    },
+    {
+      id: "price",
+      label: translations.colPrice,
+      render: (service) => (
+        <div className="text-xs text-muted-foreground">
+          {formatPrice(service.price_cents, locale)}
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      label: translations.colStatus,
+      render: (service) => (
+        <Badge
+          variant="outline"
+          className={
+            service.is_active
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-zinc-200 bg-zinc-100 text-zinc-600"
+          }
+        >
+          {service.is_active ? translations.active : translations.inactive}
+        </Badge>
+      ),
+    },
+  ];
+
   return (
-    <div className="mt-4 hidden overflow-x-auto md:block">
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="pr-4">{translations.colName}</TableHead>
-            <TableHead className="pr-4">{translations.colCategory}</TableHead>
-            <TableHead className="pr-4">{translations.colDuration}</TableHead>
-            <TableHead className="pr-4">{translations.colPrice}</TableHead>
-            <TableHead className="pr-4">{translations.colStatus}</TableHead>
-            <TableHead className="text-right">{translations.colActions}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {services.map((service) => (
-            <TableRow key={service.id}>
-              <TableCell className="pr-4">
-                <div className="font-medium">{service.name}</div>
-              </TableCell>
-              <TableCell className="pr-4 text-xs text-muted-foreground">
+    <div className="mt-4 hidden md:block">
+      <TableWithViews
+        tableId="services"
+        columns={columns}
+        data={services}
+        onDelete={(service) => onDelete(service.id)}
+        renderDetails={(service) => (
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-lg">{service.name}</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 {getCategoryLabel(service.category, translations)}
-              </TableCell>
-              <TableCell className="pr-4 text-xs text-muted-foreground">
-                {service.duration_minutes} min
-              </TableCell>
-              <TableCell className="pr-4 text-xs text-muted-foreground">
-                {formatPrice(service.price_cents, locale)}
-              </TableCell>
-              <TableCell className="pr-4 text-xs">
-                <Button
-                  type="button"
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium">Duration</p>
+                <p className="text-sm text-muted-foreground">{service.duration_minutes} minutes</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Price</p>
+                <p className="text-sm text-muted-foreground">{formatPrice(service.price_cents, locale)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Status</p>
+                <Badge
                   variant="outline"
-                  size="sm"
                   className={
                     service.is_active
                       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                       : "border-zinc-200 bg-zinc-100 text-zinc-600"
                   }
-                  onClick={() => onToggleActive(service.id, service.is_active ?? true)}
                 >
                   {service.is_active ? translations.active : translations.inactive}
-                </Button>
-              </TableCell>
-              <TableCell className="text-right text-xs">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50"
-                  onClick={() => onDelete(service.id)}
-                >
-                  {translations.delete}
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </Badge>
+              </div>
+            </div>
+          </div>
+        )}
+        emptyMessage="No services available"
+        actionsLabel={translations.colActions}
+      />
     </div>
   );
 }

@@ -176,7 +176,11 @@ describe("API Authentication", () => {
 
       mockFrom.mockReturnValue(ownershipChain);
 
-      const result = await verifySalonAccess(userId, salonId);
+      const mockSupabase = {
+        from: mockFrom,
+      } as any;
+
+      const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
       expect(result.hasAccess).toBe(true);
       expect(result.error).toBeNull();
@@ -211,7 +215,11 @@ describe("API Authentication", () => {
         .mockReturnValueOnce(ownershipChain)
         .mockReturnValueOnce(profileChain);
 
-      const result = await verifySalonAccess(userId, salonId);
+      const mockSupabase = {
+        from: mockFrom,
+      } as any;
+
+      const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
       expect(result.hasAccess).toBe(true);
       expect(result.error).toBeNull();
@@ -245,7 +253,11 @@ describe("API Authentication", () => {
         .mockReturnValueOnce(ownershipChain)
         .mockReturnValueOnce(profileChain);
 
-      const result = await verifySalonAccess(userId, salonId);
+      const mockSupabase = {
+        from: mockFrom,
+      } as any;
+
+      const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
       expect(result.hasAccess).toBe(false);
       expect(result.error).toBeTruthy();

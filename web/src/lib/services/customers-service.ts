@@ -8,6 +8,7 @@ import {
   getCustomersForCurrentSalon,
   createCustomer as createCustomerRepo,
   deleteCustomer as deleteCustomerRepo,
+  findCustomerByEmailOrPhone as findCustomerByEmailOrPhoneRepo,
 } from "@/lib/repositories/customers";
 import type { Customer, CreateCustomerInput } from "@/lib/types";
 import { logCustomerEvent } from "@/lib/services/audit-trail-service";
@@ -17,7 +18,7 @@ import { logCustomerEvent } from "@/lib/services/audit-trail-service";
  */
 export async function getCustomersForSalon(
   salonId: string,
-  options?: { page?: number; pageSize?: number }
+  options?: { page?: number; pageSize?: number; includeCreatedAt?: boolean }
 ): Promise<{ data: Customer[] | null; error: string | null; total?: number }> {
   // Validation
   if (!salonId) {
@@ -71,6 +72,27 @@ export async function createCustomer(
   }
 
   return result;
+}
+
+/**
+ * Find customer by email or phone
+ */
+export async function findCustomerByEmailOrPhone(
+  salonId: string,
+  email?: string | null,
+  phone?: string | null
+): Promise<{ data: Customer | null; error: string | null }> {
+  // Validation
+  if (!salonId) {
+    return { data: null, error: "Salon ID is required" };
+  }
+
+  if (!email && !phone) {
+    return { data: null, error: null };
+  }
+
+  // Call repository
+  return await findCustomerByEmailOrPhoneRepo(salonId, email, phone);
 }
 
 /**

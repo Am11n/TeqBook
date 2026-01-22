@@ -22,6 +22,10 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Log cron job execution start
+  const executionStart = new Date().toISOString();
+  console.log(`[Cron Job] Starting process-reminders execution at ${executionStart}`);
+
   try {
     // Get environment variables
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -187,12 +191,16 @@ serve(async (req) => {
       }
     }
 
+    // Log execution summary
+    console.log(`[Cron Job] Processed ${processed} reminders, ${errors} errors out of ${reminders.length} total`);
+
     return new Response(
       JSON.stringify({
         processed,
         errors,
         total: reminders.length,
         message: `Processed ${processed} reminders, ${errors} errors`,
+        timestamp: new Date().toISOString(),
       }),
       {
         status: 200,

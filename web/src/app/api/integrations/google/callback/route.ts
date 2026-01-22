@@ -5,7 +5,7 @@
 // Handles OAuth callback from Google
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 import {
   exchangeCodeForTokens,
   saveCalendarConnection,
@@ -13,6 +13,8 @@ import {
 } from "@/lib/services/google-calendar-service";
 
 export async function GET(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get current user
+    const supabase = createClientForRouteHandler(request, response);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.redirect(

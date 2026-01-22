@@ -34,6 +34,26 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     }
   }, [salonLoading, user, isReady, router]);
 
+  // Load employees once
+  useEffect(() => {
+    if (!isReady || !salon?.id) return;
+    const salonId = salon.id;
+
+    async function loadEmployees() {
+      const { data: employeesData, error: employeesError } = await getEmployeesForCurrentSalon(salonId);
+
+      if (employeesError) {
+        setError(employeesError);
+        return;
+      }
+
+      setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
+    }
+
+    loadEmployees();
+  }, [isReady, salon?.id]);
+
+  // Load bookings when selectedDate or viewMode changes
   useEffect(() => {
     if (!isReady) {
       if (salonError) {
@@ -57,27 +77,36 @@ export function useCalendar({ translations }: UseCalendarOptions) {
         return;
       }
 
-      const [
-        { data: employeesData, error: employeesError },
-        { data: bookingsData, error: bookingsError },
-      ] = await Promise.all([
-        getEmployeesForCurrentSalon(salon.id),
-        getBookingsForCalendar(salon.id),
-      ]);
+      // Calculate date range based on view mode
+      const date = new Date(selectedDate + "T00:00:00");
+      const startOfPeriod = new Date(date);
+      const endOfPeriod = new Date(date);
 
-      if (employeesError || bookingsError) {
-        setError(employeesError ?? bookingsError ?? translations.loadError);
+      if (viewMode === "day") {
+        endOfPeriod.setHours(23, 59, 59, 999);
+      } else {
+        // Week view: add 6 days
+        endOfPeriod.setDate(endOfPeriod.getDate() + 6);
+        endOfPeriod.setHours(23, 59, 59, 999);
+      }
+
+      const { data: bookingsData, error: bookingsError } = await getBookingsForCalendar(salon.id, {
+        startDate: startOfPeriod.toISOString(),
+        endDate: endOfPeriod.toISOString(),
+      });
+
+      if (bookingsError) {
+        setError(bookingsError);
         setLoading(false);
         return;
       }
 
-      setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
       setBookings(bookingsData ?? []);
       setLoading(false);
     }
 
     loadData();
-  }, [isReady, salon?.id, salonLoading, salonError, translations.noSalon, translations.loadError]);
+  }, [isReady, salon?.id, salonLoading, salonError, selectedDate, viewMode, translations.noSalon, translations.loadError]);
 
   const bookingsForDayByEmployee = useMemo(() => {
     const date = new Date(selectedDate + "T00:00:00");
@@ -113,6 +142,39 @@ export function useCalendar({ translations }: UseCalendarOptions) {
 
   const hasBookingsForDay = Object.keys(bookingsForDayByEmployee).length > 0;
 
+  const refreshBookings = async () => {
+    if (!salon?.id) return;
+
+    setLoading(true);
+
+    // Calculate date range based on view mode
+    const date = new Date(selectedDate + "T00:00:00");
+    const startOfPeriod = new Date(date);
+    const endOfPeriod = new Date(date);
+
+    if (viewMode === "day") {
+      endOfPeriod.setHours(23, 59, 59, 999);
+    } else {
+      // Week view: add 6 days
+      endOfPeriod.setDate(endOfPeriod.getDate() + 6);
+      endOfPeriod.setHours(23, 59, 59, 999);
+    }
+
+    const { data: bookingsData, error: bookingsError } = await getBookingsForCalendar(salon.id, {
+      startDate: startOfPeriod.toISOString(),
+      endDate: endOfPeriod.toISOString(),
+    });
+
+    if (bookingsError) {
+      setError(bookingsError);
+      setLoading(false);
+      return;
+    }
+
+    setBookings(bookingsData ?? []);
+    setLoading(false);
+  };
+
   return {
     employees,
     bookings,
@@ -126,6 +188,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     setSelectedDate,
     bookingsForDayByEmployee,
     hasBookingsForDay,
+    refreshBookings,
   };
 }
 

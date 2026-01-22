@@ -61,10 +61,15 @@ export function getWeekDates(startDate: string): string[] {
 
 /**
  * Change date by offset
+ * Uses local time to avoid timezone issues
  */
 export function changeDate(currentDate: string, offset: number): string {
   const date = new Date(currentDate + "T00:00:00");
   date.setDate(date.getDate() + offset);
-  return date.toISOString().slice(0, 10);
+  // Format as YYYY-MM-DD using local time to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 

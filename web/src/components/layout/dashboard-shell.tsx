@@ -60,23 +60,8 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     setMounted(true);
   }, []);
 
-  // Redirect unauthenticated users to login
-  useEffect(() => {
-    // Only check after mount and when loading is complete
-    if (!mounted || loading) return;
-
-    // List of public routes that don't require authentication
-    const publicRoutes = ["/", "/login", "/signup", "/onboarding", "/landing"];
-    const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith("/book/");
-
-    // If user is not authenticated and trying to access protected route, redirect to login
-    // Check both user and isReady to ensure we have authenticated user data
-    if (!isPublicRoute && (!user || !isReady)) {
-      // Use replace to prevent back button from going back to protected route
-      router.replace("/login");
-      return;
-    }
-  }, [mounted, loading, user, isReady, pathname, router]);
+  // Note: Route protection is now handled by middleware (server-side)
+  // No need for client-side redirect - middleware will handle authentication
 
   // Close mobile nav when route changes
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   getAvailableSlots,
   createBooking as createBookingRepo,
   updateBookingStatus as updateBookingStatusRepo,
+  updateBooking as updateBookingRepo,
   deleteBooking as deleteBookingRepo,
 } from "@/lib/repositories/bookings";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
@@ -101,11 +102,26 @@ export async function createBooking(
     }
 
     // Validate start time is in the future (for non-walk-in bookings)
+    // Compare dates properly to avoid timezone issues
+    // Note: input.start_time is an ISO string (UTC), so we compare in UTC
     if (!input.is_walk_in) {
       const startTime = new Date(input.start_time);
       const now = new Date();
-      if (startTime < now) {
-        logWarn("Booking creation failed: start time in the past", logContext);
+      
+      // Compare timestamps directly - this works correctly regardless of timezone
+      // since both dates are converted to the same reference (milliseconds since epoch)
+      const timeDiff = startTime.getTime() - now.getTime();
+      const oneMinute = 60 * 1000;
+      
+      if (timeDiff <= oneMinute) {
+        logWarn("Booking creation failed: start time in the past", {
+          ...logContext,
+          startTime: startTime.toISOString(),
+          now: now.toISOString(),
+          timeDiff,
+          startTimeLocal: startTime.toLocaleString(),
+          nowLocal: now.toLocaleString(),
+        });
         return { data: null, error: "Booking start time must be in the future" };
       }
     }
@@ -189,7 +205,7 @@ export async function createBooking(
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                booking: bookingForEmail,
+                bookingId: result.data!.id,
                 customerEmail: input.customer_email,
                 salonId: input.salon_id,
                 language: salon?.preferred_language || "en",
@@ -344,6 +360,60 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Update booking (time, employee, etc.)
+ */
+export async function updateBooking(
+  salonId: string,
+  bookingId: string,
+  updates: {
+    start_time?: string;
+    end_time?: string;
+    employee_id?: string;
+    status?: string;
+    notes?: string | null;
+  }
+): Promise<{ data: Booking | null; error: string | null }> {
+  const correlationId = crypto.randomUUID();
+  const logContext = {
+    correlationId,
+    salonId,
+    bookingId,
+    updates,
+  };
+
+  try {
+    // Validation
+    if (!salonId || !bookingId) {
+      logWarn("Booking update failed: missing required parameters", logContext);
+      return { data: null, error: "Salon ID and Booking ID are required" };
+    }
+
+    // Call repository
+    const result = await updateBookingRepo(salonId, bookingId, updates);
+
+    if (result.error) {
+      logError("Booking update failed", new Error(result.error), {
+        ...logContext,
+        error: result.error,
+      });
+    } else if (result.data) {
+      logInfo("Booking updated successfully", {
+        ...logContext,
+        newData: result.data,
+      });
+    }
+
+    return result;
+  } catch (error) {
+    logError("Booking update exception", error, logContext);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+/**
  * Cancel a booking (with optional reason)
  */
 export async function cancelBooking(
@@ -403,19 +473,11 @@ export async function cancelBooking(
         });
       });
 
-      // Send cancellation notifications if booking data is provided
-      if (options?.booking && typeof window !== "undefined") {
+      // Send cancellation notifications if booking ID is available
+      if (bookingId && typeof window !== "undefined") {
         // Get salon info for email template
         const salonResult = await getSalonById(salonId);
         const salon = salonResult.data;
-
-        const bookingForNotification = {
-          ...options.booking,
-          customer_full_name: options.booking.customers?.full_name || "Customer",
-          service: options.booking.services,
-          employee: options.booking.employees ? { name: options.booking.employees.full_name } : null,
-          salon: salon ? { name: salon.name } : null,
-        };
 
         fetch("/api/bookings/send-cancellation", {
           method: "POST",
@@ -423,10 +485,10 @@ export async function cancelBooking(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            booking: bookingForNotification,
-            customerEmail: options.customerEmail,
+            bookingId,
+            customerEmail: options?.customerEmail,
             salonId,
-            language: options.language || salon?.preferred_language || "en",
+            language: options?.language || salon?.preferred_language || "en",
             cancelledBy: "salon",
           }),
         })

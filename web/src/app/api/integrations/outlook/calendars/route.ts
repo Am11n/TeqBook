@@ -5,7 +5,7 @@
 // Returns list of available calendars for the connected Outlook account
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 import {
   getOutlookConnection,
   getCalendars,
@@ -13,8 +13,11 @@ import {
 } from "@/lib/services/outlook-calendar-service";
 
 export async function GET(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get current user
+    const supabase = createClientForRouteHandler(request, response);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -80,10 +83,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: calError }, { status: 500 });
     }
 
-    return NextResponse.json({
+    const jsonResponse = NextResponse.json({
       calendars: calendars || [],
       selectedCalendarId: connectionData.calendar_id,
     });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("[Outlook Calendars] Exception:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -91,8 +101,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get current user
+    const supabase = createClientForRouteHandler(request, response);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -132,7 +145,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    const jsonResponse = NextResponse.json({ success: true });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("[Outlook Calendars] Exception:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -80,8 +80,7 @@ BEGIN
   DO UPDATE SET
     full_name = EXCLUDED.full_name,
     phone = COALESCE(EXCLUDED.phone, customers.phone),
-    notes = COALESCE(EXCLUDED.notes, customers.notes),
-    updated_at = NOW()
+    notes = COALESCE(EXCLUDED.notes, customers.notes)
   RETURNING customers.id INTO v_customer_id;
 
   -- If no email conflict, get the customer_id from the insert

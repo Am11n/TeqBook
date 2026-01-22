@@ -5,11 +5,14 @@
 // Endpoint for saving push subscriptions
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get authenticated user
+    const supabase = createClientForRouteHandler(request, response);
     const {
       data: { user },
       error: authError,
@@ -77,10 +80,17 @@ export async function POST(request: NextRequest) {
         }
       );
 
-    return NextResponse.json({
+    const jsonResponse = NextResponse.json({
       success: true,
       subscriptionId: data?.id,
     });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("Exception in push subscribe:", error);
     return NextResponse.json(

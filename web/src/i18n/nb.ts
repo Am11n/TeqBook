@@ -212,6 +212,7 @@ export const nb: TranslationNamespaces = {
     // KPI labels
     totalBookingsThisWeek: "Totale bookinger denne uken",
     returningCustomers: "Tilbakevendende kunder",
+    newCustomers: "Nye kunder",
     revenueEstimate: "Omsetningsestimat (manuelle betalinger)",
     // Staff empty state
     manageStaffPermissions: "Administrer ansattes tillatelser og roller",

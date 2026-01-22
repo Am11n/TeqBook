@@ -218,6 +218,7 @@ export type HomeMessages = {
   // KPI labels
   totalBookingsThisWeek: string;
   returningCustomers: string;
+  newCustomers?: string;
   revenueEstimate: string;
   // Staff empty state
   manageStaffPermissions: string;

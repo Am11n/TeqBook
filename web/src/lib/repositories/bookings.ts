@@ -59,7 +59,7 @@ export async function getBookingsForCalendar(
     let query = supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, customers(full_name), employees(id, full_name), services(name)",
+        "id, start_time, end_time, status, is_walk_in, customer_id, customers(full_name), employees(id, full_name), services(name)",
         { count: "exact" }
       )
       .eq("salon_id", salonId);
@@ -220,7 +220,49 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Update booking (time, employee, etc.)
+ */
+export async function updateBooking(
+  salonId: string,
+  bookingId: string,
+  updates: {
+    start_time?: string;
+    end_time?: string;
+    employee_id?: string;
+    status?: string;
+    notes?: string | null;
+  }
+): Promise<{ data: Booking | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .select(
+        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(id, full_name), services(name)"
+      )
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        data: null,
+        error: error?.message ?? "Failed to update booking",
+      };
+    }
+
+    return { data: data as unknown as Booking, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Get booking by ID (public access for confirmation page)
+ * This version doesn't verify salon ownership - use getBookingByIdWithSalonVerification for secure access
  */
 export async function getBookingById(
   bookingId: string
@@ -229,7 +271,7 @@ export async function getBookingById(
     const { data, error } = await supabase
       .from("bookings")
       .select(
-        "id, salon_id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)"
+        "id, salon_id, start_time, end_time, status, is_walk_in, notes, customers(full_name, email), employees(full_name), services(name)"
       )
       .eq("id", bookingId)
       .maybeSingle();
@@ -243,6 +285,74 @@ export async function getBookingById(
     }
 
     return { data: data as unknown as Booking & { salon_id: string }, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Get booking by ID with salon verification (secure version)
+ * Verifies that booking belongs to the specified salon
+ * Includes related data (customer, employee, service, salon)
+ */
+export async function getBookingByIdWithSalonVerification(
+  bookingId: string,
+  salonId: string
+): Promise<{ 
+  data: (Booking & { 
+    salon_id: string;
+    customer_full_name: string;
+    customer_email?: string | null;
+    service?: { name: string | null } | null;
+    employee?: { name: string | null } | null;
+    salon?: { name: string | null } | null;
+  }) | null; 
+  error: string | null 
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(
+        "id, salon_id, start_time, end_time, status, is_walk_in, notes, customers(full_name, email), employees(full_name), services(name), salons(name)"
+      )
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!data) {
+      return { data: null, error: "Booking not found or does not belong to this salon" };
+    }
+
+    // Verify salon_id matches
+    if (data.salon_id !== salonId) {
+      return { data: null, error: "Booking does not belong to this salon" };
+    }
+
+    // Transform to expected format
+    const customer = Array.isArray(data.customers) ? data.customers[0] : data.customers;
+    const employee = Array.isArray(data.employees) ? data.employees[0] : data.employees;
+    const service = Array.isArray(data.services) ? data.services[0] : data.services;
+    const salon = Array.isArray(data.salons) ? data.salons[0] : data.salons;
+
+    return { 
+      data: {
+        ...(data as unknown as Booking),
+        salon_id: data.salon_id,
+        customer_full_name: (customer as { full_name: string } | null)?.full_name || "",
+        customer_email: (customer as { email: string | null } | null)?.email || null,
+        service: service ? { name: (service as { name: string | null }).name } : null,
+        employee: employee ? { name: (employee as { full_name: string }).full_name } : null,
+        salon: salon ? { name: (salon as { name: string | null }).name } : null,
+      }, 
+      error: null 
+    };
   } catch (err) {
     return {
       data: null,

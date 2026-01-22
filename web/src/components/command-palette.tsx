@@ -35,6 +35,13 @@ type CommandPaletteProps = {
 // Navigation shortcuts (static, defined outside component)
 const navigationItems: SearchResult[] = [
   {
+    id: "nav-dashboard",
+    type: "navigation",
+    label: "Go to Dashboard",
+    href: "/dashboard",
+    icon: Settings,
+  },
+  {
     id: "nav-calendar",
     type: "navigation",
     label: "Go to Calendar",
@@ -44,9 +51,16 @@ const navigationItems: SearchResult[] = [
   {
     id: "nav-create-booking",
     type: "navigation",
-    label: "Create new booking",
+    label: "New booking",
     href: "/bookings?new=true",
     icon: BookOpen,
+  },
+  {
+    id: "nav-create-customer",
+    type: "navigation",
+    label: "New customer",
+    href: "/customers?new=true",
+    icon: UserCircle,
   },
   {
     id: "nav-employees",

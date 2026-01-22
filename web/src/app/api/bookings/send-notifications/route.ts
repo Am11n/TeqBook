@@ -2,27 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
+import { getBookingByIdWithSalonVerification } from "@/lib/repositories/bookings";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     const body = await request.json();
     const {
-      booking,
+      bookingId,
       customerEmail,
       salonId,
       language,
     }: {
-      booking: Booking & {
-        customer_full_name: string;
-        service?: { name: string | null } | null;
-        employee?: { name: string | null } | null;
-        salon?: { name: string | null } | null;
-      };
+      bookingId: string;
       customerEmail: string;
       salonId: string;
       language?: string;
@@ -30,26 +28,25 @@ export async function POST(request: NextRequest) {
 
     // Log incoming request for debugging
     logInfo("send-notifications API route called", {
-      bookingId: booking?.id,
+      bookingId,
       customerEmail,
       salonId,
-      hasBooking: !!booking,
     });
 
-    if (!booking || !customerEmail || !salonId) {
+    if (!bookingId || !customerEmail || !salonId) {
       logError("Missing required fields in send-notifications API route", new Error("Missing required fields"), {
-        booking: !!booking,
+        bookingId: !!bookingId,
         customerEmail: !!customerEmail,
         salonId: !!salonId,
       });
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields: bookingId, customerEmail, and salonId are required" },
         { status: 400 }
       );
     }
 
     // Authenticate user and verify salon access
-    const authResult = await authenticateAndVerifySalon(request, salonId);
+    const authResult = await authenticateAndVerifySalon(request, salonId, response);
     
     if (authResult.error || !authResult.user || !authResult.hasAccess) {
       const statusCode = !authResult.user ? 401 : 403;
@@ -61,6 +58,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: authResult.error || "Unauthorized" },
         { status: statusCode }
+      );
+    }
+
+    // Fetch booking from database (server-side)
+    const bookingResult = await getBookingByIdWithSalonVerification(bookingId, salonId);
+    
+    if (bookingResult.error || !bookingResult.data) {
+      logWarn("Booking not found or access denied", {
+        bookingId,
+        salonId,
+        error: bookingResult.error,
+      });
+      return NextResponse.json(
+        { error: bookingResult.error || "Booking not found" },
+        { status: 404 }
+      );
+    }
+
+    const booking = bookingResult.data;
+
+    // Verify booking status is confirmed or pending
+    if (booking.status !== "confirmed" && booking.status !== "pending") {
+      logWarn("Attempt to send notification for invalid booking status", {
+        bookingId,
+        status: booking.status,
+      });
+      return NextResponse.json(
+        { error: `Cannot send notifications for booking with status: ${booking.status}` },
+        { status: 400 }
+      );
+    }
+
+    // Verify customer email matches booking's customer email
+    if (booking.customer_email && booking.customer_email !== customerEmail) {
+      logWarn("Customer email mismatch", {
+        bookingId,
+        providedEmail: customerEmail,
+        bookingEmail: booking.customer_email,
+      });
+      return NextResponse.json(
+        { error: "Customer email does not match booking" },
+        { status: 400 }
       );
     }
 
@@ -107,14 +146,22 @@ export async function POST(request: NextRequest) {
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
-    // Prepare booking data for email template
+    // Prepare booking data for email template (using fetched booking data)
     const bookingForEmail: Booking & {
       customer_full_name: string;
       service?: { name: string | null } | null;
       employee?: { name: string | null } | null;
       salon?: { name: string | null } | null;
     } = {
-      ...booking,
+      id: booking.id,
+      start_time: booking.start_time,
+      end_time: booking.end_time,
+      status: booking.status,
+      is_walk_in: booking.is_walk_in,
+      notes: booking.notes,
+      customers: booking.customer_full_name ? { full_name: booking.customer_full_name } : null,
+      employees: booking.employee?.name ? { full_name: booking.employee.name } : null,
+      services: booking.service?.name ? { name: booking.service.name } : null,
       customer_full_name: booking.customer_full_name,
       service: booking.service,
       employee: booking.employee,
@@ -178,6 +225,8 @@ export async function POST(request: NextRequest) {
         bookingTime,
       });
 
+      // Use SSR client for database operations
+      const supabase = createClientForRouteHandler(request, response);
       const { data: notifiedCount, error: notifyError } = await supabase.rpc(
         "notify_salon_staff_new_booking",
         {
@@ -216,11 +265,18 @@ export async function POST(request: NextRequest) {
       inAppResult = { success: false, error: inAppError instanceof Error ? inAppError.message : "Unknown error" };
     }
 
-    return NextResponse.json({
+    const jsonResponse = NextResponse.json({
       email: emailResult,
       reminders: reminderResult,
       inApp: inAppResult,
     });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     logError("Exception in send-notifications API route", error, {});
     return NextResponse.json(

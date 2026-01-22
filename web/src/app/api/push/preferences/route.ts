@@ -5,12 +5,15 @@
 // Endpoint for managing notification preferences
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 
 // GET - Retrieve preferences
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get authenticated user
+    const supabase = createClientForRouteHandler(request, response);
     const {
       data: { user },
       error: authError,
@@ -53,7 +56,14 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json(data);
+    const jsonResponse = NextResponse.json(data);
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("Exception in get preferences:", error);
     return NextResponse.json(
@@ -65,8 +75,11 @@ export async function GET() {
 
 // PUT - Update preferences
 export async function PUT(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get authenticated user
+    const supabase = createClientForRouteHandler(request, response);
     const {
       data: { user },
       error: authError,
@@ -144,7 +157,14 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data);
+    const jsonResponse = NextResponse.json(data);
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("Exception in update preferences:", error);
     return NextResponse.json(
