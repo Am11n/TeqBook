@@ -189,7 +189,7 @@ export async function createBooking(
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                booking: bookingForEmail,
+                bookingId: result.data!.id,
                 customerEmail: input.customer_email,
                 salonId: input.salon_id,
                 language: salon?.preferred_language || "en",
@@ -403,19 +403,11 @@ export async function cancelBooking(
         });
       });
 
-      // Send cancellation notifications if booking data is provided
-      if (options?.booking && typeof window !== "undefined") {
+      // Send cancellation notifications if booking ID is available
+      if (bookingId && typeof window !== "undefined") {
         // Get salon info for email template
         const salonResult = await getSalonById(salonId);
         const salon = salonResult.data;
-
-        const bookingForNotification = {
-          ...options.booking,
-          customer_full_name: options.booking.customers?.full_name || "Customer",
-          service: options.booking.services,
-          employee: options.booking.employees ? { name: options.booking.employees.full_name } : null,
-          salon: salon ? { name: salon.name } : null,
-        };
 
         fetch("/api/bookings/send-cancellation", {
           method: "POST",
@@ -423,7 +415,7 @@ export async function cancelBooking(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            booking: bookingForNotification,
+            bookingId,
             customerEmail: options.customerEmail,
             salonId,
             language: options.language || salon?.preferred_language || "en",

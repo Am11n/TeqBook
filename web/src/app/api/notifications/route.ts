@@ -9,9 +9,11 @@ import { authenticateUser } from "@/lib/api-auth";
 import { logInfo, logError } from "@/lib/services/logger";
 
 export async function GET(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Authenticate user
-    const authResult = await authenticateUser(request);
+    const authResult = await authenticateUser(request, response);
 
     if (authResult.error || !authResult.user) {
       logInfo("[Notifications API] Unauthorized access attempt", {
@@ -58,10 +60,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const jsonResponse = NextResponse.json({
       notifications: notificationsResult.data,
       unreadCount: unreadCountResult.data,
     });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     logError("[Notifications API] Exception", error, {});
     return NextResponse.json(

@@ -5,12 +5,15 @@
 // Disconnects Outlook Calendar integration
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { disconnectOutlookCalendar, getOutlookConnection } from "@/lib/services/outlook-calendar-service";
 
 export async function POST(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     // Get current user
+    const supabase = createClientForRouteHandler(request, response);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -47,7 +50,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    const jsonResponse = NextResponse.json({ success: true });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     console.error("[Outlook Disconnect] Exception:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

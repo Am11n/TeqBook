@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendBookingNotification } from "@/lib/services/unified-notification-service";
 import { getSalonById } from "@/lib/repositories/salons";
+import { getBookingByIdWithSalonVerification } from "@/lib/repositories/bookings";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
@@ -10,21 +11,18 @@ import type { Booking } from "@/lib/types";
 // Note: sendBookingNotification is still used for customer email
 
 export async function POST(request: NextRequest) {
+  const response = NextResponse.next();
+  
   try {
     const body = await request.json();
     const {
-      booking,
+      bookingId,
       customerEmail,
       salonId,
       language,
       cancelledBy, // 'customer' | 'salon'
     }: {
-      booking: Booking & {
-        customer_full_name: string;
-        service?: { name: string | null } | null;
-        employee?: { name: string | null } | null;
-        salon?: { name: string | null } | null;
-      };
+      bookingId: string;
       customerEmail?: string;
       salonId: string;
       language?: string;
@@ -33,33 +31,32 @@ export async function POST(request: NextRequest) {
 
     // Log incoming request for debugging
     logInfo("send-cancellation API route called", {
-      bookingId: booking?.id,
+      bookingId,
       customerEmail,
       salonId,
       cancelledBy,
-      hasBooking: !!booking,
     });
 
-    if (!booking || !salonId) {
+    if (!bookingId || !salonId) {
       logError("Missing required fields in send-cancellation API route", new Error("Missing required fields"), {
-        booking: !!booking,
+        bookingId: !!bookingId,
         salonId: !!salonId,
       });
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields: bookingId and salonId are required" },
         { status: 400 }
       );
     }
 
     // Authenticate user and verify salon access
-    const authResult = await authenticateAndVerifySalon(request, salonId);
+    const authResult = await authenticateAndVerifySalon(request, salonId, response);
     
     if (authResult.error || !authResult.user || !authResult.hasAccess) {
       const statusCode = !authResult.user ? 401 : 403;
       logWarn("Unauthorized access attempt to send-cancellation", {
         userId: authResult.user?.id,
         salonId,
-        bookingId: booking?.id,
+        bookingId,
         error: authResult.error,
       });
       return NextResponse.json(
@@ -68,18 +65,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify booking belongs to user's salon (if salon_id is present on booking)
-    if ("salon_id" in booking && booking.salon_id && booking.salon_id !== salonId) {
-      logWarn("Booking salon mismatch in send-cancellation", {
-        userId: authResult.user.id,
-        requestedSalonId: salonId,
-        bookingSalonId: booking.salon_id,
+    // Fetch booking from database (server-side)
+    const bookingResult = await getBookingByIdWithSalonVerification(bookingId, salonId);
+    
+    if (bookingResult.error || !bookingResult.data) {
+      logWarn("Booking not found or access denied", {
+        bookingId,
+        salonId,
+        error: bookingResult.error,
       });
       return NextResponse.json(
-        { error: "Booking does not belong to this salon" },
-        { status: 403 }
+        { error: bookingResult.error || "Booking not found" },
+        { status: 404 }
       );
     }
+
+    const booking = bookingResult.data;
 
     // Rate limiting: 10 requests per minute per user
     const userId = authResult.user.id;
@@ -124,14 +125,19 @@ export async function POST(request: NextRequest) {
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
-    // Prepare booking data for notification
+    // Prepare booking data for notification (using fetched booking data)
     const bookingForNotification: Booking & {
       customer_full_name: string;
       service?: { name: string | null } | null;
       employee?: { name: string | null } | null;
       salon?: { name: string | null } | null;
     } = {
-      ...booking,
+      id: booking.id,
+      start_time: booking.start_time,
+      end_time: booking.end_time,
+      status: booking.status,
+      is_walk_in: booking.is_walk_in,
+      notes: booking.notes,
       customer_full_name: booking.customer_full_name,
       service: booking.service,
       employee: booking.employee,
@@ -143,10 +149,11 @@ export async function POST(request: NextRequest) {
       salonInApp: null as { success: boolean; sent?: number; total?: number; error?: string } | null,
     };
 
-    // Try to get customer email if not provided
-    let resolvedCustomerEmail = customerEmail;
+    // Try to get customer email if not provided (use booking data from database)
+    let resolvedCustomerEmail = customerEmail || booking.customer_email || null;
     if (!resolvedCustomerEmail && booking.id) {
       // Use database function to get customer email (bypasses RLS)
+      const supabase = createClientForRouteHandler(request, response);
       const { data: email, error: fetchError } = await supabase.rpc(
         "get_booking_customer_email",
         { p_booking_id: booking.id }
@@ -215,6 +222,7 @@ export async function POST(request: NextRequest) {
         cancelledBy,
       });
 
+      const supabase = createClientForRouteHandler(request, response);
       const { data: notifiedCount, error: notifyError } = await supabase.rpc(
         "notify_salon_staff_booking_cancelled",
         {
@@ -256,7 +264,14 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    return NextResponse.json(results);
+    const jsonResponse = NextResponse.json(results);
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     logError("Exception in send-cancellation API route", error, {});
     return NextResponse.json(

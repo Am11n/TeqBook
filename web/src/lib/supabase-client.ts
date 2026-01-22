@@ -1,36 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
+/**
+ * @deprecated This file is kept for backward compatibility.
+ * For server components and API routes, use `@/lib/supabase/server`
+ * For client components, use `@/lib/supabase/client`
+ * 
+ * This export will be removed in a future version.
+ */
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-// Determine if we're in a test environment
-const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
-const isProduction = process.env.NODE_ENV === "production";
-
-// Fail hard in production if credentials are missing
-if (isProduction && (!supabaseUrl || !supabaseAnonKey)) {
-  const missingVars: string[] = [];
-  if (!supabaseUrl) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
-  if (!supabaseAnonKey) missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-
-  throw new Error(
-    `[TeqBook] Missing required Supabase environment variables in production: ${missingVars.join(", ")}. ` +
-    `Please set these variables in your production environment. ` +
-    `This error prevents the application from starting with invalid credentials.`
-  );
-}
-
-// Warn in development if credentials are missing
-if (!isProduction && !isTestEnvironment && (!supabaseUrl || !supabaseAnonKey)) {
-  console.warn(
-    "[TeqBook] NEXT_PUBLIC_SUPABASE_URL eller NEXT_PUBLIC_SUPABASE_ANON_KEY mangler. Sjekk .env.local.",
-  );
-}
-
-// Use fallback values only in test environment
-const finalSupabaseUrl = supabaseUrl || (isTestEnvironment ? "https://test.supabase.co" : "");
-const finalSupabaseAnonKey = supabaseAnonKey || (isTestEnvironment ? "test-anon-key" : "");
-
-export const supabase = createClient(finalSupabaseUrl, finalSupabaseAnonKey);
+// Export browser client for backward compatibility
+// Note: This should only be used in client components
+// For server-side code, use createClient from @/lib/supabase/server
+export const supabase = createBrowserClient();
 
 

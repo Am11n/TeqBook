@@ -4,9 +4,9 @@
 // Helper functions for authenticating API routes in Next.js
 // Verifies user authentication and salon access
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase-client";
+import { createClientForRouteHandler } from "@/lib/supabase/server";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -19,12 +19,20 @@ export type AuthResult = {
 /**
  * Authenticate user from Next.js API route request
  * Checks for user session via cookies or Authorization header
+ * 
+ * @param request - Next.js request object
+ * @param response - Next.js response object (optional, for cookie handling)
  */
 export async function authenticateUser(
-  request: NextRequest
+  request: NextRequest,
+  response?: NextResponse
 ): Promise<AuthResult> {
   try {
-    // Try to get user from Supabase client (reads from cookies)
+    // Create SSR client for cookie-based authentication
+    const responseForAuth = response || NextResponse.next();
+    const supabase = createClientForRouteHandler(request, responseForAuth);
+    
+    // Try to get user from Supabase SSR client (reads from cookies)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -71,10 +79,15 @@ export async function authenticateUser(
 /**
  * Check if user has access to a specific salon
  * Checks both salon_ownerships and profiles tables
+ * 
+ * @param userId - User ID to check
+ * @param salonId - Salon ID to verify access for
+ * @param supabase - Supabase client instance (must be provided)
  */
 export async function verifySalonAccess(
   userId: string,
-  salonId: string
+  salonId: string,
+  supabase: ReturnType<typeof createClientForRouteHandler>
 ): Promise<{ hasAccess: boolean; error: string | null }> {
   try {
     // Check salon_ownerships first (multi-salon support)
@@ -134,16 +147,21 @@ export async function verifySalonAccess(
 
 /**
  * Authenticate user and verify salon access in one call
+ * 
+ * @param request - Next.js request object
+ * @param salonId - Salon ID to verify access for
+ * @param response - Next.js response object (optional, for cookie handling)
  */
 export async function authenticateAndVerifySalon(
   request: NextRequest,
-  salonId: string
+  salonId: string,
+  response?: NextResponse
 ): Promise<{
   user: { id: string; email?: string } | null;
   hasAccess: boolean;
   error: string | null;
 }> {
-  const authResult = await authenticateUser(request);
+  const authResult = await authenticateUser(request, response);
 
   if (authResult.error || !authResult.user) {
     return {
@@ -153,7 +171,10 @@ export async function authenticateAndVerifySalon(
     };
   }
 
-  const accessResult = await verifySalonAccess(authResult.user.id, salonId);
+  // Create SSR client for database queries
+  const responseForAuth = response || NextResponse.next();
+  const supabase = createClientForRouteHandler(request, responseForAuth);
+  const accessResult = await verifySalonAccess(authResult.user.id, salonId, supabase);
 
   return {
     user: authResult.user,

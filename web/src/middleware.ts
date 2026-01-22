@@ -1,11 +1,54 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-export function middleware(request: NextRequest) {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
+  const pathname = request.nextUrl.pathname;
+
+  // Create Supabase client for middleware
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll().map((cookie) => ({
+          name: cookie.name,
+          value: cookie.value,
+        }));
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          request.cookies.set(name, value);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  // Route protection for dashboard, admin, and settings routes
+  if (
+    pathname.startsWith("/dashboard/") ||
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/settings/")
+  ) {
+    // Check authentication
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    // If not authenticated, redirect to login
+    if (authError || !user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   // Allow iframe embedding for booking pages (needed for preview)
-  if (request.nextUrl.pathname.startsWith("/book/")) {
+  if (pathname.startsWith("/book/")) {
     const isDevelopment = process.env.NODE_ENV === "development";
     
     // CSP configuration - more permissive in development for HMR
@@ -43,6 +86,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/book/:path*",
+  matcher: [
+    "/book/:path*",
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/settings/:path*",
+  ],
 };
 

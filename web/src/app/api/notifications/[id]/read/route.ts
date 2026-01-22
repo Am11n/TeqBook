@@ -12,6 +12,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const response = NextResponse.next();
+  
   try {
     const { id: notificationId } = await params;
 
@@ -23,7 +25,7 @@ export async function POST(
     }
 
     // Authenticate user
-    const authResult = await authenticateUser(request);
+    const authResult = await authenticateUser(request, response);
 
     if (authResult.error || !authResult.user) {
       return NextResponse.json(
@@ -44,7 +46,14 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({ success: true });
+    const jsonResponse = NextResponse.json({ success: true });
+    
+    // Copy cookies from response to jsonResponse
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    
+    return jsonResponse;
   } catch (error) {
     logError("Error marking notification as read", error, {});
     return NextResponse.json(
