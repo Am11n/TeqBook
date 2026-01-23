@@ -544,9 +544,9 @@ export async function cancelBooking(
                 end_time: options.booking.end_time,
                 status: options.booking.status,
                 is_walk_in: options.booking.is_walk_in,
-                customer_full_name: options.booking.customer_full_name || "Customer",
-                service_name: options.booking.service?.name || options.booking.services?.name || undefined,
-                employee_name: options.booking.employee?.name || options.booking.employees?.full_name || undefined,
+                customer_full_name: (options.booking as any).customer_full_name || options.booking.customers?.full_name || "Customer",
+                service_name: (options.booking as any).service?.name || (options.booking as any).services?.name || options.booking.services?.name || undefined,
+                employee_name: (options.booking as any).employee?.name || (options.booking as any).employees?.full_name || options.booking.employees?.full_name || undefined,
               } : undefined,
             }),
           })
