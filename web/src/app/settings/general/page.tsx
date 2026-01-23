@@ -15,6 +15,7 @@ import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { useRouter } from "next/navigation";
 import { logError } from "@/lib/services/logger";
+import { getCommonTimezones } from "@/lib/utils/timezone";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
@@ -32,6 +33,7 @@ export default function GeneralSettingsPage() {
   const [defaultLanguage, setDefaultLanguage] = useState<string>("en");
   const [userPreferredLanguage, setUserPreferredLanguage] = useState<string>("en");
   const [userRole, setUserRole] = useState<string>("owner");
+  const [timezone, setTimezone] = useState<string>("UTC");
 
   const appLocale =
     locale === "nb"
@@ -73,6 +75,7 @@ export default function GeneralSettingsPage() {
       setWhatsappNumber(salon.whatsapp_number || "");
       setSupportedLanguages(salon.supported_languages || ["en", "nb"]);
       setDefaultLanguage(salon.default_language || salon.preferred_language || "en");
+      setTimezone(salon.timezone || "UTC");
     }
     if (profile) {
       setUserPreferredLanguage(profile.preferred_language || salon?.preferred_language || "en");
@@ -115,6 +118,7 @@ export default function GeneralSettingsPage() {
         whatsapp_number: whatsappNumber || null,
         supported_languages: supportedLanguages.length > 0 ? supportedLanguages : null,
         default_language: defaultLanguage || null,
+        timezone: timezone || "UTC",
       }, salon.plan);
 
       if (updateError) {
@@ -389,8 +393,36 @@ export default function GeneralSettingsPage() {
               })}
             </select>
           </Field>
+        </div>
 
-          {/* User Role Section */}
+        {/* Timezone Section */}
+        <div className="space-y-6 border-t pt-6">
+          <h3 className="text-base font-semibold">Timezone Settings</h3>
+          
+          <Field
+            label="Salon Timezone"
+            htmlFor="timezone"
+            description="All times displayed in your salon (bookings, calendar, emails) will use this timezone."
+          >
+            <select
+              id="timezone"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {getCommonTimezones().map((tz) => (
+                <option key={tz.value} value={tz.value}>
+                  {tz.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {/* User Role Section */}
+        <div className="space-y-6 border-t pt-6">
+          <h3 className="text-base font-semibold">Your Profile</h3>
+          
           <Field
             label="Your Role"
             htmlFor="userRole"

@@ -19,11 +19,23 @@ export async function POST(request: NextRequest) {
       customerEmail,
       salonId,
       language,
+      bookingData, // Optional: booking data sent directly to avoid timing issues
     }: {
       bookingId: string;
       customerEmail: string;
       salonId: string;
       language?: string;
+      bookingData?: {
+        id: string;
+        salon_id: string;
+        start_time: string;
+        end_time: string | null;
+        status: string;
+        is_walk_in: boolean;
+        customer_full_name: string;
+        service_name?: string;
+        employee_name?: string;
+      };
     } = body;
 
     // Log incoming request for debugging
@@ -61,22 +73,87 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch booking from database (server-side)
-    const bookingResult = await getBookingByIdWithSalonVerification(bookingId, salonId);
-    
-    if (bookingResult.error || !bookingResult.data) {
-      logWarn("Booking not found or access denied", {
-        bookingId,
-        salonId,
-        error: bookingResult.error,
-      });
-      return NextResponse.json(
-        { error: bookingResult.error || "Booking not found" },
-        { status: 404 }
-      );
-    }
+    // Use booking data from request if provided, otherwise fetch from database
+    let booking: Booking & {
+      salon_id: string;
+      customer_full_name: string;
+      customer_email?: string | null;
+      service?: { name: string | null } | null;
+      employee?: { name: string | null } | null;
+      salon?: { name: string | null } | null;
+    };
 
-    const booking = bookingResult.data;
+    if (bookingData) {
+      // Use booking data sent directly (avoids timing issues with database replication)
+      // Verify salon_id matches
+      if (bookingData.salon_id !== salonId) {
+        logWarn("Booking salon_id mismatch", {
+          bookingId,
+          providedSalonId: salonId,
+          bookingSalonId: bookingData.salon_id,
+        });
+        return NextResponse.json(
+          { error: "Booking does not belong to this salon" },
+          { status: 403 }
+        );
+      }
+
+      // Verify booking_id matches
+      if (bookingData.id !== bookingId) {
+        logWarn("Booking ID mismatch", {
+          providedBookingId: bookingId,
+          bookingDataId: bookingData.id,
+        });
+        return NextResponse.json(
+          { error: "Booking ID mismatch" },
+          { status: 400 }
+        );
+      }
+
+      booking = {
+        id: bookingData.id,
+        salon_id: bookingData.salon_id,
+        start_time: bookingData.start_time,
+        end_time: bookingData.end_time || bookingData.start_time, // Fallback to start_time if null
+        status: bookingData.status as "pending" | "confirmed" | "completed" | "cancelled" | "no-show" | "scheduled",
+        is_walk_in: bookingData.is_walk_in,
+        notes: null,
+        // Required Booking fields
+        customers: bookingData.customer_full_name ? { full_name: bookingData.customer_full_name } : null,
+        employees: bookingData.employee_name ? { full_name: bookingData.employee_name } : null,
+        services: bookingData.service_name ? { name: bookingData.service_name } : null,
+        // Extended fields for notifications
+        customer_full_name: bookingData.customer_full_name,
+        customer_email: customerEmail || null,
+        service: bookingData.service_name ? { name: bookingData.service_name } : null,
+        employee: bookingData.employee_name ? { name: bookingData.employee_name } : null,
+        salon: null, // Will be fetched below
+      } as Booking & {
+        salon_id: string;
+        customer_full_name: string;
+        customer_email?: string | null;
+        service?: { name: string | null } | null;
+        employee?: { name: string | null } | null;
+        salon?: { name: string | null; timezone?: string | null } | null;
+      };
+    } else {
+      // Fetch booking from database (fallback)
+      const bookingResult = await getBookingByIdWithSalonVerification(bookingId, salonId);
+      
+      if (bookingResult.error || !bookingResult.data) {
+        logWarn("Booking not found or access denied", {
+          bookingId,
+          salonId,
+          error: bookingResult.error,
+        });
+        return NextResponse.json(
+          { error: bookingResult.error || "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      booking = bookingResult.data;
+    }
 
     // Verify booking status is confirmed or pending
     if (booking.status !== "confirmed" && booking.status !== "pending") {
@@ -145,6 +222,11 @@ export async function POST(request: NextRequest) {
     // Get salon info for language and name
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
+    
+    // Update booking with salon name if not already set
+    if (!booking.salon && salon) {
+      booking.salon = { name: salon.name };
+    }
 
     // Prepare booking data for email template (using fetched booking data)
     const bookingForEmail: Booking & {
@@ -181,6 +263,7 @@ export async function POST(request: NextRequest) {
       recipientEmail: customerEmail,
       language: language || salon?.preferred_language || "en",
       salonId,
+      timezone: salon?.timezone || "UTC",
     }).catch((emailError) => {
       logWarn("Failed to send booking confirmation email", {
         bookingId: booking.id,
@@ -200,7 +283,7 @@ export async function POST(request: NextRequest) {
       bookingId: booking.id,
       bookingStartTime: booking.start_time,
       salonId,
-      timezone: salon?.preferred_language ? undefined : "UTC",
+      timezone: salon?.timezone || "UTC",
     }).catch((reminderError: unknown) => {
       logWarn("Failed to schedule reminders", {
         bookingId: booking.id,
@@ -235,6 +318,7 @@ export async function POST(request: NextRequest) {
           p_service_name: serviceName,
           p_booking_time: bookingTime,
           p_booking_id: booking.id,
+          p_timezone: salon?.timezone || "UTC",
         }
       );
 

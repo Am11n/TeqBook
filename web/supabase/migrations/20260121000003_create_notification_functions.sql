@@ -61,7 +61,8 @@ CREATE OR REPLACE FUNCTION notify_salon_staff_new_booking(
   p_customer_name TEXT,
   p_service_name TEXT,
   p_booking_time TIMESTAMPTZ,
-  p_booking_id UUID
+  p_booking_id UUID,
+  p_timezone TEXT DEFAULT 'UTC'
 )
 RETURNS INTEGER
 LANGUAGE plpgsql
@@ -73,13 +74,18 @@ DECLARE
   v_count INTEGER := 0;
   v_title TEXT;
   v_body TEXT;
+  v_formatted_time TEXT;
 BEGIN
+  -- Format booking time in salon timezone
+  -- Use the provided timezone, or default to UTC
+  v_formatted_time := to_char(p_booking_time AT TIME ZONE COALESCE(p_timezone, 'UTC'), 'DD.MM.YYYY HH24:MI');
+  
   -- Create notification title and body
   v_title := 'New Booking';
   v_body := format('%s booked %s for %s', 
     p_customer_name, 
     COALESCE(p_service_name, 'a service'),
-    to_char(p_booking_time AT TIME ZONE 'UTC', 'DD.MM.YYYY HH24:MI')
+    v_formatted_time
   );
 
   -- Find all owners and managers for this salon
@@ -181,7 +187,7 @@ $$;
 
 -- Grant execute permissions to authenticated users
 GRANT EXECUTE ON FUNCTION create_notification_for_user(UUID, UUID, TEXT, TEXT, TEXT, JSONB, TEXT) TO authenticated;
-GRANT EXECUTE ON FUNCTION notify_salon_staff_new_booking(UUID, TEXT, TEXT, TIMESTAMPTZ, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION notify_salon_staff_new_booking(UUID, TEXT, TEXT, TIMESTAMPTZ, UUID, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION notify_salon_staff_booking_cancelled(UUID, TEXT, TEXT, TIMESTAMPTZ, UUID) TO authenticated;
 
 -- Function to get customer email for a booking (bypasses RLS)
@@ -208,6 +214,6 @@ GRANT EXECUTE ON FUNCTION get_booking_customer_email(UUID) TO authenticated;
 
 -- Comments
 COMMENT ON FUNCTION create_notification_for_user IS 'Create an in-app notification for any user (bypasses RLS)';
-COMMENT ON FUNCTION notify_salon_staff_new_booking IS 'Notify all salon owners/managers about a new booking';
+COMMENT ON FUNCTION notify_salon_staff_new_booking IS 'Notify all salon owners/managers about a new booking. p_timezone is the IANA timezone identifier (e.g., Europe/Oslo) for formatting the booking time.';
 COMMENT ON FUNCTION notify_salon_staff_booking_cancelled IS 'Notify all salon owners/managers about a cancelled booking';
 COMMENT ON FUNCTION get_booking_customer_email IS 'Get customer email for a booking (bypasses RLS)';

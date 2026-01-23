@@ -1,7 +1,8 @@
 "use client";
 
-import { formatTimeRange, getStatusColor, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
+import { formatTimeRange, getStatusColor, getWeekDates, formatDayHeading } from "@/lib/utils/calendar/calendar-utils";
 import type { CalendarBooking } from "@/lib/types";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface CalendarWeekViewProps {
   selectedDate: string;
@@ -20,6 +21,8 @@ export function CalendarWeekView({
   locale,
   translations,
 }: CalendarWeekViewProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
   const weekDates = getWeekDates(selectedDate);
 
   return (
@@ -28,10 +31,16 @@ export function CalendarWeekView({
         {weekDates.map((date) => (
           <div key={date} className="flex flex-col rounded-lg border bg-background p-2">
             <p className="text-xs font-medium text-muted-foreground">
-              {new Date(date + "T00:00:00").toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
-                weekday: "short",
-                day: "numeric",
-              })}
+              {timezone
+                ? new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+                    weekday: "short",
+                    day: "numeric",
+                    timeZone: timezone,
+                  }).format(new Date(date + "T00:00:00"))
+                : new Date(date + "T00:00:00").toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
+                    weekday: "short",
+                    day: "numeric",
+                  })}
             </p>
             <div className="mt-2 space-y-1">
               {employees.map((employee) => {
@@ -47,7 +56,7 @@ export function CalendarWeekView({
                       className={`rounded border px-1.5 py-1 text-[10px] ${getStatusColor(b.status)}`}
                     >
                       <p className="font-medium truncate">{b.services?.name ?? translations.unknownService}</p>
-                      <p className="text-[9px] text-muted-foreground">{formatTimeRange(b)}</p>
+                      <p className="text-[9px] text-muted-foreground">{formatTimeRange(b, timezone)}</p>
                     </div>
                   ));
               })}

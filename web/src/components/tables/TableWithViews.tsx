@@ -69,6 +69,15 @@ export type TableWithViewsProps<T = any> = {
   renderDetails?: (row: T) => ReactNode;
   actionsLabel?: string;
   emptyMessage?: string;
+  // Optional functions to conditionally show actions
+  canEdit?: (row: T) => boolean;
+  canDelete?: (row: T) => boolean;
+  canDuplicate?: (row: T) => boolean;
+  // Optional custom labels for actions
+  deleteLabel?: string;
+  editLabel?: string;
+  duplicateLabel?: string;
+  viewDetailsLabel?: string;
 };
 
 export function TableWithViews<T = any>({
@@ -83,6 +92,13 @@ export function TableWithViews<T = any>({
   renderDetails,
   actionsLabel = "Actions",
   emptyMessage = "No data available",
+  canEdit,
+  canDelete,
+  canDuplicate,
+  deleteLabel = "Delete",
+  editLabel = "Edit",
+  duplicateLabel = "Duplicate",
+  viewDetailsLabel = "View Details",
 }: TableWithViewsProps<T>) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<T | null>(null);
@@ -160,7 +176,7 @@ export function TableWithViews<T = any>({
     const actions = [];
     if (onViewDetails || renderDetails) {
       actions.push({
-        label: "View Details",
+        label: viewDetailsLabel,
         icon: Eye,
         onClick: () => {
           if (onViewDetails) {
@@ -172,23 +188,23 @@ export function TableWithViews<T = any>({
         },
       });
     }
-    if (onEdit) {
+    if (onEdit && (canEdit === undefined || canEdit(row))) {
       actions.push({
-        label: "Edit",
+        label: editLabel,
         icon: Edit,
         onClick: () => onEdit(row),
       });
     }
-    if (onDuplicate) {
+    if (onDuplicate && (canDuplicate === undefined || canDuplicate(row))) {
       actions.push({
-        label: "Duplicate",
+        label: duplicateLabel,
         icon: Save,
         onClick: () => onDuplicate(row),
       });
     }
-    if (onDelete) {
+    if (onDelete && (canDelete === undefined || canDelete(row))) {
       actions.push({
-        label: "Delete",
+        label: deleteLabel,
         icon: Trash2,
         onClick: () => onDelete(row),
         variant: "destructive" as const,
@@ -382,28 +398,28 @@ export function TableWithViews<T = any>({
             </DialogHeader>
             <div className="py-4">{renderDetails(selectedRow)}</div>
             <DialogFooter>
-              {onEdit && (
+              {onEdit && (canEdit === undefined || (selectedRow && canEdit(selectedRow))) && (
                 <Button
                   variant="outline"
                   onClick={() => {
                     setDetailsOpen(false);
-                    onEdit(selectedRow);
+                    if (selectedRow) onEdit(selectedRow);
                   }}
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
               )}
-              {onDelete && (
+              {onDelete && (canDelete === undefined || (selectedRow && canDelete(selectedRow))) && (
                 <Button
                   variant="destructive"
                   onClick={() => {
                     setDetailsOpen(false);
-                    onDelete(selectedRow);
+                    if (selectedRow) onDelete(selectedRow);
                   }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  {deleteLabel}
                 </Button>
               )}
               <Button variant="outline" onClick={() => setDetailsOpen(false)}>

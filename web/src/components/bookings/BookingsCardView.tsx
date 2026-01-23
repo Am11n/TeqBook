@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { Booking, Shift } from "@/lib/types";
 import { formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable } from "@/lib/utils/bookings/bookings-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface BookingsCardViewProps {
   bookings: Booking[];
@@ -33,6 +34,8 @@ export function BookingsCardView({
   locale,
   onCancelBooking,
 }: BookingsCardViewProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
   return (
     <div className="space-y-3 md:hidden">
       {bookings.map((booking) => (
@@ -68,9 +71,9 @@ export function BookingsCardView({
             </Badge>
           </div>
           <div className="mt-2 text-[11px] text-muted-foreground">
-            {formatDate(booking.start_time, locale)} •{" "}
-            {formatTime(booking.start_time, locale)} –{" "}
-            {formatTime(booking.end_time, locale)} •{" "}
+            {formatDate(booking.start_time, locale, timezone)} •{" "}
+            {formatTime(booking.start_time, locale, timezone)} –{" "}
+            {formatTime(booking.end_time, locale, timezone)} •{" "}
             {booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline}
           </div>
           {booking.notes && (

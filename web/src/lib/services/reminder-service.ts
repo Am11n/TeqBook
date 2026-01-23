@@ -176,9 +176,18 @@ export async function processReminders(
           continue;
         }
 
-        // Get salon info for language
+        // Get salon info for language and timezone
         const salonId = reminder.booking.salon_id || reminder.booking.salon?.id || null;
         const language = reminder.booking.salon?.preferred_language || "en";
+        
+        // Get salon timezone if available
+        let timezone = "UTC";
+        if (salonId) {
+          const salonResult = await getSalonById(salonId);
+          if (salonResult.data?.timezone) {
+            timezone = salonResult.data.timezone;
+          }
+        }
         
         // Send reminder email
         const bookingForEmail = {
@@ -205,6 +214,7 @@ export async function processReminders(
           reminderType: reminder.reminder_type,
           language,
           salonId,
+          timezone,
         });
 
         if (emailResult.error) {

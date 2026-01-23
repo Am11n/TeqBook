@@ -1,10 +1,19 @@
 import type { CalendarBooking } from "@/lib/types";
+import { formatTimeInTimezone } from "@/lib/utils/timezone";
 
 /**
  * Format day heading
  */
-export function formatDayHeading(dateString: string, locale: string): string {
+export function formatDayHeading(dateString: string, locale: string, timezone?: string | null): string {
   const date = new Date(dateString + "T00:00:00");
+  if (timezone) {
+    return new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      timeZone: timezone,
+    }).format(date);
+  }
   return date.toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
     weekday: "long",
     day: "numeric",
@@ -14,8 +23,20 @@ export function formatDayHeading(dateString: string, locale: string): string {
 
 /**
  * Format time range for a booking
+ * Uses salon timezone if provided
  */
-export function formatTimeRange(booking: CalendarBooking): string {
+export function formatTimeRange(booking: CalendarBooking, timezone?: string | null): string {
+  if (timezone) {
+    const startTime = formatTimeInTimezone(booking.start_time, timezone, "en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const endTime = formatTimeInTimezone(booking.end_time, timezone, "en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    return `${startTime} - ${endTime}`;
+  }
   const start = new Date(booking.start_time);
   const end = new Date(booking.end_time);
   return `${start.toLocaleTimeString("en-US", {

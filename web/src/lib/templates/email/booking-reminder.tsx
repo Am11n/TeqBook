@@ -7,6 +7,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { AppLocale } from "@/i18n/translations";
 import type { Booking } from "@/lib/types/domain";
 import { format } from "date-fns";
+import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
 
 export interface BookingReminderTemplateProps {
   booking: Booking & {
@@ -17,6 +18,7 @@ export interface BookingReminderTemplateProps {
   };
   reminderType: "24h" | "2h";
   language: string;
+  timezone?: string | null; // IANA timezone identifier
 }
 
 // Helper to get translations
@@ -150,12 +152,24 @@ export function renderBookingReminderTemplate(
   const serviceName = booking.service?.name || "Service";
   const employeeName = booking.employee?.name || "Employee";
   
-  const startTime = new Date(booking.start_time);
-  const endTime = new Date(booking.end_time);
+  // Use salon timezone if provided, otherwise use UTC
+  const timezone = props.timezone || "UTC";
   
-  // Format date and time based on locale
-  const dateStr = format(startTime, "EEEE, MMMM d, yyyy", { locale: locale === "nb" ? require("date-fns/locale/nb") : undefined });
-  const timeStr = `${format(startTime, "HH:mm")} - ${format(endTime, "HH:mm")}`;
+  // Format date and time in salon timezone
+  const startDateTime = formatDateTimeInTimezone(booking.start_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
+  const endDateTime = formatDateTimeInTimezone(booking.end_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
+  
+  // Format date string (full date with weekday)
+  const startDate = new Date(booking.start_time);
+  const dateStr = new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: timezone,
+  }).format(startDate);
+  
+  const timeStr = `${startDateTime.time} - ${endDateTime.time}`;
 
   const subject = props.reminderType === "24h" 
     ? t.subject24h.replace("{{salonName}}", salonName)

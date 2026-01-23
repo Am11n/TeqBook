@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Booking } from "@/lib/types";
 import { formatDate, formatTime } from "@/lib/utils/bookings/bookings-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface CancelBookingDialogProps {
   open: boolean;
@@ -30,6 +31,8 @@ export function CancelBookingDialog({
   onConfirm,
   error,
 }: CancelBookingDialogProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
   const [cancellationReason, setCancellationReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
 
@@ -68,11 +71,11 @@ export function CancelBookingDialog({
           {booking && (
             <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-sm">
               <p>
-                <strong>Date:</strong> {formatDate(booking.start_time, locale)}
+                <strong>Date:</strong> {formatDate(booking.start_time, locale, timezone)}
               </p>
               <p>
-                <strong>Time:</strong> {formatTime(booking.start_time, locale)} -{" "}
-                {formatTime(booking.end_time, locale)}
+                <strong>Time:</strong> {formatTime(booking.start_time, locale, timezone)} -{" "}
+                {formatTime(booking.end_time, locale, timezone)}
               </p>
               <p>
                 <strong>Service:</strong> {booking.services?.name || "Unknown"}

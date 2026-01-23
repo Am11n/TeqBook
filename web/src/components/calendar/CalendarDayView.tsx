@@ -2,6 +2,7 @@
 
 import { formatTimeRange, getStatusColor } from "@/lib/utils/calendar/calendar-utils";
 import type { CalendarBooking } from "@/lib/types";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface CalendarDayViewProps {
   employees: Array<{ id: string; full_name: string }>;
@@ -17,6 +18,9 @@ export function CalendarDayView({
   bookingsForDayByEmployee,
   translations,
 }: CalendarDayViewProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
+
   return (
     <div className="mt-3 hidden gap-3 md:grid md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
       {employees.map((employee) => {
@@ -32,7 +36,7 @@ export function CalendarDayView({
                   className={`rounded-md border px-2 py-2 text-xs shadow-sm ${getStatusColor(b.status)}`}
                 >
                   <p className="font-medium">{b.services?.name ?? translations.unknownService}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{formatTimeRange(b)}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{formatTimeRange(b, timezone)}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {b.customers?.full_name ?? translations.unknownCustomer}
                   </p>

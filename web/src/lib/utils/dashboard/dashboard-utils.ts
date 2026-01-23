@@ -1,12 +1,25 @@
 /**
  * Format time string to readable format
+ * Uses salon timezone if provided
  */
-export function formatTime(timeString: string): string {
+import { formatTimeInTimezone } from "@/lib/utils/timezone";
+
+export function formatTime(
+  timeString: string,
+  timezone?: string | null,
+  locale: string = "en"
+): string {
+  if (timezone) {
+    return formatTimeInTimezone(timeString, timezone, locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
   const date = new Date(timeString);
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
+  return date.toLocaleTimeString(locale === "nb" || locale.startsWith("nb-") || locale === "no" || locale.startsWith("no-") ? "nb-NO" : "en-US", {
+    hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    ...(locale === "nb" || locale.startsWith("nb-") || locale === "no" || locale.startsWith("no-") ? { hour12: false } : {}),
   });
 }
 

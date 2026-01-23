@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   },
   // No basePath or assetPrefix - site is served at root of domain
   trailingSlash: true,
-  
+
   // Performance optimizations
   compiler: {
     // Remove console.log in production
@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
       exclude: ["error", "warn"],
     } : false,
   },
-  
+
   // Optimize bundle size
   experimental: {
     optimizePackageImports: [
@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
       "framer-motion",
     ],
   },
-  
+
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Optimize for faster builds
@@ -92,7 +92,7 @@ const nextConfig: NextConfig = {
   // Security headers
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
-    
+
     // CSP configuration - more permissive in development for HMR
     // Production: Remove unsafe-eval (keep unsafe-inline for Tailwind CSS)
     // Development: Allow unsafe-eval for HMR and development tools
@@ -107,20 +107,20 @@ const nextConfig: NextConfig = {
       "font-src 'self' data:",
       // In development, allow connections to localhost for HMR and WebSocket
       isDevelopment
-        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co https://api.stripe.com"
-        : "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com"
+        : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'self'",
     ];
-    
+
     // Only add upgrade-insecure-requests in production
     if (!isDevelopment) {
       cspDirectives.push("upgrade-insecure-requests");
     }
-    
+
     return [
       {
         source: "/:path*",
@@ -133,11 +133,11 @@ const nextConfig: NextConfig = {
           ...(isDevelopment
             ? []
             : [
-                {
-                  key: "Strict-Transport-Security",
-                  value: "max-age=63072000; includeSubDomains; preload",
-                },
-              ]),
+              {
+                key: "Strict-Transport-Security",
+                value: "max-age=63072000; includeSubDomains; preload",
+              },
+            ]),
           {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",

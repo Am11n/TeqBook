@@ -67,7 +67,7 @@ export interface BookingNotificationData {
     customer_full_name: string;
     service?: { name: string | null } | null;
     employee?: { name: string | null } | null;
-    salon?: { name: string | null; address?: string | null } | null;
+    salon?: { name: string | null; address?: string | null; timezone?: string | null } | null;
   };
   salonId: string;
   recipientUserId?: string | null; // User ID for preference checks and in-app notifications

@@ -20,6 +20,7 @@ import { scheduleReminders, cancelReminders } from "@/lib/services/reminder-serv
 import { getSalonById } from "@/lib/repositories/salons";
 import { getCustomerById } from "@/lib/repositories/customers";
 import { logBookingEvent } from "@/lib/services/audit-trail-service";
+import { getCurrentUser } from "@/lib/services/auth-service";
 
 /**
  * Get bookings for current salon with business logic
@@ -107,12 +108,12 @@ export async function createBooking(
     if (!input.is_walk_in) {
       const startTime = new Date(input.start_time);
       const now = new Date();
-      
+
       // Compare timestamps directly - this works correctly regardless of timezone
       // since both dates are converted to the same reference (milliseconds since epoch)
       const timeDiff = startTime.getTime() - now.getTime();
       const oneMinute = 60 * 1000;
-      
+
       if (timeDiff <= oneMinute) {
         logWarn("Booking creation failed: start time in the past", {
           ...logContext,
@@ -153,7 +154,9 @@ export async function createBooking(
       });
 
       // Log to audit trail
+      const currentUser = await getCurrentUser();
       logBookingEvent("create", {
+        userId: currentUser.data?.id,
         salonId: input.salon_id,
         resourceId: result.data.id,
         customerName: input.customer_full_name,
@@ -175,7 +178,7 @@ export async function createBooking(
           // Get salon info for language and name
           const salonResult = await getSalonById(input.salon_id);
           const salon = salonResult.data;
-          
+
           // Prepare booking data for email template
           const bookingForEmail: Booking & {
             customer_full_name: string;
@@ -199,8 +202,10 @@ export async function createBooking(
               customerEmail: input.customer_email,
             });
 
+            // Send booking data directly to avoid timing issues with database replication
             fetch("/api/bookings/send-notifications", {
               method: "POST",
+              credentials: "include",
               headers: {
                 "Content-Type": "application/json",
               },
@@ -209,16 +214,44 @@ export async function createBooking(
                 customerEmail: input.customer_email,
                 salonId: input.salon_id,
                 language: salon?.preferred_language || "en",
+                // Send booking data directly to avoid database lookup timing issues
+                bookingData: {
+                  id: result.data!.id,
+                  salon_id: input.salon_id,
+                  start_time: result.data!.start_time,
+                  end_time: result.data!.end_time,
+                  status: result.data!.status,
+                  is_walk_in: result.data!.is_walk_in,
+                  customer_full_name: input.customer_full_name,
+                  service_name: result.data.services?.name || undefined,
+                  employee_name: result.data.employees?.full_name || undefined,
+                },
               }),
             })
               .then(async (response) => {
-                const responseData = await response.json();
+                let responseData;
+                try {
+                  responseData = await response.json();
+                } catch (jsonError) {
+                  const text = await response.text();
+                  logWarn("send-notifications API route returned non-JSON response", {
+                    ...logContext,
+                    bookingId: result.data!.id,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseText: text.substring(0, 200),
+                  });
+                  return;
+                }
+
                 if (!response.ok) {
                   logWarn("send-notifications API route returned error", {
                     ...logContext,
                     bookingId: result.data!.id,
                     status: response.status,
-                    error: responseData.error,
+                    statusText: response.statusText,
+                    error: responseData?.error || "Unknown error",
+                    url: response.url,
                   });
                 } else {
                   logInfo("send-notifications API route succeeded", {
@@ -234,6 +267,7 @@ export async function createBooking(
                   ...logContext,
                   bookingId: result.data!.id,
                   fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+                  errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
                 });
               });
           } else {
@@ -451,7 +485,7 @@ export async function cancelBooking(
 
     // Call repository to update status
     const result = await updateBookingStatusRepo(salonId, bookingId, "cancelled");
-    
+
     if (result.error) {
       logError("Booking cancellation failed", new Error(result.error), {
         ...logContext,
@@ -474,48 +508,100 @@ export async function cancelBooking(
       });
 
       // Send cancellation notifications if booking ID is available
+      // Follow the same pattern as createBooking - call API route from browser
       if (bookingId && typeof window !== "undefined") {
-        // Get salon info for email template
-        const salonResult = await getSalonById(salonId);
-        const salon = salonResult.data;
+        try {
+          // Get salon info for email template
+          const salonResult = await getSalonById(salonId);
+          const salon = salonResult.data;
 
-        fetch("/api/bookings/send-cancellation", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+          // Call API route for cancellation notifications (same pattern as createBooking)
+          logInfo("Calling send-cancellation API route from browser", {
+            ...logContext,
             bookingId,
             customerEmail: options?.customerEmail,
-            salonId,
-            language: options?.language || salon?.preferred_language || "en",
-            cancelledBy: "salon",
-          }),
-        })
-          .then(async (response) => {
-            const responseData = await response.json();
-            if (!response.ok) {
-              logWarn("send-cancellation API route returned error", {
-                ...logContext,
-                status: response.status,
-                error: responseData.error,
-              });
-            } else {
-              logInfo("send-cancellation API route succeeded", {
-                ...logContext,
-                result: responseData,
-              });
-            }
-          })
-          .catch((fetchError) => {
-            logWarn("Failed to call send-cancellation API route", {
-              ...logContext,
-              fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
-            });
           });
+
+          // Send booking data directly to avoid timing issues with database replication
+          // Use the booking from options if available, otherwise we'll fetch it in the API route
+          fetch("/api/bookings/send-cancellation/", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              bookingId,
+              customerEmail: options?.customerEmail,
+              salonId,
+              language: options?.language || salon?.preferred_language || "en",
+              cancelledBy: "salon",
+              // Send booking data directly to avoid database lookup timing issues
+              bookingData: options?.booking ? {
+                id: options.booking.id,
+                salon_id: salonId,
+                start_time: options.booking.start_time,
+                end_time: options.booking.end_time,
+                status: options.booking.status,
+                is_walk_in: options.booking.is_walk_in,
+                customer_full_name: (options.booking as any).customer_full_name || options.booking.customers?.full_name || "Customer",
+                service_name: (options.booking as any).service?.name || (options.booking as any).services?.name || options.booking.services?.name || undefined,
+                employee_name: (options.booking as any).employee?.name || (options.booking as any).employees?.full_name || options.booking.employees?.full_name || undefined,
+              } : undefined,
+            }),
+          })
+            .then(async (response) => {
+              let responseData;
+              try {
+                responseData = await response.json();
+              } catch (jsonError) {
+                const text = await response.text();
+                logWarn("send-cancellation API route returned non-JSON response", {
+                  ...logContext,
+                  bookingId,
+                  status: response.status,
+                  statusText: response.statusText,
+                  responseText: text.substring(0, 200),
+                });
+                return;
+              }
+
+              if (!response.ok) {
+                logWarn("send-cancellation API route returned error", {
+                  ...logContext,
+                  bookingId,
+                  status: response.status,
+                  statusText: response.statusText,
+                  error: responseData?.error || "Unknown error",
+                  url: response.url,
+                });
+              } else {
+                logInfo("send-cancellation API route succeeded", {
+                  ...logContext,
+                  bookingId,
+                  emailResult: responseData.customerEmail,
+                  inAppResult: responseData.salonInApp,
+                });
+              }
+            })
+            .catch((fetchError) => {
+              logWarn("Failed to call send-cancellation API route", {
+                ...logContext,
+                bookingId,
+                fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+              });
+            });
+        } catch (notificationError) {
+          // Don't fail the cancellation if notifications fail
+          logWarn("Exception sending cancellation notifications", {
+            ...logContext,
+            bookingId,
+            notificationError: notificationError instanceof Error ? notificationError.message : "Unknown error",
+          });
+        }
       }
     }
-    
+
     // If we have a reason and the update was successful, update notes
     if (!result.error && reason) {
       // We need to update notes separately - for now, we'll just update status

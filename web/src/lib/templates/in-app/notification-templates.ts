@@ -5,7 +5,7 @@
 
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { NotificationEventType } from "@/lib/types/notifications";
-import { format } from "date-fns";
+import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
 
 // =====================================================
 // Types
@@ -18,6 +18,7 @@ export interface NotificationTemplateData {
   salonName?: string;
   startTime?: string;
   endTime?: string;
+  timezone?: string | null; // Salon timezone for formatting times
 }
 
 export interface RenderedTemplate {
@@ -207,18 +208,26 @@ function interpolate(template: string, variables: Record<string, string>): strin
 }
 
 /**
- * Format date and time from ISO string
+ * Format date and time from ISO string in salon timezone
  */
-function formatDateTime(isoString: string, locale: string): { date: string; time: string } {
+function formatDateTime(isoString: string, locale: string, timezone?: string | null): { date: string; time: string } {
+  const timezoneToUse = timezone || "UTC";
+  const localeToUse = locale === "nb" ? "nb-NO" : "en-US";
+  
+  // Use timezone utility function
+  const { date: dateStr, time: timeStr } = formatDateTimeInTimezone(isoString, timezoneToUse, localeToUse);
+  
+  // Format date with weekday and full month name
   const date = new Date(isoString);
+  const formattedDate = new Intl.DateTimeFormat(localeToUse, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: timezoneToUse,
+  }).format(date);
   
-  const dateStr = format(date, "EEEE, MMMM d", {
-    locale: locale === "nb" ? require("date-fns/locale/nb") : undefined,
-  });
-  
-  const timeStr = format(date, "HH:mm");
-  
-  return { date: dateStr, time: timeStr };
+  return { date: formattedDate, time: timeStr };
 }
 
 /**
@@ -252,7 +261,7 @@ export function renderNotificationTemplate(
 
   // Format date and time if provided
   if (data.startTime) {
-    const { date, time } = formatDateTime(data.startTime, locale);
+    const { date, time } = formatDateTime(data.startTime, locale, data.timezone);
     variables.date = date;
     variables.time = time;
   }
