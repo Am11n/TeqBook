@@ -107,10 +107,15 @@ export async function POST(request: NextRequest) {
         id: bookingData.id,
         salon_id: bookingData.salon_id,
         start_time: bookingData.start_time,
-        end_time: bookingData.end_time,
-        status: bookingData.status,
+        end_time: bookingData.end_time || bookingData.start_time, // Fallback to start_time if null
+        status: bookingData.status as "pending" | "confirmed" | "completed" | "cancelled" | "no-show" | "scheduled",
         is_walk_in: bookingData.is_walk_in,
         notes: null,
+        // Required Booking fields
+        customers: bookingData.customer_full_name ? { full_name: bookingData.customer_full_name } : null,
+        employees: bookingData.employee_name ? { full_name: bookingData.employee_name } : null,
+        services: bookingData.service_name ? { name: bookingData.service_name } : null,
+        // Extended fields for notifications
         customer_full_name: bookingData.customer_full_name,
         customer_email: customerEmail || null,
         service: bookingData.service_name ? { name: bookingData.service_name } : null,
