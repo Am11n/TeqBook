@@ -42,31 +42,37 @@ export type AuditLogQueryOptions = {
 
 /**
  * Create an audit log entry
+ * Uses RPC function to bypass RLS issues while maintaining security
  */
 export async function createAuditLog(
   input: CreateAuditLogInput
 ): Promise<RepositoryResult<AuditLog>> {
   try {
-    const { data, error } = await supabase
-      .from("security_audit_log")
-      .insert({
-        user_id: input.user_id || null,
-        salon_id: input.salon_id || null,
-        action: input.action,
-        resource_type: input.resource_type,
-        resource_id: input.resource_id || null,
-        metadata: input.metadata || null,
-        ip_address: input.ip_address || null,
-        user_agent: input.user_agent || null,
-      })
-      .select()
-      .single();
+    // Use RPC function to bypass RLS (function verifies access internally)
+    const { data: auditLogData, error: rpcError } = await supabase.rpc(
+      "create_audit_log_entry",
+      {
+        p_user_id: input.user_id || null,
+        p_salon_id: input.salon_id || null,
+        p_action: input.action,
+        p_resource_type: input.resource_type,
+        p_resource_id: input.resource_id || null,
+        p_metadata: input.metadata || null,
+        p_ip_address: input.ip_address || null,
+        p_user_agent: input.user_agent || null,
+      }
+    );
 
-    if (error) {
-      return { data: null, error: error.message };
+    if (rpcError) {
+      return { data: null, error: rpcError.message };
     }
 
-    return { data: data as AuditLog, error: null };
+    // RPC function returns an array, get first element
+    if (auditLogData && auditLogData.length > 0) {
+      return { data: auditLogData[0] as AuditLog, error: null };
+    }
+
+    return { data: null, error: "Failed to create audit log entry" };
   } catch (err) {
     return {
       data: null,

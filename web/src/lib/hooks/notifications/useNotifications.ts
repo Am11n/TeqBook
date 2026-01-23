@@ -94,7 +94,7 @@ export function useNotifications(
 
       try {
         const currentOffset = reset ? 0 : offset;
-        
+
         const { data, error: fetchError } = await supabase
           .from("notifications")
           .select("*")
@@ -180,6 +180,63 @@ export function useNotifications(
       }
     };
   }, [enablePolling, pollingInterval, userId, fetchUnreadCount]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`notifications:user:${userId}`, {
+        config: {
+          broadcast: { self: true },
+        },
+      })
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Realtime notification received:", payload);
+          const newRow = payload.new as any;
+          // Map to InAppNotification type
+          const newNotification: InAppNotification = {
+            id: newRow.id,
+            user_id: newRow.user_id,
+            salon_id: newRow.salon_id,
+            type: newRow.type as InAppNotificationType,
+            title: newRow.title,
+            body: newRow.body,
+            read: newRow.read,
+            metadata: newRow.metadata,
+            action_url: newRow.action_url,
+            created_at: newRow.created_at,
+          };
+
+          setNotifications((prev) => [newNotification, ...prev]);
+          setUnreadCount((prev) => prev + 1);
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Subscribed to notifications realtime channel");
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("Error subscribing to notifications realtime channel");
+          setError("Failed to subscribe to realtime notifications");
+        } else if (status === "TIMED_OUT") {
+          console.warn("Realtime subscription timed out");
+        } else if (status === "CLOSED") {
+          console.log("Realtime subscription closed");
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   // Mark single notification as read
   const markAsRead = useCallback(async (notificationId: string) => {

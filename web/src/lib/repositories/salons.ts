@@ -24,6 +24,7 @@ export type Salon = {
   whatsapp_number?: string | null;
   supported_languages?: string[] | null;
   default_language?: string | null;
+  timezone?: string | null; // IANA timezone identifier (e.g., "Europe/Oslo")
   theme?: SalonTheme | null;
   plan?: "starter" | "pro" | "business" | null;
   // Billing fields (for future Stripe integration)
@@ -47,7 +48,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -78,7 +79,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -151,6 +152,7 @@ export async function updateSalon(
     preferred_language?: string | null;
     supported_languages?: string[] | null;
     default_language?: string | null;
+    timezone?: string | null;
     theme?: SalonTheme | null;
   }
 ): Promise<{ error: string | null }> {

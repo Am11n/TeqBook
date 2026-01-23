@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
 import type { Booking, Shift } from "@/lib/types";
 import { formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable } from "@/lib/utils/bookings/bookings-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -29,6 +30,7 @@ interface BookingsTableProps {
     statusCompleted: string;
     statusCancelled: string;
     statusScheduled: string;
+    cancelButton?: string; // Optional: label for cancel action
   };
   locale: string;
   onCancelBooking: (booking: Booking) => void;
@@ -42,13 +44,16 @@ export function BookingsTable({
   locale,
   onCancelBooking,
 }: BookingsTableProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
+
   const columns: ColumnDefinition<Booking>[] = [
     {
       id: "date",
       label: translations.colDate,
       render: (booking) => (
         <div className="text-xs text-muted-foreground">
-          {formatDate(booking.start_time, locale)}
+          {formatDate(booking.start_time, locale, timezone)}
         </div>
       ),
     },
@@ -57,7 +62,7 @@ export function BookingsTable({
       label: translations.colTime,
       render: (booking) => (
         <div className="text-xs text-muted-foreground">
-          {formatTime(booking.start_time, locale)} – {formatTime(booking.end_time, locale)}
+          {formatTime(booking.start_time, locale, timezone)} – {formatTime(booking.end_time, locale, timezone)}
         </div>
       ),
     },
@@ -143,10 +148,13 @@ export function BookingsTable({
         columns={columns}
         data={bookings}
         onDelete={(booking) => {
-          if (booking.status !== "cancelled" && booking.status !== "completed") {
-            onCancelBooking(booking);
-          }
+          onCancelBooking(booking);
         }}
+        canDelete={(booking) => {
+          // Only show cancel action for bookings that can be cancelled
+          return booking.status !== "cancelled" && booking.status !== "completed";
+        }}
+        deleteLabel={translations.cancelButton || (locale === "nb" ? "Avbryt" : "Cancel")}
         renderDetails={(booking) => (
           <div className="space-y-4">
             <div>
@@ -154,7 +162,7 @@ export function BookingsTable({
                 {booking.services?.name ?? translations.unknownService}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {formatDate(booking.start_time, locale)} at {formatTime(booking.start_time, locale)}
+                {formatDate(booking.start_time, locale, timezone)} at {formatTime(booking.start_time, locale, timezone)}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">

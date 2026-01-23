@@ -4,6 +4,7 @@ import { getAvailableSlots } from "@/lib/repositories/bookings";
 import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
 import { findCustomerByEmailOrPhone, createCustomer } from "@/lib/services/customers-service";
+import { localISOStringToUTC } from "@/lib/utils/timezone";
 import type { Booking, Customer } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 
@@ -272,11 +273,35 @@ export function useCreateBooking({
       return;
     }
 
+    // Convert the slot time from salon timezone to UTC
+    // IMPORTANT: slot.start from getAvailableSlots may have a timezone (+00:00 or Z),
+    // but we need to interpret the TIME part (e.g., 14:00) as local time in the salon's timezone,
+    // not as UTC. So we extract the time components and convert from salon timezone to UTC.
+    const salonTimezone = salon?.timezone || "UTC";
+    let startTimeUTC = slot.start;
+    
+    // Always convert if timezone is not UTC
+    // We need to extract the time components and interpret them as local time in salon timezone
+    if (salonTimezone !== "UTC") {
+      try {
+        // Extract the date/time part, ignoring any timezone suffix
+        const timeMatch = slot.start.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
+        if (timeMatch) {
+          const timeWithoutTz = timeMatch[1];
+          startTimeUTC = localISOStringToUTC(timeWithoutTz, salonTimezone);
+        }
+      } catch (error) {
+        console.warn("Failed to convert slot time to UTC, using as-is:", error);
+        // Fallback: use as-is
+        startTimeUTC = slot.start;
+      }
+    }
+
     const { data: bookingData, error: rpcError } = await createBooking({
       salon_id: salon.id,
       employee_id: employeeId,
       service_id: serviceId,
-      start_time: slot.start,
+      start_time: startTimeUTC,
       customer_full_name: customerName,
       customer_email: customerEmail || null,
       customer_phone: customerPhone || null,

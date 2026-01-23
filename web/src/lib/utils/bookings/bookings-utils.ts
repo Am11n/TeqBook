@@ -1,9 +1,14 @@
 import type { Booking, Shift } from "@/lib/types";
+import { formatTimeInTimezone, formatDateInTimezone } from "@/lib/utils/timezone";
 
 /**
  * Format time from ISO string to localized time string
+ * Uses salon timezone if provided, otherwise falls back to browser timezone
  */
-export function formatTime(value: string, locale: string): string {
+export function formatTime(value: string, locale: string, timezone?: string | null): string {
+  if (timezone) {
+    return formatTimeInTimezone(value, timezone, locale);
+  }
   const date = new Date(value);
   return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
     hour: "2-digit",
@@ -13,8 +18,16 @@ export function formatTime(value: string, locale: string): string {
 
 /**
  * Format date from ISO string to localized date string
+ * Uses salon timezone if provided, otherwise falls back to browser timezone
  */
-export function formatDate(value: string, locale: string): string {
+export function formatDate(value: string, locale: string, timezone?: string | null): string {
+  if (timezone) {
+    return formatDateInTimezone(value, timezone, locale, {
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+    });
+  }
   const date = new Date(value);
   return date.toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
     weekday: "short",

@@ -2,6 +2,7 @@
 
 import type { CalendarBooking } from "@/lib/types";
 import { formatTimeRange, getStatusColor } from "@/lib/utils/calendar/calendar-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface BookingEventProps {
   booking: CalendarBooking;
@@ -19,6 +20,9 @@ export function BookingEvent({
   onClick,
   translations,
 }: BookingEventProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
+
   const handleClick = () => {
     if (onClick) {
       onClick(booking);
@@ -34,7 +38,7 @@ export function BookingEvent({
       style={style}
     >
       <p className="font-medium truncate leading-tight">{booking.services?.name ?? translations.unknownService}</p>
-      <p className="text-[9px] text-muted-foreground leading-tight">{formatTimeRange(booking)}</p>
+      <p className="text-[9px] text-muted-foreground leading-tight">{formatTimeRange(booking, timezone)}</p>
       <p className="text-[9px] text-muted-foreground truncate leading-tight">
         {booking.customers?.full_name ?? translations.unknownCustomer}
       </p>

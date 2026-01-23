@@ -62,6 +62,7 @@ export interface SendBookingConfirmationInput {
   language?: string;
   salonId?: string | null;
   userId?: string | null; // Optional: user ID to check preferences (for salon owner notifications)
+  timezone?: string | null; // IANA timezone identifier
 }
 
 export interface SendBookingReminderInput {
@@ -76,6 +77,7 @@ export interface SendBookingReminderInput {
   language?: string;
   salonId?: string | null;
   userId?: string | null; // Optional: user ID to check preferences
+  timezone?: string | null; // IANA timezone identifier
 }
 
 export interface SendPaymentFailureInput {
@@ -297,6 +299,7 @@ export async function sendBookingConfirmation(
   const { html, text, subject } = renderBookingConfirmationTemplate({
     booking: input.booking,
     language,
+    timezone: input.timezone || null,
   });
 
   return await sendEmail({
@@ -346,6 +349,7 @@ export async function sendBookingReminder(
     booking: input.booking,
     reminderType: input.reminderType,
     language,
+    timezone: input.timezone || null,
   });
 
   return await sendEmail({
@@ -375,6 +379,7 @@ export interface SendBookingCancellationInput {
   salonId?: string | null;
   userId?: string | null;
   cancellationReason?: string | null;
+  timezone?: string | null; // Salon timezone for formatting times
 }
 
 /**
@@ -409,6 +414,7 @@ export async function sendBookingCancellation(
     booking: input.booking,
     language,
     cancellationReason: input.cancellationReason,
+    timezone: input.timezone || null,
   });
 
   return await sendEmail({

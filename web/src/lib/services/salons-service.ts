@@ -51,6 +51,7 @@ export async function updateSalonSettings(
     preferred_language?: string | null;
     supported_languages?: string[] | null;
     default_language?: string | null;
+    timezone?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;
@@ -106,6 +107,7 @@ export async function updateSalon(
     whatsapp_number?: string | null;
     supported_languages?: string[] | null;
     default_language?: string | null;
+    timezone?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;

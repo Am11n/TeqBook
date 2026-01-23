@@ -253,12 +253,16 @@ async function sendEmailNotification(
       // Import dynamically to avoid circular dependency
       const { sendBookingCancellation } = await import("@/lib/services/email-service");
       
+      // Get salon timezone if available
+      const timezone = bookingData.booking.salon?.timezone || "UTC";
+      
       const result = await sendBookingCancellation({
         booking: bookingData.booking,
         recipientEmail: email,
         language: bookingData.language,
         salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
+        timezone: timezone,
       });
 
       if (result.error) {
@@ -338,6 +342,9 @@ async function sendInAppNotificationForEvent(
     const language = bookingData.language || "en";
 
     // Render template for this event type
+    // Use salon timezone if available, otherwise default to UTC
+    const timezone = bookingData.booking.salon?.timezone || "UTC";
+    
     const { title, body } = renderNotificationTemplate(eventType, {
       customerName: bookingData.booking.customer_full_name,
       serviceName: bookingData.booking.service?.name || "Service",
@@ -345,6 +352,7 @@ async function sendInAppNotificationForEvent(
       salonName: bookingData.booking.salon?.name || "Salon",
       startTime: bookingData.booking.start_time,
       endTime: bookingData.booking.end_time,
+      timezone: timezone,
     }, language);
 
     // Determine action URL

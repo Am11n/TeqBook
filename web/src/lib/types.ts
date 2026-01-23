@@ -205,6 +205,7 @@ export type Salon = {
   whatsapp_number?: string | null;
   supported_languages?: string[] | null;
   default_language?: string | null;
+  timezone?: string | null; // IANA timezone identifier (e.g., "Europe/Oslo")
   theme?: {
     primary?: string;
     secondary?: string;

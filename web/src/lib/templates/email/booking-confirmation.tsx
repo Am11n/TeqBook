@@ -8,6 +8,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { AppLocale } from "@/i18n/translations";
 import type { Booking } from "@/lib/types/domain";
 import { format } from "date-fns";
+import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
 
 export interface BookingConfirmationTemplateProps {
   booking: Booking & {
@@ -17,6 +18,7 @@ export interface BookingConfirmationTemplateProps {
     salon?: { name: string | null } | null;
   };
   language: string;
+  timezone?: string | null; // IANA timezone identifier
 }
 
 // Helper to get translations
@@ -143,12 +145,24 @@ export function renderBookingConfirmationTemplate(
   const serviceName = booking.service?.name || "Service";
   const employeeName = booking.employee?.name || "Employee";
   
-  const startTime = new Date(booking.start_time);
-  const endTime = new Date(booking.end_time);
+  // Use salon timezone if provided, otherwise use UTC
+  const timezone = props.timezone || "UTC";
   
-  // Format date and time based on locale
-  const dateStr = format(startTime, "EEEE, MMMM d, yyyy", { locale: locale === "nb" ? require("date-fns/locale/nb") : undefined });
-  const timeStr = `${format(startTime, "HH:mm")} - ${format(endTime, "HH:mm")}`;
+  // Format date and time in salon timezone
+  const startDateTime = formatDateTimeInTimezone(booking.start_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
+  const endTime = formatDateTimeInTimezone(booking.end_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
+  
+  // Format date string (full date with weekday)
+  const startDate = new Date(booking.start_time);
+  const dateStr = new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: timezone,
+  }).format(startDate);
+  
+  const timeStr = `${startDateTime.time} - ${endTime.time}`;
 
   const subject = t.subject.replace("{{salonName}}", salonName);
   const greeting = t.greeting.replace("{{customerName}}", customerName);

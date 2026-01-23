@@ -88,7 +88,7 @@ export default function CalendarPage() {
             today: t.today,
             next: t.next,
           }}
-          formatDayHeading={(date) => formatDayHeading(date, appLocale)}
+          formatDayHeading={(date) => formatDayHeading(date, appLocale, salon?.timezone || "UTC")}
           getWeekDates={getWeekDates}
         />
 

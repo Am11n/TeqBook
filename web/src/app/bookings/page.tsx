@@ -185,6 +185,7 @@ function BookingsContent() {
                 statusCompleted: t.statusCompleted,
                 statusCancelled: t.statusCancelled,
                 statusScheduled: t.statusScheduled,
+                cancelButton: t.cancelButton,
               }}
               locale={appLocale}
               onCancelBooking={handleCancelBooking}

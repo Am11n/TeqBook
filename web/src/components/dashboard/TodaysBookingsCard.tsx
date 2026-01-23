@@ -5,6 +5,7 @@ import { Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTime } from "@/lib/utils/dashboard/dashboard-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 type Booking = {
   id: string;
@@ -35,6 +36,9 @@ export function TodaysBookingsCard({
   bookingsCount,
   translations,
 }: TodaysBookingsCardProps) {
+  const { salon } = useCurrentSalon();
+  const timezone = salon?.timezone || "UTC";
+
   return (
     <div className="group rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '0ms' }}>
       <div className="mb-8 flex items-center gap-4">
@@ -83,7 +87,7 @@ export function TodaysBookingsCard({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-foreground truncate">
-                    {formatTime(booking.start_time)}
+                    {formatTime(booking.start_time, timezone)}
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
                     <span className="text-xs text-muted-foreground truncate">
