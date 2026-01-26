@@ -10,6 +10,8 @@ type LogLevel = "debug" | "info" | "warn" | "error" | "security";
 interface LogContext {
   [key: string]: unknown;
   correlationId?: string;
+  app?: "public" | "dashboard" | "admin"; // App identifier for observability
+  fn?: string; // Function/edge function name (for edge functions)
 }
 
 interface StructuredLog {
@@ -56,6 +58,16 @@ class Logger {
    */
   private formatLog(level: LogLevel, message: string, context?: LogContext): StructuredLog {
     const enrichedContext = this.ensureCorrelationId(context);
+    
+    // Auto-detect app from context or environment
+    if (!enrichedContext.app) {
+      // Try to detect from environment or context
+      const appFromEnv = process.env.NEXT_PUBLIC_APP_NAME as "public" | "dashboard" | "admin" | undefined;
+      if (appFromEnv) {
+        enrichedContext.app = appFromEnv;
+      }
+    }
+    
     return {
       timestamp: new Date().toISOString(),
       level,

@@ -48,6 +48,12 @@ export const RATE_LIMIT_CONFIGS: Record<
     windowMs: 60 * 60 * 1000, // 1 hour
     blockDurationMs: 60 * 60 * 1000, // 1 hour
   },
+  // Public booking data endpoint (higher limit for legitimate traffic)
+  "public-booking-data": {
+    maxAttempts: 60, // 60 requests per window
+    windowMs: 60 * 1000, // 1 minute
+    blockDurationMs: 5 * 60 * 1000, // 5 minutes
+  },
   // Default configuration
   default: {
     maxAttempts: 10,
