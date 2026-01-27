@@ -9,6 +9,7 @@ export {
   createServerSupabaseClient,
   createServerSupabaseClientForRouteHandler,
   createBrowserSupabaseClient,
+  getBrowserSupabaseClient,
 } from "./supabase/client";
 
 // Auth contract

@@ -94,6 +94,20 @@ export function createBrowserSupabaseClient(): SupabaseClient {
 }
 
 /**
+ * Create a browser Supabase client instance (singleton pattern for client components)
+ * This is a convenience export for backward compatibility
+ * Note: For new code, prefer using createBrowserSupabaseClient() directly
+ */
+let browserClientInstance: SupabaseClient | null = null;
+
+export function getBrowserSupabaseClient(): SupabaseClient {
+  if (!browserClientInstance) {
+    browserClientInstance = createBrowserSupabaseClient();
+  }
+  return browserClientInstance;
+}
+
+/**
  * Create a Supabase client for edge functions
  * Uses service role key for elevated permissions
  */
