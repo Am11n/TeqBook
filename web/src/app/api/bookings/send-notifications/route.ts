@@ -256,8 +256,9 @@ export async function POST(request: NextRequest) {
     const salon = salonResult.data;
     
     // Update booking with salon name if not already set
+    // Note: booking.salon type only includes name, timezone is used directly from salon object
     if (!booking.salon && salon) {
-      booking.salon = { name: salon.name, timezone: salon.timezone || undefined };
+      booking.salon = { name: salon.name };
     }
 
     // Use language with fallback: salon.preferred_language ?? 'nb'
