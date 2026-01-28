@@ -26,6 +26,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:run": "pnpm --filter '@teqbook/dashboard' run test:run",
+    "test:coverage": "pnpm --filter '@teqbook/dashboard' run test:coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "seed": "tsx scripts/seed.ts",

@@ -123,6 +123,7 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 pnpm run type-check   # Type-check alle workspaces
 pnpm run lint         # Lint alle workspaces
 pnpm run test:run     # Unit-tester (dashboard, 28 stk)
+pnpm run test:coverage # Coverage (dashboard, services/repositories)
 pnpm run build        # Build alle apper
 pnpm run test:e2e     # E2E (53 tester; krever apper på 3001–3003 og «pnpm exec playwright install»)
 ```
@@ -210,19 +211,28 @@ For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
 - [x] Migrere E2E fra web: `tests/e2e/` med landing, public-booking, settings, billing, onboarding, admin; auth setup per app (owner på 3002, superadmin på 3003).
 - [x] Playwright-konfig i rot: `playwright.config.ts` med prosjekter og webServers for 3001, 3002, 3003.
 - [x] Vitest i dashboard: `apps/dashboard/vitest.config.ts`, `tests/setup.ts`, eksempel unit-test (logger).
-- [ ] Videre migrering av unit/integration fra `web/tests/` til respektive app (dashboard får mest). Noen tester (f.eks. plan-limits-service) må tilpasses hvis app-implementasjonen avviker fra web.
+- [ ] Videre migrering av unit/integration fra `web/tests/` til respektive app (dashboard får mest). Noen tester (f.eks. plan-limits-service) må tilpasses hvis app-implementasjonen avviker fra web. Kilde: `web/tests/unit/`, `web/tests/integration/`.
 
 ### 3. Minimumsdekning per app
 - **Public (`apps/public`)**
-  - [ ] E2E: landing, login, signup, booking-flow.
+  - [x] E2E: landing (`landing.spec.ts`), navigere til login (`landing.spec.ts`), booking-flow (`public-booking.spec.ts`). Signup har ikke egen E2E ennå.
   - [ ] Unit: kritiske komponenter (forms, booking-komponenter) og helpers.
 - **Dashboard (`apps/dashboard`)**
-  - [ ] E2E: login, dashboard, calendar, bookings, settings.
-  - [ ] Unit/integration: booking-/salon-/employee-services, RLS-relaterte flows.
+  - [x] E2E: login (auth.owner.setup), settings (`settings-form.spec.ts`, `settings-changes.spec.ts`), billing (`billing-flow.spec.ts`), booking (`booking-flow.spec.ts`), onboarding (`onboarding.spec.ts`). Dashboard/calendar dekkes indirekte via andre flows.
+  - [x] Unit: 28 tester (logger, cache-service i `tests/unit/services/`). [ ] Flere: booking-/salon-/employee-services, RLS-relaterte flows (kan migreres fra `web/tests/`).
 - **Admin (`apps/admin`)**
-  - [ ] E2E: admin-login, salons-oversikt, analytics.
+  - [x] E2E: admin-login (auth.superadmin.setup), admin-operations (`admin-operations.spec.ts` – salons, analytics m.m.).
   - [ ] Unit: admin-relaterte services og tilgangskontroll.
 
 ### 4. Rapporter og dekning
-- [ ] Slå på coverage-rapportering for Vitest (minst for services/repositories).
-- [ ] Legg til enkel rapportering i CI (artefakt eller summary) slik at testdekning kan følges over tid. 
+- [x] Slå på coverage-rapportering for Vitest: `apps/dashboard/vitest.config.ts` har `coverage` (v8, text + json-summary) for `src/lib/services/**` og `src/lib/repositories/**`. Root: `pnpm run test:coverage`.
+- [x] Legg til enkel rapportering i CI: `.github/workflows/ci.yml` har jobb `coverage` som kjører `pnpm run test:coverage` og laster opp artefakt `coverage-dashboard` fra `apps/dashboard/coverage/`.
+
+---
+
+## Neste konkrete steg (fortsett planen)
+
+1. **Migrere flere unit/integration-tester fra `web/tests/`** til `apps/dashboard/tests/` (f.eks. `web/tests/unit/services/`, `web/tests/integration/repositories/`). Tilpass til monorepo-imports og evt. andre API-er.
+2. **Public/Admin unit-tester:** Legg til Vitest og første unit-tester i `apps/public` og `apps/admin` dersom kritiske services/komponenter skal dekkes.
+3. **E2E i CI (valgfritt):** Legg til E2E-job i CI som starter alle tre apper (eller bruk matrix/schedule) for å kjøre `pnpm run test:e2e` på PR/main.
+4. **Deploy:** Fullfør deploy per app (Vercel), se `docs/ops/ci-cd-strategy.md`. 
