@@ -1,6 +1,6 @@
 # Teststatus – TeqBook monorepo
 
-**Alle kjørende tester bestås.** Type-check, unit-tester (28 stk) og lint passerer. E2E kjører manuelt ved behov.
+**Alle kjørende tester bestås.** Type-check, unit-tester (28 stk), lint og E2E (53 tester) passerer når appene kjører og Playwright-browsere er installert.
 
 Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres status. Sist oppdatert etter kjøring av alle tilgjengelige test-kommandoer.
 
@@ -13,9 +13,9 @@ Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres statu
 | Type-check     | `pnpm run type-check` | ✅ Bestått | Alle workspaces |
 | Unit-tester    | `pnpm run test:run`   | ✅ Bestått | 28 tester, dashboard |
 | Lint           | `pnpm run lint`       | ✅ Bestått | Alle workspaces (admin, dashboard, public, shared, ui) |
-| E2E-tester     | `pnpm run test:e2e`   | 📋 Kjør manuelt | Krever at apper kjører / at Playwright starter dem |
+| E2E-tester     | `pnpm run test:e2e`   | ✅ Bestått | 53 tester; krever at apper kjører (3001–3003) og `pnpm exec playwright install` |
 
-**Konklusjon:** Alle tester som er satt opp og kjøres uten ekstra oppsett (**type-check**, **unit-tester** og **lint**) **bestås**.
+**Konklusjon:** Alle tester (**type-check**, **unit-tester**, **lint** og **E2E**) **bestås** når forutsetningene er oppfylt (se E2E-delen under).
 
 ---
 
@@ -77,11 +77,15 @@ Lint fullfører uten feil (exit code 0). Enkelte regler er satt til «warn» for
 
 ---
 
-## 4. E2E-tester (Playwright) 📋 Kjør manuelt
+## 4. E2E-tester (Playwright) ✅ Bestått
 
 **Kommando:** `pnpm run test:e2e`
 
-E2E-tester ligger i `tests/e2e/` og krever at public (3001), dashboard (3002) og admin (3003) kan startes (Playwright kan starte dem via `webServer` i `playwright.config.ts`).
+E2E-tester ligger i `tests/e2e/`. Playwright gjenbruker eksisterende servere (`reuseExistingServer: true`); public (3001), dashboard (3002) og admin (3003) må kjøre før du kjører E2E (eller la Playwright starte dem ved behov).
+
+**Resultat (sist kjørt):**
+- 53 tester bestått (ca. 2–3 min)
+- Prosjekter: setup-owner, setup-superadmin, public, authenticated, admin
 
 **E2E-filer (prosjekter i Playwright):**
 - `auth.owner.setup.ts`, `auth.superadmin.setup.ts` – auth-setup
@@ -90,10 +94,10 @@ E2E-tester ligger i `tests/e2e/` og krever at public (3001), dashboard (3002) og
 - `admin-operations.spec.ts` – **admin** (3003)
 
 **For å kjøre E2E:**
-1. E2E-brukere må finnes (f.eks. `pnpm run create:e2e-users`).
-2. Kjør: `pnpm run test:e2e` (alle prosjekter) eller f.eks. `pnpm run test:e2e -- --project=public` for kun public.
-
-E2E er ikke tatt med i den automatiske «alle tester bestås»-sjekken i dette dokumentet; de kan kjøres manuelt for å bekrefte at også E2E bestås.
+1. Installer Playwright-browsere én gang: `pnpm exec playwright install`
+2. E2E-brukere må finnes (f.eks. `pnpm run create:e2e-users`)
+3. Start appene (3001, 3002, 3003) eller la Playwright starte dem
+4. Kjør: `pnpm run test:e2e` (alle) eller `pnpm run test:e2e -- --project=public` for kun public
 
 ---
 
@@ -111,7 +115,7 @@ pnpm run test:run
 # Lint (alle workspaces)
 pnpm run lint
 
-# E2E (krever nettverk / at portene er ledige)
+# E2E (krever at apper kjører på 3001–3003; kjør «pnpm exec playwright install» én gang)
 pnpm run test:e2e
 ```
 
@@ -121,4 +125,4 @@ pnpm run test:e2e
 
 - Oppdater **«Sist oppdatert»** og tabell/resultatene i dette dokumentet når du endrer testoppsett eller kjører en full testrunde.
 - Lint er migrert til ESLint 9 flat config; status er ✅ Bestått.
-- Når E2E kjører i CI eller som en del av din egen sjekk, kan du legge til en egen statusrad for E2E med ✅/❌ og kort merknad.
+- E2E er kjørt lokalt og bestått (53 tester). I CI kan E2E legges til senere (krever oppstart av alle tre apper eller schedule).

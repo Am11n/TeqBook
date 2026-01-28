@@ -80,7 +80,7 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/public run dev",
       url: "http://localhost:3001",
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120000,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",
@@ -90,7 +90,7 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/dashboard run dev",
       url: "http://localhost:3002",
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120000,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",
@@ -100,7 +100,7 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/admin run dev",
       url: "http://localhost:3003",
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 120000,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",

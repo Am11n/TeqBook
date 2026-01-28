@@ -118,11 +118,13 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 
 ## Test Scripts
 
-### Quick Test (alle apper)
+### Quick Test (fra repo-rot)
 ```bash
-# Fra root
-npm run type-check  # Type check alle apper
-npm run build       # Build alle apper
+pnpm run type-check   # Type-check alle workspaces
+pnpm run lint         # Lint alle workspaces
+pnpm run test:run     # Unit-tester (dashboard, 28 stk)
+pnpm run build        # Build alle apper
+pnpm run test:e2e     # E2E (53 tester; krever apper på 3001–3003 og «pnpm exec playwright install»)
 ```
 
 ### Individual App Test
@@ -186,11 +188,11 @@ En app er "klar" når:
 
 ## Fase 2 – Status (monorepo)
 
-- [x] **Tester**: E2E i `tests/e2e/` (Playwright, public/dashboard/admin), unit i `apps/dashboard/tests/` (Vitest). Root: `pnpm run test:run`, `pnpm run test:e2e`.
+- [x] **Tester**: E2E i `tests/e2e/` (Playwright, 53 tester), unit i `apps/dashboard/tests/` (Vitest, 28 tester). Root: `pnpm run test:run`, `pnpm run test:e2e`. Se `docs/ops/test-status.md`.
 - [x] **Scripts**: Root `package.json` har `seed`, `seed:reset`, `seed:force`, `migrate:local`, `reset:db`, `create:e2e-users`, `setup:e2e` – kjør fra rot med `pnpm run <script>`. Env fra rot `.env.local`/`.env`. Se `scripts/README.md`.
 - [x] **CI**: `.github/workflows/ci.yml` kjører type-check, lint, test:run, build på push/PR mot main/develop/monorepo.
-- [ ] **Lint**: Workspaces bruker ESLint 9; mangler `eslint.config.(js|mjs|cjs)` (migrering fra .eslintrc) – kan blokkere CI inntil det er fikset.
-- [ ] **E2E i CI**: Valgfritt; krever oppstart av alle tre apper eller schedule-kjøring.
+- [x] **Lint**: ESLint 9 flat config (`eslint.config.mjs`) er på plass i alle workspaces (admin, dashboard, public, shared, ui); lint bestås.
+- [ ] **E2E i CI**: Valgfritt; E2E kjører lokalt (53 tester bestått). I CI krever det oppstart av alle tre apper eller schedule-kjøring.
 
 ---
 
@@ -201,7 +203,7 @@ For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
 ### 1. Automatisert testkjøring i CI
 - [x] Kjør type-check, lint, unit tests og build i CI: `.github/workflows/ci.yml` (pnpm, type-check, lint, test:run, build).
 - [x] PR-er mot main/develop/monorepo trigger CI; build avhenger av type-check, lint og test.
-- [ ] E2E i CI (valgfritt): krever oppstart av alle tre apper; kan legges til senere eller kjøres på schedule.
+- [x] E2E kjører lokalt (53 tester bestått; `pnpm run test:e2e` med apper på 3001–3003). E2E i CI er valgfritt og kan legges til senere (krever oppstart av alle tre apper eller schedule).
 
 ### 2. Migrere og strukturere tester
 - [x] Etablér felles test-struktur for monorepo: E2E i rot `tests/e2e/`, unit per app (f.eks. `apps/dashboard/tests/`).
