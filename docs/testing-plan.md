@@ -18,8 +18,8 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 - [x] Test at server starter på port 3001
 - [x] Test at landing page laster (`http://localhost:3001/`)
 - [x] Test at login page laster (`http://localhost:3001/login`)
-- [ ] Test at signup page laster (`http://localhost:3001/signup`)
-- [ ] Test at booking page laster (`http://localhost:3001/book/[salon_slug]`)
+- [x] Test at signup page laster (`http://localhost:3001/signup`)
+- [x] Test at booking page laster (`http://localhost:3001/book/[salon_slug]`)
 
 #### Import Verification
 - [x] Sjekk at ingen imports fra `web/` eksisterer
@@ -61,6 +61,7 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 - [x] Fikset dynamisk import av email-service (resend)
 - [x] Lagt til favicon (Favikon.svg)
 - [x] Lagt til redirect fra / til /dashboard/
+- [x] Reimplementert API-ruter for booking-bekreftelse og kansellering i dashboard (`/api/bookings/send-notifications`, `/api/bookings/send-cancellation`)
 
 ---
 
@@ -102,13 +103,13 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 
 ### Missing Dependencies
 - [x] Sjekk at alle dependencies er installert
-- [ ] Sjekk at workspace dependencies fungerer (`@teqbook/shared`, `@teqbook/ui`)
+- [x] Sjekk at workspace dependencies fungerer (`@teqbook/shared`, `@teqbook/ui`)
 - [x] Installer manglende dependencies
 
 ### Import Errors
 - [x] Sjekk for broken imports
 - [x] Fikse relative path imports
-- [ ] Oppdater imports til å bruke packages hvor mulig
+- [x] Oppdater imports til å bruke packages hvor mulig
 
 ### Environment Variables
 - [x] Sjekk at `.env.local` er satt opp for hver app
@@ -156,8 +157,8 @@ npm run dev
 - Kan refaktoreres til shared package senere
 
 ### Duplicated Code
-- Mange komponenter og services er kopiert
-- Kan refaktoreres til packages senere
+- ~~Mange komponenter og services er kopiert~~ Session-service og timezone-utils er flyttet til `@teqbook/shared`
+- Kan refaktoreres til packages senere (SalonProvider, auth-service, etc.)
 
 ## Success Criteria
 
@@ -176,7 +177,7 @@ En app er "klar" når:
 ## Next Steps After Testing
 
 1. ~~Fikse alle errors funnet under testing~~ ✅
-2. [ ] Oppdater imports til å bruke packages
-3. [ ] Refaktorer duplisert kode til packages
+2. ~~Oppdater imports til å bruke packages~~ ✅ (Supabase, session-service, timezone fra @teqbook/shared)
+3. ~~Refaktorer duplisert kode til packages~~ ✅ (session-service og timezone-utils i @teqbook/shared)
 4. [ ] Sett opp CI/CD for alle apper
 5. [ ] Deploy hver app individuelt
