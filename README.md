@@ -17,21 +17,39 @@ It is designed for salons that take **payment in the salon**, not online, with a
 
 ### Prerequisites
 
-- **Node.js** 18+ and **npm**
-- **Supabase project** with database schema and RLS policies (see [`web/supabase/`](web/supabase/) for migrations)
-- **Environment variables** configured (see [Development Setup](#development-setup))
+- **Node.js** 20+ and **pnpm**
+- **Supabase project** with database schema and RLS policies (see [`supabase/`](supabase/) for migrations)
+- **Environment variables** in repo root `.env` or `.env.local` (see [Development Setup](#development-setup) and [`docs/env/env-setup.md`](docs/env/env-setup.md))
 
 ### Installation
 
 ```bash
-cd web
-npm install
-npm run dev
+pnpm install
 ```
 
-Open `http://localhost:3000` in your browser.
+### Kjør appene
 
-For detailed setup instructions, see [`web/docs/onboarding.md`](web/docs/onboarding.md).
+**Utvikling (med hot reload):** Start én app av gangen fra repo-rot:
+
+```bash
+pnpm run dev:public      # → http://localhost:3001
+pnpm run dev:dashboard   # → http://localhost:3002
+pnpm run dev:admin       # → http://localhost:3003
+```
+
+**Produksjon (etter build):** Bygg deretter start:
+
+```bash
+pnpm run build
+pnpm run start:public    # → http://localhost:3001
+# eller
+pnpm run start:dashboard # → http://localhost:3002
+pnpm run start:admin     # → http://localhost:3003
+```
+
+Du kan bare kjøre én app om gangen med `start`; for å kjøre flere samtidig, åpne flere terminaler.
+
+For detaljert oppsett, se [`docs/onboarding.md`](docs/onboarding.md).
 
 ---
 

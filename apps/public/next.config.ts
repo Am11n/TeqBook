@@ -29,7 +29,10 @@ const nextConfig: NextConfig = {
   // Exclude server-only packages from client builds
   serverExternalPackages: ["resend", "@sentry/node"],
 
-  // Custom webpack configuration
+  // Use Turbopack (Next 16 default). Custom webpack config below is ignored when using Turbopack.
+  turbopack: {},
+
+  // Custom webpack configuration (only used with next build --webpack)
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't bundle Node.js-only packages in client builds

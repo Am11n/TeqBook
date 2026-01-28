@@ -179,5 +179,48 @@ En app er "klar" når:
 1. ~~Fikse alle errors funnet under testing~~ ✅
 2. ~~Oppdater imports til å bruke packages~~ ✅ (Supabase, session-service, timezone fra @teqbook/shared)
 3. ~~Refaktorer duplisert kode til packages~~ ✅ (session-service og timezone-utils i @teqbook/shared)
-4. [ ] Sett opp CI/CD for alle apper
-5. [ ] Deploy hver app individuelt
+4. [x] Sett opp CI for monorepo (`.github/workflows/ci.yml`: type-check, lint, test:run, build)
+5. [ ] Deploy hver app individuelt (Vercel per app, se `docs/ops/ci-cd-strategy.md`)
+
+---
+
+## Fase 2 – Status (monorepo)
+
+- [x] **Tester**: E2E i `tests/e2e/` (Playwright, public/dashboard/admin), unit i `apps/dashboard/tests/` (Vitest). Root: `pnpm run test:run`, `pnpm run test:e2e`.
+- [x] **Scripts**: Root `package.json` har `seed`, `seed:reset`, `seed:force`, `migrate:local`, `reset:db`, `create:e2e-users`, `setup:e2e` – kjør fra rot med `pnpm run <script>`. Env fra rot `.env.local`/`.env`. Se `scripts/README.md`.
+- [x] **CI**: `.github/workflows/ci.yml` kjører type-check, lint, test:run, build på push/PR mot main/develop/monorepo.
+- [ ] **Lint**: Workspaces bruker ESLint 9; mangler `eslint.config.(js|mjs|cjs)` (migrering fra .eslintrc) – kan blokkere CI inntil det er fikset.
+- [ ] **E2E i CI**: Valgfritt; krever oppstart av alle tre apper eller schedule-kjøring.
+
+---
+
+## Videre Teststrategi (monorepo)
+
+For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
+
+### 1. Automatisert testkjøring i CI
+- [x] Kjør type-check, lint, unit tests og build i CI: `.github/workflows/ci.yml` (pnpm, type-check, lint, test:run, build).
+- [x] PR-er mot main/develop/monorepo trigger CI; build avhenger av type-check, lint og test.
+- [ ] E2E i CI (valgfritt): krever oppstart av alle tre apper; kan legges til senere eller kjøres på schedule.
+
+### 2. Migrere og strukturere tester
+- [x] Etablér felles test-struktur for monorepo: E2E i rot `tests/e2e/`, unit per app (f.eks. `apps/dashboard/tests/`).
+- [x] Migrere E2E fra web: `tests/e2e/` med landing, public-booking, settings, billing, onboarding, admin; auth setup per app (owner på 3002, superadmin på 3003).
+- [x] Playwright-konfig i rot: `playwright.config.ts` med prosjekter og webServers for 3001, 3002, 3003.
+- [x] Vitest i dashboard: `apps/dashboard/vitest.config.ts`, `tests/setup.ts`, eksempel unit-test (logger).
+- [ ] Videre migrering av unit/integration fra `web/tests/` til respektive app (dashboard får mest). Noen tester (f.eks. plan-limits-service) må tilpasses hvis app-implementasjonen avviker fra web.
+
+### 3. Minimumsdekning per app
+- **Public (`apps/public`)**
+  - [ ] E2E: landing, login, signup, booking-flow.
+  - [ ] Unit: kritiske komponenter (forms, booking-komponenter) og helpers.
+- **Dashboard (`apps/dashboard`)**
+  - [ ] E2E: login, dashboard, calendar, bookings, settings.
+  - [ ] Unit/integration: booking-/salon-/employee-services, RLS-relaterte flows.
+- **Admin (`apps/admin`)**
+  - [ ] E2E: admin-login, salons-oversikt, analytics.
+  - [ ] Unit: admin-relaterte services og tilgangskontroll.
+
+### 4. Rapporter og dekning
+- [ ] Slå på coverage-rapportering for Vitest (minst for services/repositories).
+- [ ] Legg til enkel rapportering i CI (artefakt eller summary) slik at testdekning kan følges over tid. 

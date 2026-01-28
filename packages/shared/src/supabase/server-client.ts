@@ -44,7 +44,7 @@ export function createServerSupabaseClientForRouteHandler(
   return createServerClient(finalSupabaseUrl, finalSupabaseAnonKey, {
     cookies: {
       getAll() {
-        return request.cookies.getAll().map((cookie) => ({
+        return request.cookies.getAll().map((cookie: { name: string; value: string }) => ({
           name: cookie.name,
           value: cookie.value,
         }));

@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack -p 3002",
-    "build": "npm run type-check && next build --webpack",
-    "build:skip-typecheck": "next build --webpack",
+    "dev": "next dev -p 3002",
+    "build": "npm run type-check && next build",
+    "build:skip-typecheck": "next build",
     "start": "next start -p 3002",
     "type-check": "tsc --noEmit",
     "lint": "eslint src",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
@@ -29,8 +32,8 @@
     "@stripe/stripe-js": "^8.6.4",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.85.0",
-    "@teqbook/shared": "*",
-    "@teqbook/ui": "*",
+    "@teqbook/shared": "workspace:*",
+    "@teqbook/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -47,13 +50,19 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.2",
+    "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
+    "jsdom": "^25.0.1",
     "prettier": "^3.4.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.8"
   }
 }
