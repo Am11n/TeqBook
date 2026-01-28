@@ -68,7 +68,7 @@ export default function AdminPage() {
   useEffect(() => {
     // Redirect if not superadmin
     if (!contextLoading && !isSuperAdmin) {
-      router.push("/dashboard");
+      router.push("/login");
       return;
     }
 

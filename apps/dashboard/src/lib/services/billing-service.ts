@@ -6,7 +6,8 @@
 import { supabase } from "@/lib/supabase-client";
 import { logBillingEvent } from "@/lib/services/audit-log-service";
 import { logError, logInfo, logWarn } from "@/lib/services/logger";
-import { sendPaymentFailure } from "@/lib/services/email-service";
+// Dynamic import to avoid bundling Node.js modules on client
+// import { sendPaymentFailure } from "@/lib/services/email-service";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
@@ -586,6 +587,8 @@ export async function handlePaymentFailure(
 
     // Send payment failure email
     if (profile?.email) {
+      // Dynamic import to avoid bundling Node.js modules on client
+      const { sendPaymentFailure } = await import("@/lib/services/email-service");
       await sendPaymentFailure({
         recipientEmail: profile.email,
         salonName: salon.name || "Your Salon",

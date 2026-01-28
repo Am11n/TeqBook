@@ -7,7 +7,8 @@
 
 import { logError, logInfo, logWarn } from "@/lib/services/logger";
 import { shouldSendNotification, type EmailNotificationType } from "@/lib/services/notification-service";
-import { sendBookingConfirmation, sendBookingReminder } from "@/lib/services/email-service";
+// Dynamic import to avoid bundling Node.js modules on client
+// import { sendBookingConfirmation, sendBookingReminder } from "@/lib/services/email-service";
 import { createInAppNotification } from "@/lib/services/in-app-notification-service";
 import { generateICS } from "@/lib/services/calendar-invite-service";
 import { renderNotificationTemplate } from "@/lib/templates/in-app/notification-templates";
@@ -208,6 +209,8 @@ async function sendEmailNotification(
       });
 
       // Send confirmation email (ICS attachment is handled in email template/service)
+      // Dynamic import to avoid bundling Node.js modules on client
+      const { sendBookingConfirmation } = await import("@/lib/services/email-service");
       const result = await sendBookingConfirmation({
         booking: bookingData.booking,
         recipientEmail: email,
@@ -231,6 +234,8 @@ async function sendEmailNotification(
     // Handle reminders
     if (eventType === "booking_reminder_24h" || eventType === "booking_reminder_2h") {
       const reminderData = data as ReminderNotificationData;
+      // Dynamic import to avoid bundling Node.js modules on client
+      const { sendBookingReminder } = await import("@/lib/services/email-service");
       const result = await sendBookingReminder({
         booking: reminderData.booking,
         recipientEmail: email,
@@ -276,7 +281,9 @@ async function sendEmailNotification(
     if (eventType === "booking_changed") {
       // Use confirmation template for changes (future: create dedicated template)
       const bookingData = data as BookingNotificationData;
-      const result = await sendBookingConfirmation({
+      // Dynamic import to avoid bundling Node.js modules on client
+      const { sendBookingConfirmation: sendBookingConfirmationChanged } = await import("@/lib/services/email-service");
+      const result = await sendBookingConfirmationChanged({
         booking: bookingData.booking,
         recipientEmail: email,
         language: bookingData.language,
@@ -294,7 +301,9 @@ async function sendEmailNotification(
     // Handle new booking notification (for salon owner)
     if (eventType === "new_booking") {
       const bookingData = data as BookingNotificationData;
-      const result = await sendBookingConfirmation({
+      // Dynamic import to avoid bundling Node.js modules on client
+      const { sendBookingConfirmation: sendBookingConfirmationNew } = await import("@/lib/services/email-service");
+      const result = await sendBookingConfirmationNew({
         booking: bookingData.booking,
         recipientEmail: email,
         language: bookingData.language,

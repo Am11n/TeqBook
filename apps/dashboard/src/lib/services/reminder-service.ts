@@ -11,7 +11,8 @@ import {
   cancelRemindersForBooking,
   type ReminderType,
 } from "@/lib/repositories/reminders";
-import { sendBookingReminder } from "@/lib/services/email-service";
+// Dynamic import to avoid bundling Node.js modules on client
+// import { sendBookingReminder } from "@/lib/services/email-service";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
 import { getSalonById } from "@/lib/repositories/salons";
 import type { Booking } from "@/lib/types";
@@ -208,6 +209,8 @@ export async function processReminders(
           salon: reminder.booking.salon,
         };
 
+        // Dynamic import to avoid bundling Node.js modules on client
+        const { sendBookingReminder } = await import("@/lib/services/email-service");
         const emailResult = await sendBookingReminder({
           booking: bookingForEmail,
           recipientEmail: reminder.customer_email,

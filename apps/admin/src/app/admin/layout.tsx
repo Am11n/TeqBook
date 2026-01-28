@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Only redirect if we're sure the user is not a superadmin
     if (!loading && !isSuperAdmin && pathname.startsWith("/admin")) {
-      router.push("/dashboard");
+      router.push("/login");
     }
   }, [isSuperAdmin, loading, pathname, router]);
 

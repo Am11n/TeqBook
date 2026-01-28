@@ -12,10 +12,10 @@ import { CommandPalette } from "@/components/command-palette";
 import { useFeatures } from "@/lib/hooks/use-features";
 import { useSessionTimeout } from "@/hooks/use-session-timeout";
 import { useDashboardMenuItems } from "@/lib/hooks/dashboard/useDashboardMenuItems";
-import { DashboardHeader } from "./dashboard/DashboardHeader";
-import { DashboardSidebar } from "./dashboard/DashboardSidebar";
-import { MobileNavigation } from "./dashboard/MobileNavigation";
-import { SessionTimeoutDialog } from "./dashboard/SessionTimeoutDialog";
+import { DashboardHeader } from "./layout/dashboard/DashboardHeader";
+import { DashboardSidebar } from "./layout/dashboard/DashboardSidebar";
+import { MobileNavigation } from "./layout/dashboard/MobileNavigation";
+import { SessionTimeoutDialog } from "./layout/dashboard/SessionTimeoutDialog";
 
 type DashboardShellProps = {
   children: ReactNode;

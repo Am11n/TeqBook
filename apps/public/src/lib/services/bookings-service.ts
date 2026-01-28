@@ -15,7 +15,8 @@ import {
 } from "@/lib/repositories/bookings";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
-import { sendBookingConfirmation } from "@/lib/services/email-service";
+// Dynamic import for email-service to avoid bundling Node.js modules on client
+// import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders, cancelReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getCustomerById } from "@/lib/repositories/customers";
@@ -272,6 +273,8 @@ export async function createBooking(
               });
           } else {
             // Server-side: send email and schedule reminders directly
+            // Use dynamic import to avoid bundling Node.js modules on client
+            const { sendBookingConfirmation } = await import("@/lib/services/email-service");
             await sendBookingConfirmation({
               booking: bookingForEmail,
               recipientEmail: input.customer_email,

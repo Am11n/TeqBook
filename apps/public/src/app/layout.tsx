@@ -29,11 +29,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TeqBook – Salon Booking System",
   description: "International salon booking system.",
-  icons: {
-    icon: "/Favikon.svg",
-    shortcut: "/Favikon.svg",
-    apple: "/Favikon.svg",
-  },
 };
 
 export default function RootLayout({

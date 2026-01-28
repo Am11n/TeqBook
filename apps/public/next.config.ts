@@ -26,6 +26,37 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Exclude server-only packages from client builds
+  serverExternalPackages: ["resend", "@sentry/node"],
+
+  // Custom webpack configuration
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Don't bundle Node.js-only packages in client builds
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        stream: false,
+        buffer: false,
+        path: false,
+        os: false,
+      };
+      
+      // Mark server-only modules as external for client builds
+      config.externals = config.externals || [];
+      config.externals.push({
+        resend: "resend",
+        mailparser: "mailparser",
+        libmime: "libmime",
+        libbase64: "libbase64",
+      });
+    }
+    return config;
+  },
+
   // Security headers - stricter for public app (no auth cookies needed)
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
