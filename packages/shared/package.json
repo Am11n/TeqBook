@@ -14,16 +14,18 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.85.0",
     "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.85.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "next": "^16.1.1",
-    "typescript": "^5",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
     "eslint": "^9",
-    "prettier": "^3.4.2"
+    "next": "^16.1.1",
+    "prettier": "^3.4.2",
+    "typescript": "^5"
   },
   "peerDependencies": {
     "next": ">=14"

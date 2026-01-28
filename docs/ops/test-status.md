@@ -1,6 +1,6 @@
 # Teststatus – TeqBook monorepo
 
-**Alle kjørende tester bestås.** Type-check og unit-tester (28 stk) passerer. Lint kjører ikke før ESLint 9-config er på plass; E2E kjører manuelt ved behov.
+**Alle kjørende tester bestås.** Type-check, unit-tester (28 stk) og lint passerer. E2E kjører manuelt ved behov.
 
 Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres status. Sist oppdatert etter kjøring av alle tilgjengelige test-kommandoer.
 
@@ -12,10 +12,10 @@ Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres statu
 |-----------------|-----------------|--------|---------|
 | Type-check     | `pnpm run type-check` | ✅ Bestått | Alle workspaces |
 | Unit-tester    | `pnpm run test:run`   | ✅ Bestått | 28 tester, dashboard |
-| Lint           | `pnpm run lint`       | ⚠️ Ikke kjørt | Krever eslint.config.js (ESLint 9) |
+| Lint           | `pnpm run lint`       | ✅ Bestått | Alle workspaces (admin, dashboard, public, shared, ui) |
 | E2E-tester     | `pnpm run test:e2e`   | 📋 Kjør manuelt | Krever at apper kjører / at Playwright starter dem |
 
-**Konklusjon:** Alle tester som er satt opp og kjøres uten ekstra oppsett (**type-check** og **unit-tester**) **bestås**.
+**Konklusjon:** Alle tester som er satt opp og kjøres uten ekstra oppsett (**type-check**, **unit-tester** og **lint**) **bestås**.
 
 ---
 
@@ -60,13 +60,20 @@ Alle 28 unit-tester bestås.
 
 ---
 
-## 3. Lint ⚠️ Ikke kjørt (konfigurasjon mangler)
+## 3. Lint ✅ Bestått
 
 **Kommando:** `pnpm run lint`
 
-ESLint 9 forventer `eslint.config.(js|mjs|cjs)` i hvert workspace. Workspaces bruker fortsatt eldre oppsett (f.eks. `.eslintrc`), så lint feiler med «couldn't find eslint.config» og kjører ikke.
+Kjører ESLint i alle workspaces med `eslint.config.mjs` (ESLint 9 flat config). Admin, dashboard og public bruker Next.js-eslint; shared og ui bruker TypeScript-parser.
 
-**For å få lint til å bestå:** Migrer til ESLint 9 flat config (`eslint.config.js`) i de berørte appene/pakene, eller tilpass CI slik at lint ikke kjører før migrering er gjort. Se `docs/ops/testing-plan.md` (Fase 2 – Lint).
+**Resultat (sist kjørt):**
+- ✅ `@teqbook/admin`
+- ✅ `@teqbook/dashboard`
+- ✅ `@teqbook/public`
+- ✅ `@teqbook/shared`
+- ✅ `@teqbook/ui`
+
+Lint fullfører uten feil (exit code 0). Enkelte regler er satt til «warn» for å unngå at eksisterende kode blokkerer; disse kan strammes inn over tid.
 
 ---
 
@@ -101,7 +108,7 @@ pnpm run type-check
 # Unit-tester (dashboard, én kjøring)
 pnpm run test:run
 
-# Lint (når eslint.config.js er på plass)
+# Lint (alle workspaces)
 pnpm run lint
 
 # E2E (krever nettverk / at portene er ledige)
@@ -113,5 +120,5 @@ pnpm run test:e2e
 ## Vedlikehold
 
 - Oppdater **«Sist oppdatert»** og tabell/resultatene i dette dokumentet når du endrer testoppsett eller kjører en full testrunde.
-- Når lint er migrert til ESLint 9, oppdater statusen for Lint til ✅ og evt. «Bestått» i oppsummeringen.
+- Lint er migrert til ESLint 9 flat config; status er ✅ Bestått.
 - Når E2E kjører i CI eller som en del av din egen sjekk, kan du legge til en egen statusrad for E2E med ✅/❌ og kort merknad.
