@@ -8,6 +8,12 @@ import { getProfileForUser } from "@/lib/services/profiles-service";
 import { initSession } from "@/lib/services/session-service";
 import { logSecurity, logError } from "@/lib/services/logger";
 import { Shield } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const MotionDiv = dynamic(
+  () => import("framer-motion").then((mod) => mod.motion.div),
+  { ssr: false }
+);
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -87,129 +93,151 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-slate-800 shadow-2xl border border-slate-700">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-8 text-center border-b border-slate-600">
-          <div className="flex justify-center mb-4">
-            <div className="relative">
+    <div className="min-h-screen bg-blue-50 flex items-center justify-center px-4 py-6 sm:py-10 md:py-12">
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[32px] bg-gradient-to-br from-blue-100 via-blue-50 to-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+        {/* Bakgrunns-sirkler */}
+        <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-blue-200/30 blur-3xl" />
+
+        <div className="relative grid gap-10 p-6 md:p-10 lg:grid-cols-[1.1fr_1.1fr] lg:p-12">
+          {/* Venstre side: Brand / pitch */}
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-8">
               <Image
                 src="/Favikon.svg"
                 alt="TeqBook logo"
-                width={56}
-                height={56}
-                className="drop-shadow-[0_2px_8px_rgba(255,255,255,0.1)]"
+                width={40}
+                height={40}
+                className="drop-shadow-[0_2px_8px_rgba(15,23,42,0.15)]"
               />
-              <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1">
-                <Shield className="h-4 w-4 text-slate-900" />
-              </div>
+              <span className="text-xl font-semibold tracking-tight text-slate-900">
+                TeqBook
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                <Shield className="h-3 w-3" />
+                Admin
+              </span>
             </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-slate-900">
+              Velkommen til{" "}
+              <span className="text-blue-700">Admin Panel</span>
+            </h1>
+
+            <p className="mt-4 max-w-xl text-sm sm:text-base text-slate-600">
+              Administrer salonger, brukere og systeminnstillinger. Kun for autoriserte superadministratorer.
+            </p>
+
+            <ul className="mt-6 space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
+                <span>Oversikt over alle salonger i systemet</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
+                <span>Administrer brukere og tilganger</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
+                <span>System-analyser og rapporter</span>
+              </li>
+            </ul>
+
+            <p className="mt-8 text-xs text-slate-500">
+              Sikker tilgang · Kun for superadministratorer
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-white">Admin Logg Inn</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Kun for superadministratorer
-          </p>
-        </div>
 
-        {/* Form */}
-        <div className="px-6 py-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-slate-300"
-              >
-                E-post
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@teqbook.com"
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-slate-300"
-              >
-                Passord
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 pr-16 text-sm text-white placeholder-slate-500 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-medium text-slate-400 hover:text-white transition"
-                >
-                  {showPassword ? "Skjul" : "Vis"}
-                </button>
-              </div>
-            </div>
-
-            {/* Error message */}
-            {error && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
-                <p className="text-sm text-red-400" aria-live="polite">
-                  {error}
+          {/* Høyre side: Login card */}
+          <div className="flex items-center justify-center">
+            <MotionDiv
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full max-w-md rounded-3xl bg-white/90 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-sm border border-slate-100"
+            >
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                  Admin Logg Inn
+                  <Shield className="h-5 w-5 text-amber-500" />
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Skriv inn dine admin-legitimasjoner
                 </p>
               </div>
-            )}
 
-            {/* Submit button */}
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="w-full rounded-lg bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-amber-500/25 transition hover:bg-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {status === "loading" ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Logger inn...
-                </span>
-              ) : (
-                "Logg inn som Admin"
-              )}
-            </button>
-          </form>
-        </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    E-post
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@teqbook.com"
+                    className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+                  />
+                </div>
 
-        {/* Footer */}
-        <div className="border-t border-slate-700 px-6 py-4 text-center">
-          <p className="text-xs text-slate-500">
-            Sikker innlogging · TeqBook Admin Panel
-          </p>
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-slate-800"
+                  >
+                    Passord
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
+                    >
+                      {showPassword ? "Skjul" : "Vis"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {error && (
+                  <p className="text-sm text-red-500" aria-live="polite">
+                    {error}
+                  </p>
+                )}
+
+                {/* Button */}
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {status === "loading" ? "Logger inn..." : "Logg inn som Admin"}
+                </button>
+              </form>
+
+              <p className="mt-4 text-[11px] text-center text-slate-400">
+                Sikker innlogging · TeqBook Admin Panel
+              </p>
+            </MotionDiv>
+          </div>
         </div>
       </div>
     </div>

@@ -65,6 +65,9 @@ export function useNotifications(
   const [offset, setOffset] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const realtimeRetryRef = useRef(0);
+  const realtimeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
 
   // Get current user on mount
   useEffect(() => {
@@ -181,7 +184,10 @@ export function useNotifications(
     };
   }, [enablePolling, pollingInterval, userId, fetchUnreadCount]);
 
-  // Realtime subscription
+  // Realtime subscription (with retry on CHANNEL_ERROR – can be intermittent due to network/Supabase)
+  const REALTIME_MAX_RETRIES = 3;
+  const REALTIME_RETRY_MS = 4000;
+
   useEffect(() => {
     if (!userId) return;
 
@@ -222,10 +228,26 @@ export function useNotifications(
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          realtimeRetryRef.current = 0; // reset retry count on success
           console.log("Subscribed to notifications realtime channel");
         } else if (status === "CHANNEL_ERROR") {
-          console.error("Error subscribing to notifications realtime channel");
-          setError("Failed to subscribe to realtime notifications");
+          // Intermittent: network, Supabase "mismatch" bug, or RLS. Polling still updates the list.
+          const attempt = realtimeRetryRef.current + 1;
+          realtimeRetryRef.current = attempt;
+          if (attempt <= REALTIME_MAX_RETRIES) {
+            console.warn(
+              `Realtime subscription error (attempt ${attempt}/${REALTIME_MAX_RETRIES}), retrying in ${REALTIME_RETRY_MS / 1000}s…`
+            );
+            realtimeRetryTimeoutRef.current = setTimeout(
+              () => setRealtimeRetryKey((k) => k + 1),
+              REALTIME_RETRY_MS
+            );
+          } else {
+            console.warn(
+              "Realtime subscription failed after retries; notifications will still update via polling."
+            );
+            // Do not set error state – polling keeps notifications working
+          }
         } else if (status === "TIMED_OUT") {
           console.warn("Realtime subscription timed out");
         } else if (status === "CLOSED") {
@@ -234,9 +256,13 @@ export function useNotifications(
       });
 
     return () => {
+      if (realtimeRetryTimeoutRef.current) {
+        clearTimeout(realtimeRetryTimeoutRef.current);
+        realtimeRetryTimeoutRef.current = null;
+      }
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, realtimeRetryKey]);
 
   // Mark single notification as read
   const markAsRead = useCallback(async (notificationId: string) => {

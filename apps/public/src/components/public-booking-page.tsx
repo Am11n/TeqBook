@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
+import { localISOStringToUTC } from "@/lib/utils/timezone";
 
 type PublicBookingPageProps = {
   slug: string;
@@ -24,6 +25,7 @@ type Salon = {
   supported_languages?: string[] | null;
   default_language?: string | null;
   preferred_language?: string | null;
+  timezone?: string | null;
   theme?: {
     primary?: string;
     secondary?: string;
@@ -76,6 +78,18 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Detect client timezone (for potential UX messaging; booking itself uses salon timezone)
+  const [clientTimezone, setClientTimezone] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setClientTimezone(tz || null);
+    } catch {
+      setClientTimezone(null);
+    }
+  }, []);
+
   const canLoadSlots = useMemo(
     () => !!(salon && serviceId && employeeId && date),
     [salon, serviceId, employeeId, date],
@@ -95,13 +109,14 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         return;
       }
 
-      setSalon({ 
-        id: salonData.id, 
+      setSalon({
+        id: salonData.id,
         name: salonData.name,
         whatsapp_number: salonData.whatsapp_number || null,
         supported_languages: salonData.supported_languages || null,
         default_language: salonData.default_language || null,
         preferred_language: salonData.preferred_language || null,
+        timezone: salonData.timezone || null,
         theme: salonData.theme || null,
       });
 
@@ -231,11 +246,29 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     }
 
     try {
+      // Convert selected slot (which represents local salon time) to UTC
+      let startTimeUTC = selectedSlot;
+      const salonTimezone = salon.timezone || "UTC";
+
+      if (salonTimezone !== "UTC") {
+        try {
+          // Extract the date/time part without timezone information
+          const timeMatch = selectedSlot.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
+          if (timeMatch) {
+            const timeWithoutTz = timeMatch[1];
+            startTimeUTC = localISOStringToUTC(timeWithoutTz, salonTimezone);
+          }
+        } catch (tzError) {
+          console.warn("Failed to convert public booking slot time to UTC, using as-is:", tzError);
+          startTimeUTC = selectedSlot;
+        }
+      }
+
       const { data: bookingData, error: bookingError } = await createBooking({
         salon_id: salon.id,
         employee_id: employeeId,
         service_id: serviceId,
-        start_time: selectedSlot,
+        start_time: startTimeUTC,
         customer_full_name: customerName,
         customer_email: customerEmail || null,
         customer_phone: customerPhone || null,

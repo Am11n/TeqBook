@@ -10,6 +10,7 @@ import { getBookingById } from "@/lib/repositories/bookings";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import { useLocale } from "@/components/locale-provider";
 // Translation available if needed: import { translations } from "@/i18n/translations";
+import { formatDateInTimezone, formatTimeInTimezone } from "@/lib/utils/timezone";
 import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide-react";
 import type { Booking } from "@/lib/types";
 
@@ -17,6 +18,7 @@ type Salon = {
   id: string;
   name: string;
   whatsapp_number?: string | null;
+  timezone?: string | null;
   theme?: {
     primary?: string;
     font?: string;
@@ -60,7 +62,13 @@ export default function BookingConfirmationPageClient({ salonSlug }: BookingConf
           setLoading(false);
           return;
         }
-        setSalon(salonData as Salon);
+        setSalon({
+          id: salonData.id,
+          name: salonData.name,
+          whatsapp_number: salonData.whatsapp_number || null,
+          timezone: salonData.timezone || null,
+          theme: salonData.theme || null,
+        });
 
         // Load booking - we need to create a function to get booking by ID publicly
         // For now, we'll need to add this to the repository
@@ -119,8 +127,8 @@ export default function BookingConfirmationPageClient({ salonSlug }: BookingConf
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
+    const tz = salon?.timezone || "UTC";
+    return formatDateInTimezone(dateString, tz, locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -129,8 +137,8 @@ export default function BookingConfirmationPageClient({ salonSlug }: BookingConf
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
+    const tz = salon?.timezone || "UTC";
+    return formatTimeInTimezone(dateString, tz, locale, {
       hour: "2-digit",
       minute: "2-digit",
     });

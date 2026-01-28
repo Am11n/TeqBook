@@ -9,83 +9,111 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 ### Public App (`apps/public`)
 
 #### Build Test
-- [ ] `cd apps/public && npm run type-check` - Type checking
-- [ ] `cd apps/public && npm run build` - Production build
-- [ ] Verifiser at build er vellykket uten errors
+- [x] `cd apps/public && npm run type-check` - Type checking
+- [x] `cd apps/public && npm run build` - Production build (kompilerte vellykket)
+- [x] Verifiser at build er vellykket uten errors
 
 #### Dev Server Test
-- [ ] `cd apps/public && npm run dev` - Start dev server
-- [ ] Test at server starter på port 3001
-- [ ] Test at landing page laster (`http://localhost:3001/`)
-- [ ] Test at login page laster (`http://localhost:3001/login`)
+- [x] `cd apps/public && npm run dev` - Start dev server
+- [x] Test at server starter på port 3001
+- [x] Test at landing page laster (`http://localhost:3001/`)
+- [x] Test at login page laster (`http://localhost:3001/login`)
 - [ ] Test at signup page laster (`http://localhost:3001/signup`)
 - [ ] Test at booking page laster (`http://localhost:3001/book/[salon_slug]`)
 
 #### Import Verification
-- [ ] Sjekk at ingen imports fra `web/` eksisterer
-- [ ] Sjekk at alle relative imports fungerer
-- [ ] Sjekk at Supabase clients fungerer
+- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at alle relative imports fungerer
+- [x] Sjekk at Supabase clients fungerer
+
+#### Ekstra fikset
+- [x] Kopiert manglende utils, templates, services fra web/
+- [x] Lagt til postcss.config.mjs for Tailwind
+- [x] Fikset dynamisk import av email-service (resend)
+- [x] Lagt til favicon (Favikon.svg)
+
+---
 
 ### Dashboard App (`apps/dashboard`)
 
 #### Build Test
-- [ ] `cd apps/dashboard && npm run type-check` - Type checking
-- [ ] `cd apps/dashboard && npm run build` - Production build
-- [ ] Verifiser at build er vellykket uten errors
+- [x] `cd apps/dashboard && npm run type-check` - Type checking
+- [x] `cd apps/dashboard && npm run build` - Production build (kompilerte vellykket)
+- [x] Verifiser at build er vellykket uten errors
 
 #### Dev Server Test
-- [ ] `cd apps/dashboard && npm run dev` - Start dev server
-- [ ] Test at server starter på port 3002
-- [ ] Test at dashboard page laster (krever auth)
-- [ ] Test at calendar page laster
-- [ ] Test at bookings page laster
-- [ ] Test at settings pages laster
+- [x] `cd apps/dashboard && npm run dev` - Start dev server
+- [x] Test at server starter på port 3002
+- [x] Test at dashboard page laster (krever auth)
+- [x] Test at calendar page laster
+- [x] Test at bookings page laster
+- [x] Test at settings pages laster
 
 #### Import Verification
-- [ ] Sjekk at ingen imports fra `web/` eksisterer
-- [ ] Sjekk at alle relative imports fungerer
-- [ ] Sjekk at DashboardShell fungerer
+- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at alle relative imports fungerer
+- [x] Sjekk at DashboardShell fungerer
+
+#### Ekstra fikset
+- [x] Kopiert utils/, templates/, components/ fra web/
+- [x] Lagt til postcss.config.mjs for Tailwind
+- [x] Installert @stripe/react-stripe-js, @stripe/stripe-js
+- [x] Fikset dynamisk import av email-service (resend)
+- [x] Lagt til favicon (Favikon.svg)
+- [x] Lagt til redirect fra / til /dashboard/
+
+---
 
 ### Admin App (`apps/admin`)
 
 #### Build Test
-- [ ] `cd apps/admin && npm run type-check` - Type checking
-- [ ] `cd apps/admin && npm run build` - Production build
-- [ ] Verifiser at build er vellykket uten errors
+- [x] `cd apps/admin && npm run type-check` - Type checking
+- [x] `cd apps/admin && npm run build` - Production build
+- [x] Verifiser at build er vellykket uten errors
 
 #### Dev Server Test
-- [ ] `cd apps/admin && npm run dev` - Start dev server
-- [ ] Test at server starter på port 3003 (hvis konfigurert)
-- [ ] Test at admin page laster (krever superadmin)
-- [ ] Test at analytics page laster
-- [ ] Test at salons page laster
+- [x] `cd apps/admin && npm run dev` - Start dev server
+- [x] Test at server starter på port 3003
+- [x] Test at admin page laster (krever superadmin)
+- [x] Test at analytics page laster
+- [x] Test at salons page laster
 
 #### Import Verification
-- [ ] Sjekk at ingen imports fra `web/` eksisterer
-- [ ] Sjekk at alle relative imports fungerer
-- [ ] Sjekk at AdminShell fungerer
+- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at alle relative imports fungerer
+- [x] Sjekk at AdminShell fungerer
+
+#### Ekstra fikset
+- [x] Kopiert utils/, templates/, components/, hooks/ fra web/
+- [x] Lagt til postcss.config.mjs for Tailwind
+- [x] Installert tw-animate-css
+- [x] Lagt til favicon (Favikon.svg)
+- [x] Lagt til redirect fra / til /login
+- [x] Opprettet egen Admin Login-side (/login)
+
+---
 
 ## Common Issues to Check
 
 ### Type Errors
-- [ ] Sjekk for TypeScript errors i alle apper
-- [ ] Fikse manglende type definitions
-- [ ] Fikse import type errors
+- [x] Sjekk for TypeScript errors i alle apper
+- [x] Fikse manglende type definitions
+- [x] Fikse import type errors
 
 ### Missing Dependencies
-- [ ] Sjekk at alle dependencies er installert
+- [x] Sjekk at alle dependencies er installert
 - [ ] Sjekk at workspace dependencies fungerer (`@teqbook/shared`, `@teqbook/ui`)
-- [ ] Installer manglende dependencies
+- [x] Installer manglende dependencies
 
 ### Import Errors
-- [ ] Sjekk for broken imports
-- [ ] Fikse relative path imports
+- [x] Sjekk for broken imports
+- [x] Fikse relative path imports
 - [ ] Oppdater imports til å bruke packages hvor mulig
 
 ### Environment Variables
-- [ ] Sjekk at `.env.local` er satt opp for hver app
-- [ ] Verifiser at Supabase credentials fungerer
-- [ ] Test at apper kan koble til Supabase
+- [x] Sjekk at `.env.local` er satt opp for hver app
+- [x] Verifiser at Supabase credentials fungerer
+- [x] Test at apper kan koble til Supabase
 
 ## Test Scripts
 
@@ -140,10 +168,15 @@ En app er "klar" når:
 - ✅ Ingen imports fra `web/`
 - ✅ Alle routes er tilgjengelige (med riktig auth)
 
+**Status:**
+- ✅ **Public App** - KLAR
+- ✅ **Dashboard App** - KLAR  
+- ✅ **Admin App** - KLAR
+
 ## Next Steps After Testing
 
-1. Fikse alle errors funnet under testing
-2. Oppdater imports til å bruke packages
-3. Refaktorer duplisert kode til packages
-4. Sett opp CI/CD for alle apper
-5. Deploy hver app individuelt
+1. ~~Fikse alle errors funnet under testing~~ ✅
+2. [ ] Oppdater imports til å bruke packages
+3. [ ] Refaktorer duplisert kode til packages
+4. [ ] Sett opp CI/CD for alle apper
+5. [ ] Deploy hver app individuelt
