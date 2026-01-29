@@ -98,12 +98,12 @@ For å bruke **én domain** med stier:
    - Gå til **Public**-prosjektet i Vercel → **Settings → Domains**.
    - Legg til **teqbook.com** (og evt. **www.teqbook.com**). Fjern eller ikke legg til domener på Dashboard- og Admin-prosjektene for dette domenet.
 
-2. **Sett rewrites-URL-er i Public-prosjektet:**
+2. **Sett rewrites-URL-er i Public-prosjektet (viktig for teqbook.com/dashboard og /admin):**
    - **Public**-prosjektet → **Settings → Environment Variables**.
-   - Legg til:
+   - Legg til (for **Production** og **Preview**, så de brukes ved build):
      - **DASHBOARD_APP_URL** = full URL til Dashboard-deploy (f.eks. `https://teqbook-dashboard.vercel.app` – uten avsluttende `/`).
      - **ADMIN_APP_URL** = full URL til Admin-deploy (f.eks. `https://teqbook-admin.vercel.app`).
-   - Redeploy Public etter at variablene er satt.
+   - **Redeploy Public** etter at variablene er satt – rewrites leses ved **build**, så uten redeploy vil teqbook.com/dashboard gi 404 og «Unexpected token 'export'» (fordi assets lastes fra feil sted).
 
 3. **Dashboard- og Admin-prosjektene** trenger **ikke** teqbook.com på egne prosjekter; de har hver sin `*.vercel.app`-URL som Public-prosjektet peker til via rewrites.
 
