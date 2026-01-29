@@ -84,13 +84,17 @@ function BookingsContent() {
   const handleConfirmCancel = async (reason: string) => {
     if (!bookingToCancel || !salon?.id) return;
 
+    // Get customer email (Supabase may return customers as object or array)
+    const c = Array.isArray(bookingToCancel.customers) ? bookingToCancel.customers[0] : bookingToCancel.customers;
+    const customerEmail = (c as { email?: string | null } | null | undefined)?.email ?? undefined;
+
     const { error: cancelError } = await cancelBooking(
       salon.id,
       bookingToCancel.id,
       reason || null,
       {
         booking: bookingToCancel,
-        customerEmail: bookingToCancel.customers?.email ?? undefined,
+        customerEmail,
       }
     );
 

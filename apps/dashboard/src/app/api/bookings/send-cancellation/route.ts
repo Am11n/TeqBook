@@ -8,7 +8,8 @@ import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
 
-// Note: sendBookingNotification is still used for customer email
+// UUID validation regex (same as send-notifications)
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
@@ -17,16 +18,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       bookingId,
-      customerEmail,
-      salonId,
-      language,
-      cancelledBy, // 'customer' | 'salon'
+      customerEmail: bodyCustomerEmail,
+      salonId: bodySalonId,
+      language: bodyLanguage,
+      cancelledBy,
       cancellationReason,
-      bookingData, // Optional: booking data sent directly to avoid timing issues
+      bookingData,
     }: {
       bookingId: string;
       customerEmail?: string;
-      salonId: string;
+      salonId?: string;
       language?: string;
       cancelledBy?: "customer" | "salon";
       cancellationReason?: string | null;
@@ -43,24 +44,55 @@ export async function POST(request: NextRequest) {
       };
     } = body;
 
-    // Log incoming request for debugging
     logInfo("send-cancellation API route called (dashboard)", {
       bookingId,
-      customerEmail,
-      salonId,
-      cancelledBy,
+      bodySalonId,
     });
 
-    if (!bookingId || !salonId) {
-      logError("Missing required fields in send-cancellation API route", new Error("Missing required fields"), {
+    if (!bookingId) {
+      logError("Missing bookingId in send-cancellation API route", new Error("Missing bookingId"), {
         bookingId: !!bookingId,
-        salonId: !!salonId,
       });
       return NextResponse.json(
-        { error: "Missing required fields: bookingId and salonId are required" },
+        { error: "Missing required field: bookingId is required" },
         { status: 400 }
       );
     }
+
+    if (!UUID_REGEX.test(bookingId)) {
+      logWarn("Invalid bookingId format", { bookingId });
+      return NextResponse.json(
+        { error: "Invalid bookingId format: must be a valid UUID" },
+        { status: 400 }
+      );
+    }
+
+    // Same as send-notifications: fetch booking first to get salonId and customer email
+    const supabase = createClientForRouteHandler(request, response);
+    const { data: bookingRow, error: bookingFetchError } = await supabase
+      .from("bookings")
+      .select("id, salon_id, status, customers(email)")
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (bookingFetchError || !bookingRow) {
+      logWarn("Booking not found", {
+        bookingId,
+        error: bookingFetchError?.message,
+      });
+      return NextResponse.json(
+        { error: bookingFetchError?.message || "Booking not found" },
+        { status: 404 }
+      );
+    }
+
+    const salonId = bodySalonId || bookingRow.salon_id;
+    const customerEmailFromRow = (() => {
+      const c = Array.isArray((bookingRow as { customers?: unknown }).customers)
+        ? (bookingRow as { customers?: { email?: string | null }[] }).customers?.[0]
+        : (bookingRow as { customers?: { email?: string | null } | null }).customers;
+      return (c as { email?: string | null } | null)?.email ?? null;
+    })();
 
     // Authenticate user and verify salon access
     const authResult = await authenticateAndVerifySalon(request, salonId, response);
@@ -104,25 +136,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Construct booking object from provided data
+      // Construct booking object from provided data (same pattern as send-notifications)
       booking = {
         id: bookingData.id,
         salon_id: bookingData.salon_id,
         start_time: bookingData.start_time,
-        end_time: bookingData.end_time || bookingData.start_time, // Fallback to start_time if null
+        end_time: bookingData.end_time || bookingData.start_time,
         status: bookingData.status as "pending" | "confirmed" | "completed" | "cancelled" | "no-show" | "scheduled",
         is_walk_in: bookingData.is_walk_in,
         notes: null,
-        // Required Booking fields
         customers: bookingData.customer_full_name ? { full_name: bookingData.customer_full_name } : null,
         employees: bookingData.employee_name ? { full_name: bookingData.employee_name } : null,
         services: bookingData.service_name ? { name: bookingData.service_name } : null,
-        // Extended fields for notifications
         customer_full_name: bookingData.customer_full_name,
-        customer_email: customerEmail || null,
+        customer_email: bodyCustomerEmail || customerEmailFromRow || null,
         service: bookingData.service_name ? { name: bookingData.service_name } : null,
         employee: bookingData.employee_name ? { name: bookingData.employee_name } : null,
-        salon: null, // Will be fetched below
+        salon: null,
       } as Booking & {
         salon_id: string;
         customer_full_name: string;
@@ -220,62 +250,49 @@ export async function POST(request: NextRequest) {
       salonInApp: null as { success: boolean; sent?: number; total?: number; error?: string } | null,
     };
 
-    // Try to get customer email if not provided (use booking data from database)
-    let resolvedCustomerEmail = customerEmail || booking.customer_email || null;
-    if (!resolvedCustomerEmail && booking.id) {
-      // Use database function to get customer email (bypasses RLS)
-      const supabase = createClientForRouteHandler(request, response);
-      const { data: email, error: fetchError } = await supabase.rpc(
-        "get_booking_customer_email",
-        { p_booking_id: booking.id }
-      );
-
-      console.log("[send-cancellation] Customer email lookup result:", {
-        bookingId: booking.id,
-        email,
-        fetchError: fetchError?.message,
+    // Resolve customer email (same order as send-notifications: body, then from booking/row, then RPC fallback)
+    let customerEmail = booking.customer_email || bodyCustomerEmail || customerEmailFromRow || null;
+    if (!customerEmail && booking.id) {
+      const { data: email } = await supabase.rpc("get_booking_customer_email", {
+        p_booking_id: booking.id,
       });
-
       if (email) {
-        resolvedCustomerEmail = email;
-        logInfo("Resolved customer email from booking", {
-          bookingId: booking.id,
-          customerEmail: resolvedCustomerEmail,
-        });
+        customerEmail = email;
+        logInfo("Resolved customer email via RPC", { bookingId: booking.id });
       }
     }
 
-    // Send cancellation email to customer if email available
-    if (resolvedCustomerEmail) {
+    const language = bodyLanguage || salon?.preferred_language || "en";
+
+    // Send cancellation email to customer when we have email (same pattern as send-notifications)
+    if (customerEmail) {
       logInfo("Sending cancellation email to customer", {
         bookingId: booking.id,
-        recipientEmail: resolvedCustomerEmail,
-        language: language || salon?.preferred_language || "en",
+        recipientEmail: customerEmail,
+        language,
       });
 
-      const emailResult = await sendBookingNotification("booking_cancelled", {
-        booking: bookingForNotification,
-        salonId,
-        recipientUserId: null,
-        recipientEmail: resolvedCustomerEmail,
-        language: language || salon?.preferred_language || "en",
-        cancellationReason: cancellationReason ?? undefined,
-      }).catch((emailError) => {
-        logWarn("Failed to send cancellation email to customer", {
-          bookingId: booking.id,
-          emailError: emailError instanceof Error ? emailError.message : "Unknown error",
-        });
-        return { success: false, error: emailError instanceof Error ? emailError.message : "Unknown error" };
-      });
-
-      results.customerEmail = {
-        success: emailResult.success,
-        error: 'channels' in emailResult ? emailResult.channels?.email?.error : emailResult.error,
-      };
-    } else {
-      logInfo("No customer email available for cancellation notification", {
+    const emailResult = await sendBookingNotification("booking_cancelled", {
+      booking: bookingForNotification,
+      salonId,
+      recipientUserId: null,
+      recipientEmail: customerEmail,
+      language,
+      cancellationReason: cancellationReason ?? undefined,
+    }).catch((emailError) => {
+      logWarn("Failed to send cancellation email to customer", {
         bookingId: booking.id,
+        emailError: emailError instanceof Error ? emailError.message : "Unknown error",
       });
+      return { success: false, error: emailError instanceof Error ? emailError.message : "Unknown error" };
+    });
+
+    results.customerEmail = {
+      success: emailResult.success,
+      error: 'channels' in emailResult ? emailResult.channels?.email?.error : emailResult.error,
+    };
+    } else {
+      logInfo("No customer email for cancellation notification", { bookingId: booking.id });
     }
 
     // Send in-app notification to salon staff about cancellation

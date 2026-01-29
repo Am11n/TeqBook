@@ -527,7 +527,7 @@ export async function cancelBooking(
 
           // Send booking data directly to avoid timing issues with database replication
           // Use the booking from options if available, otherwise we'll fetch it in the API route
-          fetch("/api/bookings/send-cancellation/", {
+          fetch("/api/bookings/send-cancellation", {
             method: "POST",
             credentials: "include",
             headers: {
