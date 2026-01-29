@@ -30,17 +30,19 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["resend", "@sentry/node"],
 
   // Single domain: teqbook.com → Public, teqbook.com/dashboard → Dashboard, teqbook.com/admin → Admin
-  // Set DASHBOARD_APP_URL and ADMIN_APP_URL in Vercel (Public project) to the dashboard/admin deployment URLs
+  // VIKTIG: Sett DASHBOARD_APP_URL og ADMIN_APP_URL i Vercel (Public-prosjektet) og redeploy Public – rewrites leses ved build.
   async rewrites() {
-    const dashboardUrl = process.env.DASHBOARD_APP_URL;
-    const adminUrl = process.env.ADMIN_APP_URL;
+    const dashboardUrl = process.env.DASHBOARD_APP_URL?.replace(/\/$/, "");
+    const adminUrl = process.env.ADMIN_APP_URL?.replace(/\/$/, "");
     const rewrites: { source: string; destination: string }[] = [];
     if (dashboardUrl) {
       rewrites.push({ source: "/dashboard", destination: `${dashboardUrl}/dashboard` });
+      rewrites.push({ source: "/dashboard/", destination: `${dashboardUrl}/dashboard/` });
       rewrites.push({ source: "/dashboard/:path*", destination: `${dashboardUrl}/dashboard/:path*` });
     }
     if (adminUrl) {
       rewrites.push({ source: "/admin", destination: `${adminUrl}/admin` });
+      rewrites.push({ source: "/admin/", destination: `${adminUrl}/admin/` });
       rewrites.push({ source: "/admin/:path*", destination: `${adminUrl}/admin/:path*` });
     }
     return rewrites;
