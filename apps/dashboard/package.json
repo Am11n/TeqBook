@@ -12,7 +12,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "test": "vitest",
     "test:run": "vitest --run",
-    "test:coverage": "vitest --coverage --run"
+    "test:coverage": "vitest --coverage --run",
+    "test:integration": "vitest --run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

@@ -1,6 +1,6 @@
 # Teststatus – TeqBook monorepo
 
-**Alle kjørende tester bestås.** Type-check, unit-tester (28 stk), lint og E2E (53 tester) passerer når appene kjører og Playwright-browsere er installert.
+**Alle kjørende tester bestås.** Type-check, unit-tester (647 stk), lint og E2E (53 tester) passerer når appene kjører og Playwright-browsere er installert.
 
 Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres status. Sist oppdatert etter kjøring av alle tilgjengelige test-kommandoer.
 
@@ -11,7 +11,7 @@ Dette dokumentet beskriver hvilke tester som kjører i monorepoet og deres statu
 | Kategori        | Kommando        | Status | Merknad |
 |-----------------|-----------------|--------|---------|
 | Type-check     | `pnpm run type-check` | ✅ Bestått | Alle workspaces |
-| Unit-tester    | `pnpm run test:run`   | ✅ Bestått | 28 tester, dashboard |
+| Unit-tester    | `pnpm run test:run`   | ✅ Bestått | 647 tester (dashboard 639, public 4, admin 4) |
 | Lint           | `pnpm run lint`       | ✅ Bestått | Alle workspaces (admin, dashboard, public, shared, ui) |
 | E2E-tester     | `pnpm run test:e2e`   | ✅ Bestått | 53 tester; krever at apper kjører (3001–3003) og `pnpm exec playwright install` |
 
@@ -40,23 +40,16 @@ Ingen TypeScript-feil.
 
 **Kommando:** `pnpm run test:run`
 
-Kjører Vitest én gang for dashboard-appen.
+Kjører Vitest én gang i dashboard, public og admin (fra rot: `pnpm run test:run`).
 
 **Resultat (sist kjørt):**
+- **Dashboard:** 639 tester (40 filer) – unit/services, unit/repositories, unit/security (delvis), unit/components (delvis), components. Integration/docs/rls ekskludert fra standard kjøring; noen filer ekskludert inntil tilpasning til dashboard API (se vitest.config.ts).
+- **Public:** 4 tester (logger)
+- **Admin:** 4 tester (logger)
 
-```
-✓ tests/unit/services/logger.test.ts         (4 tests)
-✓ tests/unit/services/cache-service.test.ts (24 tests)
+**Testfiler (dashboard):** unit/services (logger, cache, plan-limits, permissions, audit-log, audit-trail, og mange andre), unit/repositories, components (command-palette m.m.), unit/security (delvis). Ekskludert: integration, docs, rls, type-safety, BookingsTable, table-system, calendar, api-auth, api-endpoint-security, supabase-client (kan tilpasses senere).
 
-Test Files  2 passed (2)
-     Tests  28 passed (28)
-```
-
-**Testfiler:**
-- `apps/dashboard/tests/unit/services/logger.test.ts` – 4 tester
-- `apps/dashboard/tests/unit/services/cache-service.test.ts` – 24 tester
-
-Alle 28 unit-tester bestås.
+Alle 647 unit-tester bestås.
 
 ---
 

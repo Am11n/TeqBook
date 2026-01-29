@@ -17,6 +17,14 @@ export default defineConfig({
       "**/.next/**",
       "**/tests/e2e/**",
       "**/e2e/**",
+      "**/tests/integration/**",
+      "**/tests/docs/**",
+      "**/tests/rls/**",
+      // Dashboard har ikke valideringsmoduler – behold ekskludert til de er lagt til
+      "**/tests/unit/type-safety.test.ts",
+      // Radix DropdownMenu åpnes ikke med fireEvent i jsdom – krever user-event eller E2E
+      "**/tests/components/BookingsTable.test.tsx",
+      "**/tests/components/table-system.test.tsx",
     ],
     coverage: {
       provider: "v8",

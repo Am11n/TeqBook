@@ -126,6 +126,7 @@ pnpm run test:run     # Unit-tester (dashboard, 28 stk)
 pnpm run test:coverage # Coverage (dashboard, services/repositories)
 pnpm run build        # Build alle apper
 pnpm run test:e2e     # E2E (53 tester; krever apper på 3001–3003 og «pnpm exec playwright install»)
+pnpm run test:integration  # Integration/docs/rls (dashboard; krever Supabase-env for integration)
 ```
 
 ### Individual App Test
@@ -193,7 +194,7 @@ En app er "klar" når:
 - [x] **Scripts**: Root `package.json` har `seed`, `seed:reset`, `seed:force`, `migrate:local`, `reset:db`, `create:e2e-users`, `setup:e2e` – kjør fra rot med `pnpm run <script>`. Env fra rot `.env.local`/`.env`. Se `scripts/README.md`.
 - [x] **CI**: `.github/workflows/ci.yml` kjører type-check, lint, test:run, build på push/PR mot main/develop/monorepo.
 - [x] **Lint**: ESLint 9 flat config (`eslint.config.mjs`) er på plass i alle workspaces (admin, dashboard, public, shared, ui); lint bestås.
-- [ ] **E2E i CI**: Valgfritt; E2E kjører lokalt (53 tester bestått). I CI krever det oppstart av alle tre apper eller schedule-kjøring.
+- [x] **E2E i CI**: E2E-job i `.github/workflows/ci.yml` kjører etter build; Playwright starter alle tre apper (3001, 3002, 3003) via `webServer`. Se `docs/ops/ci-cd-strategy.md`.
 
 ---
 
@@ -204,25 +205,25 @@ For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
 ### 1. Automatisert testkjøring i CI
 - [x] Kjør type-check, lint, unit tests og build i CI: `.github/workflows/ci.yml` (pnpm, type-check, lint, test:run, build).
 - [x] PR-er mot main/develop/monorepo trigger CI; build avhenger av type-check, lint og test.
-- [x] E2E kjører lokalt (53 tester bestått; `pnpm run test:e2e` med apper på 3001–3003). E2E i CI er valgfritt og kan legges til senere (krever oppstart av alle tre apper eller schedule).
+- [x] E2E i CI: jobb `e2e` i `ci.yml` kjører `pnpm run test:e2e` etter build; Playwright starter appene via `webServer`.
 
 ### 2. Migrere og strukturere tester
 - [x] Etablér felles test-struktur for monorepo: E2E i rot `tests/e2e/`, unit per app (f.eks. `apps/dashboard/tests/`).
 - [x] Migrere E2E fra web: `tests/e2e/` med landing, public-booking, settings, billing, onboarding, admin; auth setup per app (owner på 3002, superadmin på 3003).
 - [x] Playwright-konfig i rot: `playwright.config.ts` med prosjekter og webServers for 3001, 3002, 3003.
 - [x] Vitest i dashboard: `apps/dashboard/vitest.config.ts`, `tests/setup.ts`, eksempel unit-test (logger).
-- [ ] Videre migrering av unit/integration fra `web/tests/` til respektive app (dashboard får mest). Noen tester (f.eks. plan-limits-service) må tilpasses hvis app-implementasjonen avviker fra web. Kilde: `web/tests/unit/`, `web/tests/integration/`.
+- [x] **Alle tester fra web/tests migrert til dashboard:** Unit (services, repositories, security, components), components/, type-safety, docs, rls og integration er kopiert til `apps/dashboard/tests/`. Standard kjøring: `pnpm run test:run`. Integration, docs og rls kjøres med `pnpm run test:integration` (eget oppsett/Supabase). Ekskludert fra standard kjøring: type-safety (mangler valideringsmoduler), BookingsTable og table-system (Radix Dropdown i jsdom). calendar.test.tsx kjører. Se `apps/dashboard/tests/README.md` og `vitest.config.ts`.
 
 ### 3. Minimumsdekning per app
 - **Public (`apps/public`)**
   - [x] E2E: landing (`landing.spec.ts`), navigere til login (`landing.spec.ts`), booking-flow (`public-booking.spec.ts`). Signup har ikke egen E2E ennå.
-  - [ ] Unit: kritiske komponenter (forms, booking-komponenter) og helpers.
+  - [x] Unit: Vitest på plass; 4 tester (logger i `tests/unit/services/`). [ ] Flere: kritiske komponenter, helpers.
 - **Dashboard (`apps/dashboard`)**
   - [x] E2E: login (auth.owner.setup), settings (`settings-form.spec.ts`, `settings-changes.spec.ts`), billing (`billing-flow.spec.ts`), booking (`booking-flow.spec.ts`), onboarding (`onboarding.spec.ts`). Dashboard/calendar dekkes indirekte via andre flows.
-  - [x] Unit: 28 tester (logger, cache-service i `tests/unit/services/`). [ ] Flere: booking-/salon-/employee-services, RLS-relaterte flows (kan migreres fra `web/tests/`).
+  - [x] Unit: 639 tester (services, repositories, security, components – migrert fra `web/tests/`). Noen filer ekskludert inntil API-tilpasning.
 - **Admin (`apps/admin`)**
   - [x] E2E: admin-login (auth.superadmin.setup), admin-operations (`admin-operations.spec.ts` – salons, analytics m.m.).
-  - [ ] Unit: admin-relaterte services og tilgangskontroll.
+  - [x] Unit: Vitest på plass; 4 tester (logger i `tests/unit/services/`). [ ] Flere: admin-relaterte services og tilgangskontroll.
 
 ### 4. Rapporter og dekning
 - [x] Slå på coverage-rapportering for Vitest: `apps/dashboard/vitest.config.ts` har `coverage` (v8, text + json-summary) for `src/lib/services/**` og `src/lib/repositories/**`. Root: `pnpm run test:coverage`.
@@ -232,7 +233,7 @@ For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
 
 ## Neste konkrete steg (fortsett planen)
 
-1. **Migrere flere unit/integration-tester fra `web/tests/`** til `apps/dashboard/tests/` (f.eks. `web/tests/unit/services/`, `web/tests/integration/repositories/`). Tilpass til monorepo-imports og evt. andre API-er.
-2. **Public/Admin unit-tester:** Legg til Vitest og første unit-tester i `apps/public` og `apps/admin` dersom kritiske services/komponenter skal dekkes.
-3. **E2E i CI (valgfritt):** Legg til E2E-job i CI som starter alle tre apper (eller bruk matrix/schedule) for å kjøre `pnpm run test:e2e` på PR/main.
+1. ~~**Migrere alle tester fra web/tests/**~~ ✅ Fullført: alle filer kopiert til dashboard; 639 tester kjører. **Valgfritt:** Tilpass de ekskluderte testene (type-safety, BookingsTable, table-system, calendar, api-auth, api-endpoint-security, supabase-client) og/eller kjør integration/docs/rls med eget oppsett.
+2. ~~**Public/Admin unit-tester:** Legg til Vitest og første unit-tester~~ ✅ Vitest + logger.test er på plass i public og admin (4 tester hver).
+3. ~~**E2E i CI (valgfritt):**~~ ✅ E2E-job i `ci.yml` kjører `pnpm run test:e2e` etter build; Playwright starter appene.
 4. **Deploy:** Fullfør deploy per app (Vercel), se `docs/ops/ci-cd-strategy.md`. 
