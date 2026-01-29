@@ -16,11 +16,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  const allowOrigin =
+    origin && (origin.endsWith("teqbook.com") || origin.endsWith("vercel.app"))
+      ? origin
+      : "*";
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Max-Age": "86400",
+  };
+}
 
 // Rate limit configuration
 const RATE_LIMIT_CONFIG = {
@@ -373,10 +382,11 @@ async function resetRateLimit(
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
+  // Handle CORS preflight – return 204 so browser accepts it
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: getCorsHeaders(req) });
   }
+  const corsHeaders = getCorsHeaders(req);
 
   try {
     // Get environment variables
@@ -398,8 +408,8 @@ serve(async (req) => {
     // Create Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse request body
-    const body: RateLimitRequest = await req.json();
+    // Parse request body (OPTIONS already handled above)
+    const body: RateLimitRequest = await req.json().catch(() => ({}));
 
     // Validate request
     if (!body.identifier) {

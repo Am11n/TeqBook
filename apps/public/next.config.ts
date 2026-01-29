@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const dashboardUrl = process.env.DASHBOARD_APP_URL?.replace(/\/$/, "");
     const adminUrl = process.env.ADMIN_APP_URL?.replace(/\/$/, "");
+    if (process.env.CI !== undefined || process.env.VERCEL === "1") {
+      console.log("[teqbook-public] rewrites: DASHBOARD_APP_URL=" + (dashboardUrl ? "set" : "MISSING") + " ADMIN_APP_URL=" + (adminUrl ? "set" : "MISSING"));
+    }
     const rewrites: { source: string; destination: string }[] = [];
     if (dashboardUrl) {
       rewrites.push({ source: "/dashboard", destination: `${dashboardUrl}/dashboard` });
