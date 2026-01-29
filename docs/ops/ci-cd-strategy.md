@@ -86,14 +86,38 @@ git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || echo "should-build"
 
 ---
 
-#### Steg 7: Domener (valgfritt)
+#### Steg 7: En domain – teqbook.com med /dashboard og /admin
 
-- **Settings → Domains** for hvert prosjekt.
-- Legg til f.eks. `app.teqbook.com` (dashboard), `admin.teqbook.com` (admin), eller bruk Vercel-subdomener (`*-xxx.vercel.app`).
+For å bruke **én domain** med stier:
+
+- **teqbook.com** → Public (landing, booking)
+- **teqbook.com/dashboard** → Dashboard
+- **teqbook.com/admin** → Admin
+
+1. **Kun Public-prosjektet** får hoveddomenet:
+   - Gå til **Public**-prosjektet i Vercel → **Settings → Domains**.
+   - Legg til **teqbook.com** (og evt. **www.teqbook.com**). Fjern eller ikke legg til domener på Dashboard- og Admin-prosjektene for dette domenet.
+
+2. **Sett rewrites-URL-er i Public-prosjektet:**
+   - **Public**-prosjektet → **Settings → Environment Variables**.
+   - Legg til:
+     - **DASHBOARD_APP_URL** = full URL til Dashboard-deploy (f.eks. `https://teqbook-dashboard.vercel.app` – uten avsluttende `/`).
+     - **ADMIN_APP_URL** = full URL til Admin-deploy (f.eks. `https://teqbook-admin.vercel.app`).
+   - Redeploy Public etter at variablene er satt.
+
+3. **Dashboard- og Admin-prosjektene** trenger **ikke** teqbook.com på egne prosjekter; de har hver sin `*.vercel.app`-URL som Public-prosjektet peker til via rewrites.
+
+4. **Lokalt:** Uten `DASHBOARD_APP_URL` og `ADMIN_APP_URL` kjører Public uten rewrites (kun public-appen). Kjør dashboard og admin på egne porter (3002, 3003) som vanlig.
 
 ---
 
-**Kort oppsummert:** Tre Vercel-prosjekter, ett per app. Root Directory = `apps/public` / `apps/dashboard` / `apps/admin`. Sett env-variabler og Ignored Build Step som over. Deploy.
+#### Steg 8: Domener (alternativ: subdomener)
+
+Hvis du vil bruke **subdomener** i stedet (f.eks. `app.teqbook.com`, `admin.teqbook.com`), legg til disse på **Dashboard**- og **Admin**-prosjektene i **Settings → Domains**, og **fjern** `basePath` fra dashboard/admin `next.config` og rewrites fra Public.
+
+---
+
+**Kort oppsummert:** Tre Vercel-prosjekter, ett per app. Root Directory = `apps/public` / `apps/dashboard` / `apps/admin`. Sett env-variabler og Ignored Build Step som over. For én domain: kun teqbook.com på Public; sett DASHBOARD_APP_URL og ADMIN_APP_URL i Public. Deploy.
 
 ---
 
