@@ -38,7 +38,7 @@ const navigationItems: SearchResult[] = [
     id: "nav-dashboard",
     type: "navigation",
     label: "Go to Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: Settings,
   },
   {
