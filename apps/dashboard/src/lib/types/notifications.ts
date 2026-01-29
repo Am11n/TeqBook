@@ -73,6 +73,7 @@ export interface BookingNotificationData {
   recipientUserId?: string | null; // User ID for preference checks and in-app notifications
   recipientEmail?: string | null; // Email address for email notifications
   language?: string;
+  cancellationReason?: string | null; // For booking_cancelled emails
 }
 
 export interface ReminderNotificationData {

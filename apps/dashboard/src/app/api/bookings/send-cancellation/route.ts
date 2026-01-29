@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       salonId,
       language,
       cancelledBy, // 'customer' | 'salon'
+      cancellationReason,
       bookingData, // Optional: booking data sent directly to avoid timing issues
     }: {
       bookingId: string;
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
       salonId: string;
       language?: string;
       cancelledBy?: "customer" | "salon";
+      cancellationReason?: string | null;
       bookingData?: {
         id: string;
         salon_id: string;
@@ -257,6 +259,7 @@ export async function POST(request: NextRequest) {
         recipientUserId: null,
         recipientEmail: resolvedCustomerEmail,
         language: language || salon?.preferred_language || "en",
+        cancellationReason: cancellationReason ?? undefined,
       }).catch((emailError) => {
         logWarn("Failed to send cancellation email to customer", {
           bookingId: booking.id,

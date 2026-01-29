@@ -90,7 +90,7 @@ function BookingsContent() {
       reason || null,
       {
         booking: bookingToCancel,
-        customerEmail: undefined, // We don't have customer email in booking object
+        customerEmail: bookingToCancel.customers?.email ?? undefined,
       }
     );
 

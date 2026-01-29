@@ -268,6 +268,7 @@ async function sendEmailNotification(
         salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
         timezone: timezone,
+        cancellationReason: bookingData.cancellationReason ?? undefined,
       });
 
       if (result.error) {

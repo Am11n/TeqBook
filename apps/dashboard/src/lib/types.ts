@@ -69,7 +69,7 @@ export type Booking = {
   status: BookingStatus | string; // Can be enum or text for backward compatibility
   is_walk_in: boolean;
   notes: string | null;
-  customers: { full_name: string | null } | null;
+  customers: { full_name: string | null; email?: string | null } | null;
   employees: { full_name: string | null } | null;
   services: { name: string | null } | null;
   products?: Array<{

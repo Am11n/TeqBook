@@ -539,6 +539,7 @@ export async function cancelBooking(
               salonId,
               language: options?.language || salon?.preferred_language || "en",
               cancelledBy: "salon",
+              cancellationReason: reason || undefined,
               // Send booking data directly to avoid database lookup timing issues
               bookingData: options?.booking ? {
                 id: options.booking.id,

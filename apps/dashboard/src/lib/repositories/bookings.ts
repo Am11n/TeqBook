@@ -23,7 +23,7 @@ export async function getBookingsForCurrentSalon(
     const { data, error, count } = await supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name), employees(full_name), services(name)",
+        "id, start_time, end_time, status, is_walk_in, notes, customers(full_name, email), employees(full_name), services(name)",
         { count: "exact" }
       )
       .eq("salon_id", salonId)
