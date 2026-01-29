@@ -555,11 +555,11 @@ export async function cancelBooking(
             }),
           })
             .then(async (response) => {
-              let responseData;
+              const text = await response.text();
+              let responseData: { customerEmail?: unknown; salonInApp?: unknown; error?: string };
               try {
-                responseData = await response.json();
-              } catch (jsonError) {
-                const text = await response.text();
+                responseData = text ? JSON.parse(text) : {};
+              } catch {
                 logWarn("send-cancellation API route returned non-JSON response", {
                   ...logContext,
                   bookingId,
