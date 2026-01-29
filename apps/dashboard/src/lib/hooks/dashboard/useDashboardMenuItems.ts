@@ -50,7 +50,7 @@ export function useDashboardMenuItems({
   const texts = translations[appLocale].dashboard;
 
   const overviewItems = useMemo<MenuItem[]>(
-    () => [{ href: "/dashboard", label: texts.overview, icon: LayoutDashboard }],
+    () => [{ href: "/", label: texts.overview, icon: LayoutDashboard }],
     [texts.overview]
   );
 

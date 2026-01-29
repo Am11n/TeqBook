@@ -79,7 +79,7 @@ function AdminShellContent({ children }: AdminShellProps) {
   // Redirect if not superadmin
   useEffect(() => {
     if (mounted && !isSuperAdmin) {
-      router.push("/dashboard");
+      router.push("/");
     }
   }, [mounted, isSuperAdmin, router]);
 

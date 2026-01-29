@@ -51,7 +51,7 @@ export default function DashboardLoginPage() {
     }
 
     if (profile.salon_id) {
-      router.push("/dashboard");
+      router.push("/");
       return;
     }
 

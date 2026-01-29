@@ -50,7 +50,7 @@ export function DashboardHeader({
 
         {/* Desktop: Logo + TeqBook */}
         <Link
-          href="/dashboard"
+          href="/"
           prefetch={true}
           className="hidden items-center gap-3 transition-all duration-150 hover:scale-105 hover:drop-shadow-[0_2px_8px_rgba(29,78,216,0.15)] md:flex"
         >
@@ -69,7 +69,7 @@ export function DashboardHeader({
 
         {/* Mobile: Logo centered */}
         <Link
-          href="/dashboard"
+          href="/"
           prefetch={true}
           className="flex items-center gap-2 transition-opacity hover:opacity-80 md:hidden"
         >
