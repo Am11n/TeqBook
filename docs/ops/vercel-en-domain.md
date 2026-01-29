@@ -94,3 +94,28 @@ Hvis du fortsatt ikke sendes til /dashboard eller /admin:
 | teqbook.com/admin | Admin | Rewrite i Public (krever ADMIN_APP_URL + redeploy) |
 
 **Viktig:** Dashboard- og Admin-prosjektene trenger **ikke** teqbook.com på egne Domains. De brukes bare via rewrites fra Public.
+
+---
+
+## Feilsøking
+
+### 404 på teqbook.com/dashboard eller /admin etter innlogging
+
+1. **Åpne teqbook.com/dashboard/ direkte** i en ny fane (ikke etter login).  
+   - **Hvis du får 404:** Rewrites er ikke aktive. Public ble bygget uten `DASHBOARD_APP_URL`/`ADMIN_APP_URL`, eller variablene er feil.
+   - **Løsning:** I **teqbook-public** → **Settings** → **Environment Variables** sjekk at `DASHBOARD_APP_URL` og `ADMIN_APP_URL` finnes og er satt for **Production**. Deretter **Redeploy** Public (Deployments → ⋮ → Redeploy), og **fjern** huken på «Use project's Ignore Build Step» slik at build faktisk kjører.
+   - **Sjekk build:** Etter redeploy, åpne **Build Logs** for den nye deployen. Du skal se linjen `[teqbook-public] rewrites: DASHBOARD_APP_URL=set ADMIN_APP_URL=set`. Hvis det står `MISSING`, er variablene ikke tilgjengelige ved build.
+
+2. **Hvis teqbook.com/dashboard/ fungerer når du åpner direkte, men 404 etter login:** Da er rewrites ok; problemet kan være cache eller at nettleseren går til feil URL. Prøv hard refresh (Ctrl+Shift+R) eller åpne teqbook.com/dashboard/ i ny fane etter innlogging.
+
+### CORS-feil mot rate-limit-check (Supabase)
+
+Feilmeldingen «Access to fetch at ... rate-limit-check ... has been blocked by CORS policy» betyr at Supabase Edge Function ikke godtar forespørselen fra `https://teqbook.com`.
+
+1. **Redeploy Edge Function** etter CORS-endring:  
+   `supabase functions deploy rate-limit-check`  
+   (fra repo-rot, med Supabase CLI og riktig prosjekt.)
+
+2. I Supabase Dashboard: **Edge Functions** → **rate-limit-check** → sjekk at den er deployet og at den kjører med oppdatert kode (bl.a. `getCorsHeaders` som tillater `teqbook.com`).
+
+3. Innlogging fungerer ofte likevel (rate-limit har fallback); CORS påvirker da bare rate-limit-sjekken, ikke selve redirect til dashboard.
