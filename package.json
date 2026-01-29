@@ -1,0 +1,52 @@
+{
+  "name": "teqbook",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.18.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:public": "npm run build --workspace=@teqbook/public",
+    "build:dashboard": "npm run build --workspace=@teqbook/dashboard",
+    "build:admin": "npm run build --workspace=@teqbook/admin",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:public": "npm run dev --workspace=@teqbook/public",
+    "dev:dashboard": "npm run dev --workspace=@teqbook/dashboard",
+    "dev:admin": "npm run dev --workspace=@teqbook/admin",
+    "start:public": "npm run start --workspace=@teqbook/public",
+    "start:dashboard": "npm run start --workspace=@teqbook/dashboard",
+    "start:admin": "npm run start --workspace=@teqbook/admin",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:run": "pnpm --filter '@teqbook/dashboard' --filter '@teqbook/public' --filter '@teqbook/admin' run test:run",
+    "test:coverage": "pnpm --filter '@teqbook/dashboard' run test:coverage",
+    "test:e2e": "playwright test",
+    "test:integration": "pnpm --filter '@teqbook/dashboard' run test:integration",
+    "test:e2e:ui": "playwright test --ui",
+    "seed": "tsx scripts/seed.ts",
+    "seed:reset": "tsx scripts/seed.ts --reset",
+    "seed:force": "tsx scripts/seed.ts --force",
+    "create:e2e-users": "tsx scripts/create-e2e-users.ts",
+    "create:e2e-users:cleanup": "tsx scripts/create-e2e-users.ts --cleanup",
+    "setup:e2e": "pnpm run create:e2e-users",
+    "setup:e2e:clean": "pnpm run create:e2e-users -- --cleanup",
+    "migrate:local": "tsx scripts/migrate-local.ts",
+    "reset:db": "tsx scripts/reset-db.ts",
+    "format": "npm run format --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "dotenv": "^16.4.7",
+    "glob": "^11.0.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "extends": "../../web/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@teqbook/shared": ["../../packages/shared/src"],
+      "@teqbook/ui": ["../../packages/ui/src"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "**/tests/docs/**",
+    "**/tests/integration/**",
+    "**/tests/rls/**",
+    "**/type-safety.test.ts"
+  ]
+}
