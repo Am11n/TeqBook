@@ -6,6 +6,9 @@ const testDir = path.join(rootDir, "tests", "e2e");
 const ownerAuthFile = path.join(testDir, ".auth", "owner.json");
 const superadminAuthFile = path.join(testDir, ".auth", "superadmin.json");
 
+// CI: three Next.js dev servers start in parallel; allow 5 min
+const webServerTimeout = process.env.CI ? 300000 : 120000;
+
 /**
  * Monorepo E2E: public (3001), dashboard (3002), admin (3003).
  * Each app has its own webServer; projects use the matching baseURL.
@@ -80,8 +83,8 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/public run dev",
       url: "http://localhost:3001",
-      reuseExistingServer: true,
-      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+      timeout: webServerTimeout,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key",
@@ -90,8 +93,8 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/dashboard run dev",
       url: "http://localhost:3002",
-      reuseExistingServer: true,
-      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+      timeout: webServerTimeout,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key",
@@ -100,8 +103,8 @@ export default defineConfig({
     {
       command: "pnpm --filter @teqbook/admin run dev",
       url: "http://localhost:3003",
-      reuseExistingServer: true,
-      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+      timeout: webServerTimeout,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "https://test.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key",

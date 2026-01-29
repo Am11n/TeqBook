@@ -498,6 +498,7 @@ This task breakdown addresses design and UX improvements to elevate TeqBook from
     - Add to `web/docs/design/typography.md`
     - Show examples of each level
     - Document when to use each
+  
 
 **Acceptance Criteria:**
 - [ ] Typography scale implemented
