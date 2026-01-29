@@ -73,7 +73,7 @@ Achieved through Supabase Row Level Security (RLS) with:
 - Automatic data scoping via RLS policies
 - Feature flags system for plan-based access
 
-For detailed architecture documentation, see [`web/docs/architecture/overview.md`](web/docs/architecture/overview.md).
+For detailed architecture documentation, see [`docs/architecture/overview.md`](docs/architecture/overview.md).
 
 ---
 
@@ -114,7 +114,7 @@ For detailed architecture documentation, see [`web/docs/architecture/overview.md
 - **API Authentication** – All API routes require authentication
 - **Audit Logging** – Security audit log and salon activity trail
 
-For detailed security documentation, see [`web/docs/security/security-overview.md`](web/docs/security/security-overview.md).
+For detailed security documentation, see [`docs/security/security-overview.md`](docs/security/security-overview.md).
 
 ---
 
@@ -126,7 +126,7 @@ TeqBook offers three pricing tiers:
 - **Pro** ($50/month) – Starter + shifts, advanced reports, inventory, branding
 - **Business** ($75/month) – Pro + roles & access control, exports, customer history
 
-Features are controlled via a plan-based feature flag system. For detailed billing documentation, see [`web/docs/backend/billing-and-plans.md`](web/docs/backend/billing-and-plans.md).
+Features are controlled via a plan-based feature flag system. For detailed billing documentation, see [`docs/backend/billing-and-plans.md`](docs/backend/billing-and-plans.md).
 
 ---
 
@@ -134,7 +134,7 @@ Features are controlled via a plan-based feature flag system. For detailed billi
 
 TeqBook supports **15 languages**: Norwegian (nb), English (en), Arabic (ar), Somali (so), Tigrinya (ti), Amharic (am), Turkish (tr), Polish (pl), Vietnamese (vi), Tagalog (tl), Chinese (zh), Persian (fa), Dari (dar), Urdu (ur), Hindi (hi).
 
-The i18n system is centralized and strongly typed. For implementation details, see [`web/docs/architecture/overview.md`](web/docs/architecture/overview.md#internationalization-i18n).
+The i18n system is centralized and strongly typed. For implementation details, see [`docs/architecture/overview.md`](docs/architecture/overview.md#internationalization-i18n).
 
 ---
 
@@ -169,11 +169,11 @@ SENTRY_DSN=<your-sentry-dsn>
 ### Database Setup
 
 1. Create a Supabase project
-2. Run migrations from `web/supabase/migrations/` in order
+2. Run migrations from `supabase/migrations/` in order
 3. Configure Auth for email/password sign-in with MFA enabled
 4. Create required Postgres functions (see migration files)
 
-For detailed database setup, see [`web/docs/backend/rls-strategy.md`](web/docs/backend/rls-strategy.md).
+For detailed database setup, see [`docs/backend/rls-strategy.md`](docs/backend/rls-strategy.md).
 
 ### Available Scripts
 
@@ -200,35 +200,35 @@ The codebase follows a **layered architecture**:
 - **`lib/types/`** – TypeScript type definitions
 - **`i18n/`** – Translation files (15 languages)
 
-For detailed code structure documentation, see [`web/docs/architecture/folder-structure.md`](web/docs/architecture/folder-structure.md).
+For detailed code structure documentation, see [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md).
 
 ---
 
 ## Documentation
 
-Comprehensive documentation is available in [`web/docs/`](web/docs/):
+Comprehensive documentation is available in [`docs/`](docs/):
 
 ### Key Documents
 
-- **[Onboarding Guide](web/docs/onboarding.md)** – Developer onboarding guide
-- **[Architecture Overview](web/docs/architecture/overview.md)** – System architecture and design principles
-- **[Security Overview](web/docs/security/security-overview.md)** – Security architecture and best practices
-- **[Phase 3 Security Hardening](web/docs/security/phase3-implementation-status.md)** – Recent security improvements
-- **[Coding Style](web/docs/coding-style.md)** – Coding standards and best practices
-- **[Billing & Plans](web/docs/backend/billing-and-plans.md)** – SaaS plan and billing documentation
-- **[RLS Strategy](web/docs/backend/rls-strategy.md)** – Row Level Security documentation
+- **[Onboarding Guide](docs/onboarding.md)** – Developer onboarding guide
+- **[Architecture Overview](docs/architecture/overview.md)** – System architecture and design principles
+- **[Security Overview](docs/security/security-overview.md)** – Security architecture and best practices
+- **[Phase 3 Security Hardening](docs/security/phase3-implementation-status.md)** – Recent security improvements
+- **[Coding Style](docs/standards/coding-style.md)** – Coding standards and best practices
+- **[Billing & Plans](docs/backend/billing-and-plans.md)** – SaaS plan and billing documentation
+- **[RLS Strategy](docs/backend/rls-strategy.md)** – Row Level Security documentation
 
 ### Documentation Structure
 
-- `/architecture/` – System architecture and design principles
-- `/backend/` – Backend documentation (database, RLS, billing)
-- `/frontend/` – Frontend documentation (components, UI patterns)
-- `/security/` – Security documentation and guides
-- `/integrations/` – External integrations (Stripe, calendar sync)
-- `/deployment/` – Deployment guides
-- `/compliance/` – GDPR and compliance documentation
+- `docs/architecture/` – System architecture and design principles
+- `docs/backend/` – Backend documentation (database, RLS, billing)
+- `docs/frontend/` – Frontend documentation (components, UI patterns)
+- `docs/security/` – Security documentation and guides
+- `docs/integrations/` – External integrations (Stripe, calendar sync)
+- `docs/deployment/` – Deployment guides
+- `docs/compliance/` – GDPR and compliance documentation
 
-See [`web/docs/README.md`](web/docs/README.md) for a complete overview.
+See [`docs/README.md`](docs/README.md) for a complete overview.
 
 ---
 
@@ -239,7 +239,7 @@ TeqBook is deployed on **Vercel** with automatic deployments from the `main` bra
 - **Production:** Automatically deployed from `main` branch
 - **Preview:** Automatically created for pull requests
 
-For detailed deployment information, see [`web/docs/deployment/vercel.md`](web/docs/deployment/vercel.md).
+For detailed deployment information, see [`docs/deployment/vercel.md`](docs/deployment/vercel.md).
 
 ---
 

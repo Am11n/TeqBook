@@ -8,6 +8,17 @@ export default defineConfig([
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
   {
     rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": ["**/web", "**/web/**"],
+              "message": "Importing from legacy web/ is not allowed. Use packages/ or app-local code.",
+            },
+          ],
+        },
+      ],
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/rules-of-hooks": "warn",
       "react-hooks/immutability": "warn",
