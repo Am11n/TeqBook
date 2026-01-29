@@ -17,11 +17,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("Origin");
-  const allowOrigin =
-    origin && (origin.endsWith("teqbook.com") || origin.endsWith("vercel.app"))
-      ? origin
-      : "*";
+  const origin = req.headers.get("Origin") ?? "";
+  const allowed =
+    origin.endsWith("teqbook.com") ||
+    origin.endsWith("vercel.app") ||
+    origin === "https://teqbook.com" ||
+    origin === "https://www.teqbook.com";
+  const allowOrigin = allowed ? origin : "*";
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -382,9 +384,9 @@ async function resetRateLimit(
 }
 
 serve(async (req) => {
-  // Handle CORS preflight – return 204 so browser accepts it
+  // Handle CORS preflight – return 200 so gateway/CORS accepts it (204 can be rejected by some proxies)
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: getCorsHeaders(req) });
+    return new Response(null, { status: 200, headers: getCorsHeaders(req) });
   }
   const corsHeaders = getCorsHeaders(req);
 

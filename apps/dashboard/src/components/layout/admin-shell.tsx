@@ -134,8 +134,7 @@ function AdminShellContent({ children }: AdminShellProps) {
         setLoggingOut(false);
         return;
       }
-      // Use window.location.replace for a full page reload to ensure clean logout
-      // This prevents the back button from going back to admin pages
+      // Go to site root (public app), not admin – full navigation so we leave this app
       window.location.replace("/");
     } catch (error) {
       console.error("Error signing out:", error);

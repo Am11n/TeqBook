@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { User, CreditCard, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -27,7 +26,6 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMenuProps) {
-  const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -43,7 +41,8 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
     setLoggingOut(true);
     try {
       await signOut();
-      router.push("/");
+      // Go to site root (public app), not dashboard root – full navigation so we leave this app
+      window.location.href = "/";
     } catch (error) {
       console.error("Error logging out:", error);
       setLoggingOut(false);

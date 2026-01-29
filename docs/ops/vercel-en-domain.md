@@ -110,15 +110,25 @@ Hvis du fortsatt ikke sendes til /dashboard eller /admin:
 
 ### CORS-feil mot rate-limit-check (Supabase)
 
-Feilmeldingen «Access to fetch at ... rate-limit-check ... has been blocked by CORS policy» betyr at Supabase Edge Function ikke godtar forespørselen fra `https://teqbook.com`.
+Feilmeldingen «Access to fetch at ... rate-limit-check ... has been blocked by CORS policy: Response to preflight request doesn't pass access control check» betyr at Supabase Edge Function ikke godtar preflight (OPTIONS) fra `https://teqbook.com`.
 
 1. **Redeploy Edge Function** etter CORS-endring:  
    `supabase functions deploy rate-limit-check`  
-   (fra repo-rot, med Supabase CLI og riktig prosjekt.)
+   (fra repo-rot, med Supabase CLI og riktig prosjekt.) Koden returnerer nå **200** for OPTIONS og tillater `teqbook.com` / `www.teqbook.com`.
 
-2. I Supabase Dashboard: **Edge Functions** → **rate-limit-check** → sjekk at den er deployet og at den kjører med oppdatert kode (bl.a. `getCorsHeaders` som tillater `teqbook.com`).
+2. I **Supabase Dashboard** → **Edge Functions** → **rate-limit-check**:  
+   - Sjekk at funksjonen er deployet med nyeste kode.  
+   - Under **Function settings** / **Invoke**: sørg for at funksjonen kan kalles uten auth for OPTIONS (preflight sendes uten `apikey` av nettleseren). Noen prosjekter har «Enforce JWT» – da kan OPTIONS bli avvist med 401; da må du tillate anonym invokasjon for denne funksjonen eller slå av JWT-sjekk for OPTIONS.
 
 3. Innlogging fungerer ofte likevel (rate-limit har fallback); CORS påvirker da bare rate-limit-sjekken, ikke selve redirect til dashboard.
+
+### 404 på dashboard/?_rsc=... etter innlogging
+
+Hvis console viser «dashboard/?_rsc=... Failed to load resource: 404» etter innlogging, blir RSC-forespørselen ikke riktig sendt til Dashboard-appen.
+
+1. **Sjekk at rewrites er aktive:** I **teqbook-public** → **Environment Variables** må `DASHBOARD_APP_URL` være satt (full URL til Dashboard-deploy, uten avsluttende `/`). Redeploy Public etter endring.
+2. **Sjekk at du havner på riktig URL:** Etter login skal du havne på **https://teqbook.com/dashboard/** (med avsluttende `/`). Hvis du havner på feil path, kan RSC-requests gå til Public i stedet for Dashboard og gi 404.
+3. **Chrome-extension-feil:** «Unexpected token 'export'» fra `chrome-extension://...` kommer fra en nettleserutvidelse, ikke fra TeqBook – du kan ignorere den eller deaktivere utvidelsen på teqbook.com.
 
 ### ERR_TOO_MANY_REDIRECTS på teqbook.com
 

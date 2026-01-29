@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import {
   isSessionExpired,
   getTimeUntilExpiry,
@@ -18,15 +17,15 @@ import { signOut } from "@/lib/services/auth-service";
  * Shows warning before session expires
  */
 export function useSessionTimeout() {
-  const router = useRouter();
   const [showWarning, setShowWarning] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const handleLogout = useCallback(async () => {
     clearSession();
     await signOut();
-    router.replace("/login");
-  }, [router]);
+    // Go to site root (public app) so user can log in again from landing
+    window.location.href = "/";
+  }, []);
 
   useEffect(() => {
     // Check session expiry on mount
