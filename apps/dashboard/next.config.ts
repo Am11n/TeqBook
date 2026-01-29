@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     unoptimized: false,
   },
   trailingSlash: true,
+  // Avoid redirect loop when proxied from Public (teqbook.com/dashboard/): do not redirect /dashboard ↔ /dashboard/
+  skipTrailingSlashRedirect: true,
 
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? {

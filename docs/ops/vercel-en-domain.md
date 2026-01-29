@@ -119,3 +119,13 @@ Feilmeldingen «Access to fetch at ... rate-limit-check ... has been blocked by 
 2. I Supabase Dashboard: **Edge Functions** → **rate-limit-check** → sjekk at den er deployet og at den kjører med oppdatert kode (bl.a. `getCorsHeaders` som tillater `teqbook.com`).
 
 3. Innlogging fungerer ofte likevel (rate-limit har fallback); CORS påvirker da bare rate-limit-sjekken, ikke selve redirect til dashboard.
+
+### ERR_TOO_MANY_REDIRECTS på teqbook.com
+
+Feilmeldingen «This page isn’t working – teqbook.com redirected you too many times» betyr en redirect-løkke.
+
+1. **Dashboard/Admin må ikke redirecte trailing slash når de proxies fra Public.** I koden har Dashboard og Admin `skipTrailingSlashRedirect: true` i `next.config.ts` – behold det. Redeploy **teqbook-dashboard** og **teqbook-admin** etter endringer.
+
+2. **Vercel Deployment Protection:** Slå av **Vercel Authentication** for **teqbook-public** (og ev. Dashboard/Admin) under **Settings → Deployment Protection**. Hvis den er på, kan brukere bli sendt til vercel.com/login og deretter tilbake, noe som kan gi løkke.
+
+3. **Domain-redirects:** I **teqbook-public** → **Settings → Domains** – sørg for at kun **én** variant er hoveddomain (f.eks. teqbook.com), og at www.teqbook.com ev. redirecter til teqbook.com – **ikke** begge veier (da oppstår løkke).
