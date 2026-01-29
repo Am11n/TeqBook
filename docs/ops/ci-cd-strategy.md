@@ -38,9 +38,9 @@ Gjør dette **én gang per app** i [Vercel Dashboard](https://vercel.com/dashboa
 2. **Build & Development Settings** – scroll til **Ignored Build Step**.
 3. **Override** – sett til:
    ```bash
-   git diff HEAD^ HEAD --quiet . apps/public/ packages/ || echo "should-build"
+   git diff HEAD^ HEAD --quiet . apps/public/ packages/ || exit 1
    ```
-   Da bygges Public bare når noe i repo-rot, `apps/public/` eller `packages/` har endret seg.
+   Vercel bygger når kommandoen returnerer **exit 1** (dvs. når det finnes endringer). `|| echo "should-build"` gir alltid exit 0 og får bygget til å bli hoppet over – bruk **`|| exit 1`**.
 
 ---
 
@@ -60,7 +60,7 @@ Gjør dette **én gang per app** i [Vercel Dashboard](https://vercel.com/dashboa
 
 **Settings → General → Ignored Build Step (Override):**
 ```bash
-git diff HEAD^ HEAD --quiet . apps/dashboard/ packages/ || echo "should-build"
+git diff HEAD^ HEAD --quiet . apps/dashboard/ packages/ || exit 1
 ```
 
 ---
@@ -81,7 +81,7 @@ git diff HEAD^ HEAD --quiet . apps/dashboard/ packages/ || echo "should-build"
 
 **Settings → General → Ignored Build Step (Override):**
 ```bash
-git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || echo "should-build"
+git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || exit 1
 ```
 
 ---
