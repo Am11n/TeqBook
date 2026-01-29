@@ -88,6 +88,8 @@ git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || echo "should-build"
 
 #### Steg 7: En domain – teqbook.com med /dashboard og /admin
 
+**→ Full steg-for-steg-guide:** [docs/ops/vercel-en-domain.md](./vercel-en-domain.md)
+
 For å bruke **én domain** med stier:
 
 - **teqbook.com** → Public (landing, booking)
