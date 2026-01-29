@@ -98,15 +98,15 @@ export default function Login2FAPageClient() {
     // Initialize session tracking (no keepLoggedIn option on 2FA page, use default)
     initSession(false);
 
-    // If user is superadmin, redirect to admin dashboard
+    // If user is superadmin, redirect to admin (trailing slash = stay on teqbook.com)
     if (profile.is_superadmin) {
-      router.push("/admin");
+      router.push("/admin/");
       return;
     }
 
-    // If user has a salon, redirect to dashboard
+    // If user has a salon, redirect to dashboard (trailing slash = stay on teqbook.com)
     if (profile.salon_id) {
-      router.push("/dashboard");
+      router.push("/dashboard/");
       return;
     }
 

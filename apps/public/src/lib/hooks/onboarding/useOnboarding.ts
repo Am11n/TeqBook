@@ -77,7 +77,7 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
     setLocale(preferredLanguage);
 
     setStatus("success");
-    router.push("/dashboard");
+    router.push("/dashboard/");
   };
 
   const handleNext = () => {

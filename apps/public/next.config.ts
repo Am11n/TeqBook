@@ -29,6 +29,14 @@ const nextConfig: NextConfig = {
   // Exclude server-only packages from client builds
   serverExternalPackages: ["resend", "@sentry/node"],
 
+  // Redirect /dashboard og /admin uten trailing slash → med slash, så brukeren blir på teqbook.com (unngår at Dashboard/Admin returnerer absolutt redirect til .vercel.app)
+  async redirects() {
+    return [
+      { source: "/dashboard", destination: "/dashboard/", permanent: false },
+      { source: "/admin", destination: "/admin/", permanent: false },
+    ];
+  },
+
   // Single domain: teqbook.com → Public, teqbook.com/dashboard → Dashboard, teqbook.com/admin → Admin
   // VIKTIG: Sett DASHBOARD_APP_URL og ADMIN_APP_URL i Vercel (Public-prosjektet) og redeploy Public – rewrites leses ved build.
   async rewrites() {
