@@ -124,8 +124,10 @@ Feilmeldingen «Access to fetch at ... rate-limit-check ... has been blocked by 
 
 Feilmeldingen «This page isn’t working – teqbook.com redirected you too many times» betyr en redirect-løkke.
 
-1. **Dashboard/Admin må ikke redirecte trailing slash når de proxies fra Public.** I koden har Dashboard og Admin `skipTrailingSlashRedirect: true` i `next.config.ts` – behold det. Redeploy **teqbook-dashboard** og **teqbook-admin** etter endringer.
+1. **Public har ingen redirects for /dashboard og /admin** – kun rewrites (redirects er fjernet for å unngå løkke). Dashboard og Admin har `skipTrailingSlashRedirect: true`. Redeploy **alle tre** prosjekter (Public, Dashboard, Admin) etter slike endringer.
 
-2. **Vercel Deployment Protection:** Slå av **Vercel Authentication** for **teqbook-public** (og ev. Dashboard/Admin) under **Settings → Deployment Protection**. Hvis den er på, kan brukere bli sendt til vercel.com/login og deretter tilbake, noe som kan gi løkke.
+2. **Vercel Deployment Protection:** Slå av **Vercel Authentication** for **teqbook-public** under **Settings → Deployment Protection**. Hvis den er på, kan brukere bli sendt til vercel.com/login og tilbake → løkke.
 
-3. **Domain-redirects:** I **teqbook-public** → **Settings → Domains** – sørg for at kun **én** variant er hoveddomain (f.eks. teqbook.com), og at www.teqbook.com ev. redirecter til teqbook.com – **ikke** begge veier (da oppstår løkke).
+3. **Domain-redirects (veldig vanlig årsak):** I **teqbook-public** → **Settings → Domains** – sørg for at **kun én** domain er «Primary». F.eks. velg **teqbook.com** som primary, og at **www.teqbook.com** (hvis du bruker den) kun **redirecter til** teqbook.com – aldri at teqbook.com redirecter til www og www tilbake til teqbook.com.
+
+4. **Test:** Prøv åpne **https://teqbook.com/** (med avsluttende `/`) i privat vindu. Hvis det fungerer men teqbook.com uten slash gir løkke, er det sannsynligvis domain/HTTPS-oppsett i Vercel.
