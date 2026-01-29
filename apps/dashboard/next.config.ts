@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Served at teqbook.com/dashboard when behind Public app rewrites
+  basePath: "/dashboard",
+
   // Dashboard app: standard Next.js config
   images: {
     unoptimized: false,

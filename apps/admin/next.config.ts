@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Served at teqbook.com/admin when behind Public app rewrites
+  basePath: "/admin",
+
   // Admin app: stricter security
   images: {
     unoptimized: false,
