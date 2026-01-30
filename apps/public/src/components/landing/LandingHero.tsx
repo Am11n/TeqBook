@@ -195,14 +195,16 @@ export function LandingHero({
                 <span className="relative z-10">{ctaPrimary}</span>
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              className="group w-full rounded-xl border-2 border-slate-200 bg-white px-8 py-6 text-base font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md sm:w-auto"
-              type="button"
-            >
-              {ctaSecondary}
-            </Button>
+            <Link href="/#pricing" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="group w-full rounded-xl border-2 border-slate-200 bg-white px-8 py-6 text-base font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md sm:w-auto"
+                type="button"
+              >
+                {ctaSecondary}
+              </Button>
+            </Link>
           </motion.div>
           <motion.p
             className="text-xs text-slate-500"

@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-// Dynamically import landing page to avoid chunk loading issues
+// SSR enabled so crawlers get full HTML for SEO (metadata + JSON-LD are in layout)
 const LandingPage = dynamic(() => import("./landing/page"), {
-  ssr: false,
+  ssr: true,
 });
 
 export default function Page() {

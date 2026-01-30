@@ -14,7 +14,7 @@ interface LandingFAQProps {
 
 export function LandingFAQ({ faqTitle, faq }: LandingFAQProps) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white/60 to-slate-50/40 backdrop-blur-sm">
+    <section id="faq" className="relative overflow-hidden bg-gradient-to-b from-white/60 to-slate-50/40 backdrop-blur-sm" aria-labelledby="faq-title">
       <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20">
         <motion.div
           className="text-center"
@@ -23,7 +23,7 @@ export function LandingFAQ({ faqTitle, faq }: LandingFAQProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 id="faq-title" className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {faqTitle}
           </h2>
         </motion.div>

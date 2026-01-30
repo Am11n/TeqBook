@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Locale } from "./landing-copy";
 
 interface LandingFooterProps {
@@ -39,10 +40,27 @@ function getFooterText(locale: Locale): string {
 
 export function LandingFooter({ locale }: LandingFooterProps) {
   return (
-    <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:px-6 sm:text-base">
+    <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl" role="contentinfo">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:justify-between sm:px-6 sm:text-base">
         <span>© {new Date().getFullYear()} TeqBook.</span>
-        <span>{getFooterText(locale)}</span>
+        <nav aria-label="Footer navigation" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
+          <Link href="/#features" className="hover:text-foreground underline-offset-4 hover:underline">
+            Features
+          </Link>
+          <Link href="/#pricing" className="hover:text-foreground underline-offset-4 hover:underline">
+            Pricing
+          </Link>
+          <Link href="/#faq" className="hover:text-foreground underline-offset-4 hover:underline">
+            FAQ
+          </Link>
+          <Link href="/signup" className="hover:text-foreground underline-offset-4 hover:underline">
+            Sign up
+          </Link>
+          <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">
+            Log in
+          </Link>
+        </nav>
+        <span className="text-center sm:text-left">{getFooterText(locale)}</span>
       </div>
     </footer>
   );

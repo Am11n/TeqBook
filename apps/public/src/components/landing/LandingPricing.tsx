@@ -46,7 +46,7 @@ export function LandingPricing({
   extraStaffDescription,
 }: LandingPricingProps) {
   return (
-    <section className="relative border-b border-blue-200/30 bg-gradient-to-b from-white/60 via-blue-50/20 to-blue-50/20 backdrop-blur-sm">
+    <section id="pricing" className="relative border-b border-blue-200/30 bg-gradient-to-b from-white/60 via-blue-50/20 to-blue-50/20 backdrop-blur-sm" aria-labelledby="pricing-title">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <motion.div
           className="text-center"
@@ -55,7 +55,7 @@ export function LandingPricing({
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+          <h2 id="pricing-title" className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
             {pricingTitle}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 sm:text-lg">

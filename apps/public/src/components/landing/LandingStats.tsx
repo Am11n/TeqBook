@@ -13,7 +13,7 @@ export function LandingStats({ stats }: LandingStatsProps) {
   const icons = [Scissors, CreditCard, TrendingUp];
 
   return (
-    <section className="relative border-b border-blue-200/30 bg-white/40 backdrop-blur-sm">
+    <section id="features" className="relative border-b border-blue-200/30 bg-white/40 backdrop-blur-sm" aria-label="Features and benefits">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <Section>
           <StatsGrid>

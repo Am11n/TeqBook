@@ -1,7 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { copy, type Locale } from "@/components/landing/landing-copy";
+
+const LANDING_LOCALE_KEY = "teqbook_landing_locale";
+const VALID_LOCALES: Locale[] = [
+  "nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi",
+];
+
+function getStoredLocale(): Locale | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(LANDING_LOCALE_KEY);
+    if (stored && VALID_LOCALES.includes(stored as Locale)) return stored as Locale;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingMobileMenu } from "@/components/landing/LandingMobileMenu";
 import { LandingHero } from "@/components/landing/LandingHero";
@@ -11,12 +27,31 @@ import { LandingFAQ } from "@/components/landing/LandingFAQ";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export default function LandingPage() {
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("en");
   const [scrolled, setScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const t = copy[locale];
+
+  const setLocale = useCallback((next: Locale | ((prev: Locale) => Locale)) => {
+    setLocaleState((prev) => {
+      const value = typeof next === "function" ? next(prev) : next;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(LANDING_LOCALE_KEY, value);
+        } catch {
+          /* ignore */
+        }
+      }
+      return value;
+    });
+  }, []);
+
+  useEffect(() => {
+    const stored = getStoredLocale();
+    if (stored) setLocaleState(stored);
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -91,7 +126,7 @@ export default function LandingPage() {
         logInButton={t.logInButton}
       />
 
-      <main className="flex-1 relative">
+      <main id="main" className="flex-1 relative" role="main">
         <LandingHero
           locale={locale}
           badge={t.badge}
