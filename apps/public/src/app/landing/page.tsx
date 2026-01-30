@@ -8,6 +8,7 @@ import { LandingMobileMenu } from "@/components/landing/LandingMobileMenu";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { HeroPlaceholder } from "@/components/landing/HeroPlaceholder";
 
+// Hero lastes kun på klienten for å unngå hydration-mismatch (server og klient rendrer samme placeholder)
 const LandingHero = dynamic(
   () => import("@/components/landing/LandingHero").then((m) => m.LandingHero),
   { ssr: false, loading: () => <HeroPlaceholder /> }

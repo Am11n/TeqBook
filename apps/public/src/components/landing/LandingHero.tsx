@@ -127,18 +127,16 @@ export function LandingHero({
             {badge}
           </span>
           <h1
-            className="text-balance bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-4xl font-semibold leading-tight tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl hero-entrance-2"
+            className="text-balance bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-4xl font-semibold leading-tight tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl"
           >
             {heroTitle}
           </h1>
-          <p
-            className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg hero-entrance-3"
-          >
+          <p className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
             {heroSubtitle}
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col gap-4 sm:flex-row hero-entrance-4">
+          {/* CTA Buttons – visible immediately for LCP */}
+          <div className="flex flex-col gap-4 sm:flex-row">
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
