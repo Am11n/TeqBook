@@ -14,6 +14,7 @@ export function LandingStats({ stats }: LandingStatsProps) {
 
   return (
     <section id="features" className="relative border-b border-blue-200/30 bg-white/40 backdrop-blur-sm" aria-label="Features and benefits">
+      <h2 className="sr-only">Features and benefits</h2>
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <Section>
           <StatsGrid>

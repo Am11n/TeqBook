@@ -78,6 +78,7 @@ export function LandingHeader({
               value={locale}
               onChange={(e) => setLocale(e.target.value as Locale)}
               className="h-8 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              aria-label={locale === "nb" ? "Språk" : "Language"}
             >
               <option value="nb">🇳🇴 Norsk</option>
               <option value="en">🇬🇧 English</option>

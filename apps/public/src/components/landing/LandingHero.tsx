@@ -280,9 +280,9 @@ export function LandingHero({
           >
             <div className="relative">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-900">
+                <span className="text-sm font-semibold text-slate-900">
                   {today}
-                </h3>
+                </span>
                 <span className="text-xs text-slate-500">{bookingsCount}</span>
               </div>
               <div className="space-y-2">
