@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { copy, type Locale } from "@/components/landing/landing-copy";
+import { LandingHeader } from "@/components/landing/LandingHeader";
+import { LandingMobileMenu } from "@/components/landing/LandingMobileMenu";
+import { LandingHero } from "@/components/landing/LandingHero";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 
 const LANDING_LOCALE_KEY = "teqbook_landing_locale";
 const VALID_LOCALES: Locale[] = [
@@ -18,13 +23,21 @@ function getStoredLocale(): Locale | null {
   }
   return null;
 }
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { LandingMobileMenu } from "@/components/landing/LandingMobileMenu";
-import { LandingHero } from "@/components/landing/LandingHero";
-import { LandingStats } from "@/components/landing/LandingStats";
-import { LandingPricing } from "@/components/landing/LandingPricing";
-import { LandingFAQ } from "@/components/landing/LandingFAQ";
-import { LandingFooter } from "@/components/landing/LandingFooter";
+
+const LandingStats = dynamic(
+  () => import("@/components/landing/LandingStats").then((m) => m.LandingStats),
+  { ssr: true }
+);
+
+const LandingPricing = dynamic(
+  () => import("@/components/landing/LandingPricing").then((m) => m.LandingPricing),
+  { ssr: true }
+);
+
+const LandingFAQ = dynamic(
+  () => import("@/components/landing/LandingFAQ").then((m) => m.LandingFAQ),
+  { ssr: true }
+);
 
 export default function LandingPage() {
   const [locale, setLocaleState] = useState<Locale>("en");

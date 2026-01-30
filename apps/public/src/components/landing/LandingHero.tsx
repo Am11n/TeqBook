@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Calendar, Clock, User } from "lucide-react";
@@ -104,18 +103,12 @@ export function LandingHero({
         />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-indigo-500/8 blur-3xl" />
 
-        {/* Ghost watermark logo */}
-        <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <Image
-            src="/Favikon.svg"
-            alt=""
-            width={1000}
-            height={1000}
-            className="w-[1000px] h-[1000px] opacity-[0.04] blur-[1.5px] select-none"
-            priority
-            aria-hidden="true"
-          />
-        </div>
+        {/* Ghost watermark logo – CSS background so it is not an LCP image candidate (better mobile LCP) */}
+        <div
+          className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 h-[1000px] w-[1000px] pointer-events-none select-none opacity-[0.04] blur-[1.5px] bg-no-repeat bg-center bg-[length:100%_100%]"
+          style={{ backgroundImage: "url('/Favikon.svg')" }}
+          aria-hidden
+        />
 
         {/* Subtle diagonal grid pattern */}
         <div className="absolute inset-0 opacity-[0.08]">
