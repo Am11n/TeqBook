@@ -53,7 +53,8 @@ export function LandingMobileMenu({
               width={120}
               height={32}
               className="h-8 w-auto"
-              priority
+              loading="lazy"
+              fetchPriority="low"
             />
             <span className="text-sm font-semibold tracking-tight text-slate-900">
               {brand}

@@ -60,7 +60,8 @@ export function LandingHeader({
             width={150}
             height={40}
             className="h-11 w-auto sm:h-13 flex-shrink-0"
-            priority
+            loading="lazy"
+            fetchPriority="low"
           />
           <span
             className="font-semibold tracking-tight transition-all duration-300 text-sm sm:text-base truncate"
