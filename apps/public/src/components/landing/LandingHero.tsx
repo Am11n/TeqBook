@@ -1,10 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Calendar, Clock, User } from "lucide-react";
 import type { Locale } from "./landing-copy";
+
+/** Defer loading decorative assets until after LCP (mobile performance). */
+function useDeferDecorative(isMobileOrReducedMotion: boolean) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (isMobileOrReducedMotion) {
+      const t = setTimeout(() => setReady(true), 400);
+      return () => clearTimeout(t);
+    }
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setReady(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isMobileOrReducedMotion]);
+  return ready;
+}
+
+/** Prefer reduced motion on mobile or when user prefers reduced motion (TTI / main-thread). */
+function useReduceMotion() {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px), (prefers-reduced-motion: reduce)");
+    setReduce(mq.matches);
+    const fn = () => setReduce(mq.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+  return reduce;
+}
 
 interface LandingHeroProps {
   locale: Locale;
@@ -68,6 +98,9 @@ export function LandingHero({
   bookingsCount,
   cutService,
 }: LandingHeroProps) {
+  const reduceMotion = useReduceMotion();
+  const deferReady = useDeferDecorative(reduceMotion);
+
   return (
     <section className="relative -mt-[120px] pt-[120px] border-b border-blue-200/30 overflow-hidden bg-blue-50 min-h-[calc(100vh-120px)]">
       {/* Abstract gradient background layers */}
@@ -75,40 +108,51 @@ export function LandingHero({
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-100" />
 
-        {/* Large blurred blobs for depth */}
-        <motion.div
-          className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.4, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.25, 0.35, 0.25],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
-        />
+        {/* Large blurred blobs – static on mobile / reduced-motion for better TTI */}
+        {reduceMotion ? (
+          <>
+            <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl opacity-[0.35]" />
+            <div className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl opacity-30" />
+          </>
+        ) : (
+          <>
+            <motion.div
+              className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.4, 0.3],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl"
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.25, 0.35, 0.25],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5,
+              }}
+            />
+          </>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-indigo-500/8 blur-3xl" />
 
-        {/* Ghost watermark logo – CSS background so it is not an LCP image candidate (better mobile LCP) */}
-        <div
-          className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 h-[1000px] w-[1000px] pointer-events-none select-none opacity-[0.04] blur-[1.5px] bg-no-repeat bg-center bg-[length:100%_100%]"
-          style={{ backgroundImage: "url('/Favikon.svg')" }}
-          aria-hidden
-        />
+        {/* Watermark loaded only after first paint so it never competes for LCP (mobile perf) */}
+        {deferReady && (
+          <div
+            className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 h-[1000px] w-[1000px] pointer-events-none select-none opacity-[0.04] blur-[1.5px] bg-no-repeat bg-center bg-[length:100%_100%]"
+            style={{ backgroundImage: "url('/Favikon.svg')" }}
+            aria-hidden
+          />
+        )}
 
         {/* Subtle diagonal grid pattern */}
         <div className="absolute inset-0 opacity-[0.08]">
@@ -216,83 +260,129 @@ export function LandingHero({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
-          {/* Card 1: Booking Example */}
-          <motion.div
-            className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6"
-            animate={{
-              y: [0, -8, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <div className="relative">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="text-xs font-medium text-slate-600">
-                    {newBooking}
-                  </span>
-                </div>
-                <Calendar className="h-4 w-4 text-indigo-600" />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {exampleCustomerName}
-                    </p>
-                    <p className="text-xs text-slate-500">{exampleService}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-600">
-                  <Clock className="h-3.5 w-3.5 text-indigo-600" />
-                  <span>{exampleDate}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Card 2: Calendar View */}
-          <motion.div
-            className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5"
-            animate={{
-              y: [0, 6, 0],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5,
-            }}
-          >
-            <div className="relative">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">
-                  {today}
-                </span>
-                <span className="text-xs text-slate-500">{bookingsCount}</span>
-              </div>
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 rounded-lg bg-indigo-50/50 px-2 py-1.5"
-                  >
-                    <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                    <span className="text-xs text-slate-700">
-                      {`${9 + i * 2}:00 - ${cutService}`}
+          {/* Card 1: Booking Example – no float animation on mobile for TTI */}
+          {reduceMotion ? (
+            <div className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6">
+              <div className="relative">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <span className="text-xs font-medium text-slate-600">
+                      {newBooking}
                     </span>
                   </div>
-                ))}
+                  <Calendar className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {exampleCustomerName}
+                      </p>
+                      <p className="text-xs text-slate-500">{exampleService}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <Clock className="h-3.5 w-3.5 text-indigo-600" />
+                    <span>{exampleDate}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </motion.div>
+          ) : (
+            <motion.div
+              className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="relative">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <span className="text-xs font-medium text-slate-600">
+                      {newBooking}
+                    </span>
+                  </div>
+                  <Calendar className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {exampleCustomerName}
+                      </p>
+                      <p className="text-xs text-slate-500">{exampleService}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <Clock className="h-3.5 w-3.5 text-indigo-600" />
+                    <span>{exampleDate}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Card 2: Calendar View – no float animation on mobile for TTI */}
+          {reduceMotion ? (
+            <div className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5">
+              <div className="relative">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-900">
+                    {today}
+                  </span>
+                  <span className="text-xs text-slate-500">{bookingsCount}</span>
+                </div>
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 rounded-lg bg-indigo-50/50 px-2 py-1.5"
+                    >
+                      <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                      <span className="text-xs text-slate-700">
+                        {`${9 + i * 2}:00 - ${cutService}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <div className="relative">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-900">
+                    {today}
+                  </span>
+                  <span className="text-xs text-slate-500">{bookingsCount}</span>
+                </div>
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 rounded-lg bg-indigo-50/50 px-2 py-1.5"
+                    >
+                      <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                      <span className="text-xs text-slate-700">
+                        {`${9 + i * 2}:00 - ${cutService}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>
