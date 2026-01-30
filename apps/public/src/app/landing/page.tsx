@@ -5,8 +5,13 @@ import dynamic from "next/dynamic";
 import { copy, type Locale } from "@/components/landing/landing-copy";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingMobileMenu } from "@/components/landing/LandingMobileMenu";
-import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { HeroPlaceholder } from "@/components/landing/HeroPlaceholder";
+
+const LandingHero = dynamic(
+  () => import("@/components/landing/LandingHero").then((m) => m.LandingHero),
+  { ssr: false, loading: () => <HeroPlaceholder /> }
+);
 
 const LANDING_LOCALE_KEY = "teqbook_landing_locale";
 const VALID_LOCALES: Locale[] = [

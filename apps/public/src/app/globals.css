@@ -200,4 +200,92 @@
   .animate-loading-bar {
     animation: loading-bar 1.5s ease-in-out infinite;
   }
+
+  /* Hero background blobs – CSS-only to reduce main-thread work on mobile */
+  @keyframes blob-pulse-1 {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.4;
+    }
+  }
+  @keyframes blob-pulse-2 {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.25;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.35;
+    }
+  }
+  .animate-blob-pulse-1 {
+    animation: blob-pulse-1 8s ease-in-out infinite;
+  }
+  .animate-blob-pulse-2 {
+    animation: blob-pulse-2 10s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+
+  /* Hero floating cards – CSS-only */
+  @keyframes float-up {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes float-down {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(6px);
+    }
+  }
+  .animate-float-up {
+    animation: float-up 4s ease-in-out infinite;
+  }
+  .animate-float-down {
+    animation: float-down 5s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+
+  /* Hero entrance – staggered fade-in-up (replaces Framer Motion for LCP) */
+  .hero-entrance-0 {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+  .hero-entrance-1 {
+    animation: fadeInUp 0.6s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-2 {
+    animation: fadeInUp 0.6s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-3 {
+    animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-4 {
+    animation: fadeInUp 0.6s ease-out 0.5s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-5 {
+    animation: fadeInUp 0.6s ease-out 0.5s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-6 {
+    animation: fadeInUp 0.4s ease-out 0.7s forwards;
+    opacity: 0;
+  }
+  .hero-entrance-7 {
+    animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    opacity: 0;
+  }
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Calendar, Clock, User } from "lucide-react";
@@ -75,31 +74,14 @@ export function LandingHero({
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-100" />
 
-        {/* Large blurred blobs for depth */}
-        <motion.div
-          className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.4, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+        {/* Large blurred blobs for depth – CSS-only to reduce main-thread work */}
+        <div
+          className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-400/30 blur-3xl animate-blob-pulse-1"
+          aria-hidden="true"
         />
-        <motion.div
-          className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.25, 0.35, 0.25],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
+        <div
+          className="absolute -bottom-56 -left-10 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl animate-blob-pulse-2"
+          aria-hidden="true"
         />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-indigo-500/8 blur-3xl" />
 
@@ -107,7 +89,7 @@ export function LandingHero({
         <div
           className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 h-[1000px] w-[1000px] pointer-events-none select-none opacity-[0.04] blur-[1.5px] bg-no-repeat bg-center bg-[length:100%_100%]"
           style={{ backgroundImage: "url('/Favikon.svg')" }}
-          aria-hidden
+          aria-hidden="true"
         />
 
         {/* Subtle diagonal grid pattern */}
@@ -137,45 +119,26 @@ export function LandingHero({
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12 md:py-16 lg:flex-row lg:items-center lg:gap-16">
-        <motion.div
-          className="flex-1 space-y-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.span
-            className="inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-white/70 px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-blue-700 shadow-sm backdrop-blur-md"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
+        <div className="flex-1 space-y-6">
+          <span
+            className="inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-white/70 px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-blue-700 shadow-sm backdrop-blur-md hero-entrance-1"
           >
             <Sparkles className="h-3.5 w-3.5 text-blue-600" />
             {badge}
-          </motion.span>
-          <motion.h1
-            className="text-balance bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-4xl font-semibold leading-tight tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+          </span>
+          <h1
+            className="text-balance bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-4xl font-semibold leading-tight tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl hero-entrance-2"
           >
             {heroTitle}
-          </motion.h1>
-          <motion.p
-            className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+          </h1>
+          <p
+            className="max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg hero-entrance-3"
           >
             {heroSubtitle}
-          </motion.p>
+          </p>
 
           {/* CTA Buttons */}
-          <motion.div
-            className="flex flex-col gap-4 sm:flex-row"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
+          <div className="flex flex-col gap-4 sm:flex-row hero-entrance-4">
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
@@ -198,35 +161,17 @@ export function LandingHero({
                 {ctaSecondary}
               </Button>
             </Link>
-          </motion.div>
-          <motion.p
-            className="text-xs text-slate-500"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.4 }}
-          >
+          </div>
+          <p className="text-xs text-slate-500 hero-entrance-6">
             {getNoCreditCardText(locale)}
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
-        {/* Floating UI Cards */}
-        <motion.div
-          className="relative flex-1 lg:min-h-[500px] flex items-start justify-center pt-4"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
+        {/* Floating UI Cards – CSS-only animations */}
+        <div className="relative flex-1 lg:min-h-[500px] flex items-start justify-center pt-4 hero-entrance-7">
           {/* Card 1: Booking Example */}
-          <motion.div
-            className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6"
-            animate={{
-              y: [0, -8, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <div
+            className="group relative z-10 mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-6 animate-float-up"
           >
             <div className="relative">
               <div className="mb-4 flex items-center justify-between">
@@ -256,20 +201,11 @@ export function LandingHero({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Card 2: Calendar View */}
-          <motion.div
-            className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5"
-            animate={{
-              y: [0, 6, 0],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5,
-            }}
+          <div
+            className="absolute top-56 right-0 z-0 w-full max-w-xs overflow-hidden rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur-md sm:p-5 animate-float-down"
           >
             <div className="relative">
               <div className="mb-3 flex items-center justify-between">
@@ -292,8 +228,8 @@ export function LandingHero({
                 ))}
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
