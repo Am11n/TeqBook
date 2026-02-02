@@ -109,6 +109,19 @@ export type UpdateShiftInput = {
   end_time?: string;
 };
 
+export type CreatePersonallisteEntryInput = {
+  salon_id: string;
+  employee_id: string;
+  date: string; // YYYY-MM-DD
+  check_in: string; // ISO timestamp
+  check_out?: string | null;
+};
+
+export type UpdatePersonallisteEntryInput = {
+  check_in?: string;
+  check_out?: string | null;
+};
+
 // =====================================================
 // Service Response Types
 // =====================================================

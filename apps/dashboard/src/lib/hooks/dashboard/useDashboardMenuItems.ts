@@ -12,6 +12,7 @@ import {
   Shield,
   TrendingUp,
   Package,
+  FileCheck,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
 import {
@@ -32,6 +33,7 @@ export interface MenuItem {
 interface UseDashboardMenuItemsOptions {
   appLocale: AppLocale;
   userRole: string | null;
+  isReady: boolean;
   isSuperAdmin: boolean;
   mounted: boolean;
   featuresLoading: boolean;
@@ -41,6 +43,7 @@ interface UseDashboardMenuItemsOptions {
 export function useDashboardMenuItems({
   appLocale,
   userRole,
+  isReady,
   isSuperAdmin,
   mounted,
   featuresLoading,
@@ -103,6 +106,12 @@ export function useDashboardMenuItems({
     texts.shifts,
   ]);
 
+  const complianceItems = useMemo<MenuItem[]>(() => {
+    // Personalliste: synlig for alle innloggede (owner, manager, staff, superadmin) – lovpålagt dokumentasjon
+    if (!isReady) return [];
+    return [{ href: "/personalliste", label: texts.personalliste, icon: FileCheck }];
+  }, [isReady, texts.personalliste]);
+
   const systemItems = useMemo<MenuItem[]>(() => {
     const items: MenuItem[] = [];
     if (canAccessSettings(userRole)) {
@@ -127,6 +136,7 @@ export function useDashboardMenuItems({
     overviewItems,
     operationsItems,
     managementItems,
+    complianceItems,
     systemItems,
   };
 }

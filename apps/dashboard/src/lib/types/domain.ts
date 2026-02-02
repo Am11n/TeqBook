@@ -140,6 +140,22 @@ export type Shift = {
   };
 };
 
+/** Staff register entry (personalliste): legal record of who was at work, check-in/check-out. */
+export type PersonallisteEntry = {
+  id: string;
+  salon_id: string;
+  employee_id: string;
+  date: string; // YYYY-MM-DD
+  check_in: string; // ISO timestamp
+  check_out: string | null;
+  duration_minutes: number | null;
+  status: "ok" | "edited";
+  changed_by: string | null;
+  changed_at: string | null;
+  created_at: string;
+  employees?: { full_name: string | null } | null;
+};
+
 export type EmployeeService = {
   employee_id: string;
   service_id: string;

@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Served at teqbook.com/dashboard when behind Public app rewrites
-  basePath: "/dashboard",
+  // Served at teqbook.com/dashboard when behind Public app rewrites.
+  // Standalone (e.g. localhost:3002): use basePath only when env is set so / works locally.
+  basePath: process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH ?? "",
 
   // Dashboard app: standard Next.js config
   images: {

@@ -11,6 +11,7 @@ interface MobileNavigationProps {
   overviewItems: MenuItem[];
   operationsItems: MenuItem[];
   managementItems: MenuItem[];
+  complianceItems: MenuItem[];
   systemItems: MenuItem[];
   pathname: string;
   builtForText: string;
@@ -23,6 +24,7 @@ export function MobileNavigation({
   overviewItems,
   operationsItems,
   managementItems,
+  complianceItems,
   systemItems,
   pathname,
   builtForText,
@@ -110,7 +112,30 @@ export function MobileNavigation({
                     collapsed={false}
                   />
                 ))}
-              </div>
+            </div>
+          </div>
+
+            {/* Compliance Section */}
+            <div>
+              {complianceItems.length > 0 && (
+                <>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Compliance
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {complianceItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* System Section */}

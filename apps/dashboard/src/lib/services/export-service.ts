@@ -7,6 +7,7 @@ import { getBookingsForCurrentSalon } from "@/lib/repositories/bookings";
 import { getRevenueByMonth } from "@/lib/repositories/reports";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
+import { getPersonallisteEntries } from "@/lib/repositories/personalliste";
 import type { ReportsFilters } from "./reports-service";
 import type { Booking, CalendarBooking } from "@/lib/types";
 import * as featureFlagsService from "@/lib/services/feature-flags-service";
@@ -325,6 +326,50 @@ export async function exportEmployeeWorkloadToCSV(
     // Generate CSV and download
     const csvContent = arrayToCSV(csvData);
     const filename = `employee-workload-${new Date().toISOString().split("T")[0]}.csv`;
+    downloadCSV(csvContent, filename);
+
+    return { success: true, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Export personalliste (staff register) to CSV.
+ * Available for all plans - compliance documentation.
+ */
+export async function exportPersonallisteToCSV(
+  salonId: string,
+  dateFrom: string,
+  dateTo: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    if (!salonId || !dateFrom || !dateTo) {
+      return { success: false, error: "salonId, dateFrom and dateTo are required" };
+    }
+
+    const { data: entries, error } = await getPersonallisteEntries(salonId, dateFrom, dateTo);
+
+    if (error) {
+      return { success: false, error };
+    }
+
+    const csvData = (entries ?? []).map((row) => ({
+      Dato: row.date,
+      Ansatt: row.employees?.full_name ?? "",
+      "Inn-stempling": row.check_in,
+      "Ut-stempling": row.check_out ?? "",
+      Varighet: row.duration_minutes ?? "",
+      Status: row.status,
+      "Endret av": row.changed_by ?? "",
+      "Endret tidspunkt": row.changed_at ?? "",
+    }));
+
+    const csvContent = arrayToCSV(csvData);
+    const filename = `personalliste-${dateFrom}-${dateTo}.csv`;
     downloadCSV(csvContent, filename);
 
     return { success: true, error: null };

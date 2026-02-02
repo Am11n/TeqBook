@@ -131,9 +131,11 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   }, [commandPaletteOpen]);
 
   // Get menu items using hook
-  const { overviewItems, operationsItems, managementItems, systemItems } = useDashboardMenuItems({
+  const { overviewItems, operationsItems, managementItems, complianceItems, systemItems } =
+    useDashboardMenuItems({
     appLocale,
     userRole,
+    isReady,
     isSuperAdmin,
     mounted,
     featuresLoading,
@@ -164,6 +166,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
           overviewItems={overviewItems}
           operationsItems={operationsItems}
           managementItems={managementItems}
+          complianceItems={complianceItems}
           systemItems={systemItems}
           pathname={pathname}
           builtForText={texts.builtFor}
@@ -192,6 +195,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
         overviewItems={overviewItems}
         operationsItems={operationsItems}
         managementItems={managementItems}
+        complianceItems={complianceItems}
         systemItems={systemItems}
         pathname={pathname}
         builtForText={texts.builtFor}

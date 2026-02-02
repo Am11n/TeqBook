@@ -173,6 +173,7 @@ export type DashboardMessages = {
   shifts: string;
   customers: string;
   bookings: string;
+  personalliste: string;
   onboarding: string;
   settings: string;
   tagline: string;
@@ -462,6 +463,38 @@ export type ShiftsMessages = {
   delete: string;
 };
 
+export type PersonallisteMessages = {
+  title: string;
+  description: string;
+  noSalon: string;
+  loadError: string;
+  dateFrom: string;
+  dateTo: string;
+  exportCsv: string;
+  exportPdf: string;
+  colDate: string;
+  colEmployee: string;
+  colCheckIn: string;
+  colCheckOut: string;
+  colDuration: string;
+  colStatus: string;
+  colChangedBy: string;
+  statusOk: string;
+  statusEdited: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  registerEntry: string;
+  edit: string;
+  registerDialogTitle: string;
+  registerDialogDescription: string;
+  editDialogTitle: string;
+  editDialogDescription: string;
+  employeePlaceholder: string;
+  cancel: string;
+  save: string;
+  saving: string;
+};
+
 export type SettingsMessages = {
   title: string;
   description: string;
@@ -591,6 +624,7 @@ export type TranslationNamespaces = {
   customers: CustomersMessages;
   bookings: BookingsMessages;
   shifts: ShiftsMessages;
+  personalliste: PersonallisteMessages;
   settings: SettingsMessages;
   admin: AdminMessages;
   products: ProductsMessages;
