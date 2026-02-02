@@ -23,9 +23,9 @@ Ikke legg til nye features som ikke står her.
 ## 0.1 Repo hygiene
 - [ ] Fjern `.DS_Store` fra repo og legg til i `.gitignore`.
 - [ ] Fjern root `package-lock.json` hvis root ikke har `package.json`.
-- [ ] Sørg for én lockfil policy (typisk `web/package-lock.json`).
+- [ ] Sørg for én lockfil policy (typisk `apps/dashboard/package-lock.json`).
 - [ ] Legg til `.editorconfig`.
-- [ ] Legg til `.nvmrc` eller `engines.node` i `web/package.json`.
+- [ ] Legg til `.nvmrc` eller `engines.node` i `apps/dashboard/package.json`.
 
 Akseptanse
 - [ ] `git status` er clean etter install og build.
@@ -68,15 +68,15 @@ Akseptanse
 - [ ] Finn alle imports av:
   - [ ] `@/lib/supabase-client`
   - [ ] `@supabase/supabase-js`
-  i `web/src/app/**` og `web/src/components/**`.
-- [ ] Refactor slik at UI kaller service-laget i `web/src/lib/services/**`.
+  i `apps/dashboard/src/app/**` og `apps/dashboard/src/components/**`.
+- [ ] Refactor slik at UI kaller service-laget i `apps/dashboard/src/lib/services/**`.
 
 Kjente steder (må fikses)
-- [ ] `web/src/components/salon-provider.tsx` (har arkitekturbrudd)
-- [ ] `web/src/app/(auth)/login-2fa/page-client.tsx` (har arkitekturbrudd)
+- [ ] `apps/dashboard/src/components/salon-provider.tsx` (har arkitekturbrudd)
+- [ ] `apps/dashboard/src/app/(auth)/login-2fa/page-client.tsx` (har arkitekturbrudd)
 
 ## 2.2 Auth/session service API
-- [ ] Opprett eller oppdater `web/src/lib/services/auth.service.ts` med:
+- [ ] Opprett eller oppdater `apps/dashboard/src/lib/services/auth.service.ts` med:
   - [ ] `getCurrentUser()`
   - [ ] `getSession()`
   - [ ] `subscribeToAuthChanges(callback): unsubscribe`
@@ -85,11 +85,11 @@ Kjente steder (må fikses)
 ## 2.3 ESLint enforcement
 - [ ] Stram inn `no-restricted-imports`:
   - [ ] Forby supabase-client imports i UI-lag
-  - [ ] Tillat kun i `web/src/lib/services/**` og `web/src/lib/repositories/**`
+  - [ ] Tillat kun i `apps/dashboard/src/lib/services/**` og `apps/dashboard/src/lib/repositories/**`
 - [ ] Fjern eksisterende `eslint-disable-next-line no-restricted-imports` for Supabase i UI.
 
 Akseptanse
-- [ ] `grep "@/lib/supabase-client" web/src` gir ingen treff i `app/` eller `components/`.
+- [ ] `grep "@/lib/supabase-client" apps/dashboard/src` gir ingen treff i `app/` eller `components/`.
 - [ ] ESLint blokkerer regressjoner.
 
 ---
@@ -105,11 +105,11 @@ Akseptanse
 - [ ] Ingen nye disables tillates.
 
 Spesifikke fokusfiler
-- [ ] `web/src/app/dashboard/page.tsx`
-- [ ] `web/src/app/employees/page.tsx`
-- [ ] `web/src/components/command-palette.tsx`
-- [ ] `web/src/components/admin-command-palette.tsx`
-- [ ] `web/src/components/public-booking-page.tsx`
+- [ ] `apps/dashboard/src/app/dashboard/page.tsx`
+- [ ] `apps/dashboard/src/app/employees/page.tsx`
+- [ ] `apps/dashboard/src/components/command-palette.tsx`
+- [ ] `apps/dashboard/src/components/admin-command-palette.tsx`
+- [ ] `apps/dashboard/src/components/public-booking-page.tsx`
 
 ## 3.2 Async fetch hygiene
 - [ ] For async effects:
@@ -120,10 +120,10 @@ Spesifikke fokusfiler
 ## 3.3 Revider “set-state-in-effect” regelen
 - [ ] Hvis `react-hooks/set-state-in-effect` tvinger dårlig praksis:
   - [ ] Juster eller fjern den i ESLint config
-  - [ ] Dokumenter anbefalt pattern i `web/docs/frontend/hooks.md`
+  - [ ] Dokumenter anbefalt pattern i `docs/frontend/hooks.md`
 
 Akseptanse
-- [ ] 0 forekomster av `react-hooks/exhaustive-deps` disable i `web/src`.
+- [ ] 0 forekomster av `react-hooks/exhaustive-deps` disable i `apps/dashboard/src`.
 - [ ] Færre hooks-disables totalt.
 - [ ] Ingen flaky UI-oppdateringer ved navigasjon.
 
@@ -132,18 +132,18 @@ Akseptanse
 # PHASE 4 – Forms: Standard + Enforcement (Stop spacing regressions)
 
 ## 4.1 Mandatory Field wrapper
-- [ ] Sikre at `web/src/components/form/Field.tsx` er standard for alle labeled inputs.
+- [ ] Sikre at `apps/dashboard/src/components/form/Field.tsx` er standard for alle labeled inputs.
 - [ ] Default layout:
   - [ ] `flex flex-col gap-2`
   - [ ] Form container bruker `space-y-6`
 
 ## 4.2 ESLint guardrails
 - [ ] Forby direkte `<label>` i feature code:
-  - [ ] Tillat i `web/src/components/form/**` og `web/src/components/ui/**`
+  - [ ] Tillat i `apps/dashboard/src/components/form/**` og `apps/dashboard/src/components/ui/**`
 - [ ] Forby direkte `Input` import utenfor form/ui-lag dersom dere har dette problemet.
 
 ## 4.3 Docs + examples
-- [ ] Lag `web/docs/frontend/forms.md` med:
+- [ ] Lag `docs/frontend/forms.md` med:
   - [ ] spacing tokens
   - [ ] korrekt Field-bruk
   - [ ] vanlige feil og hvordan de stoppes av lint
@@ -158,18 +158,18 @@ Akseptanse
 
 ## 5.1 Folder split
 - [ ] Flytt til:
-  - [ ] `web/supabase/migrations/` (kun deterministiske migrasjoner)
-  - [ ] `web/supabase/seeds/` (valgfritt)
-  - [ ] `web/supabase/admin/` (engangs scripts, aldri auto-kjørt)
+  - [ ] `apps/dashboard/supabase/migrations/` (kun deterministiske migrasjoner)
+  - [ ] `apps/dashboard/supabase/seeds/` (valgfritt)
+  - [ ] `apps/dashboard/supabase/admin/` (engangs scripts, aldri auto-kjørt)
 
 ## 5.2 Fix migrate-local
-- [ ] Oppdater `web/scripts/migrate-local.ts`:
+- [ ] Oppdater `apps/dashboard/scripts/migrate-local.ts`:
   - [ ] Kjør kun `supabase/migrations/**/*.sql`
   - [ ] Valider filnavnformat (dato/sekvens)
   - [ ] Logg rekkefølge og resultat uten “støy”
 
 ## 5.3 Supabase workflow docs
-- [ ] Lag `web/docs/supabase-workflow.md`:
+- [ ] Lag `docs/supabase-workflow.md`:
   - [ ] hvordan lage migrasjon
   - [ ] hvordan kjøre lokalt
   - [ ] hvordan deploye
@@ -184,7 +184,7 @@ Akseptanse
 # PHASE 6 – i18n Coverage Enforcement (Stop missing keys)
 
 ## 6.1 i18n check script
-- [ ] Lag `web/scripts/check-i18n.ts` som:
+- [ ] Lag `apps/dashboard/scripts/check-i18n.ts` som:
   - [ ] Leser alle namespaces per locale
   - [ ] Feiler hvis keys mangler i noen locale
   - [ ] Rapporterer nøyaktig hva som mangler
@@ -193,7 +193,7 @@ Akseptanse
 - [ ] Kjør `check-i18n` i CI
 
 ## 6.3 Locale normalization
-- [ ] Lag `web/src/i18n/normalizeLocale.ts`
+- [ ] Lag `apps/dashboard/src/i18n/normalizeLocale.ts`
 - [ ] Erstatt ad hoc mapping i pages med `normalizeLocale()`
 
 Akseptanse
@@ -306,8 +306,8 @@ Akseptanse
 # PHASE 11 – Refactor Large Files (Maintainability)
 
 ## 11.1 Landing page decomposition
-- [ ] Split `web/src/app/landing/page.tsx` into:
-  - [ ] `web/src/components/landing/Hero.tsx`
+- [ ] Split `apps/dashboard/src/app/landing/page.tsx` into:
+  - [ ] `apps/dashboard/src/components/landing/Hero.tsx`
   - [ ] `Features.tsx`
   - [ ] `Testimonials.tsx`
   - [ ] `Pricing.tsx`

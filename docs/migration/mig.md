@@ -1,6 +1,6 @@
 Ja, **det er ganske bra løst nå**. Ikke “perfekt NASA-monorepo”, men definitivt **riktig retning** og mye ryddigere enn alt-under-`/web`.
 
-Jeg kan se at repoet nå har disse toppnivå-delene: `apps/`, `packages/`, `supabase/`, og fortsatt `web/` (legacy), pluss test-mapper og workspace-filer. ([GitHub][1])
+Jeg kan se at repoet nå har disse toppnivå-delene: `apps/`, `packages/`, `supabase/`, pluss test-mapper og workspace-filer. (`web/` er fjernet; se `docs/migration/web-removed.md`.) ([GitHub][1])
 README beskriver også at du kan kjøre appene separat med `pnpm run dev:public|dashboard|admin`, som er akkurat det man vil i et monorepo. ([GitHub][1])
 
 ## Det som er bra nå
@@ -10,7 +10,7 @@ README beskriver også at du kan kjøre appene separat med `pnpm run dev:public|
   * `apps/` (flere apper)
   * `packages/` (shared kode)
   * `supabase/` (backend/migrations/edge functions)
-  * `web/` fortsatt der som “legacy” (greit i en overgang) ([GitHub][1])
+  * `web/` er fjernet; koden ligger i `apps/dashboard/`, `apps/public/`, `apps/admin/` ([GitHub][1])
 
 * **Du har allerede dev-scripts som matcher oppdeling**
 
@@ -38,27 +38,13 @@ Jeg ser `playwright-report/` og `test-results/` i rot. Det er vanligvis artifact
 
 * Hold repoet rent. CI skal lagre artifacts, repo skal ikke. ([GitHub][1])
 
-### 3) `web/` lever fortsatt side-by-side med nye `apps/*`
+### 3) ~~`web/` lever side-by-side med `apps/*`~~ ✅ Løst
 
-Det er OK midlertidig, men det er også en klassisk “to verdener”-felle:
+`web/` er fjernet (se `docs/migration/web-removed.md`). All kode ligger i `apps/dashboard/`, `apps/public/`, `apps/admin/`.
 
-* samme komponent finnes to steder
-* folk fikser bug i feil app
-* imports lekker fra `web/` til `apps/`
+### 4) Docs peker til root `docs/`
 
-Du må gjøre dette eksplisitt:
-
-* **forby imports fra `web/`** i `apps/*` via ESLint boundary rules
-* planlegg dato hvor `web/` ryker
-
-### 4) Docs peker fortsatt inn i `web/docs/...`
-
-README refererer til `web/docs/architecture/overview.md`. Det betyr at dokumentasjon fortsatt bor i legacy-stien. ([GitHub][1])
-
-Flytt docs til:
-
-* `docs/architecture/...`
-  og oppdater lenker.
+Dokumentasjon ligger i root `docs/` (f.eks. `docs/architecture/overview.md`). README og andre lenker er oppdatert til å peke på `docs/`.
 
 ## Er det “bra løst” som helhet?
 
@@ -76,8 +62,8 @@ Men for å gjøre det “ferdig monorepo” (ikke bare “mappe-rebrand”), bø
 
 1. Velg **kun pnpm** og fjern `package-lock.json`
 2. Legg `playwright-report/` og `test-results/` i `.gitignore`
-3. Sett **import boundaries**: `apps/*` kan ikke importere fra `web/*`
-4. Flytt docs ut av `web/` og inn i `docs/`
+3. ~~Sett import boundaries mot web/~~ (web/ fjernet)
+4. ~~Flytt docs ut av web/~~ (docs ligger i root `docs/`)
 5. Sørg for at `packages/*` brukes som “kontrakt”, ikke en søppelbøtte
 
 Hvis du vil, kan jeg gi deg en “monorepo hardening checklist” som du kan lime rett inn i repoet (lint rules, folder rules, CI checks, CODEOWNERS).

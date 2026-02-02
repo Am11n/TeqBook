@@ -2,7 +2,7 @@
 
 **Master Requirements Document - Mandatory for All Projects**
 
-> Dette dokumentet er flyttet fra `web/docs/cursor-rule.md` og gjelder nå for hele monorepoet (alle apps og packages).
+> Dette dokumentet gjelder for hele monorepoet (alle apps og packages).
 
 ---
 

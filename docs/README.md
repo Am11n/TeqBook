@@ -28,7 +28,8 @@ Dette er hoveddokumentasjonen for TeqBook-monorepoet (`apps/*` + `packages/*`).
 - **CI/CD & deploy** → `docs/ci-cd-strategy.md`, `docs/deployment/vercel.md`, `docs/env-setup.md`, `docs/environment-variables.md`
 - **Migrering & monorepo** →  
   - `docs/migration-status.md`, `docs/migration-final-status.md`, `docs/migration-complete-summary.md`  
-  - `docs/web-folder-migration-gap-analysis.md` (hva som ble flyttet ut av `web/`)  
+  - `docs/migration/web-removed.md` – **web/ er fjernet**; docs som nevner `web/` er legacy, tilsvarende kode er i `apps/*`.  
+  - `docs/web-folder-migration-gap-analysis.md` (historisk: hva som ble flyttet ut av `web/`)  
   - `docs/architecture/monorepo-blueprint.md`
 - **Beslutninger & prosesser** →  
   - ADR-er: `docs/decisions/`  

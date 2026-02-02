@@ -112,15 +112,15 @@ Du har to alternativer for å deploye Edge Functions:
 5. For hver funksjon:
    - **Function name:** `billing-create-customer` (eller `billing-create-subscription`, etc.)
    - **Copy and paste** innholdet fra filene:
-     - `web/supabase/functions/billing-create-customer/index.ts`
-     - `web/supabase/functions/billing-create-subscription/index.ts`
-     - `web/supabase/functions/billing-update-plan/index.ts`
-     - `web/supabase/functions/billing-webhook/index.ts`
+     - `supabase/functions/billing-create-customer/index.ts`
+     - `supabase/functions/billing-create-subscription/index.ts`
+     - `supabase/functions/billing-update-plan/index.ts`
+     - `supabase/functions/billing-webhook/index.ts`
    - Klikk **Deploy function**
 
 **Tips:** Du kan åpne filene i din editor og kopiere hele innholdet, eller bruke `cat` kommandoen:
 ```bash
-cat web/supabase/functions/billing-create-customer/index.ts
+cat supabase/functions/billing-create-customer/index.ts
 ```
 
 ### Alternativ 2: Via Supabase CLI
@@ -128,7 +128,7 @@ cat web/supabase/functions/billing-create-customer/index.ts
 Hvis du foretrekker å bruke kommandolinjen:
 
 ```bash
-# Fra web/ mappen
+# Fra repo-rot
 cd supabase/functions
 
 # Deploy hver funksjon
@@ -181,7 +181,7 @@ supabase link --project-ref [your-project-ref]
 
 ## Steg 8: Frontend Integration
 
-Se `web/src/lib/services/billing-service.ts` for eksempel på hvordan du kaller Edge Functions fra frontend.
+Se `apps/dashboard/src/lib/services/billing-service.ts` for eksempel på hvordan du kaller Edge Functions fra frontend.
 
 ---
 

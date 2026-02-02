@@ -50,7 +50,7 @@ Run the migration to set up the cron job:
 
 ```bash
 # The migration file is located at:
-web/supabase/migrations/20260124000001_setup_reminders_cron.sql
+supabase/migrations/20260124000001_setup_reminders_cron.sql
 ```
 
 This migration:
@@ -160,7 +160,7 @@ Monitor the following:
 ### Edge Function Not Being Called
 
 1. **Verify Edge Function exists:**
-   - Check `web/supabase/functions/process-reminders/index.ts`
+   - Check `supabase/functions/process-reminders/index.ts`
 
 2. **Test Edge Function manually:**
    ```bash
@@ -218,10 +218,10 @@ To change the batch size, update the cron job SQL to pass a different `limit` va
 
 ## Related Files
 
-- **Migration**: `web/supabase/migrations/20260124000001_setup_reminders_cron.sql`
-- **Edge Function**: `web/supabase/functions/process-reminders/index.ts`
-- **Reminders Table**: `web/supabase/migrations/20250105000001_create_reminders.sql`
-- **Tests**: `web/tests/integration/reminders-cron.test.ts`
+- **Migration**: `supabase/migrations/20260124000001_setup_reminders_cron.sql`
+- **Edge Function**: `supabase/functions/process-reminders/index.ts`
+- **Reminders Table**: `supabase/migrations/20250105000001_create_reminders.sql`
+- **Tests**: `apps/dashboard/tests/integration/reminders-cron.test.ts`
 
 ## Security
 

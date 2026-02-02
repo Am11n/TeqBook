@@ -42,7 +42,7 @@ TeqBook/
 │   ├── shared/          ✅ Opprettet (Supabase clients, auth contract)
 │   └── ui/              ✅ Opprettet (struktur klar)
 ├── supabase/            ✅ Flyttet til root
-└── web/                 ⏳ (kan beholdes som legacy inntil testing er ferdig)
+└── (web/ fjernet – se docs/migration/web-removed.md)
 ```
 
 ## Neste Fase: Testing og Refaktorering
@@ -51,7 +51,7 @@ TeqBook/
 - [ ] Test at hver app bygger (`npm run build`)
 - [ ] Test at hver app kjører i dev mode (`npm run dev`)
 - [ ] Test at alle routes fungerer
-- [ ] Verifiser at ingen imports fra `web/` eksisterer
+- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
 - [ ] Test type checking (`npm run type-check`)
 
 ### 2. Import-oppdateringer
@@ -77,7 +77,7 @@ TeqBook/
 ## Notater
 
 - Alle filer er kopiert (ikke flyttet) for å tillate gradvis migrering
-- `web/` kan beholdes inntil alle apper er testet og verifisert
+- `web/` er fjernet; se `docs/migration/web-removed.md`
 - Redirects mellom apper må håndteres (f.eks. `/onboarding` i dashboard, `/dashboard` redirects)
 - Hver app har nå sin egen isolerte struktur
 

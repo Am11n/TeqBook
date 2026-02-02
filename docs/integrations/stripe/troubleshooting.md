@@ -44,7 +44,7 @@ Denne guiden dekker vanlige problemer og løsninger for Stripe-integrasjonen.
    - Gå til **Edge Functions** og sjekk at funksjonen eksisterer
 
 2. **Redeploy Edge Functions:**
-   - Kopier inn hele innholdet fra `web/supabase/functions/[function-name]/index.ts`
+   - Kopier inn hele innholdet fra `supabase/functions/[function-name]/index.ts`
    - Klikk **Deploy** eller **Save**
 
 3. **Test Edge Function direkte:**

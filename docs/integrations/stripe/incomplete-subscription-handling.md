@@ -143,5 +143,5 @@ if (error.includes("incomplete")) {
 
 - [Stripe: Subscription Statuses](https://stripe.com/docs/billing/subscriptions/overview#subscription-statuses)
 - [Stripe: Incomplete Subscriptions](https://stripe.com/docs/billing/subscriptions/overview#incomplete-subscriptions)
-- `web/supabase/functions/billing-update-plan/index.ts` - Edge Function med status-sjekk
+- `supabase/functions/billing-update-plan/index.ts` - Edge Function med status-sjekk
 

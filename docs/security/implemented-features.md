@@ -11,11 +11,11 @@ Dette dokumentet beskriver de sikkerhetsfunksjonene som er implementert i TeqBoo
 **Status**: ✅ Implementert
 
 **Implementasjon**:
-- Client-side rate limiting i `web/src/lib/services/rate-limit-service.ts`
+- Client-side rate limiting i `apps/dashboard/src/lib/services/rate-limit-service.ts`
 - Maksimalt 5 mislykkede forsøk per 15 minutter
 - 30 minutters blokkering etter 5 mislykkede forsøk
 - Bruker localStorage for å spore forsøk per email
-- Integrert i login-siden (`web/src/app/(auth)/login/page.tsx`)
+- Integrert i login-siden (`apps/dashboard/src/app/(auth)/login/page.tsx`)
 
 **Funksjonalitet**:
 - Sporer mislykkede login-forsøk per email
@@ -32,7 +32,7 @@ Dette dokumentet beskriver de sikkerhetsfunksjonene som er implementert i TeqBoo
 **Status**: ✅ Implementert
 
 **Implementasjon**:
-- Logger service i `web/src/lib/services/logger.ts`
+- Logger service i `apps/dashboard/src/lib/services/logger.ts`
 - Sentry konfigurert for client, server og edge
 - Automatisk error tracking
 - Security event logging
@@ -48,9 +48,9 @@ Dette dokumentet beskriver de sikkerhetsfunksjonene som er implementert i TeqBoo
 - `NEXT_PUBLIC_SENTRY_DSN` - Sentry DSN for client-side
 - `SENTRY_DSN` - Sentry DSN for server-side
 - Konfigurasjonsfiler:
-  - `web/sentry.client.config.ts`
-  - `web/sentry.server.config.ts`
-  - `web/sentry.edge.config.ts`
+  - `apps/dashboard/sentry.client.config.ts`
+  - `apps/dashboard/sentry.server.config.ts`
+  - `apps/dashboard/sentry.edge.config.ts`
 
 **Bruk**:
 ```typescript
@@ -70,7 +70,7 @@ logError("Database error", error, { context });
 **Status**: ✅ Implementert
 
 **Implementasjon**:
-- 2FA service i `web/src/lib/services/two-factor-service.ts`
+- 2FA service i `apps/dashboard/src/lib/services/two-factor-service.ts`
 - TOTP-basert 2FA via Supabase Auth
 - Security settings side: `/settings/security`
 - 2FA login side: `/login-2fa`
@@ -100,8 +100,8 @@ logError("Database error", error, { context });
 **Status**: ✅ Implementert
 
 **Implementasjon**:
-- Session service i `web/src/lib/services/session-service.ts`
-- `useSessionTimeout` hook i `web/src/hooks/use-session-timeout.ts`
+- Session service i `apps/dashboard/src/lib/services/session-service.ts`
+- `useSessionTimeout` hook i `apps/dashboard/src/hooks/use-session-timeout.ts`
 - Integrert i `DashboardShell`
 
 **Funksjonalitet**:

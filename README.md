@@ -142,7 +142,7 @@ The i18n system is centralized and strongly typed. For implementation details, s
 
 ### Environment Variables
 
-Create `web/.env.local` with:
+Create `.env.local` in the app you run (e.g. **`apps/dashboard/.env.local`** for the dashboard):
 
 ```bash
 # Supabase (required)

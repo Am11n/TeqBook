@@ -21,7 +21,7 @@ TeqBook er designet for å være rask og responsiv. Dette dokumentet dokumentere
 
 **Løsning:** Byttet til Next.js `router.push()` for instant client-side navigation.
 
-**Fil:** `web/src/app/settings/layout.tsx`
+**Fil:** `apps/dashboard/src/app/settings/layout.tsx`
 
 **Før:**
 ```typescript
@@ -48,7 +48,7 @@ onValueChange={(value) => {
 
 **Løsning:** Byttet til `refreshSalon()` fra `SalonProvider` for å oppdatere data uten page reload.
 
-**Fil:** `web/src/app/settings/general/page.tsx`
+**Fil:** `apps/dashboard/src/app/settings/general/page.tsx`
 
 **Før:**
 ```typescript
@@ -75,8 +75,8 @@ await refreshSalon(); // ✅ Oppdaterer data uten reload
 - Optimalisert re-rendering ved å memoize komponenter
 
 **Filer:** 
-- `web/src/components/layout/dashboard-shell.tsx`
-- `web/src/components/layout/admin-shell.tsx`
+- `apps/dashboard/src/components/layout/dashboard-shell.tsx`
+- `apps/dashboard/src/components/layout/admin-shell.tsx`
 
 **Endringer:**
 ```typescript
@@ -100,7 +100,7 @@ const NavLink = memo(function NavLink({ ... }) { ... });
 - Memoization avhenger kun av faktiske endringer i `features`, `userRole`, `mounted`, og `featuresLoading`
 
 **Filer:** 
-- `web/src/components/layout/dashboard-shell.tsx`
+- `apps/dashboard/src/components/layout/dashboard-shell.tsx`
 
 **Endringer:**
 ```typescript
@@ -133,7 +133,7 @@ const managementItems = useMemo(() => {
 - Bruker `useRef` for å forhindre samtidige loads for samme salon
 
 **Filer:** 
-- `web/src/lib/hooks/use-features.ts`
+- `apps/dashboard/src/lib/hooks/use-features.ts`
 
 **Endringer:**
 ```typescript
@@ -166,7 +166,7 @@ globalFeaturesCache = {
 - Komponenten re-rendres kun når props faktisk endres (ikke bare `children`)
 
 **Filer:** 
-- `web/src/components/layout/dashboard-shell.tsx`
+- `apps/dashboard/src/components/layout/dashboard-shell.tsx`
 
 **Endringer:**
 ```typescript

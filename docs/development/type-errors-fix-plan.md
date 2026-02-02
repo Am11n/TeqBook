@@ -26,9 +26,9 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
 3. **Oppdater alle komponenter** som bruker `branding_*` felter til å bruke `theme` objektet
 
 **Filer som må endres:**
-- `web/src/lib/types.ts` - Legg til/fikse Salon type
-- `web/src/components/salon-provider.tsx` - Fjern duplikat, importer fra lib/types
-- `web/src/lib/hooks/branding/useBranding.ts` - Endre fra `branding_*` til `theme.*`
+- `apps/dashboard/src/lib/types.ts` - Legg til/fikse Salon type
+- `apps/dashboard/src/components/salon-provider.tsx` - Fjern duplikat, importer fra lib/types
+- `apps/dashboard/src/lib/hooks/branding/useBranding.ts` - Endre fra `branding_*` til `theme.*`
 
 ---
 
@@ -53,8 +53,8 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
 2. **Sjekk `CalendarBooking` type-definisjon** - Legg til `employee_id` hvis det faktisk finnes i data
 
 **Filer som må endres:**
-- `web/src/lib/hooks/calendar/useCalendar.ts` - Fiks employee_id bruk
-- `web/src/lib/types.ts` - Sjekk CalendarBooking type
+- `apps/dashboard/src/lib/hooks/calendar/useCalendar.ts` - Fiks employee_id bruk
+- `apps/dashboard/src/lib/types.ts` - Sjekk CalendarBooking type
 
 ---
 
@@ -67,13 +67,13 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
 **Løsning:**
 1. **Sjekk faktisk signatur** i `storage-service.ts`
 2. **Fiks kallene** i:
-   - `web/src/lib/hooks/branding/useBranding.ts` - `handleLogoUpload`
-   - `web/src/lib/hooks/profile/useProfile.ts` - `handleAvatarUpload`
+   - `apps/dashboard/src/lib/hooks/branding/useBranding.ts` - `handleLogoUpload`
+   - `apps/dashboard/src/lib/hooks/profile/useProfile.ts` - `handleAvatarUpload`
 
 **Filer som må endres:**
-- `web/src/lib/services/storage-service.ts` - Verifiser signaturer
-- `web/src/lib/hooks/branding/useBranding.ts` - Fiks uploadLogo kall
-- `web/src/lib/hooks/profile/useProfile.ts` - Fiks uploadAvatar kall
+- `apps/dashboard/src/lib/services/storage-service.ts` - Verifiser signaturer
+- `apps/dashboard/src/lib/hooks/branding/useBranding.ts` - Fiks uploadLogo kall
+- `apps/dashboard/src/lib/hooks/profile/useProfile.ts` - Fiks uploadAvatar kall
 
 ---
 
@@ -95,7 +95,7 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
    ```
 
 **Filer som må endres:**
-- `web/src/components/signup/SignupForm.tsx` - Fiks onClick handlers (linje 150, 173)
+- `apps/dashboard/src/components/signup/SignupForm.tsx` - Fiks onClick handlers (linje 150, 173)
 
 ---
 
@@ -111,7 +111,7 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
    ```
 
 **Filer som må endres:**
-- `web/src/components/layout/dashboard/UserMenu.tsx` - Legg til null-check (linje 76)
+- `apps/dashboard/src/components/layout/dashboard/UserMenu.tsx` - Legg til null-check (linje 76)
 
 ---
 
@@ -124,7 +124,7 @@ Dette dokumentet beskriver en systematisk plan for å fikse alle TypeScript type
 1. **Fjern `undefined` fra type** eller legg til explicit `undefined` check
 
 **Filer som må endres:**
-- `web/src/components/salon-provider.tsx` - Fiks type-konflikt (linje 145)
+- `apps/dashboard/src/components/salon-provider.tsx` - Fiks type-konflikt (linje 145)
 
 ---
 

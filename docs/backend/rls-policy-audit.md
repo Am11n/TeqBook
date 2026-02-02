@@ -136,7 +136,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete bookings for their salon"
 - ✅ SELECT: "Superadmins can view all bookings"
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Verification:** ✅ All 22 RLS isolation tests pass, including cross-tenant access prevention for bookings
 
@@ -155,7 +155,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete customers for their salon"
 - ✅ SELECT: "Superadmins can view all customers"
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Verification:** ✅ All 22 RLS isolation tests pass, including cross-tenant access prevention for customers
 
@@ -174,7 +174,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete employees for their salon"
 - ✅ SELECT: "Superadmins can view all employees"
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Note:** Conflicting policies ("Public can see employees for public salons", "Salon owners manage their employees") were dropped in `20250104000002_drop_conflicting_rls_policies.sql` to ensure proper tenant isolation.
 
@@ -195,7 +195,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete services for their salon"
 - ✅ SELECT: "Superadmins can view all services"
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Note:** Conflicting policies ("Public can see services for public salons", "Salon owners manage their services") were dropped in `20250104000002_drop_conflicting_rls_policies.sql` to ensure proper tenant isolation.
 
@@ -216,7 +216,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete shifts for their salon"
 - ✅ SELECT: "Superadmins can view all shifts"
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Verification:** ✅ All 22 RLS isolation tests pass, including cross-tenant access prevention for shifts
 
@@ -235,7 +235,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete products for their salon"
 - ✅ SELECT: "Superadmins can view all products"
 
-**Location:** `web/supabase/migrations/add-products-table.sql`
+**Location:** `supabase/migrations/add-products-table.sql`
 
 **Status:** Complete ✅
 
@@ -252,7 +252,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ UPDATE: "Superadmins can update all salons"
 - ✅ INSERT: Handled via RPC function `create_salon_for_current_user` (automatically assigns salon to user's profile)
 
-**Location:** `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql`
+**Location:** `supabase/migrations/20250104000000_add_missing_rls_policies.sql`
 
 **Verification:** ✅ All 22 RLS isolation tests pass, including superadmin access to all salons
 
@@ -271,8 +271,8 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ INSERT: "Users can insert their own profile"
 
 **Location:** 
-- `web/supabase/migrations/add-superadmin.sql` (superadmin policy)
-- `web/supabase/migrations/20250104000000_add_missing_rls_policies.sql` (user policies)
+- `supabase/migrations/add-superadmin.sql` (superadmin policy)
+- `supabase/migrations/20250104000000_add_missing_rls_policies.sql` (user policies)
 
 **Verification:** ✅ All 22 RLS isolation tests pass
 
@@ -290,7 +290,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ UPDATE: "Users can update opening_hours for their salon"
 - ✅ DELETE: "Users can delete opening_hours for their salon"
 
-**Location:** `web/supabase/migrations/opening-hours-schema.sql`
+**Location:** `supabase/migrations/opening-hours-schema.sql`
 
 **Status:** Complete ✅
 
@@ -305,7 +305,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ INSERT: "Users can insert employee_services for their salon"
 - ✅ DELETE: "Users can delete employee_services for their salon"
 
-**Location:** `web/supabase/migrations/operations-module-enhancements.sql`
+**Location:** `supabase/migrations/operations-module-enhancements.sql`
 
 **Status:** Complete ✅
 
@@ -322,7 +322,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ DELETE: "Users can delete booking_products for their salon"
 - ✅ SELECT: "Superadmins can view all booking_products"
 
-**Location:** `web/supabase/migrations/add-products-table.sql`
+**Location:** `supabase/migrations/add-products-table.sql`
 
 **Status:** Complete ✅
 
@@ -338,7 +338,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ UPDATE: "Users can update addons for their salon"
 - ✅ DELETE: "Users can delete addons for their salon"
 
-**Location:** `web/supabase/migrations/add-addons-and-plan-limits.sql`
+**Location:** `supabase/migrations/add-addons-and-plan-limits.sql`
 
 **Status:** Complete ✅
 
@@ -352,7 +352,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ SELECT: "Anyone can view features"
 - ✅ ALL: "Only superadmins can modify features"
 
-**Location:** `web/supabase/migrations/add-features-system.sql`
+**Location:** `supabase/migrations/add-features-system.sql`
 
 **Status:** Complete ✅
 
@@ -366,7 +366,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ SELECT: "Anyone can view plan_features"
 - ✅ ALL: "Only superadmins can modify plan_features"
 
-**Location:** `web/supabase/migrations/add-features-system.sql`
+**Location:** `supabase/migrations/add-features-system.sql`
 
 **Status:** Complete ✅
 
@@ -383,7 +383,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 - ✅ UPDATE: "No updates to audit logs" (always false)
 - ✅ DELETE: "No deletes to audit logs" (always false)
 
-**Location:** `web/supabase/migrations/20250101120000_create_security_audit_log.sql`
+**Location:** `supabase/migrations/20250101120000_create_security_audit_log.sql`
 
 **Status:** Complete ✅
 
@@ -396,7 +396,7 @@ CREATE POLICY "Only superadmins can modify [table]"
 **Policies Found:**
 - ✅ ALL: "Service role can manage rate limit entries"
 
-**Location:** `web/supabase/migrations/20250101000000_create_rate_limit_table.sql`
+**Location:** `supabase/migrations/20250101000000_create_rate_limit_table.sql`
 
 **Status:** Complete ✅
 
@@ -508,6 +508,6 @@ ORDER BY policyname;
 
 ## Test Files
 
-- `web/tests/integration/rls/rls-test-utils.ts` - Test utilities for RLS testing
-- `web/tests/integration/rls/rls-isolation.test.ts` - 22 comprehensive RLS isolation tests (all passing)
+- `apps/dashboard/tests/integration/rls/rls-test-utils.ts` - Test utilities for RLS testing
+- `apps/dashboard/tests/integration/rls/rls-isolation.test.ts` - 22 comprehensive RLS isolation tests (all passing)
 

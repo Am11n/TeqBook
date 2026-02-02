@@ -38,11 +38,11 @@ Følg denne fila som arbeidsordre. Kryss av punkt for punkt. Ikke hopp rundt.
 
 ### Verifisering
 - [x] `git status` skal ikke vise junk-filer.
-- [x] Installer deps fra riktig mappe (typisk `web/`) og bekreft at build fortsatt fungerer.
+- [x] Installer deps fra riktig mappe (typisk `apps/dashboard/`) og bekreft at build fortsatt fungerer.
 
 Akseptanse
 - [x] Ingen `.DS_Store` i repo.
-- [x] Kun relevant lockfil brukes (typisk i `web/`).
+- [x] Kun relevant lockfil brukes (typisk i `apps/dashboard/`).
 
 ---
 
@@ -50,7 +50,7 @@ Akseptanse
 
 ### Standard regler
 - [x] Alle redigerbare felt (label + input) må bruke `Field` wrapper:
-  - [x] `web/src/components/form/Field.tsx`
+  - [x] `apps/dashboard/src/components/form/Field.tsx`
 - [x] Default layout skal alltid være stacked:
   - [x] label over input
   - [x] label → input: `gap-2`
@@ -58,7 +58,7 @@ Akseptanse
 
 ### Håndheving i ESLint
 - [x] Forby direkte `<label>` i app-kode:
-  - [x] Tillat kun i `web/src/components/form/**` og `web/src/components/ui/**`
+  - [x] Tillat kun i `apps/dashboard/src/components/form/**` og `apps/dashboard/src/components/ui/**`
 - [ ] Forby direkte supabase-/Input-import i pages der det gir mening:
   - [ ] Bruk `no-restricted-imports` for `Input` utenfor form/ui-mapper
 - [ ] Hvis unntak må gjøres:
@@ -66,12 +66,12 @@ Akseptanse
 
 ### Dokumentasjon
 - [x] Lag/oppdater doc:
-  - [x] `web/docs/frontend/forms.md`
+  - [x] `docs/frontend/forms.md`
   - [x] Inkluder "Correct" og "Incorrect" eksempler
   - [x] Inkluder spacing tokens som må brukes
 
 Akseptanse
-- [x] Du kan ikke lage en ny labeled input i `web/src/app/**` uten `Field`.
+- [x] Du kan ikke lage en ny labeled input i `apps/dashboard/src/app/**` uten `Field`.
 - [x] Lint feiler hvis noen prøver.
 
 ---
@@ -98,7 +98,7 @@ Akseptanse
 - [x] Alle inputs bruker `Field`.
 
 Fil(er) å sjekke
-- [x] `web/src/app/profile/page.tsx`
+- [x] `apps/dashboard/src/app/profile/page.tsx`
 
 Akseptanse
 - [x] Siden har kun to cards.
@@ -109,12 +109,12 @@ Akseptanse
 ## 4) Arkitektur: fjern Supabase-import fra UI-laget
 
 ### Funn (må bort)
-- [x] `web/src/components/salon-provider.tsx`
-- [x] `web/src/app/(auth)/login-2fa/page-client.tsx`
+- [x] `apps/dashboard/src/components/salon-provider.tsx`
+- [x] `apps/dashboard/src/app/(auth)/login-2fa/page-client.tsx`
 
 ### Tiltak
 - [x] Flytt Supabase auth wiring til service-lag:
-  - [x] Lag `web/src/lib/services/auth.service.ts` (eller bruk eksisterende)
+  - [x] Lag `apps/dashboard/src/lib/services/auth.service.ts` (eller bruk eksisterende)
   - [x] Eksponer:
     - [x] `subscribeToAuthChanges(callback): unsubscribe`
     - [x] `getCurrentUser()`
@@ -124,54 +124,54 @@ Akseptanse
 
 Akseptanse
 - [x] `grep "@/lib/supabase-client"` gir kun treff i:
-  - [x] `web/src/lib/services/**`
-  - [x] `web/src/lib/repositories/**`
-- [x] Ingen treff i `web/src/app/**` eller `web/src/components/**`.
+  - [x] `apps/dashboard/src/lib/services/**`
+  - [x] `apps/dashboard/src/lib/repositories/**`
+- [x] Ingen treff i `apps/dashboard/src/app/**` eller `apps/dashboard/src/components/**`.
 
 ---
 
 ## 5) Fjern `eslint-disable` ved å fikse hooks (ikke skjul bugs)
 
 ### Dashboard (bug-risiko)
-- [x] `web/src/app/dashboard/page.tsx`
+- [x] `apps/dashboard/src/app/dashboard/page.tsx`
   - [x] Fjern `react-hooks/exhaustive-deps` disable.
   - [x] Effekt som bruker `user?.email` må depend'e på `user?.email` (eller derived value).
   - [x] Unngå stale state.
 
 ### Employees
-- [x] `web/src/app/employees/page.tsx`
+- [x] `apps/dashboard/src/app/employees/page.tsx`
   - [x] Gjør `loadEmployees` stabil:
     - [x] `useCallback` + riktige deps, eller
     - [x] flytt funksjonen inn i `useEffect`
   - [x] Fjern disable.
 
 ### Andre kjente steder å gjennomgå
-- [x] `web/src/components/command-palette.tsx`
-- [x] `web/src/components/admin-command-palette.tsx`
-- [x] `web/src/components/public-booking-page.tsx`
+- [x] `apps/dashboard/src/components/command-palette.tsx`
+- [x] `apps/dashboard/src/components/admin-command-palette.tsx`
+- [x] `apps/dashboard/src/components/public-booking-page.tsx`
 
 Akseptanse
 - [x] Antall `eslint-disable-next-line react-hooks/*` går ned.
-- [x] Ingen `exhaustive-deps` disable i `web/src/` etter endring.
+- [x] Ingen `exhaustive-deps` disable i `apps/dashboard/src/` etter endring.
 
 ---
 
 ## 6) SQL/Migrations: gjør det trygt og deterministisk
 
 ### Problem
-- [x] `web/scripts/migrate-local.ts` kjører alt under `supabase/**/*.sql` (risiko).
+- [x] `apps/dashboard/scripts/migrate-local.ts` kjører alt under `supabase/**/*.sql` (risiko).
 
 ### Tiltak
 - [x] Splitt mapper:
-  - [x] `web/supabase/migrations/` (kun deterministiske migrasjoner)
-  - [x] `web/supabase/seeds/` (valgfritt)
-  - [x] `web/supabase/admin/` (engangs-scripts, aldri auto-kjørt)
-- [x] Oppdater `web/scripts/migrate-local.ts`:
+  - [x] `apps/dashboard/supabase/migrations/` (kun deterministiske migrasjoner)
+  - [x] `apps/dashboard/supabase/seeds/` (valgfritt)
+  - [x] `apps/dashboard/supabase/admin/` (engangs-scripts, aldri auto-kjørt)
+- [x] Oppdater `apps/dashboard/scripts/migrate-local.ts`:
   - [x] Kjør kun `supabase/migrations/**/*.sql`
   - [x] Valider filnavnformat (dato/sekvens) før kjøring
   - [x] Logg nøyaktig hvilke filer som kjøres
 - [x] Dokumenter workflow:
-  - [x] `web/docs/supabase-workflow.md`
+  - [x] `docs/supabase-workflow.md`
 
 Akseptanse
 - [x] Admin scripts kan ikke kjøres ved et uhell via migrate.
@@ -182,9 +182,9 @@ Akseptanse
 ## 7) Splitt store filer (vedlikeholdbarhet) ✅ FULLFØRT
 
 ### Landing
-- [x] `web/src/app/landing/page.tsx` (902 → 136 linjer - fullført)
-  - [x] Flytt `copy` objekt til `web/src/components/landing/landing-copy.ts`
-  - [x] Flytt seksjoner til `web/src/components/landing/**`
+- [x] `apps/dashboard/src/app/landing/page.tsx` (902 → 136 linjer - fullført)
+  - [x] Flytt `copy` objekt til `apps/dashboard/src/components/landing/landing-copy.ts`
+  - [x] Flytt seksjoner til `apps/dashboard/src/components/landing/**`
     - [x] `LandingHeader.tsx` - Header/navigation
     - [x] `LandingMobileMenu.tsx` - Mobile menu overlay
     - [x] `LandingHero.tsx` - Hero section med floating cards
@@ -195,19 +195,19 @@ Akseptanse
   - [x] Flytt statiske data til `constants.ts` (languageLogos)
 
 ### Bookings/Shifts
-- [x] `web/src/app/bookings/page.tsx` (956 → 214 linjer - fullført)
+- [x] `apps/dashboard/src/app/bookings/page.tsx` (956 → 214 linjer - fullført)
   - [x] Del opp i:
     - [x] `components/` - BookingsTable, BookingsCardView, CreateBookingDialog, CancelBookingDialog
     - [x] `hooks/` - useBookings, useCreateBooking
     - [x] `lib/` - bookings-utils (formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable)
-- [x] `web/src/app/shifts/page.tsx` (762 → 182 linjer - fullført)
+- [x] `apps/dashboard/src/app/shifts/page.tsx` (762 → 182 linjer - fullført)
   - [x] Del opp i:
     - [x] `components/` - CreateShiftForm, ShiftsWeekView, ShiftsListView, EditShiftDialog
     - [x] `hooks/` - useShifts, useCreateShift, useEditShift
     - [x] `lib/utils/` - shifts-utils (getWeekdays, formatWeekday, getWeekDates, getWeekdayNumber, getShiftsForDayAndEmployee, hasOverlappingShifts, getInitialWeekStart, changeWeek, goToTodayWeek)
 
 ### Dashboard shell
-- [x] `web/src/components/layout/dashboard-shell.tsx` (986 → 217 linjer - fullført)
+- [x] `apps/dashboard/src/components/layout/dashboard-shell.tsx` (986 → 217 linjer - fullført)
   - [x] `lib/utils/dashboard/dashboard-utils.ts` - getInitials utility
   - [x] `lib/hooks/dashboard/useDashboardMenuItems.ts` - menu items hook
   - [x] `components/layout/dashboard/NavLink.tsx` - NavLink component
@@ -238,13 +238,13 @@ Akseptanse
 
 ### Tiltak
 - [x] Lag funksjon:
-  - [x] `web/src/i18n/normalizeLocale.ts`
+  - [x] `apps/dashboard/src/i18n/normalizeLocale.ts`
   - [x] `normalizeLocale(locale: string): AppLocale`
 - [x] Bytt ut all ad hoc mapping med denne.
-  - [x] `web/src/app/(auth)/login/page.tsx`
-  - [x] `web/src/app/(auth)/signup/page.tsx`
-  - [x] `web/src/app/employees/page.tsx`
-  - [x] `web/src/app/calendar/page.tsx`
+  - [x] `apps/dashboard/src/app/(auth)/login/page.tsx`
+  - [x] `apps/dashboard/src/app/(auth)/signup/page.tsx`
+  - [x] `apps/dashboard/src/app/employees/page.tsx`
+  - [x] `apps/dashboard/src/app/calendar/page.tsx`
   - **Note**: Resten av filene kan oppdateres gradvis
 
 Akseptanse ✅ FULLFØRT
@@ -255,14 +255,14 @@ Akseptanse ✅ FULLFØRT
 
 ## 9) Logging og "debug-støy" ✅ FULLFØRT
 - [x] Fjern `console.log` i produksjonskode.
-  - [x] `web/src/app/test-billing/page.tsx` - kommentert ut
+  - [x] `apps/dashboard/src/app/test-billing/page.tsx` - kommentert ut
 - [x] Bytt `console.error` til en enkel `logError()` wrapper der det gir mening.
-  - [x] `web/src/app/(auth)/login/page.tsx` - erstattet
-  - [x] `web/src/app/settings/general/page.tsx` - erstattet
-  - [x] `web/src/app/admin/page.tsx` - erstattet (3 steder)
-  - [x] `web/src/app/settings/notifications/page.tsx` - erstattet
+  - [x] `apps/dashboard/src/app/(auth)/login/page.tsx` - erstattet
+  - [x] `apps/dashboard/src/app/settings/general/page.tsx` - erstattet
+  - [x] `apps/dashboard/src/app/admin/page.tsx` - erstattet (3 steder)
+  - [x] `apps/dashboard/src/app/settings/notifications/page.tsx` - erstattet
 - [x] Sjekk spesielt:
-  - [x] `web/src/app/test-billing/page.tsx` (ikke la debug-sider lekke til prod)
+  - [x] `apps/dashboard/src/app/test-billing/page.tsx` (ikke la debug-sider lekke til prod)
 
 Akseptanse ✅ FULLFØRT
 - [x] `console.log` er fjernet/kommentert ut i produksjonskode.

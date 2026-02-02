@@ -132,7 +132,7 @@ Hvis webhook-en ikke ble sendt automatisk, kan du sende den manuelt:
 
 **Hvis funksjonen ikke er deployet:**
 - Deploy funksjonen på nytt
-- Kopier koden fra `web/supabase/functions/billing-webhook/index.ts`
+- Kopier koden fra `supabase/functions/billing-webhook/index.ts`
 
 ---
 

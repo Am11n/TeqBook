@@ -21,10 +21,10 @@ Alle admin routes er nå flyttet til `apps/admin/`:
 - ✅ Error boundary
 
 ### Services
-- ✅ All services from `web/src/lib/services/`
-- ✅ All repositories from `web/src/lib/repositories/`
-- ✅ All types from `web/src/lib/types/`
-- ✅ Supabase clients from `web/src/lib/supabase/`
+- ✅ All services in `apps/admin/src/lib/services/` (fra migrering fra web/)
+- ✅ All repositories in `apps/admin/src/lib/repositories/`
+- ✅ All types in `apps/admin/src/lib/types/`
+- ✅ Supabase clients via packages/shared
 - ✅ All utilities and helpers
 
 ### Infrastructure
@@ -44,7 +44,7 @@ Alle admin routes er nå flyttet til `apps/admin/`:
 - [ ] Test at admin page fungerer
 - [ ] Test at alle admin routes er tilgjengelige
 - [ ] Test at superadmin access control fungerer
-- [ ] Verifiser at ingen imports fra `web/` eksisterer
+- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
 
 ### Refaktorering (valgfritt)
 - [ ] Flytt delte UI-komponenter til `packages/ui`

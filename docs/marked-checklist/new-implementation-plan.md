@@ -23,7 +23,7 @@ All vedvarende state (språk, preferanser osv.) skal lagres i Supabase, ikke i l
 - [x] Server actions for lagring av innstillinger (general og notifications settings).
 
 ## Database Migration Strategy
-- [x] Alle SQL-endringer skal være i `web/supabase/` mappen.
+- [x] Alle SQL-endringer skal være i `supabase/` mappen.
 - [x] Hver modul skal ha egen SQL-fil (f.eks. `whatsapp-integration.sql`).
 - [x] SQL-filer skal være idempotent (bruk `IF NOT EXISTS`, `DROP IF EXISTS`).
 - [x] Dokumenter alle schema-endringer i SQL-filene (se `supabase/README.md`).
@@ -141,7 +141,7 @@ Lag følgende Supabase RPC-funksjoner:
 # 5. Shifts (Vaktplan)
 
 ## Status (Eksisterende)
-- ✅ `/shifts` side eksisterer (`web/src/app/shifts/page.tsx`).
+- ✅ `/shifts` side eksisterer (`apps/dashboard/src/app/shifts/page.tsx`).
 - ✅ `shifts` tabell med `salon_id`, `employee_id`, `start_time`, `end_time` (allerede implementert).
 - ✅ `getShiftsForCurrentSalon()`, `createShift()`, `deleteShift()` i `shifts` repository.
 - ✅ Basic CRUD funksjonalitet er på plass.
@@ -163,8 +163,8 @@ Lag følgende Supabase RPC-funksjoner:
 # 6. Roller & Tilganger
 
 ## Status (Eksisterende)
-- ✅ `role` felt i `employees` tabell (allerede implementert, se `web/src/lib/types.ts`).
-- ✅ `role` vises i Employees-listen (sjekk `web/src/app/employees/page.tsx`).
+- ✅ `role` felt i `employees` tabell (allerede implementert, se `apps/dashboard/src/lib/types.ts`).
+- ✅ `role` vises i Employees-listen (sjekk `apps/dashboard/src/app/employees/page.tsx`).
 
 ## Database
 - [x] Verifiser at `role` støtter: `owner`, `manager`, `staff` (eller utvid hvis nødvendig).

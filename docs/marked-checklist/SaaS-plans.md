@@ -237,7 +237,7 @@ Denne sjekklisten skal gjennomføres systematisk, seksjon for seksjon.
 ### 20. Fremtidig monorepo-blåkopi
 
 - [x] Opprett `docs/architecture/monorepo-blueprint.md`:
-  - [x] Beskriv hvordan dagens `web/`-app kan flyttes til:
+  - [x] Beskriv hvordan dagens `apps/`-app kan flyttes til:
     - [x] `apps/web-admin`
     - [x] `apps/web-public`
     - [x] `packages/ui`

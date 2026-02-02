@@ -364,7 +364,7 @@ cd web
 npm run test billing-service
 ```
 
-Dette kjører tests i `web/tests/unit/services/billing-service.test.ts` som tester:
+Dette kjører tests i `apps/dashboard/tests/unit/services/billing-service.test.ts` som tester:
 - Payment failure handling
 - Retry logic
 - Grace period calculations

@@ -23,7 +23,7 @@ Kjør migrasjonen for å fikse RLS policies:
 
 ```sql
 -- I Supabase SQL Editor, kjør:
--- web/supabase/migrations/20250105000004_fix_email_log_reminders_rls_for_api_routes.sql
+-- supabase/supabase/migrations/ (eller tilsvarende migrasjon)
 ```
 
 ### 4. Sjekk browser console

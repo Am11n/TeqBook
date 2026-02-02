@@ -67,7 +67,7 @@ This ensures that:
 - **Function**: `prevent_nullify_last_owner()`
 - **Action**: Prevents setting `salon_id` to NULL if it's the only owner
 
-**Location**: `web/supabase/prevent-orphaned-salons.sql`
+**Location**: `supabase/prevent-orphaned-salons.sql`
 
 ### 2. Employee Deletion Handling
 
@@ -149,7 +149,7 @@ Consider adding:
 
 - `docs/backend/rls-strategy.md` - Row Level Security policies
 - `docs/compliance/data-lifecycle.md` - Data retention and GDPR
-- `web/supabase/prevent-orphaned-salons.sql` - Trigger implementation
+- `supabase/prevent-orphaned-salons.sql` - Trigger implementation
 
 ---
 

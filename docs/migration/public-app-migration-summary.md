@@ -70,7 +70,7 @@ Alle public routes er nå flyttet til `apps/public/`:
 - [ ] Test at signup fungerer
 - [ ] Test at public booking fungerer
 - [ ] Test at booking confirmation fungerer
-- [ ] Verifiser at ingen imports fra `web/` eksisterer
+- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
 
 ### Refaktorering (valgfritt)
 - [ ] Flytt delte UI-komponenter til `packages/ui`

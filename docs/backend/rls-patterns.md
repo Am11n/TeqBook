@@ -457,7 +457,7 @@ describe("RLS Isolation Tests", () => {
 });
 ```
 
-See `web/tests/integration/rls/rls-isolation.test.ts` for examples.
+See `apps/dashboard/tests/integration/rls/rls-isolation.test.ts` for examples.
 
 ---
 

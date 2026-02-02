@@ -13,7 +13,7 @@ new row violates row-level security policy for table "reminders"
 Kjør denne migrasjonen i Supabase SQL Editor:
 
 1. Gå til Supabase Dashboard → SQL Editor
-2. Kopier innholdet fra `web/supabase/migrations/20250105000004_fix_email_log_reminders_rls_for_api_routes.sql`
+2. Kopier innholdet fra `supabase/supabase/migrations/20250105000004_fix_email_log_reminders_rls_for_api_routes.sql` (eller tilsvarende migrasjon i `supabase/`)
 3. Kjør SQL-en
 
 Eller kjør migrasjonen lokalt:

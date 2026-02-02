@@ -9,7 +9,7 @@ Siden Supabase Editor ikke støtter mapper, har vi inlinet auth-koden i hver fun
 1. I Supabase Dashboard → **Edge Functions** → **Open Editor**
 2. Klikk **New function** (eller **Create function**)
 3. **Function name:** `billing-create-customer`
-4. **Kopier HELE innholdet** fra `web/supabase/functions/billing-create-customer/index.ts`
+4. **Kopier HELE innholdet** fra `supabase/functions/billing-create-customer/index.ts`
 5. Klikk **Deploy function**
 
 ---
@@ -18,7 +18,7 @@ Siden Supabase Editor ikke støtter mapper, har vi inlinet auth-koden i hver fun
 
 1. Klikk **New function** igjen
 2. **Function name:** `billing-create-subscription`
-3. **Kopier HELE innholdet** fra `web/supabase/functions/billing-create-subscription/index.ts`
+3. **Kopier HELE innholdet** fra `supabase/functions/billing-create-subscription/index.ts`
 4. Klikk **Deploy function**
 
 ---
@@ -27,7 +27,7 @@ Siden Supabase Editor ikke støtter mapper, har vi inlinet auth-koden i hver fun
 
 1. Klikk **New function**
 2. **Function name:** `billing-update-plan`
-3. **Kopier HELE innholdet** fra `web/supabase/functions/billing-update-plan/index.ts`
+3. **Kopier HELE innholdet** fra `supabase/functions/billing-update-plan/index.ts`
 4. Klikk **Deploy function**
 
 ---
@@ -36,7 +36,7 @@ Siden Supabase Editor ikke støtter mapper, har vi inlinet auth-koden i hver fun
 
 1. Klikk **New function**
 2. **Function name:** `billing-webhook`
-3. **Kopier HELE innholdet** fra `web/supabase/functions/billing-webhook/index.ts`
+3. **Kopier HELE innholdet** fra `supabase/functions/billing-webhook/index.ts`
 4. Klikk **Deploy function**
 
 **Merk:** `billing-webhook` trenger IKKE auth (den bruker Stripe signature i stedet).
@@ -79,10 +79,10 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxx
 ## Hvor finner jeg koden?
 
 Åpne filene i prosjektet:
-- `web/supabase/functions/billing-create-customer/index.ts`
-- `web/supabase/functions/billing-create-subscription/index.ts`
-- `web/supabase/functions/billing-update-plan/index.ts`
-- `web/supabase/functions/billing-webhook/index.ts`
+- `supabase/functions/billing-create-customer/index.ts`
+- `supabase/functions/billing-create-subscription/index.ts`
+- `supabase/functions/billing-update-plan/index.ts`
+- `supabase/functions/billing-webhook/index.ts`
 
 Kopier hele innholdet fra hver fil og lim inn i Editor.
 

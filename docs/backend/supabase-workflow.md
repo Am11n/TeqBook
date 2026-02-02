@@ -5,7 +5,7 @@ This document describes how to safely manage database migrations and admin scrip
 ## Directory Structure
 
 ```
-web/supabase/
+supabase/
 ├── migrations/     # Deterministic migrations (auto-run)
 ├── admin/          # One-time admin scripts (manual run only)
 └── functions/      # Edge Functions (Deno)
@@ -84,7 +84,7 @@ Migrations should be run manually in Supabase Dashboard SQL Editor, or via Supab
 
 1. **Create the migration file**:
    ```bash
-   touch web/supabase/migrations/$(date +%Y%m%d-%H%M%S)-your-description.sql
+   touch supabase/migrations/$(date +%Y%m%d-%H%M%S)-your-description.sql
    ```
 
 2. **Write the migration**:
@@ -101,7 +101,7 @@ Migrations should be run manually in Supabase Dashboard SQL Editor, or via Supab
 
 4. **Commit and push**:
    ```bash
-   git add web/supabase/migrations/
+   git add supabase/migrations/
    git commit -m "Add migration: your-description"
    ```
 
@@ -109,7 +109,7 @@ Migrations should be run manually in Supabase Dashboard SQL Editor, or via Supab
 
 1. **Create the admin script**:
    ```bash
-   touch web/supabase/admin/your-script-name.sql
+   touch supabase/admin/your-script-name.sql
    ```
 
 2. **Add documentation**:
@@ -126,7 +126,7 @@ Migrations should be run manually in Supabase Dashboard SQL Editor, or via Supab
 
 4. **Commit**:
    ```bash
-   git add web/supabase/admin/
+   git add supabase/admin/
    git commit -m "Add admin script: your-script-name"
    ```
 

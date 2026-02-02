@@ -22,7 +22,7 @@ Error Boundaries er React-komponenter som fanger JavaScript-feil i child-kompone
 
 ### Implementasjon
 
-**Fil:** `web/src/components/error-boundary.tsx`
+**Fil:** `apps/dashboard/src/components/error-boundary.tsx`
 
 ```typescript
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -66,7 +66,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 
 ### Konsistent feilvisning
 
-**Fil:** `web/src/components/feedback/error-message.tsx`
+**Fil:** `apps/dashboard/src/components/feedback/error-message.tsx`
 
 ```typescript
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -91,7 +91,7 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 
 ### Type-safe error handling
 
-**Fil:** `web/src/lib/errors/domain-errors.ts`
+**Fil:** `apps/dashboard/src/lib/errors/domain-errors.ts`
 
 Domain errors gir type-safe error handling med spesifikke error codes:
 
@@ -124,7 +124,7 @@ try {
 - `ServiceError` - Service-relaterte feil
 - `SalonError` - Salon-relaterte feil
 
-Se `web/src/lib/errors/README.md` for full liste.
+Se `apps/dashboard/src/lib/errors/README.md` for full liste.
 
 ---
 
@@ -257,8 +257,8 @@ if (error) {
 
 ## Referanser
 
-- `web/src/components/error-boundary.tsx` - Error Boundary implementasjon
-- `web/src/components/feedback/error-message.tsx` - Error Message komponent
-- `web/src/lib/errors/domain-errors.ts` - Domain error types
-- `web/src/lib/errors/README.md` - Domain errors dokumentasjon
+- `apps/dashboard/src/components/error-boundary.tsx` - Error Boundary implementasjon
+- `apps/dashboard/src/components/feedback/error-message.tsx` - Error Message komponent
+- `apps/dashboard/src/lib/errors/domain-errors.ts` - Domain error types
+- `apps/dashboard/src/lib/errors/README.md` - Domain errors dokumentasjon
 

@@ -68,7 +68,7 @@ curl -X POST \
 
 Opprett en test-side i Next.js for å teste billing-funksjonene:
 
-**`web/src/app/test-billing/page.tsx`** (midlertidig test-side):
+**`apps/dashboard/src/app/test-billing/page.tsx`** (midlertidig test-side):
 
 ```typescript
 "use client";

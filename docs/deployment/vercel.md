@@ -42,7 +42,7 @@ Mål:
     - [x] Fjernet `.github/workflows/nextjs.yml` (GitHub Pages deployment)
 - [x] Sjekk om det finnes en `CNAME`-fil i prosjektet (ofte i `public/` eller root for Pages):
   - [x] Funnet: `CNAME` i root (peker til `teqbook.com`)
-  - [x] Funnet: `web/CNAME` (peker til `teqbook.com`)
+  - [x] Funnet: `(app) CNAME / domenekonfigurasjon` (peker til `teqbook.com`)
   - [x] Disse skal fjernes når domenet er flyttet til Vercel (markert for senere sletting).
 - [ ] Sjekk om det finnes en dedikert `gh-pages` branch:
   - [ ] Oppgave for menneske: vurdér å slette `gh-pages` i GitHub når Vercel er oppe og kjører.
@@ -156,13 +156,13 @@ Mål:
   - [x] Åpne tidligere GitHub Pages-URL og sjekk at den ikke lenger viser appen (eller redirecter til ny).
   - [x] GitHub Pages er deaktivert i repo settings.
 - [x] Rydd repoet:
-  - [x] Fjernet `CNAME` filer (root og `web/`) som var for GitHub Pages.
+  - [x] Fjernet `CNAME` filer (root og app-mapper) som var for GitHub Pages.
   - [x] Ingen GitHub Pages-relaterte markdown-filer funnet som trenger sletting.
 - [x] Oppdater `README.md`:
   - [x] Lagt til produksjons-URL lenke: https://teqbook.com
   - [x] Lagt til "Deployment" seksjon som forklarer Vercel-deployment.
   - [x] Dokumentert at deploy trigges automatisk ved push til `main`.
-  - [x] Lagt til lenke til `web/docs/deployment/vercel.md` for mer informasjon.
+  - [x] Lagt til lenke til `docs/deployment/vercel.md` for mer informasjon.
 
 ---
 

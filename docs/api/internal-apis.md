@@ -32,7 +32,7 @@ TeqBook follows a layered architecture:
 Repositories handle direct database access via Supabase.
 
 ### Location
-`web/src/lib/repositories/`
+`apps/dashboard/src/lib/repositories/`
 
 ### Pattern
 
@@ -85,7 +85,7 @@ export async function getBookingsForSalon(
 Services contain business logic and orchestrate repository calls.
 
 ### Location
-`web/src/lib/services/`
+`apps/dashboard/src/lib/services/`
 
 ### Pattern
 
@@ -134,7 +134,7 @@ export async function createBookingWithCustomer(
 React hooks for accessing services in components.
 
 ### Location
-`web/src/lib/hooks/`
+`apps/dashboard/src/lib/hooks/`
 
 ### Pattern
 
@@ -179,8 +179,8 @@ export function useBookings(salonId: string) {
 ## Type Definitions
 
 ### Location
-- `web/src/lib/types.ts` - Core domain types
-- `web/src/lib/types/domain.ts` - Extended domain types
+- `apps/dashboard/src/lib/types.ts` - Core domain types
+- `apps/dashboard/src/lib/types/domain.ts` - Extended domain types
 
 ### Key Types
 
@@ -216,7 +216,7 @@ interface Customer {
 ## Utilities
 
 ### Location
-`web/src/lib/utils/`
+`apps/dashboard/src/lib/utils/`
 
 ### Key Utilities
 
@@ -230,7 +230,7 @@ interface Customer {
 ## Supabase Client
 
 ### Location
-`web/src/lib/supabase-client.ts`
+`apps/dashboard/src/lib/supabase-client.ts`
 
 ### Usage
 

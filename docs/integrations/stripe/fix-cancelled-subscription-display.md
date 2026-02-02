@@ -54,7 +54,7 @@ WHERE id = 'din-salon-id';
 Sørg for at `billing-cancel-subscription` Edge Function er deployet med den oppdaterte koden som setter `billing_subscription_id` til `null`:
 
 1. Gå til Supabase Dashboard → Edge Functions → billing-cancel-subscription
-2. Kopier koden fra `web/supabase/functions/billing-cancel-subscription/index.ts`
+2. Kopier koden fra `supabase/functions/billing-cancel-subscription/index.ts`
 3. Deploy funksjonen
 
 ---

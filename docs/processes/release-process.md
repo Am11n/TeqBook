@@ -52,10 +52,10 @@ Dette oppdaterer automatisk `package.json` og oppretter en git tag.
 
 **Eller manuelt:**
 
-1. Oppdater `web/package.json` versjon
+1. Oppdater `apps/dashboard/package.json` (eller den appen du utgir) versjon
 2. Commit endringen:
    ```bash
-   git add web/package.json
+   git add apps/dashboard/package.json
    git commit -m "chore: bump version to 1.2.0"
    ```
 

@@ -22,12 +22,12 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ All tests passing
 
 **Files Created:**
-- `web/src/lib/api-auth.ts`
-- `web/tests/unit/security/api-auth.test.ts`
+- `apps/dashboard/src/lib/api-auth.ts`
+- `apps/dashboard/tests/unit/security/api-auth.test.ts`
 
 **Files Modified:**
-- `web/src/app/api/bookings/send-notifications/route.ts`
-- `web/src/app/api/bookings/send-cancellation/route.ts`
+- `apps/dashboard/src/app/api/bookings/send-notifications/route.ts`
+- `apps/dashboard/src/app/api/bookings/send-cancellation/route.ts`
 
 ---
 
@@ -40,15 +40,15 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ API security documentation created
 
 **Files Created:**
-- `web/docs/api/security.md`
+- `docs/api/security.md`
 
 **Files Modified:**
-- `web/src/app/api/notifications/route.ts`
-- `web/src/app/api/notifications/[id]/read/route.ts`
-- `web/src/app/api/notifications/mark-all-read/route.ts`
-- `web/src/app/api/notifications/unread-count/route.ts`
-- `web/src/app/api/debug/notification-test/route.ts`
-- `web/src/app/api/notifications/debug/route.ts`
+- `apps/dashboard/src/app/api/notifications/route.ts`
+- `apps/dashboard/src/app/api/notifications/[id]/read/route.ts`
+- `apps/dashboard/src/app/api/notifications/mark-all-read/route.ts`
+- `apps/dashboard/src/app/api/notifications/unread-count/route.ts`
+- `apps/dashboard/src/app/api/debug/notification-test/route.ts`
+- `apps/dashboard/src/app/api/notifications/debug/route.ts`
 
 ---
 
@@ -64,13 +64,13 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ All tests passing
 
 **Files Created:**
-- `web/supabase/migrations/20260123000001_booking_conflict_prevention.sql`
-- `web/tests/unit/security/booking-conflicts.test.ts`
+- `supabase/supabase/migrations/20260123000001_booking_conflict_prevention.sql`
+- `apps/dashboard/tests/unit/security/booking-conflicts.test.ts`
 
 **Files Modified:**
-- `web/src/lib/repositories/bookings.ts`
-- `web/src/lib/services/bookings-service.ts`
-- `web/src/lib/hooks/bookings/useCreateBooking.ts`
+- `apps/dashboard/src/lib/repositories/bookings.ts`
+- `apps/dashboard/src/lib/services/bookings-service.ts`
+- `apps/dashboard/src/lib/hooks/bookings/useCreateBooking.ts`
 
 ---
 
@@ -84,8 +84,8 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ All tests passing
 
 **Files Created:**
-- `web/supabase/migrations/20260123000002_rls_with_check.sql`
-- `web/tests/unit/security/rls-policies.test.ts`
+- `supabase/supabase/migrations/20260123000002_rls_with_check.sql`
+- `apps/dashboard/tests/unit/security/rls-policies.test.ts`
 
 **Tables Updated:**
 - bookings, customers, employees, services, shifts, salons, products, booking_products, opening_hours, addons
@@ -101,8 +101,8 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ RBAC matrix documented
 
 **Files Created:**
-- `web/supabase/migrations/20260123000003_rbac_policies.sql`
-- `web/docs/security/rbac-matrix.md`
+- `supabase/supabase/migrations/20260123000003_rbac_policies.sql`
+- `docs/security/rbac-matrix.md`
 
 **Policies Updated:**
 - Bookings DELETE (owner/manager only)
@@ -122,10 +122,10 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ Tests written (note: require isolated test environment for full verification)
 
 **Files Created:**
-- `web/tests/unit/security/supabase-client.test.ts`
+- `apps/dashboard/tests/unit/security/supabase-client.test.ts`
 
 **Files Modified:**
-- `web/src/lib/supabase-client.ts`
+- `apps/dashboard/src/lib/supabase-client.ts`
 
 **Note:** Unit tests for module-level code require isolated test environment. Implementation is verified correct by code review.
 
@@ -140,9 +140,9 @@ All 7 task groups from Phase 3 (Security Hardening) have been implemented. Criti
 - ✅ .gitignore updated
 
 **Files Modified:**
-- `web/src/middleware.ts`
-- `web/next.config.ts`
-- `web/.gitignore`
+- `apps/dashboard/src/middleware.ts`
+- `apps/dashboard/next.config.ts`
+- `apps/dashboard/.gitignore`
 
 **Files Deleted:**
 - 11 .bak files (`.env.local.bak` + 10 i18n files)

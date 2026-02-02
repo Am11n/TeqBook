@@ -1,15 +1,17 @@
-# Analyse: Hva er ikke migrert fra `web/`-mappen
+# Analyse: Hva var ikke migrert fra `web/`-mappen (historisk)
 
-Etter overgangen fra én `web/`-app til monorepo (`apps/public`, `apps/dashboard`, `apps/admin`, `packages/shared`) ligger mye viktig innhold fortsatt kun i `web/`. Her er en strukturert oversikt over **hva som ikke er migrert** og hvor viktig det er.
+**Merk:** `web/` er fjernet (se `docs/migration/web-removed.md`). Dette dokumentet beskriver **historisk** status før fjerning. Tilsvarende innhold ligger nå i `apps/dashboard/`, `apps/public/`, `apps/admin/` og root `docs/` og `scripts/`.
+
+Etter overgangen fra én `web/`-app til monorepo (`apps/public`, `apps/dashboard`, `apps/admin`, `packages/shared`) lå mye viktig innhold i `web/`. Her er en strukturert oversikt over **hva som ble migrert eller erstattet** og hvor det ligger nå.
 
 ---
 
-## 1. Dokumentasjon (`web/docs/`) – **IKKE MIGRERT** (høy prioritet)
+## 1. Dokumentasjon (tidligere `web/docs/`) – **LØST** (root `docs/`)
 
-Root-`docs/` inneholder i dag bare **migreringsdokumenter** (testing-plan, migration summaries, ci-cd-strategy, route-migration-guide, etc.). Hele den opprinnelige dokumentasjonsmappen fra `web/docs/` er **ikke** flyttet eller kopiert til root.
+Root-`docs/` inneholder nå arkitektur, backend, frontend, sikkerhet, testing, migrering, etc. Dokumentasjon fra `web/docs/` er flyttet/konsolidert til root `docs/`.
 
 ### 1.1 Arkitektur og beslutninger
-| Sti i `web/docs/` | Innhold | Viktig for |
+| Sti (tidligere `web/docs/`) | Innhold | Viktig for |
 |-------------------|---------|------------|
 | `architecture/` (10 filer) | overview, layers, diagram, domain-principles, folder-structure, monorepo-blueprint, repository-standards, service-standards, types, feature-flags | Alle utviklere, onboarding |
 | `decisions/` (5 ADR-er) | Layered architecture, Supabase, repository pattern, service layer | Arkitektur, nye beslutninger |
@@ -52,11 +54,11 @@ Root-`docs/` inneholder i dag bare **migreringsdokumenter** (testing-plan, migra
 | `docs/README.md` | Indeks over hele dokumentasjonen |
 | `coding-style.md`, `supabase-workflow.md` | Konvensjoner og workflow |
 
-**Anbefaling:** Flytt eller konsolidér `web/docs/` til root `docs/` (f.eks. `docs/architecture/`, `docs/backend/`, …), og oppdater eventuelle referanser til `web/` og til den nye app-strukturen. Behold én dokumentasjonsplass i monorepo.
+**Status:** Dokumentasjon ligger i root `docs/`. `web/` er fjernet.
 
 ---
 
-## 2. Scripts (`web/scripts/`) – **IKKE MIGRERT** (medium prioritet)
+## 2. Scripts (tidligere `web/scripts/`) – **LØST** (root `scripts/`)
 
 | Fil | Formål |
 |-----|--------|
@@ -66,39 +68,27 @@ Root-`docs/` inneholder i dag bare **migreringsdokumenter** (testing-plan, migra
 | `seed.ts` | Seede database |
 | `README.md` | Beskrivelse av scriptene |
 
-Disse er knyttet til **én** app (den gamle web-appen). I monorepo bør de enten:
-- flyttes til root (f.eks. `scripts/`) og tilpasses til å jobbe mot riktig app/DB, eller  
-- dupliseres/tilpasses per app der det er behov.
-
-Uten migrering har nye utviklere og CI ikke en felles, dokumentert måte å kjøre seed/reset/e2e-setup på for monorepo.
+**Status:** Scripts ligger i root `scripts/` (migrate-local.ts, reset-db.ts, seed.ts, create-e2e-users.ts, etc.). `web/` er fjernet.
 
 ---
 
-## 3. Tester (`web/tests/`) – **IKKE MIGRERT** (høy prioritet)
+## 3. Tester (tidligere `web/tests/`) – **LØST** (`apps/dashboard/tests/`, root `tests/e2e/`)
 
-Hele test-suiten ligger kun i `web/`:
+Test-suiten fra `web/` er migrert:
 
 - **E2E (Playwright):** auth, billing-flow, booking-flow, landing, onboarding, public-booking, settings, admin-operations
 - **Unit (Vitest):** services (30+ filer), repositories, components, security (RLS, API-auth, etc.)
 - **Integration:** billing webhook, query-performance, reminders-cron, repositories, RLS-isolation
 - **RLS:** policies, test-utils
 
-`apps/public`, `apps/dashboard` og `apps/admin` har **ikke** tilsvarende test-setup eller testfiler. Kun `web/package.json` har `vitest` og `playwright`.
-
-**Konsekvens:**  
-- Nye endringer i apps testes ikke automatisk med eksisterende E2E/unit/integration-tester.  
-- Ved eventuell fjerning av `web/` forsvinner også all testdekning som er beskrevet her.
-
-**Anbefaling:**  
-- Beslutt om `web/` skal beholdes som “legacy” test-kodebase inntil tester er migrert.  
-- Planlegg migrering av tester: enten til root (én Playwright/Vitest-setup som tester alle apps) eller per-app (e.g. `apps/public/tests/`), og flytt/juster testfiler og config (playwright.config.ts, vitest.config.ts) deretter.
+**Status:** Unit-tester i `apps/dashboard/tests/` (Vitest), E2E i root `tests/e2e/` (Playwright). Se `docs/ops/testing-plan.md` og `docs/ops/test-status.md`. `web/` er fjernet.
 
 ---
 
-## 4. CI/CD – **DELVIS / FORELDET** (høy prioritet)
+## 4. CI/CD – **LØST** (root `.github/workflows/ci.yml`)
 
-- **`web/.github/workflows/ci.yml`**  
-  Kjører type-check, lint og build **kun for `web/`** (working-directory: `./web`, cache: `web/package-lock.json`).  
+- **Root `.github/workflows/ci.yml`**  
+  Kjører type-check, lint, test og build for monorepo (apps + packages). `web/` er fjernet.  
   Den reflekterer ikke monorepo (apps + packages).
 
 - **Root `.github/`**  
@@ -113,26 +103,17 @@ Hele test-suiten ligger kun i `web/`:
 
 ---
 
-## 5. CONTRIBUTING og prosjektstandarder – **IKKE MIGRERT** (medium prioritet)
+## 5. CONTRIBUTING og prosjektstandarder – **LØST**
 
-- **`web/CONTRIBUTING.md`**  
-  Beskriver arkitektur (lagdelt, services vs repositories), datatilgang, branch-strategi og bidragsprosess.  
-  Finnes **ikke** i root; nye bidragsytere som ser på monorepo fra root får ikke denne guiden.
-
-- **`web/docs/cursor-rule.md`**  
-  Sentral for Cursor/IDE: krav om å reviewe før implementering, konvensjoner, kvalitet.  
-  Ligger bare i `web/docs/` og er ikke synlig som felles prosjektregel i root.
-
-**Anbefaling:**  
-- Kopier eller flytt `CONTRIBUTING.md` til **root** og oppdater den til monorepo (apps, packages, hvor kode skal ligge).  
-- Flytt `cursor-rule.md` til root (f.eks. `docs/cursor-rule.md` eller `.cursorrules`) slik at den gjelder hele repo.
+- **Root `CONTRIBUTING.md`** – finnes i root.
+- **`docs/standards/cursor-rule.md`** – felles prosjektregel i root `docs/`. `web/` er fjernet.
 
 ---
 
 ## 6. Environment og konfigurasjon – **DELVIS DEKKET**
 
 - **`.env.example`**  
-  Finnes kun i `web/`. Root har **ikke** en felles `.env.example` for monorepo.
+  Root har ikke felles `.env.example`; hver app bruker egen `.env.local` (f.eks. `apps/dashboard/.env.local`). Se root README og `docs/env/env-setup.md`.
 
 - **`docs/environment-variables.md`** (i root)  
   Beskriver variabler per app og Edge Functions. Det er god dokumentasjon, men ingen konkret fil å kopiere.
@@ -142,29 +123,29 @@ Hele test-suiten ligger kun i `web/`:
 
 ---
 
-## 7. Andre filer i `web/` som kan være relevante
+## 7. Andre filer (tidligere i `web/`) – **LØST**
 
-| Element | Status |
+| Tidligere | Nå |
 |--------|--------|
-| `web/README.md` | Standard Next.js readme; lite TeqBook-spesifikt. Root README bør være hovedinngangen for monorepo. |
-| `web/public/sw-push.js` | Service worker for push – sjekk om den brukes av noen av appene; i så fall kopier/refaktorer til riktig app. |
-| `web/public/Favikon.svg` | Er kopiert til apps (nevnt i testing-plan). Kan stå i web til dere fjerner web. |
-| Sentry-config (`sentry.*.config.ts`) | I web; sjekk at hver app som skal ha Sentry har tilsvarende config. |
-| `playwright.config.ts`, `vitest.config.ts` | Kun i web; må med eller erstattes når tester migreres. |
-| `eslint.config.mjs`, `components.json`, `.prettierrc` | I web; root/apps har sannsynligvis egne – verifiser at standarder er like eller dokumentert. |
+| `web/README.md` | Root README er hovedinngangen. |
+| `web/public/sw-push.js` | Kopier til `apps/*/public/` ved behov. |
+| `web/public/Favikon.svg` | Kopiert til hver app (`apps/*/public/Favikon.svg`). |
+| Sentry-config | Per app (f.eks. `apps/dashboard/`). |
+| `playwright.config.ts`, `vitest.config.ts` | Root + `apps/dashboard/`. |
+| eslint/prettier | Per app. `web/` er fjernet. |
 
 ---
 
 ## Oppsummering – prioritert handlingsliste
 
-| Prioritet | Hva | Handling |
-|-----------|-----|----------|
-| Høy | **Dokumentasjon** `web/docs/` | Flytt/konsolidér til root `docs/` og oppdater referanser og stier. |
-| Høy | **Tester** `web/tests/` | Beslut migreringsstrategi (root vs per-app), flytt config og tester, så CI kjører dem. |
-| Høy | **CI/CD** | Root-basert CI som bygger alle apps/packages; implementer eller dokumenter deploy (Vercel/paths-filter). |
-| Medium | **Scripts** `web/scripts/` | Flytt til root `scripts/` eller tilpass og plasser der det passer for monorepo. |
-| Medium | **CONTRIBUTING.md** og **cursor-rule.md** | Flytt til root og oppdater for monorepo. |
-| Lav | **.env.example** | Opprett root (eller per-app) .env.example i tråd med `docs/environment-variables.md`. |
-| Lav | **sw-push.js, Sentry, eslint/prettier** | Verifiser at alle apper som trenger dem har tilsvarende oppsett. |
+| Prioritet | Hva | Status |
+|-----------|-----|--------|
+| Høy | **Dokumentasjon** | Løst: root `docs/`. |
+| Høy | **Tester** | Løst: `apps/dashboard/tests/`, root `tests/e2e/`. |
+| Høy | **CI/CD** | Løst: root `.github/workflows/ci.yml`. |
+| Medium | **Scripts** | Løst: root `scripts/`. |
+| Medium | **CONTRIBUTING.md** og **cursor-rule** | Løst: root + `docs/standards/`. |
+| Lav | **.env.example** | Per app `.env.local`; se README og `docs/env/`. |
+| Lav | **sw-push, Sentry, eslint/prettier** | Per app. `web/` er fjernet. |
 
-Når dette er tatt, har dere full migrering av det viktige fra `web/` inn i monorepo, og kan på sikt fjerne eller arkivere `web/`-mappen trygt.
+`web/` er fjernet. Full migrering er fullført; innhold ligger i `apps/*`, root `docs/`, root `scripts/` og root `tests/`. Se `docs/migration/web-removed.md`.

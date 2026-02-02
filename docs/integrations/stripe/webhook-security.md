@@ -57,7 +57,7 @@ event = stripe.webhooks.constructEvent(
 );
 ```
 
-**Lokasjon:** `web/supabase/functions/billing-webhook/index.ts`
+**Lokasjon:** `supabase/functions/billing-webhook/index.ts`
 
 ---
 
@@ -112,7 +112,7 @@ Vi implementerer timestamp-validering for å forhindre replay attacks:
 - ✅ **Test replay attacks**: Test at gamle webhooks avvises
 - ✅ **Test missing signatures**: Test at manglende signatures håndteres
 
-**Test-fil:** `web/tests/integration/billing/webhook-verification.test.ts`
+**Test-fil:** `apps/dashboard/tests/integration/billing/webhook-verification.test.ts`
 
 ---
 

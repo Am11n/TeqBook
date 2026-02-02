@@ -10,7 +10,7 @@ Denne sjekklisten skal implementeres **fullt og presist**.
 
 ## 1. Opprett fremtidssikker mappestruktur ✅
 
-### 1.1. Oppdater /web/src/lib til å ha rene domene-lag ✅
+### 1.1. Oppdater /apps/dashboard/src/lib til å ha rene domene-lag ✅
 
 - [x] Opprett `src/lib/types/` ✅
   - [x] `domain.ts` – Booking, Salon, Customer, Employee, Service, Shift, UserProfile ✅

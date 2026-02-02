@@ -11,7 +11,7 @@ When splitting into multiple apps, we need a strategy for handling translations 
 
 ### Shared Translations (`packages/shared/src/locales/`)
 
-**Move from `web/src/i18n/`:**
+**Move from `apps/dashboard/src/i18n/`:**
 - Translation dictionaries (all locale files: `en.ts`, `nb.ts`, etc.)
 - `normalizeLocale.ts` utility
 - `translations.ts` type definitions
@@ -44,7 +44,7 @@ apps/admin/src/providers/locale-provider.tsx
 ## Migration Steps
 
 1. **Move translation files to packages/shared:**
-   - Copy `web/src/i18n/*.ts` → `packages/shared/src/locales/`
+   - Copy `apps/dashboard/src/i18n/*.ts` → `packages/shared/src/locales/`
    - Update imports in shared package
 
 2. **Create app-specific providers:**

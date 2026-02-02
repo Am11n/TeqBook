@@ -22,12 +22,12 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 - [x] Test at booking page laster (`http://localhost:3001/book/[salon_slug]`)
 
 #### Import Verification
-- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at ingen imports fra web/ eksisterer (web/ er fjernet)
 - [x] Sjekk at alle relative imports fungerer
 - [x] Sjekk at Supabase clients fungerer
 
 #### Ekstra fikset
-- [x] Kopiert manglende utils, templates, services fra web/
+- [x] Kopiert manglende utils, templates, services fra web/ til apps/dashboard/
 - [x] Lagt til postcss.config.mjs for Tailwind
 - [x] Fikset dynamisk import av email-service (resend)
 - [x] Lagt til favicon (Favikon.svg)
@@ -50,12 +50,12 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 - [x] Test at settings pages laster
 
 #### Import Verification
-- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at ingen imports fra web/ eksisterer (web/ er fjernet)
 - [x] Sjekk at alle relative imports fungerer
 - [x] Sjekk at DashboardShell fungerer
 
 #### Ekstra fikset
-- [x] Kopiert utils/, templates/, components/ fra web/
+- [x] Kopiert utils/, templates/, components/ fra web/ til apps/dashboard/
 - [x] Lagt til postcss.config.mjs for Tailwind
 - [x] Installert @stripe/react-stripe-js, @stripe/stripe-js
 - [x] Fikset dynamisk import av email-service (resend)
@@ -80,12 +80,12 @@ Etter route-migrering må vi teste at hver app fungerer isolert. Dette dokumente
 - [x] Test at salons page laster
 
 #### Import Verification
-- [x] Sjekk at ingen imports fra `web/` eksisterer
+- [x] Sjekk at ingen imports fra web/ eksisterer (web/ er fjernet)
 - [x] Sjekk at alle relative imports fungerer
 - [x] Sjekk at AdminShell fungerer
 
 #### Ekstra fikset
-- [x] Kopiert utils/, templates/, components/, hooks/ fra web/
+- [x] Kopiert utils/, templates/, components/, hooks/ fra web/ til apps/dashboard/
 - [x] Lagt til postcss.config.mjs for Tailwind
 - [x] Installert tw-animate-css
 - [x] Lagt til favicon (Favikon.svg)
@@ -170,7 +170,7 @@ En app er "klar" når:
 - ✅ Type checking passerer
 - ✅ Build er vellykket
 - ✅ Dev server starter uten errors
-- ✅ Ingen imports fra `web/`
+- ✅ Ingen imports fra web/ (web/ fjernet)
 - ✅ Alle routes er tilgjengelige (med riktig auth)
 
 **Status:**
@@ -220,7 +220,7 @@ For å gjøre testoppsettet permanent og uavhengig av den gamle single-appen:
   - [x] Unit: Vitest på plass; 4 tester (logger i `tests/unit/services/`). [ ] Flere: kritiske komponenter, helpers.
 - **Dashboard (`apps/dashboard`)**
   - [x] E2E: login (auth.owner.setup), settings (`settings-form.spec.ts`, `settings-changes.spec.ts`), billing (`billing-flow.spec.ts`), booking (`booking-flow.spec.ts`), onboarding (`onboarding.spec.ts`). Dashboard/calendar dekkes indirekte via andre flows.
-  - [x] Unit: 639 tester (services, repositories, security, components – migrert fra `web/tests/`). Noen filer ekskludert inntil API-tilpasning.
+  - [x] Unit: 639 tester (services, repositories, security, components – migrert fra web/tests/). Noen filer ekskludert inntil API-tilpasning.
 - **Admin (`apps/admin`)**
   - [x] E2E: admin-login (auth.superadmin.setup), admin-operations (`admin-operations.spec.ts` – salons, analytics m.m.).
   - [x] Unit: Vitest på plass; 4 tester (logger i `tests/unit/services/`). [ ] Flere: admin-relaterte services og tilgangskontroll.

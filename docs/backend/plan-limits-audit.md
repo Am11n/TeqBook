@@ -42,7 +42,7 @@ This document audits all plan limit checks in the codebase to ensure consistent 
 
 ### 2. Employee Limit Enforcement
 
-**Location:** `web/src/lib/services/employees-service.ts`
+**Location:** `apps/dashboard/src/lib/services/employees-service.ts`
 
 **Implementation:**
 - ✅ `createEmployee()` checks `canAddEmployee()` before creating
@@ -59,7 +59,7 @@ This document audits all plan limit checks in the codebase to ensure consistent 
 
 ### 3. Language Limit Enforcement
 
-**Location:** `web/src/lib/services/salons-service.ts`
+**Location:** `apps/dashboard/src/lib/services/salons-service.ts`
 
 **Implementation:**
 - ✅ `updateSalonSettings()` checks `canAddLanguage()` when updating `supported_languages`
@@ -76,7 +76,7 @@ This document audits all plan limit checks in the codebase to ensure consistent 
 
 ### 4. Feature Limits
 
-**Location:** `web/src/lib/services/feature-flags-service.ts`
+**Location:** `apps/dashboard/src/lib/services/feature-flags-service.ts`
 
 **Implementation:**
 - ✅ `getFeatureLimit(salonId, featureKey)` - Returns limit for a specific feature

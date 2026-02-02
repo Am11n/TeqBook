@@ -9,7 +9,7 @@
 
 ### Endringer som er gjort:
 
-1. ✅ **Oppdatert `web/src/lib/types.ts`** 
+1. ✅ **Oppdatert `apps/dashboard/src/lib/types.ts`** 
    - Lagt til `| null` for `supported_languages`
    - Lagt til `| null` for `default_language`
    - Lagt til `theme` objekt med alle branding-felter
@@ -26,9 +26,9 @@
 
 ## Status ✅ FULLFØRT
 
-- ✅ `web/src/lib/types.ts` - Oppdatert med `| null` og `theme` objekt
-- ✅ `web/src/lib/types/domain.ts` - Oppdatert med `| null`
-- ✅ `web/src/components/salon-provider.tsx` - Importerer nå `Salon` fra `@/lib/types`
+- ✅ `apps/dashboard/src/lib/types.ts` - Oppdatert med `| null` og `theme` objekt
+- ✅ `apps/dashboard/src/lib/types/domain.ts` - Oppdatert med `| null`
+- ✅ `apps/dashboard/src/components/salon-provider.tsx` - Importerer nå `Salon` fra `@/lib/types`
 - ✅ Alle type-feil er fikset
 - ✅ Build passerer uten feil
 - ✅ Type-check passerer uten feil

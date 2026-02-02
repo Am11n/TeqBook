@@ -56,10 +56,10 @@ Alle dashboard routes er nå flyttet til `apps/dashboard/`:
 - ✅ Supporting components (command-palette, notification-center, etc.)
 
 ### Services
-- ✅ All services from `web/src/lib/services/`
-- ✅ All repositories from `web/src/lib/repositories/`
-- ✅ All types from `web/src/lib/types/`
-- ✅ Supabase clients from `web/src/lib/supabase/`
+- ✅ All services in `apps/dashboard/src/lib/services/`
+- ✅ All repositories in `apps/dashboard/src/lib/repositories/`
+- ✅ All types in `apps/dashboard/src/lib/types/`
+- ✅ Supabase clients in `apps/dashboard/src/lib/supabase/` + packages/shared
 - ✅ All utilities and helpers
 
 ### Infrastructure
@@ -79,7 +79,7 @@ Alle dashboard routes er nå flyttet til `apps/dashboard/`:
 - [ ] Test at dashboard page fungerer
 - [ ] Test at alle routes er tilgjengelige
 - [ ] Test at komponenter fungerer korrekt
-- [ ] Verifiser at ingen imports fra `web/` eksisterer
+- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
 
 ### Refaktorering (valgfritt)
 - [ ] Flytt delte UI-komponenter til `packages/ui`

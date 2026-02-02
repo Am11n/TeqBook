@@ -30,13 +30,13 @@ Routes to move:
 - `/(auth)/login-2fa` → `apps/public/src/app/login-2fa/page.tsx`
 - `/(auth)/signup` → `apps/public/src/app/signup/page.tsx`
 
-Components to copy/move:
-- `web/src/components/landing/*` → `apps/public/src/components/landing/*`
-- `web/src/components/public-booking-page.tsx` → `apps/public/src/components/public-booking-page.tsx`
-- `web/src/components/signup/*` → `apps/public/src/components/signup/*`
-- `web/src/components/ui/*` → `packages/ui/src/*` (shared UI components)
-- `web/src/components/locale-provider.tsx` → `apps/public/src/components/locale-provider.tsx` (or packages/shared if shared)
-- `web/src/components/error-boundary.tsx` → `apps/public/src/components/error-boundary.tsx`
+Components (migrert fra tidligere web/):
+- `apps/public/src/components/landing/*`
+- `apps/public/src/components/public-booking-page.tsx`
+- `apps/public/src/components/signup/*`
+- `packages/ui/src/*` (shared UI)
+- `apps/public/src/components/locale-provider.tsx`
+- `apps/public/src/components/error-boundary.tsx`
 
 Services/utilities to move:
 - Auth-related services → `packages/shared/src/services/auth/` (if shared) or `apps/public/src/lib/services/` (if app-specific)
@@ -74,6 +74,6 @@ For each app:
 - [ ] App builds successfully (`npm run build`)
 - [ ] App runs in dev mode (`npm run dev`)
 - [ ] All routes are accessible
-- [ ] No imports from `web/` directory
+- [x] No imports from `web/` (web/ fjernet)
 - [ ] Type checking passes (`npm run type-check`)
 - [ ] Linting passes (`npm run lint`)

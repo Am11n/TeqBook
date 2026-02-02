@@ -2,7 +2,7 @@
 
 This document describes how TeqBook's subscription plans are integrated with the billing system (Stripe) and how plan changes are handled.
 
-> Opprinnelig fra `web/docs/backend/billing-and-plans.md`. Innholdet gjelder nå monorepoet (apps + packages); konkrete sti-eksempler kan fortsatt referere til gammel `web/`-struktur og bør oppdateres etter hvert.
+> Innholdet gjelder monorepoet (apps + packages). Stier refererer til `apps/dashboard/`, `apps/public/`, `supabase/` osv.
 
 ## Table of Contents
 

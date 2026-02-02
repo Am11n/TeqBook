@@ -60,7 +60,7 @@ Du må opprette tre produkter (en for hver plan) med månedlige priser:
 
 ### I Next.js (.env.local)
 
-1. Legg til i `web/.env.local`:
+1. Legg til i `apps/dashboard/.env.local`:
    ```env
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
    ```
@@ -92,7 +92,7 @@ Du må opprette tre produkter (en for hver plan) med månedlige priser:
 1. Gå til **Edge Functions** i Supabase Dashboard
 2. For hver funksjon:
    - Klikk **Create function** eller åpne eksisterende
-   - Kopier innholdet fra `web/supabase/functions/[function-name]/index.ts`
+   - Kopier innholdet fra `supabase/functions/[function-name]/index.ts`
    - Klikk **Deploy**
 
 Funksjoner som må deployes:

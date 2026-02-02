@@ -109,7 +109,7 @@ Alle dashboard-ruter krever autentisering:
 - `/settings/*`
 - `/admin/*` (krever superadmin)
 
-**Implementasjon**: Se `web/src/components/layout/dashboard-shell.tsx` og `web/src/app/calendar/page.tsx` for redirect-logikk.
+**Implementasjon**: Se `apps/dashboard/src/components/layout/dashboard-shell.tsx` og `apps/dashboard/src/app/calendar/page.tsx` for redirect-logikk.
 
 ### Authorization
 
@@ -127,7 +127,7 @@ superadmin > owner > manager > staff
 - **manager**: Kan administrere bookings, employees, services, men ikke billing
 - **staff**: Kan kun se og opprette bookings, ikke administrere
 
-**Implementasjon**: Se `web/src/lib/utils/access-control.ts`
+**Implementasjon**: Se `apps/dashboard/src/lib/utils/access-control.ts`
 
 #### Feature-Based Access Control
 
@@ -136,7 +136,7 @@ I tillegg til roller, sjekkes også plan-baserte features:
 - Pro plan: Starter + avanserte features
 - Business plan: Alle features
 
-**Implementasjon**: Se `web/src/lib/services/feature-flags-service.ts` og `web/src/lib/hooks/use-features.ts`
+**Implementasjon**: Se `apps/dashboard/src/lib/services/feature-flags-service.ts` og `apps/dashboard/src/lib/hooks/use-features.ts`
 
 #### Multi-Tenant Isolation
 
@@ -153,7 +153,7 @@ CREATE POLICY "Users can view data for their salon"
   );
 ```
 
-**Dokumentasjon**: Se `web/docs/backend/rls-strategy.md`
+**Dokumentasjon**: Se `docs/backend/rls-strategy.md`
 
 ---
 
@@ -217,7 +217,7 @@ Triggers sikrer business rules:
 - **Prevent orphaned salons**: En salon må alltid ha minst én owner
 - **Updated_at timestamps**: Automatisk oppdatering av `updated_at` kolonner
 
-**Dokumentasjon**: Se `web/docs/backend/data-integrity-and-triggers.md`
+**Dokumentasjon**: Se `docs/backend/data-integrity-and-triggers.md`
 
 ---
 
@@ -243,10 +243,10 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 Business logic layer validerer alle inputs:
 
 **Valideringsmoduler**:
-- `web/src/lib/validation/bookings.ts`
-- `web/src/lib/validation/customers.ts`
-- `web/src/lib/validation/employees.ts`
-- `web/src/lib/validation/services.ts`
+- `apps/dashboard/src/lib/validation/bookings.ts`
+- `apps/dashboard/src/lib/validation/customers.ts`
+- `apps/dashboard/src/lib/validation/employees.ts`
+- `apps/dashboard/src/lib/validation/services.ts`
 
 **Eksempel**:
 ```typescript
@@ -308,7 +308,7 @@ if (authError || !user) {
 }
 ```
 
-**Dokumentasjon**: Se `web/supabase/functions/_shared/auth.ts`
+**Dokumentasjon**: Se `supabase/functions/_shared/auth.ts` (edge functions)
 
 ### CORS Policy
 
@@ -449,7 +449,7 @@ return { error: "An error occurred. Please try again." };
 - GDPR consent kreves for kunder
 - Data slettes når ikke lenger nødvendig
 
-**Implementasjon**: Se `web/docs/compliance/data-lifecycle.md`
+**Implementasjon**: Se `docs/compliance/data-lifecycle.md`
 
 ### Right to Access & Deletion
 
@@ -579,9 +579,9 @@ return { error: "An error occurred. Please try again." };
 ## Kontakt
 
 For spørsmål om sikkerhet, kontakt utviklingsteamet eller se:
-- `web/docs/backend/rls-strategy.md` - RLS dokumentasjon
-- `web/docs/compliance/data-lifecycle.md` - GDPR compliance
-- `web/docs/backend/data-integrity-and-triggers.md` - Data integrity
+- `docs/backend/rls-strategy.md` - RLS dokumentasjon
+- `docs/compliance/data-lifecycle.md` - GDPR compliance
+- `docs/backend/data-integrity-and-triggers.md` - Data integrity
 
 ---
 

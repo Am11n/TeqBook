@@ -281,12 +281,12 @@ Når en salon oppgraderer/downgrader plan via Stripe:
 
 For å sette opp features-systemet:
 
-1. Kjør SQL-migrasjon: `web/supabase/add-features-system.sql`
+1. Kjør SQL-migrasjon: `supabase/add-features-system.sql`
 2. Dette oppretter:
    - `features` tabell
    - `plan_features` tabell
    - Seed-data for alle features og plan mappings
    - RLS policies
 
-Se `web/supabase/add-features-system.sql` for detaljer.
+Se `supabase/add-features-system.sql` for detaljer.
 

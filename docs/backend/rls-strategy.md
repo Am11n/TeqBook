@@ -256,7 +256,7 @@ SELECT * FROM bookings WHERE salon_id != (
 ## Referanser
 
 - [Supabase RLS Documentation](https://supabase.com/docs/guides/auth/row-level-security)
-- `web/supabase/add-addons-and-plan-limits.sql` - Eksempel på RLS policies
-- `web/supabase/add-features-system.sql` - System-tabell RLS policies
-- `web/supabase/onboarding-schema-update.sql` - Profiles RLS policies
+- `supabase/add-addons-and-plan-limits.sql` - Eksempel på RLS policies
+- `supabase/add-features-system.sql` - System-tabell RLS policies
+- `supabase/onboarding-schema-update.sql` - Profiles RLS policies
 

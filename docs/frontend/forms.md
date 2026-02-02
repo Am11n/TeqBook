@@ -16,7 +16,7 @@ The following spacing tokens are enforced:
 
 ## Field Component
 
-The `Field` component is located at `web/src/components/form/Field.tsx` and provides:
+The `Field` component is located at `apps/dashboard/src/components/form/Field.tsx` and provides:
 
 - Consistent label placement (stacked above input by default)
 - Automatic spacing between label, input, help text, and error messages
@@ -159,11 +159,11 @@ function MyForm() {
 The following ESLint rules enforce this standard:
 
 1. **`no-restricted-syntax`**: Prevents direct `<label>` usage in feature code
-   - Allowed only in `web/src/components/form/**` and `web/src/components/ui/**`
+   - Allowed only in `apps/dashboard/src/components/form/**` and `apps/dashboard/src/components/ui/**`
    - Error message: "Direct <label> usage is not allowed in feature code. Use <Field /> component..."
 
 2. **`no-restricted-imports`**: Prevents Supabase imports in UI layer
-   - Allowed only in `web/src/lib/services/**` and `web/src/lib/repositories/**`
+   - Allowed only in `apps/dashboard/src/lib/services/**` and `apps/dashboard/src/lib/repositories/**`
 
 ## Field Variants
 

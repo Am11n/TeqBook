@@ -235,7 +235,7 @@ WHERE identifier = 'test@example.com'
 
 ### Opprett E2E test (valgfritt)
 
-Opprett `web/tests/e2e/rate-limiting.spec.ts`:
+Opprett `tests/e2e/rate-limiting.spec.ts` eller tilsvarende under `apps/dashboard/tests/`:
 
 ```typescript
 import { test, expect } from "@playwright/test";

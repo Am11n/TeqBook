@@ -83,7 +83,7 @@ https://abc123def456@123456.ingest.sentry.io/789012
 
 ### Development (.env.local)
 
-1. Opprett eller åpne filen `web/.env.local` i prosjektet ditt
+1. Opprett eller åpne filen `apps/dashboard/.env.local` (eller den appen du kjører) i prosjektet ditt
 2. Legg til følgende linjer:
 
 ```bash

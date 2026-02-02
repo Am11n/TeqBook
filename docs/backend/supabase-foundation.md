@@ -150,7 +150,7 @@ Edge functions are used minimally and only for:
 - Secure processing where public client should not have access
 
 **Current edge functions:**
-- None yet (structure is in place at `web/supabase/functions/`)
+- None yet (structure is in place at `supabase/functions/`)
 
 **Not in edge functions:**
 - Regular list queries (done via Supabase client)
@@ -182,7 +182,7 @@ Postgres functions (RPC) are used for complex business logic:
 
 ## 9. Database Migrations
 
-All SQL migrations are stored in `web/supabase/` directory:
+All SQL migrations are stored in `supabase/` directory:
 
 - `onboarding-schema-update.sql` – Salon fields and onboarding support
 - `opening-hours-schema.sql` – Opening hours table
