@@ -1,6 +1,7 @@
 # TeqBook – Multi-tenant Salon Booking SaaS
 
-TeqBook is a production-ready, multi-tenant salon booking SaaS built with **Next.js App Router**, **TypeScript**, **Tailwind CSS**, **shadcn/ui**, and **Supabase**.  
+TeqBook is a production-ready, multi-tenant salon booking SaaS built with **Next.js App Router**, **TypeScript**, **Tailwind CSS**, **Radix UI** (shadcn-style), and **Supabase**.  
+The repo is a **pnpm monorepo** with three apps (Public, Dashboard, Admin) and shared packages (`@teqbook/ui`, `@teqbook/shared`).  
 It is designed for salons that take **payment in the salon**, not online, with a strong focus on:
 
 - **Operational simplicity** for salon owners
@@ -55,10 +56,18 @@ For detaljert oppsett, se [`docs/onboarding.md`](docs/onboarding.md).
 
 ## Architecture
 
+### Monorepo Layout
+
+- **`apps/public/`** – Public booking site (landing, login, signup, customer booking)
+- **`apps/dashboard/`** – Salon owner/staff dashboard (bookings, calendar, employees, settings)
+- **`apps/admin/`** – Super-admin app (salon management, users, audit logs, analytics)
+- **`packages/ui/`** – Shared UI components (Button, Dialog, Select, etc.) used by dashboard and admin
+- **`packages/shared/`** – Shared utilities, Supabase client factory, formatting, types
+
 ### Tech Stack
 
-- **Frontend:** Next.js 16.1.1 (App Router) with React 19 and TypeScript
-- **Styling & UI:** Tailwind CSS 4 + shadcn/ui component primitives
+- **Frontend:** Next.js 16 (App Router) with React 19 and TypeScript
+- **Styling & UI:** Tailwind CSS 4 + Radix UI primitives (shadcn-style); shared components in `@teqbook/ui`
 - **Backend & Data:** Supabase (Postgres, Auth, Row Level Security, RPC functions)
 - **Authentication:** Supabase Auth with Two-Factor Authentication (2FA)
 - **Billing:** Stripe integration for subscriptions
@@ -175,23 +184,33 @@ SENTRY_DSN=<your-sentry-dsn>
 
 For detailed database setup, see [`docs/backend/rls-strategy.md`](docs/backend/rls-strategy.md).
 
-### Available Scripts
+### Available Scripts (from repo root)
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run test         # Run unit tests
-npm run test:e2e     # Run E2E tests
-npm run lint         # Check for linting errors
-npm run format       # Format code with Prettier
+# Development (one app at a time)
+pnpm run dev:public      # Public app → http://localhost:3001
+pnpm run dev:dashboard   # Dashboard → http://localhost:3002
+pnpm run dev:admin       # Admin → http://localhost:3003
+
+# Build & run (production)
+pnpm run build           # Build all workspaces
+pnpm run start:public   # Start public app
+pnpm run start:dashboard
+pnpm run start:admin
+
+# Quality
+pnpm run type-check     # Type-check all workspaces
+pnpm run lint           # Lint (run from app or root)
+pnpm run format         # Prettier format
+pnpm run test           # Unit tests (run from app, e.g. apps/dashboard)
+pnpm run test:e2e       # E2E tests (Playwright, from repo root if configured)
 ```
 
 ---
 
 ## Code Structure
 
-The codebase follows a **layered architecture**:
+Each app (`public`, `dashboard`, `admin`) follows a **layered architecture**:
 
 - **`app/`** – Next.js App Router pages and API routes
 - **`components/`** – React components (layout, UI primitives, feature components)
@@ -200,6 +219,7 @@ The codebase follows a **layered architecture**:
 - **`lib/types/`** – TypeScript type definitions
 - **`i18n/`** – Translation files (15 languages)
 
+Shared code lives in **packages**: `@teqbook/ui` (Button, Dialog, Input, etc.) and `@teqbook/shared` (Supabase client, format utilities).  
 For detailed code structure documentation, see [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md).
 
 ---
@@ -279,6 +299,6 @@ This project is licensed under the terms described in `LICENSE` at the repositor
 
 ---
 
-**Last Updated:** 2026-01-23  
+**Last Updated:** 2026-02-03  
 **Version:** 2.1  
-**Status:** Production Ready (Phase 3 Security Hardening Complete)
+**Status:** Production Ready (Phase 3 Security Hardening Complete). Monorepo: 3 apps (Public, Dashboard, Admin) + shared packages (`@teqbook/ui`, `@teqbook/shared`).
