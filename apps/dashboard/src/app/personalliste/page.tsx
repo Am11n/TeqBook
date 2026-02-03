@@ -84,7 +84,7 @@ export default function PersonallistePage() {
   const t = translations[appLocale].personalliste;
   const { salon, isReady } = useCurrentSalon();
 
-  const defaultRange = useMemo(getDefaultDateRange, []);
+  const defaultRange = useMemo(() => getDefaultDateRange(), []);
   const [dateFrom, setDateFrom] = useState(defaultRange.dateFrom);
   const [dateTo, setDateTo] = useState(defaultRange.dateTo);
   const [exporting, setExporting] = useState(false);

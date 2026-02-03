@@ -1,0 +1,11 @@
+# Ignore heavy/generated dirs – Cursor will not index or show in changes
+node_modules/
+.pnpm-store/
+.next/
+dist/
+build/
+out/
+coverage/
+playwright-report/
+test-results/
+.vercel/
