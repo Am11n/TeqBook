@@ -1,1 +1,2 @@
-export { Input } from "@teqbook/ui"
+"use client";
+export { Input } from "@teqbook/ui";

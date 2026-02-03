@@ -9,6 +9,7 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import type { AppLocale } from "@/i18n/translations";
+import { FAVICON_PATH } from "@/lib/constants";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
@@ -196,7 +197,7 @@ function AdminShellContent({ children }: AdminShellProps) {
             className="hidden items-center gap-3 transition-all duration-150 hover:scale-105 hover:drop-shadow-[0_2px_8px_rgba(29,78,216,0.15)] md:flex"
           >
             <Image
-              src="/Favikon.svg"
+              src={FAVICON_PATH}
               alt="TeqBook Admin"
               width={32}
               height={32}
@@ -214,7 +215,7 @@ function AdminShellContent({ children }: AdminShellProps) {
             className="flex items-center gap-2 transition-opacity hover:opacity-80 md:hidden"
           >
             <Image
-              src="/Favikon.svg"
+              src={FAVICON_PATH}
               alt="TeqBook Admin"
               width={28}
               height={28}

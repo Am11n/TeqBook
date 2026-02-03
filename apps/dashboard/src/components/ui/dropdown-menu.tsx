@@ -1,3 +1,4 @@
+"use client";
 export {
   DropdownMenu,
   DropdownMenuPortal,
@@ -14,4 +15,4 @@ export {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "@teqbook/ui"
+} from "@teqbook/ui";

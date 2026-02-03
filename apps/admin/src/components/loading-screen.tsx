@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FAVICON_PATH } from "@/lib/constants";
 
 export function LoadingScreen() {
   return (
@@ -8,7 +9,7 @@ export function LoadingScreen() {
       <div className="flex flex-col items-center gap-4">
         <div className="relative">
           <Image
-            src="/Favikon.svg"
+            src={FAVICON_PATH}
             alt="TeqBook Logo"
             width={80}
             height={80}

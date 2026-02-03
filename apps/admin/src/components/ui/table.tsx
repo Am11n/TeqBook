@@ -1,3 +1,4 @@
+"use client";
 export {
   Table,
   TableHeader,
@@ -7,4 +8,4 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-} from "@teqbook/ui"
+} from "@teqbook/ui";

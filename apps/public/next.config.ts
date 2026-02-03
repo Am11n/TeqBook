@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Public app uses local UI components (apps/public/src/components/ui/) to avoid Turbopack HMR bug with @teqbook/ui
+  transpilePackages: ["@teqbook/shared"],
+
   // Public app: optimized for SEO and performance
   images: {
     unoptimized: false,

@@ -1,3 +1,4 @@
+"use client";
 export {
   Select,
   SelectGroup,
@@ -9,4 +10,4 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
-} from "@teqbook/ui"
+} from "@teqbook/ui";

@@ -1,3 +1,4 @@
+"use client";
 export {
   Card,
   CardHeader,
@@ -6,4 +7,4 @@ export {
   CardAction,
   CardDescription,
   CardContent,
-} from "@teqbook/ui"
+} from "@teqbook/ui";

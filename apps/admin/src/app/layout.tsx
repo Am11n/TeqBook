@@ -27,14 +27,15 @@ const geistMono = Geist_Mono({
   preload: true,
 });
 
+import { FAVICON_PATH } from "@/lib/constants";
+
 export const metadata: Metadata = {
   title: "TeqBook – Salon Dashboard",
   description: "International salon booking system.",
-  // Use relative paths so favicon works correctly.
   icons: {
-    icon: "/Favikon.svg",
-    shortcut: "/Favikon.svg",
-    apple: "/Favikon.svg",
+    icon: FAVICON_PATH,
+    shortcut: FAVICON_PATH,
+    apple: FAVICON_PATH,
   },
 };
 

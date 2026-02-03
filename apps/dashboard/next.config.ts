@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "lucide-react",
       "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-dialog",
+      // Do not optimize @radix-ui/react-dialog: Dialog Root and Portal must share context; optimization can break controlled dialogs.
       "@radix-ui/react-tabs",
       "@radix-ui/react-tooltip",
       "framer-motion",

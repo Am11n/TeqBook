@@ -89,9 +89,14 @@ export default function PersonallistePage() {
   const [dateTo, setDateTo] = useState(defaultRange.dateTo);
   const [exporting, setExporting] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [mounted, setMounted] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<PersonallisteEntry | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { entries, loading, error, setError, loadEntries } = usePersonalliste(
     salon?.id ?? null,
@@ -252,7 +257,7 @@ export default function PersonallistePage() {
         )}
       </PageLayout>
 
-      {salon && (
+      {salon && mounted && (
         <>
           <RegisterPersonallisteDialog
             open={registerOpen}

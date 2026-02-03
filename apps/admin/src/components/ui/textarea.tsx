@@ -1,1 +1,2 @@
-export { Textarea } from "@teqbook/ui"
+"use client";
+export { Textarea } from "@teqbook/ui";

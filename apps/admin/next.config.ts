@@ -4,6 +4,21 @@ const nextConfig: NextConfig = {
   // Served at teqbook.com/admin when behind Public app rewrites
   basePath: "/admin",
 
+  // Ved standalone (f.eks. localhost:3003): i dev vis forsiden på / (rewrite), i prod redirect til /admin
+  async redirects() {
+    if (process.env.NODE_ENV === "development") return [];
+    return [
+      { source: "/", destination: "/admin", permanent: false },
+    ];
+  },
+  async rewrites() {
+    // I dev: localhost:3003/ viser admin-forsiden uten å endre URL til /admin
+    if (process.env.NODE_ENV === "development") {
+      return [{ source: "/", destination: "/admin" }];
+    }
+    return [];
+  },
+
   // Admin app: stricter security
   images: {
     unoptimized: false,

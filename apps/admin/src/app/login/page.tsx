@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { FAVICON_PATH } from "@/lib/constants";
 import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { initSession } from "@/lib/services/session-service";
@@ -104,7 +105,7 @@ export default function AdminLoginPage() {
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-8">
               <Image
-                src="/Favikon.svg"
+                src={FAVICON_PATH}
                 alt="TeqBook logo"
                 width={40}
                 height={40}

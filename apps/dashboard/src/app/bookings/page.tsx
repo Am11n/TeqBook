@@ -27,10 +27,15 @@ function BookingsContent() {
   const { salon } = useCurrentSalon();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const {
     bookings,
@@ -197,49 +202,52 @@ function BookingsContent() {
           </>
         )}
 
-        <CreateBookingDialog
-          open={isDialogOpen}
-          onOpenChange={handleDialogOpenChange}
-          employees={employees}
-          services={services}
-          products={products}
-          hasInventory={hasInventory}
-          onBookingCreated={handleBookingCreated}
-          translations={{
-            dialogTitle: t.dialogTitle,
-            dialogDescription: t.dialogDescription,
-            employeeLabel: t.employeeLabel,
-            employeePlaceholder: t.employeePlaceholder,
-            serviceLabel: t.serviceLabel,
-            servicePlaceholder: t.servicePlaceholder,
-            dateLabel: t.dateLabel,
-            timeLabel: t.timeLabel,
-            loadSlotsButton: t.loadSlotsButton,
-            loadingSlots: t.loadingSlots,
-            noSlotsYet: t.noSlotsYet,
-            selectSlotPlaceholder: t.selectSlotPlaceholder,
-            customerNameLabel: t.customerNameLabel,
-            customerEmailLabel: t.customerEmailLabel,
-            customerEmailPlaceholder: t.customerEmailPlaceholder,
-            customerPhoneLabel: t.customerPhoneLabel,
-            customerPhonePlaceholder: t.customerPhonePlaceholder,
-            isWalkInLabel: t.isWalkInLabel,
-            cancelButton: t.cancelButton,
-            createBooking: t.createBooking,
-            creatingBooking: t.creatingBooking,
-            invalidSlot: t.invalidSlot,
-            createError: t.createError,
-          }}
-        />
-
-        <CancelBookingDialog
-          open={cancelDialogOpen}
-          onOpenChange={setCancelDialogOpen}
-          booking={bookingToCancel}
-          locale={appLocale}
-          onConfirm={handleConfirmCancel}
-          error={cancelError}
-        />
+        {mounted && (
+          <>
+            <CreateBookingDialog
+              open={isDialogOpen}
+              onOpenChange={handleDialogOpenChange}
+              employees={employees}
+              services={services}
+              products={products}
+              hasInventory={hasInventory}
+              onBookingCreated={handleBookingCreated}
+              translations={{
+                dialogTitle: t.dialogTitle,
+                dialogDescription: t.dialogDescription,
+                employeeLabel: t.employeeLabel,
+                employeePlaceholder: t.employeePlaceholder,
+                serviceLabel: t.serviceLabel,
+                servicePlaceholder: t.servicePlaceholder,
+                dateLabel: t.dateLabel,
+                timeLabel: t.timeLabel,
+                loadSlotsButton: t.loadSlotsButton,
+                loadingSlots: t.loadingSlots,
+                noSlotsYet: t.noSlotsYet,
+                selectSlotPlaceholder: t.selectSlotPlaceholder,
+                customerNameLabel: t.customerNameLabel,
+                customerEmailLabel: t.customerEmailLabel,
+                customerEmailPlaceholder: t.customerEmailPlaceholder,
+                customerPhoneLabel: t.customerPhoneLabel,
+                customerPhonePlaceholder: t.customerPhonePlaceholder,
+                isWalkInLabel: t.isWalkInLabel,
+                cancelButton: t.cancelButton,
+                createBooking: t.createBooking,
+                creatingBooking: t.creatingBooking,
+                invalidSlot: t.invalidSlot,
+                createError: t.createError,
+              }}
+            />
+            <CancelBookingDialog
+              open={cancelDialogOpen}
+              onOpenChange={setCancelDialogOpen}
+              booking={bookingToCancel}
+              locale={appLocale}
+              onConfirm={handleConfirmCancel}
+              error={cancelError}
+            />
+          </>
+        )}
       </PageLayout>
     </ErrorBoundary>
   );

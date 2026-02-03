@@ -1,1 +1,2 @@
-export { Badge, badgeVariants } from "@teqbook/ui"
+"use client";
+export { Badge, badgeVariants } from "@teqbook/ui";

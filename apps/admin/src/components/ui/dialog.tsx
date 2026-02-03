@@ -1,3 +1,4 @@
+"use client";
 export {
   Dialog,
   DialogClose,
@@ -9,4 +10,4 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from "@teqbook/ui"
+} from "@teqbook/ui";
