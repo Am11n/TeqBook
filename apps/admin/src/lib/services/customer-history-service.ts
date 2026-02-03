@@ -14,6 +14,7 @@ import {
 import { getCustomerById } from "@/lib/repositories/customers";
 import * as featureFlagsService from "@/lib/services/feature-flags-service";
 import { logInfo, logWarn } from "@/lib/services/logger";
+import { formatCurrency as formatCurrencyShared } from "@teqbook/shared";
 
 // =====================================================
 // Types
@@ -331,15 +332,7 @@ export async function exportCustomerHistoryToCSV(
   }
 }
 
-/**
- * Format currency for display
- */
-export function formatCurrency(cents: number, locale = "nb-NO", currency = "NOK"): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-  }).format(cents / 100);
-}
+export { formatCurrencyShared as formatCurrency };
 
 /**
  * Format date for display

@@ -61,10 +61,9 @@ TeqBook/
 - [ ] Test at hver app kjører i dev mode (`pnpm run dev:public`, `dev:dashboard`, `dev:admin`)
 - [ ] Manuell sjekk av alle routes i browser
 
-### Packages Refaktorering (lav prioritet)
-- [ ] Flytt delte UI-komponenter til `packages/ui`
-- [ ] Flytt flere delte utilities til `packages/shared`
-- [ ] Oppdater imports i alle apper
+### Packages-refaktorering fullført
+- [x] Delte UI-komponenter i `packages/ui`; appene re-eksporterer fra `components/ui/*`
+- [x] Utilities `formatCurrency`, `formatDuration` i `packages/shared`; brukt fra dashboard/admin
 
 ### Deploy
 - [ ] Sett opp separate deployments per app (Vercel/project)

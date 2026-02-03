@@ -35,3 +35,6 @@ export {
   localTimeToUTC,
   localISOStringToUTC,
 } from "./utils/timezone";
+
+// Format utils (currency, duration)
+export { formatCurrency, formatDuration } from "./utils/format";

@@ -1,25 +1,4 @@
-/**
- * Format currency from cents to NOK
- */
-export function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("no-NO", {
-    style: "currency",
-    currency: "NOK",
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
-/**
- * Format duration from minutes to readable string
- */
-export function formatDuration(minutes: number): string {
-  if (minutes < 60) {
-    return `${Math.round(minutes)} min`;
-  }
-  const hours = Math.floor(minutes / 60);
-  const mins = Math.round(minutes % 60);
-  return mins > 0 ? `${hours}t ${mins}min` : `${hours}t`;
-}
+export { formatCurrency, formatDuration } from "@teqbook/shared";
 
 /**
  * Check if filters are active

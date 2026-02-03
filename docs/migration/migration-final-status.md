@@ -31,10 +31,14 @@
 - [x] CI bygger alle tre apper (workspace build i ci.yml)
 - [x] pnpm som package manager (packageManager + engines i root)
 
+## Packages-refaktorering fullført
+
+- [x] Delte UI i `packages/ui`; appene re-eksporterer fra `components/ui/*`
+- [x] Utilities `formatCurrency`, `formatDuration` i `packages/shared`; brukt fra dashboard/admin
+
 ## Gjenstående (valgfritt)
 
 - [ ] Manuell dev-test av alle routes
-- [ ] Flytt delte UI til `packages/ui` / utilities til `packages/shared`
 - [ ] Separate deployments per app + path filtering
 
 ## Struktur
