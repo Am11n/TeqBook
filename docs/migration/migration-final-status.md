@@ -21,35 +21,21 @@
 - ✅ Import migration guide opprettet
 - ✅ Status dokumenter oppdatert
 
-## ⏳ Gjenstående Arbeid
+## Fullført 3. feb 2025
 
-### Testing (Høy prioritet)
-- [ ] Test at hver app bygger (`npm run build`)
-- [ ] Test at hver app kjører i dev mode (`npm run dev`)
-- [ ] Test at alle routes fungerer
-- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
-- [ ] Test type checking (`npm run type-check`)
+- [x] Test at hver app bygger (`pnpm run build`)
+- [x] Test type checking (`pnpm run type-check`)
+- [x] Supabase clients bruker `@teqbook/shared` (via app sin `lib/supabase/`)
+- [x] MVVM/lag-dokumentasjon: `docs/frontend/mvvm-and-import-boundaries.md`
+- [x] ESLint import boundaries (no-restricted-imports for web/) på plass
+- [x] CI bygger alle tre apper (workspace build i ci.yml)
+- [x] pnpm som package manager (packageManager + engines i root)
 
-### Import Oppdateringer (Medium prioritet)
-- [ ] Oppdater Supabase client imports til `@teqbook/shared`
-- [ ] Fikse eventuelle broken imports
-- [ ] Sjekk at alle relative paths fungerer
-- [ ] Oppdater repositories til å bruke shared clients
+## Gjenstående (valgfritt)
 
-### MVVM Standardisering (Lav prioritet)
-- [ ] Dokumenter MVVM pattern standard
-- [ ] Sett opp ESLint rules for import boundaries
-- [ ] Refaktorer eksisterende kode til å følge pattern
-
-### Packages Refaktorering (Lav prioritet)
-- [ ] Flytt delte UI-komponenter til `packages/ui`
-- [ ] Flytt delte utilities til `packages/shared`
-- [ ] Oppdater imports i alle apper
-
-### CI/CD (Medium prioritet)
-- [ ] Oppdater CI/CD til å bygge alle tre apper
-- [ ] Sett opp separate deployments per app
-- [ ] Test path filtering
+- [ ] Manuell dev-test av alle routes
+- [ ] Flytt delte UI til `packages/ui` / utilities til `packages/shared`
+- [ ] Separate deployments per app + path filtering
 
 ## Struktur
 
@@ -66,13 +52,11 @@ TeqBook/
 └── (web/ fjernet – se docs/migration/web-removed.md)
 ```
 
-## Neste Steg
+## Neste Steg (valgfritt)
 
-1. **Testing** - Test hver app individuelt (se `docs/testing-plan.md`)
-2. **Fikse Errors** - Fikse alle errors funnet under testing
-3. **Import Oppdateringer** - Oppdater til å bruke packages
-4. **Refaktorering** - Flytt delt kode til packages
-5. **CI/CD** - Sett opp deployments
+1. **Manuell testing** – Kjør `pnpm run dev:public` / `dev:dashboard` / `dev:admin` og sjekk routes
+2. **Refaktorering** – Flytt delt kode til `packages/ui` og `packages/shared`
+3. **Deploy** – Separate Vercel-prosjekter og path filtering
 
 ## Notater
 
@@ -83,10 +67,10 @@ TeqBook/
 
 ## Dokumentasjon
 
-- `docs/migration-complete-summary.md` - Full oversikt
-- `docs/public-app-migration-summary.md` - Public app detaljer
-- `docs/dashboard-app-migration-summary.md` - Dashboard app detaljer
-- `docs/admin-app-migration-summary.md` - Admin app detaljer
-- `docs/testing-plan.md` - Testing guide
-- `docs/import-migration-guide.md` - Import oppdaterings guide
-- `docs/migration-status.md` - Generell status
+- `docs/migration/migration-complete-summary.md` - Full oversikt
+- `docs/migration/public-app-migration-summary.md` - Public app detaljer
+- `docs/migration/dashboard-app-migration-summary.md` - Dashboard app detaljer
+- `docs/migration/admin-app-migration-summary.md` - Admin app detaljer
+- `docs/ops/testing-plan.md` - Testing guide
+- `docs/migration/import-migration-guide.md` - Import oppdaterings guide
+- `docs/frontend/mvvm-and-import-boundaries.md` - MVVM og import boundaries

@@ -24,44 +24,42 @@
   - ✅ Auth routes (login, signup, login-2fa) flyttet
   - ✅ Public booking routes (`/book/[salon_slug]`) flyttet
   - ✅ Alle nødvendige services, types, repositories kopiert
-  - ⏳ Testing og import-oppdateringer gjenstår
+  - ✅ Build og type-check verifisert (3. feb 2025)
 
 - ✅ Route-flytting for dashboard app (fullført)
   - ✅ Alle dashboard routes flyttet (dashboard, calendar, bookings, customers, employees, services, settings, shifts, reports, products, profile, onboarding)
   - ✅ Alle dashboard komponenter kopiert
   - ✅ Alle services, types, repositories kopiert
   - ✅ Layout med DashboardShell opprettet
-  - ⏳ Testing og import-oppdateringer gjenstår
+  - ✅ Build og type-check verifisert (3. feb 2025)
 
 - ✅ Route-flytting for admin app (fullført)
   - ✅ Alle admin routes flyttet (admin, analytics, audit-logs, salons, users)
   - ✅ Admin layout og komponenter kopiert
   - ✅ Alle services, types, repositories kopiert
   - ✅ Layout med AdminShell opprettet
-  - ⏳ Testing og import-oppdateringer gjenstår
+  - ✅ Build og type-check verifisert (3. feb 2025)
 
-## Neste steg
+## Fullført 3. feb 2025
 
-1. **Testing**: Test hver app individuelt
-2. **Import-oppdateringer**: Fikse broken imports og oppdatere til packages
-3. **MVVM standardisering**: Standardiser pattern og sett opp lint rules
-4. **Refaktorering**: Flytt delte komponenter til packages
+- ✅ Build og type-check for alle apper
+- ✅ Supabase brukes via `@teqbook/shared` (lib/supabase i hver app)
+- ✅ MVVM/lag dokumentert: `docs/frontend/mvvm-and-import-boundaries.md`
+- ✅ CI bygger alle workspace-apper
+- ✅ pnpm som package manager
 
-## Fase C: Kvalitet ⏳
+## Gjenstående (valgfritt)
 
-- ⏳ MVVM pattern standardisering
-- ✅ CI/CD strategi dokumentert
+1. **Manuell testing** – Kjør dev for hver app og sjekk routes (se `docs/ops/testing-plan.md`)
+2. **Refaktorering** – Flytt delte komponenter til `packages/ui` (se `docs/migration/import-migration-guide.md`)
+
+## Fase C: Kvalitet
+
+- ✅ MVVM/import boundaries dokumentert
+- ✅ CI/CD strategi dokumentert og CI bygger alle apper
 - ✅ Environment variables dokumentert
 - ✅ Observability strategi dokumentert
 
-## Neste steg
+## Status: Migration Fullført ✅
 
-1. ✅ Flytt routes gradvis (public → dashboard → admin) - **FULLFØRT**
-2. ⏳ Test hver app individuelt - **NESTE STEG** (se `docs/testing-plan.md`)
-3. ⏳ Oppdater imports til å bruke packages (se `docs/import-migration-guide.md`)
-4. ⏳ Standardiser MVVM pattern
-5. ⏳ Refaktorer delt kode til packages
-
-## Status: Route Migration Fullført ✅
-
-Alle routes er nå migrert til separate apper. Se `docs/migration-final-status.md` for full oversikt.
+Alle routes er migrert, build/type-check passerer, og CI bygger alle apper. Se `docs/migration/migration-final-status.md` for full oversikt.

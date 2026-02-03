@@ -45,34 +45,30 @@ TeqBook/
 └── (web/ fjernet – se docs/migration/web-removed.md)
 ```
 
-## Neste Fase: Testing og Refaktorering
+## Fullført 3. feb 2025
 
-### 1. Testing (Høy prioritet)
-- [ ] Test at hver app bygger (`npm run build`)
-- [ ] Test at hver app kjører i dev mode (`npm run dev`)
-- [ ] Test at alle routes fungerer
-- [x] Verifiser at ingen imports fra `web/` eksisterer (web/ fjernet)
-- [ ] Test type checking (`npm run type-check`)
+- [x] Test at hver app bygger (`pnpm run build`) – alle tre apper bygger OK
+- [x] Test type checking (`pnpm run type-check`) – bestått for alle workspaces
+- [x] Supabase brukes via `@teqbook/shared` i alle apper (via `lib/supabase/client.ts` og `server.ts`)
+- [x] MVVM/lag-dokumentasjon: `docs/frontend/mvvm-and-import-boundaries.md`
+- [x] ESLint: `no-restricted-imports` for `web/` er på plass i alle apper
+- [x] CI bygger alle workspace-apper (`pnpm run build` i `.github/workflows/ci.yml`)
+- [x] pnpm som eneste package manager (`packageManager` + `engines.pnpm` i root)
 
-### 2. Import-oppdateringer
-- [ ] Oppdater Supabase client imports til å bruke `@teqbook/shared`
-- [ ] Fikse eventuelle broken imports
-- [ ] Sjekk at alle relative paths fungerer
+## Gjenstående (valgfritt / lav prioritet)
 
-### 3. MVVM Standardisering
-- [ ] Dokumenter MVVM pattern standard
-- [ ] Sett opp ESLint rules for import boundaries
-- [ ] Refaktorer eksisterende kode til å følge pattern
+### Testing
+- [ ] Test at hver app kjører i dev mode (`pnpm run dev:public`, `dev:dashboard`, `dev:admin`)
+- [ ] Manuell sjekk av alle routes i browser
 
-### 4. Packages Refaktorering
+### Packages Refaktorering (lav prioritet)
 - [ ] Flytt delte UI-komponenter til `packages/ui`
-- [ ] Flytt delte utilities til `packages/shared`
+- [ ] Flytt flere delte utilities til `packages/shared`
 - [ ] Oppdater imports i alle apper
 
-### 5. CI/CD Oppdateringer
-- [ ] Oppdater CI/CD til å bygge alle tre apper
-- [ ] Sett opp separate deployments per app
-- [ ] Test path filtering
+### Deploy
+- [ ] Sett opp separate deployments per app (Vercel/project)
+- [ ] Test path filtering ved deploy
 
 ## Notater
 
@@ -83,8 +79,9 @@ TeqBook/
 
 ## Dokumentasjon
 
-- `docs/public-app-migration-summary.md` - Public app detaljer
-- `docs/dashboard-app-migration-summary.md` - Dashboard app detaljer
-- `docs/admin-app-migration-summary.md` - Admin app detaljer
-- `docs/migration-status.md` - Generell status
-- `docs/route-migration-guide.md` - Migrasjonsguide
+- `docs/migration/public-app-migration-summary.md` - Public app detaljer
+- `docs/migration/dashboard-app-migration-summary.md` - Dashboard app detaljer
+- `docs/migration/admin-app-migration-summary.md` - Admin app detaljer
+- `docs/migration/migration-status.md` - Generell status
+- `docs/migration/route-migration-guide.md` - Migrasjonsguide
+- `docs/frontend/mvvm-and-import-boundaries.md` - MVVM og import boundaries

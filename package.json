@@ -6,9 +6,10 @@
     "apps/*",
     "packages/*"
   ],
+  "packageManager": "pnpm@10.0.0",
   "engines": {
     "node": ">=20.18.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=10.0.0"
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
