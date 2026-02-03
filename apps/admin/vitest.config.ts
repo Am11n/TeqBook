@@ -7,6 +7,9 @@ export default defineConfig({
     jsxImportSource: "react",
   },
   test: {
+    pool: "threads",
+    poolOptions: { threads: { singleThread: true } },
+    fileParallelism: false,
     globals: true,
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],

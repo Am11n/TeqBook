@@ -26,7 +26,7 @@
     "type-check": "npm run type-check --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:run": "pnpm --filter '@teqbook/dashboard' --filter '@teqbook/public' --filter '@teqbook/admin' run test:run",
+    "test:run": "pnpm --filter '@teqbook/dashboard' run test:run && pnpm --filter '@teqbook/public' run test:run && pnpm --filter '@teqbook/admin' run test:run",
     "test:coverage": "pnpm --filter '@teqbook/dashboard' run test:coverage",
     "test:e2e": "playwright test",
     "test:integration": "pnpm --filter '@teqbook/dashboard' run test:integration",
