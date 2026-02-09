@@ -3,6 +3,11 @@
 import Link from "next/link";
 import type { Locale } from "./landing-copy";
 
+const ADMIN_LOGIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL
+    ? `${process.env.NEXT_PUBLIC_ADMIN_URL}/login`
+    : "/admin/login";
+
 interface LandingFooterProps {
   locale: Locale;
 }
@@ -42,7 +47,7 @@ export function LandingFooter({ locale }: LandingFooterProps) {
   return (
     <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl" role="contentinfo">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:justify-between sm:px-6 sm:text-base">
-        <span>© {new Date().getFullYear()} TeqBook.</span>
+        <span suppressHydrationWarning>© {new Date().getFullYear()} TeqBook.</span>
         <nav aria-label="Footer navigation" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
           <Link href="/#features" className="hover:text-foreground underline-offset-4 hover:underline">
             Features
@@ -59,6 +64,12 @@ export function LandingFooter({ locale }: LandingFooterProps) {
           <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">
             Log in
           </Link>
+          <a
+            href={ADMIN_LOGIN_URL}
+            className="hover:text-foreground underline-offset-4 hover:underline"
+          >
+            Admin
+          </a>
         </nav>
         <span className="text-center sm:text-left">{getFooterText(locale)}</span>
       </div>

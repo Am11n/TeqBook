@@ -1,23 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Served at teqbook.com/admin when behind Public app rewrites
-  basePath: "/admin",
-
-  // Ved standalone (f.eks. localhost:3003): i dev vis forsiden på / (rewrite), i prod redirect til /admin
-  async redirects() {
-    if (process.env.NODE_ENV === "development") return [];
-    return [
-      { source: "/", destination: "/admin", permanent: false },
-    ];
-  },
-  async rewrites() {
-    // I dev: localhost:3003/ viser admin-forsiden uten å endre URL til /admin
-    if (process.env.NODE_ENV === "development") {
-      return [{ source: "/", destination: "/admin" }];
-    }
-    return [];
-  },
+  // Served at teqbook.com/admin when behind Public app rewrites.
+  // Standalone (e.g. localhost:3003): no basePath needed, so / works directly.
+  // Set NEXT_PUBLIC_ADMIN_BASE_PATH=/admin in production env to enable basePath.
+  basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH ?? "",
 
   // Admin app: stricter security
   images: {

@@ -1,4 +1,4 @@
-/** Must match basePath in next.config.ts. Use for static asset paths when running standalone (e.g. localhost:3003). */
-export const BASE_PATH = "/admin";
+/** Must match basePath in next.config.ts. Falls back to "" when no basePath is set (local dev). */
+export const BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH ?? "";
 
-export const FAVICON_PATH = `${BASE_PATH}/Favikon.svg`;
+export const FAVICON_PATH = "/Favikon.svg";
