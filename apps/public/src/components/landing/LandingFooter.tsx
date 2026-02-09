@@ -3,10 +3,7 @@
 import Link from "next/link";
 import type { Locale } from "./landing-copy";
 
-const ADMIN_LOGIN_URL =
-  process.env.NEXT_PUBLIC_ADMIN_URL
-    ? `${process.env.NEXT_PUBLIC_ADMIN_URL}/login`
-    : "/admin/login";
+const ADMIN_LOGIN_URL = "/login-admin";
 
 interface LandingFooterProps {
   locale: Locale;
@@ -64,12 +61,9 @@ export function LandingFooter({ locale }: LandingFooterProps) {
           <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">
             Log in
           </Link>
-          <a
-            href={ADMIN_LOGIN_URL}
-            className="hover:text-foreground underline-offset-4 hover:underline"
-          >
+          <Link href={ADMIN_LOGIN_URL} className="hover:text-foreground underline-offset-4 hover:underline">
             Admin
-          </a>
+          </Link>
         </nav>
         <span className="text-center sm:text-left">{getFooterText(locale)}</span>
       </div>
