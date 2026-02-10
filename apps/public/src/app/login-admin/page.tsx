@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { signInWithPassword } from "@/lib/services/auth-service";
@@ -17,8 +16,6 @@ const MotionDiv = dynamic(
 );
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -97,8 +94,9 @@ export default function AdminLoginPage() {
       userId: signInData.user.id,
     });
 
-    // Redirect to admin dashboard
-    router.push("/admin/");
+    // Full page navigation to admin dashboard (must bypass client-side router
+    // because /admin/ is served via a server-level rewrite to the admin app)
+    window.location.href = "/admin/";
   }
 
   return (
