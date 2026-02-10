@@ -8,11 +8,11 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { supabase } from "@/lib/supabase-client";
-import { HeartPulse, Database, CreditCard, Activity, RefreshCcw, Clock } from "lucide-react";
+import { HeartPulse, Database, CreditCard, Activity, RefreshCcw, Clock, Mail, Cloud, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type HealthCheck = { status: string; latency_ms: number; error?: string };
+type HealthResponse = { status: string; timestamp: string; checks: Record<string, HealthCheck> };
 
 const STATUS_ICON: Record<string, string> = {
   up: "bg-emerald-100 text-emerald-700",
@@ -25,57 +25,23 @@ const STATUS_ICON: Record<string, string> = {
 const SERVICE_ICONS: Record<string, typeof Database> = {
   supabase: Database,
   stripe: CreditCard,
+  resend: Mail,
+  edge_functions: Cloud,
+  vercel: Globe,
 };
-
-async function runHealthChecks(): Promise<{ status: string; timestamp: string; checks: Record<string, HealthCheck> }> {
-  const checks: Record<string, HealthCheck> = {};
-
-  // Supabase DB check
-  try {
-    const start = Date.now();
-    const { error } = await supabase.from("salons").select("id").limit(1);
-    checks.supabase = { status: error ? "degraded" : "up", latency_ms: Date.now() - start, error: error?.message };
-  } catch (err) {
-    checks.supabase = { status: "down", latency_ms: 0, error: err instanceof Error ? err.message : "Unknown" };
-  }
-
-  // Stripe check (basic connectivity via public endpoint)
-  try {
-    const start = Date.now();
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch("https://api.stripe.com/v1/", {
-      method: "HEAD",
-      mode: "no-cors",
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    // mode: "no-cors" always returns opaque response (status 0), but if fetch succeeds the service is reachable
-    checks.stripe = { status: res.type === "opaque" || res.ok || res.status === 401 ? "up" : "degraded", latency_ms: Date.now() - start };
-  } catch {
-    checks.stripe = { status: "unknown", latency_ms: 0, error: "Could not reach Stripe" };
-  }
-
-  const allUp = Object.values(checks).every((c) => c.status === "up");
-
-  return {
-    status: allUp ? "healthy" : "degraded",
-    timestamp: new Date().toISOString(),
-    checks,
-  };
-}
 
 export default function SystemHealthPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
-  const [health, setHealth] = useState<{ status: string; timestamp: string; checks: Record<string, HealthCheck> } | null>(null);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchHealth = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await runHealthChecks();
+      const res = await fetch("/api/health/");
+      const data = await res.json();
       setHealth(data);
       setLastRefresh(new Date());
     } catch {
