@@ -59,6 +59,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     "/support", "/incidents", "/system-health", "/onboarding",
     "/plans", "/feature-flags", "/security-events", "/data-tools",
     "/admins", "/changelog", "/feedback", "/design-system",
+    "/profile",
   ];
   const isAdminRoute = adminRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
