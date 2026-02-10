@@ -51,9 +51,19 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   const texts = translations[appLocale].dashboard;
 
   // Don't render DashboardShell on admin pages - they use AdminShell instead.
-  // With the route group restructure, admin pages are at root level (/, /salons, /users, etc.)
-  // so we skip DashboardShell for all non-dashboard routes in the admin app.
-  if (pathname === "/" || pathname === "/login" || pathname.startsWith("/salons") || pathname.startsWith("/users") || pathname.startsWith("/analytics") || pathname.startsWith("/audit-logs")) {
+  // All admin routes use AdminShell for their layout chrome, so DashboardShell
+  // should simply pass through children without wrapping them.
+  const adminRoutes = [
+    "/", "/login",
+    "/salons", "/users", "/analytics", "/audit-logs",
+    "/support", "/incidents", "/system-health", "/onboarding",
+    "/plans", "/feature-flags", "/security-events", "/data-tools",
+    "/admins", "/changelog", "/feedback", "/design-system",
+  ];
+  const isAdminRoute = adminRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+  if (isAdminRoute) {
     return <>{children}</>;
   }
 

@@ -1,354 +1,237 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorMessage } from "@/components/feedback/error-message";
+import { DataTable, type ColumnDef, type RowAction, type BulkAction } from "@/components/shared/data-table";
+import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
+import { ImpersonationDrawer } from "@/components/shared/impersonation-drawer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
-  getAllSalonsForAdmin,
   updateSalonPlan,
   setSalonActive,
   getSalonUsageStats,
 } from "@/lib/services/admin-service";
-import type { AdminSalon } from "@/lib/services/admin-service";
-import { getAddonsForSalon } from "@/lib/repositories/addons";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreVertical, TrendingUp, Users, Calendar, Scissors, UserCircle } from "lucide-react";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { ErrorMessage } from "@/components/feedback/error-message";
+import { supabase } from "@/lib/supabase-client";
+import { Plus, Eye } from "lucide-react";
+import { format } from "date-fns";
+
+type SalonRow = {
+  id: string;
+  name: string;
+  slug: string;
+  plan: string;
+  is_public: boolean;
+  salon_type: string;
+  created_at: string;
+  owner_email: string | null;
+  employee_count: number;
+  booking_count_7d: number;
+  last_active: string | null;
+  total_count: number;
+};
+
+const PLAN_COLORS: Record<string, string> = {
+  starter: "bg-muted text-muted-foreground",
+  pro: "bg-blue-50 text-blue-700",
+  business: "bg-purple-50 text-purple-700",
+};
+
+const columns: ColumnDef<SalonRow>[] = [
+  { id: "name", header: "Salon", cell: (r) => (
+    <div>
+      <span className="font-medium block">{r.name}</span>
+      <span className="text-xs text-muted-foreground">{r.slug}</span>
+    </div>
+  ), sticky: true, hideable: false },
+  { id: "plan", header: "Plan", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PLAN_COLORS[r.plan] ?? ""}`}>{r.plan}</span>, sortable: true },
+  { id: "status", header: "Status", cell: (r) => <Badge variant="outline" className={r.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{r.is_public ? "Active" : "Inactive"}</Badge>, sortable: true },
+  { id: "salon_type", header: "Type", cell: (r) => r.salon_type ?? "-", defaultVisible: false },
+  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
+  { id: "last_active", header: "Last Active", cell: (r) => r.last_active ? format(new Date(r.last_active), "MMM d") : "-", sortable: true },
+  { id: "employee_count", header: "Employees", cell: (r) => r.employee_count, sortable: true },
+  { id: "booking_count_7d", header: "Bookings 7d", cell: (r) => r.booking_count_7d, sortable: true },
+  { id: "owner_email", header: "Owner", cell: (r) => r.owner_email ?? "-", defaultVisible: true },
+];
 
 export default function AdminSalonsPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
 
-  const [salons, setSalons] = useState<AdminSalon[]>([]);
+  const [salons, setSalons] = useState<SalonRow[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSalon, setSelectedSalon] = useState<AdminSalon | null>(null);
-  const [showPlanDialog, setShowPlanDialog] = useState(false);
-  const [showStatsDialog, setShowStatsDialog] = useState(false);
-  const [usageStats, setUsageStats] = useState<{
-    employee_count: number;
-    booking_count: number;
-    booking_count_30d: number;
-    customer_count: number;
-    service_count: number;
-  } | null>(null);
-  const [salonAddons, setSalonAddons] = useState<Array<{ type: string; qty: number }>>([]);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  useEffect(() => {
-    if (!contextLoading && !isSuperAdmin) {
-      router.push("/dashboard");
-      return;
-    }
+  // Detail drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedSalon, setSelectedSalon] = useState<SalonRow | null>(null);
+  const [notes, setNotes] = useState<AdminNote[]>([]);
+  const [usageStats, setUsageStats] = useState<Record<string, number> | null>(null);
 
-    if (isSuperAdmin) {
-      loadData();
-    }
-  }, [isSuperAdmin, contextLoading, router]);
+  // Impersonation state
+  const [impersonating, setImpersonating] = useState(false);
+  const [impersonatedSalon, setImpersonatedSalon] = useState<SalonRow | null>(null);
 
-  async function loadData() {
+  const loadSalons = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const { data, error: salonsError } = await getAllSalonsForAdmin();
-
-      if (salonsError) {
-        setError(salonsError);
-        setSalons([]);
-      } else {
-        setSalons(data || []);
-      }
+      const filters: Record<string, string> = {};
+      if (search) filters.search = search;
+      const { data, error: rpcError } = await supabase.rpc("get_salons_paginated", {
+        filters,
+        sort_col: sortBy,
+        sort_dir: sortDir,
+        lim: 25,
+        off: page * 25,
+      });
+      if (rpcError) { setError(rpcError.message); return; }
+      // Map RPC fields to SalonRow type
+      const rows: SalonRow[] = ((data as Array<Record<string, unknown>>) ?? []).map((d) => ({
+        id: d.id as string,
+        name: d.name as string,
+        slug: (d.slug as string) ?? "",
+        plan: (d.plan as string) ?? "starter",
+        is_public: (d.is_public as boolean) ?? false,
+        salon_type: (d.salon_type as string) ?? "",
+        created_at: d.created_at as string,
+        owner_email: (d.owner_email as string) ?? null,
+        employee_count: Number(d.employee_count ?? 0),
+        booking_count_7d: Number(d.booking_count_7d ?? 0),
+        last_active: (d.last_active as string) ?? null,
+        total_count: Number(d.total_count ?? 0),
+      }));
+      setSalons(rows);
+      setTotal(rows.length > 0 ? rows[0].total_count : 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
-      setSalons([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, search, sortBy, sortDir]);
 
-  if (contextLoading || loading) {
-    return (
-      <AdminShell>
-        <PageLayout title="Salons" description="Manage all salons">
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </PageLayout>
-      </AdminShell>
-    );
-  }
+  useEffect(() => {
+    if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
+    if (isSuperAdmin) loadSalons();
+  }, [isSuperAdmin, contextLoading, router, loadSalons]);
 
-  if (!isSuperAdmin) {
-    return (
-      <AdminShell>
-        <PageLayout title="Access Denied" description="You must be a super admin to access this page">
-          <p className="text-sm text-destructive">You do not have permission to access this page.</p>
-        </PageLayout>
-      </AdminShell>
-    );
-  }
+  const loadNotes = useCallback(async (salonId: string) => {
+    const { data } = await supabase.rpc("get_admin_notes", { p_entity_type: "salon", p_entity_id: salonId });
+    if (data) setNotes(data as AdminNote[]);
+  }, []);
+
+  const handleRowClick = useCallback(async (salon: SalonRow) => {
+    setSelectedSalon(salon);
+    setDrawerOpen(true);
+    loadNotes(salon.id);
+    const { data } = await getSalonUsageStats(salon.id);
+    if (data) setUsageStats(data);
+  }, [loadNotes]);
+
+  const handleCreateNote = useCallback(async (content: string, tags: NoteTag[]) => {
+    if (!selectedSalon) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("admin_notes").insert({ entity_type: "salon", entity_id: selectedSalon.id, author_id: user.id, content, tags });
+    loadNotes(selectedSalon.id);
+  }, [selectedSalon, loadNotes]);
+
+  const rowActions: RowAction<SalonRow>[] = [
+    { label: "Impersonate", icon: Eye, onClick: (s) => { setImpersonatedSalon(s); setImpersonating(true); } },
+    { label: "Change to Starter", onClick: async (s) => { await updateSalonPlan(s.id, "starter"); loadSalons(); } },
+    { label: "Change to Pro", onClick: async (s) => { await updateSalonPlan(s.id, "pro"); loadSalons(); } },
+    { label: "Change to Business", onClick: async (s) => { await updateSalonPlan(s.id, "business"); loadSalons(); } },
+    { label: "Toggle Status", separator: true, onClick: async (s) => { await setSalonActive(s.id, !s.is_public); loadSalons(); } },
+  ];
+
+  const bulkActions: BulkAction[] = [
+    { label: "Export Selected", onClick: (ids) => { console.log("Export", ids); } },
+    { label: "Suspend", variant: "destructive", onClick: async (ids) => { for (const id of ids) { await setSalonActive(id, false); } loadSalons(); } },
+  ];
+
+  if (contextLoading || !isSuperAdmin) return null;
 
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout
-          title="Salons"
-          description="Manage and monitor all salons in the system"
-        >
-          {error && (
-            <ErrorMessage
-              message={error}
-              onDismiss={() => setError(null)}
-              variant="destructive"
-              className="mb-4"
-            />
-          )}
+        <PageLayout title="Salons" description="Manage and monitor all salons" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Salon</Button>}>
+          {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>All Salons</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {salons.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No salons found</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Salon Name</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Stats</TableHead>
-                      <TableHead>Owner</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {salons.map((salon) => (
-                      <TableRow key={salon.id}>
-                        <TableCell className="font-medium">{salon.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {salon.plan || "starter"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{salon.salon_type || "-"}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={salon.is_public ? "default" : "secondary"}
-                          >
-                            {salon.is_public ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              setSelectedSalon(salon);
-                              const { data: stats } = await getSalonUsageStats(salon.id);
-                              if (stats) {
-                                setUsageStats(stats);
-                              }
-                              const { data: addons } = await getAddonsForSalon(salon.id);
-                              setSalonAddons(
-                                addons?.map((a) => ({ type: a.type, qty: a.qty })) || []
-                              );
-                              setShowStatsDialog(true);
-                            }}
-                          >
-                            <TrendingUp className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </TableCell>
-                        <TableCell>{salon.owner_email || "-"}</TableCell>
-                        <TableCell>
-                          {new Date(salon.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedSalon(salon);
-                                  setShowPlanDialog(true);
-                                }}
-                              >
-                                Change Plan
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  if (
-                                    confirm(
-                                      `Are you sure you want to ${
-                                        salon.is_public ? "deactivate" : "activate"
-                                      } this salon?`
-                                    )
-                                  ) {
-                                    const { error: updateError } = await setSalonActive(
-                                      salon.id,
-                                      !salon.is_public
-                                    );
-                                    if (updateError) {
-                                      setError(updateError);
-                                    } else {
-                                      await loadData();
-                                    }
-                                  }
-                                }}
-                              >
-                                {salon.is_public ? "Deactivate" : "Activate"}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+          <DataTable
+            columns={columns}
+            data={salons}
+            totalCount={total}
+            rowKey={(r) => r.id}
+            page={page}
+            pageSize={25}
+            onPageChange={setPage}
+            onSearchChange={setSearch}
+            searchQuery={search}
+            searchPlaceholder="Search salons..."
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(col, dir) => { setSortBy(col); setSortDir(dir); }}
+            rowActions={rowActions}
+            bulkActions={bulkActions}
+            onRowClick={handleRowClick}
+            loading={loading}
+            emptyMessage="No salons found"
+            storageKey="salons-pro"
+            savedViews={[
+              { id: "new-7d", label: "New (last 7d)", filters: {} },
+              { id: "inactive-30d", label: "Inactive 30d", filters: {} },
+              { id: "trial-ending", label: "Trial ending", filters: {} },
+            ]}
+          />
 
-          {/* Plan Change Dialog */}
-          <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Change Plan for {selectedSalon?.name}</DialogTitle>
-                <DialogDescription>
-                  Select a new plan for this salon. This will immediately update their plan limits.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-2">
-                {(["starter", "pro", "business"] as const).map((plan) => (
-                  <Button
-                    key={plan}
-                    variant={selectedSalon?.plan === plan ? "default" : "outline"}
-                    className="w-full justify-start"
-                    onClick={async () => {
-                      if (!selectedSalon?.id) return;
-                      const { error: updateError } = await updateSalonPlan(
-                        selectedSalon.id,
-                        plan
-                      );
-                      if (updateError) {
-                        setError(updateError);
-                      } else {
-                        await loadData();
-                        setShowPlanDialog(false);
-                      }
-                    }}
-                  >
-                    {plan.charAt(0).toUpperCase() + plan.slice(1)}
-                  </Button>
-                ))}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
-                  Cancel
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Usage Stats Dialog */}
-          <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Usage Statistics - {selectedSalon?.name}</DialogTitle>
-                <DialogDescription>
-                  Current usage and statistics for this salon
-                </DialogDescription>
-              </DialogHeader>
-              {usageStats && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Employees</span>
-                      </div>
-                      <p className="text-2xl font-bold">{usageStats.employee_count}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Total Bookings</span>
-                      </div>
-                      <p className="text-2xl font-bold">{usageStats.booking_count}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Bookings (30d)</span>
-                      </div>
-                      <p className="text-2xl font-bold">{usageStats.booking_count_30d}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <UserCircle className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Customers</span>
-                      </div>
-                      <p className="text-2xl font-bold">{usageStats.customer_count}</p>
-                    </div>
-                    <div className="p-3 border rounded-lg col-span-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Scissors className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Services</span>
-                      </div>
-                      <p className="text-2xl font-bold">{usageStats.service_count}</p>
-                    </div>
-                  </div>
-                  {salonAddons.length > 0 && (
-                    <div className="p-3 border rounded-lg">
-                      <span className="text-sm font-medium mb-2 block">Add-ons</span>
-                      <div className="space-y-1">
-                        {salonAddons.map((addon, idx) => (
-                          <div key={idx} className="text-sm">
-                            {addon.type === "extra_staff" ? "Extra Staff" : "Extra Languages"}:{" "}
-                            {addon.qty}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+          {/* Salon Detail Drawer */}
+          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedSalon?.name ?? "Salon"} description={selectedSalon?.slug ?? ""}>
+            {selectedSalon && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Plan:</span> <Badge variant="outline">{selectedSalon.plan}</Badge></div>
+                  <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={selectedSalon.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{selectedSalon.is_public ? "Active" : "Inactive"}</Badge></div>
+                  <div><span className="text-muted-foreground">Owner:</span> {selectedSalon.owner_email ?? "N/A"}</div>
+                  <div><span className="text-muted-foreground">Created:</span> {format(new Date(selectedSalon.created_at), "PPP")}</div>
+                  {usageStats && (
+                    <>
+                      <div><span className="text-muted-foreground">Employees:</span> {usageStats.employee_count}</div>
+                      <div><span className="text-muted-foreground">Bookings (total):</span> {usageStats.booking_count}</div>
+                      <div><span className="text-muted-foreground">Bookings (30d):</span> {usageStats.booking_count_30d}</div>
+                      <div><span className="text-muted-foreground">Customers:</span> {usageStats.customer_count}</div>
+                    </>
                   )}
                 </div>
-              )}
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowStatsDialog(false)}>
-                  Close
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <div>
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => { setImpersonatedSalon(selectedSalon); setImpersonating(true); }}>
+                    <Eye className="h-3 w-3" /> Impersonate
+                  </Button>
+                </div>
+                <NotesPanel entityType="salon" entityId={selectedSalon.id} notes={notes} onCreateNote={handleCreateNote} />
+              </div>
+            )}
+          </DetailDrawer>
+
+          {/* Impersonation Drawer */}
+          <ImpersonationDrawer
+            open={impersonating}
+            onOpenChange={setImpersonating}
+            salonId={impersonatedSalon?.id ?? null}
+            salonName={impersonatedSalon?.name ?? null}
+          />
         </PageLayout>
       </AdminShell>
     </ErrorBoundary>
   );
 }
-

@@ -1,33 +1,56 @@
-# Sprint 2: Dashboard 2.0 + Support Inbox + Impersonation
+## Sprint 2: Dashboard 2.0 + Support Inbox + Impersonation
 
-## Sidebar
+### Sidebar
 
-- [ ] Restructure sidebar in admin-shell.tsx
-- [ ] New section grouping (Overview, Operations, Tenants, Users, Security, Analytics)
-- [ ] Update desktop sidebar
-- [ ] Update mobile sidebar
+- [x] Restrukturering av sidebar -- `apps/admin/src/components/layout/admin-shell.tsx`
+  - [x] Ny seksjonsinndeling (Overview, Operations, Tenants, Users & Access, Security, Analytics, Product)
+  - [x] Oppdater desktop sidebar
+  - [x] Oppdater mobil-sidebar
+  - [x] Nye nav-items med riktige ikoner
 
-## Dashboard
+### Dashboard
 
-- [ ] KPI row (6 cards: Active Salons, New Salons, Activated, Bookings, Billing Issues, Support Cases)
-- [ ] Needs Attention feed (from get_needs_attention_items + open cases)
-- [ ] Quick Actions grid (Create Salon, Invite User, Change Plan, Suspend, Export, Audit Search)
-- [ ] Recent Activity (last 20 events from security_audit_log)
+- [x] Dashboard-rewrite -- `apps/admin/src/app/(admin)/page.tsx`
+  - [x] Seksjon 1: KPI-rad (6 kort)
+    - [x] Active Salons (7d/30d)
+    - [x] New Salons (7d)
+    - [x] Activated Salons
+    - [x] Bookings (today / 7d)
+    - [x] Total Users
+    - [x] Open Support Cases
+  - [x] Seksjon 2: "Needs Attention" feed
+    - [x] Henter fra `get_needs_attention_items()` + open cases
+    - [x] Handlingsknapper per item (View, Resolve)
+  - [x] Seksjon 3: Quick Actions grid
+    - [x] Create Salon, Invite User, Change Plan, Suspend, Export, Audit Search
+  - [x] Seksjon 4: Recent Activity
+    - [x] Siste 20 events fra security_audit_log
+    - [x] Klikk åpner DetailDrawer
 
-## Support Inbox
+### Support Inbox
 
-- [ ] Support Inbox page (`apps/admin/src/app/(admin)/support/page.tsx`)
-- [ ] DataTable with cases (ID, Type, Salon, Status, Priority, Assignee, Created, Updated)
-- [ ] Filters: type, status, priority, assignee, date
-- [ ] Row click opens DetailDrawer with case detail + notes + related audit events
-- [ ] Change status, assign, add note actions
-- [ ] Create Case button (manual)
-- [ ] Support case service (`apps/admin/src/lib/services/support-service.ts`)
+- [x] Support Inbox page -- `apps/admin/src/app/(admin)/support/page.tsx`
+  - [x] DataTable med cases (Title, Type, Salon, Status, Priority, Assignee, Created, Updated)
+  - [x] Row actions: Mark In Progress, Resolve, Close
+  - [x] Klikk rad -> DetailDrawer
+    - [x] Full case-detalj
+    - [x] Notater-historikk (NotesPanel)
+  - [x] Endre status, legg til notat
+  - [x] "Create Case" knapp
+- [x] Support case service -- `apps/admin/src/lib/services/support-service.ts`
+  - [x] CRUD for support cases (getSupportCases, createSupportCase, updateCaseStatus, assignCase)
 
-## Impersonation
+### Impersonation
 
-- [ ] Impersonation drawer (`apps/admin/src/components/shared/impersonation-drawer.tsx`)
-- [ ] Yellow "IMPERSONATION MODE" banner
-- [ ] Read-only salon data via service_role
-- [ ] Impersonation API route (`apps/admin/src/app/api/impersonate/route.ts`)
-- [ ] Audit logging: impersonation_start / impersonation_end events
+- [x] Impersonation drawer -- `apps/admin/src/components/shared/impersonation-drawer.tsx`
+  - [x] Gul "IMPERSONATION MODE" banner
+  - [x] Read-only visning av salongdata (employees, bookings, services, customers)
+  - [x] Lukk-knapp avslutter session
+- [x] Impersonation API -- `apps/admin/src/app/api/impersonate/route.ts`
+  - [x] Verifiser super admin
+  - [x] Hent salongdata
+  - [x] Logg i security_audit_log
+- [x] Impersonation logging
+  - [x] `impersonation_start` event
+  - [x] `impersonation_end` event
+  - [x] `impersonation_api_access` event

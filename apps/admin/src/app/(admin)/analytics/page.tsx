@@ -1,15 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCurrentSalon } from "@/components/salon-provider";
-import { getAllSalonsForAdmin, getAllUsersForAdmin } from "@/lib/services/admin-service";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { TrendingUp, Users, Building2, Calendar, DollarSign } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KpiCard } from "@/components/shared/kpi-card";
+import { DataTable, type ColumnDef } from "@/components/shared/data-table";
+import { Badge } from "@/components/ui/badge";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { supabase } from "@/lib/supabase-client";
+import { Building2, Calendar, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+
+type TimeSeriesPoint = { day: string; value: number };
+type FunnelStep = { step: string; count: number };
+type TopSalon = { salon_id: string; salon_name: string; booking_count: number; growth_pct: number };
+type PlanDist = { plan: string; count: number };
+
+const PLAN_COLORS: Record<string, string> = { starter: "bg-muted", pro: "bg-blue-500", business: "bg-purple-500" };
+
+const topSalonColumns: ColumnDef<TopSalon>[] = [
+  { id: "salon_name", header: "Salon", cell: (r) => <span className="font-medium">{r.salon_name}</span>, hideable: false },
+  { id: "booking_count", header: "Bookings", cell: (r) => r.booking_count.toLocaleString(), sortable: true },
+  { id: "growth_pct", header: "Growth", cell: (r) => (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${r.growth_pct >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+      {r.growth_pct >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+      {Math.abs(r.growth_pct)}%
+    </span>
+  ), sortable: true },
+];
 
 export default function AdminAnalyticsPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
@@ -17,243 +38,169 @@ export default function AdminAnalyticsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<{
-    totalSalons: number;
-    activeSalons: number;
-    totalUsers: number;
-    totalBookings: number;
-    planDistribution: {
-      starter: number;
-      pro: number;
-      business: number;
-    };
-  } | null>(null);
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
+  const periodDays = period === "7d" ? 7 : period === "30d" ? 30 : 90;
 
-  useEffect(() => {
-    if (!contextLoading && !isSuperAdmin) {
-      router.push("/dashboard");
-      return;
-    }
+  const [bookingsSeries, setBookingsSeries] = useState<TimeSeriesPoint[]>([]);
+  const [salonsSeries, setSalonsSeries] = useState<TimeSeriesPoint[]>([]);
+  const [activeSeries, setActiveSeries] = useState<TimeSeriesPoint[]>([]);
+  const [funnel, setFunnel] = useState<FunnelStep[]>([]);
+  const [topSalons, setTopSalons] = useState<TopSalon[]>([]);
+  const [planDist, setPlanDist] = useState<PlanDist[]>([]);
 
-    if (isSuperAdmin) {
-      loadData();
-    }
-  }, [isSuperAdmin, contextLoading, router]);
-
-  async function loadData() {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const [salonsResult, usersResult] = await Promise.all([
-        getAllSalonsForAdmin(),
-        getAllUsersForAdmin(),
+      const [bk, ns, as_, fn, ts, pd] = await Promise.all([
+        supabase.rpc("get_admin_activity_timeseries", { metric: "bookings", period_days: periodDays }),
+        supabase.rpc("get_admin_activity_timeseries", { metric: "new_salons", period_days: periodDays }),
+        supabase.rpc("get_admin_activity_timeseries", { metric: "active_salons", period_days: periodDays }),
+        supabase.rpc("get_admin_activation_funnel", { period_days: periodDays }),
+        supabase.rpc("get_admin_top_salons", { period_days: periodDays, lim: 10 }),
+        supabase.rpc("get_admin_plan_distribution"),
       ]);
 
-      if (salonsResult.error || usersResult.error) {
-        setError(salonsResult.error || usersResult.error || "Failed to load data");
-        return;
-      }
-
-      const salons = salonsResult.data || [];
-      const users = usersResult.data || [];
-
-      // Calculate plan distribution
-      const planDistribution = {
-        starter: salons.filter((s) => s.plan === "starter" || !s.plan).length,
-        pro: salons.filter((s) => s.plan === "pro").length,
-        business: salons.filter((s) => s.plan === "business").length,
-      };
-
-      // Calculate total bookings (sum from all salons)
-      const totalBookings = salons.reduce((sum, salon) => {
-        return sum + (salon.booking_count || 0);
-      }, 0);
-
-      setStats({
-        totalSalons: salons.length,
-        activeSalons: salons.filter((s) => s.is_public).length,
-        totalUsers: users.length,
-        totalBookings,
-        planDistribution,
-      });
+      setBookingsSeries((bk.data as TimeSeriesPoint[]) ?? []);
+      setSalonsSeries((ns.data as TimeSeriesPoint[]) ?? []);
+      setActiveSeries((as_.data as TimeSeriesPoint[]) ?? []);
+      setFunnel((fn.data as FunnelStep[]) ?? []);
+      setTopSalons((ts.data as TopSalon[]) ?? []);
+      setPlanDist((pd.data as PlanDist[]) ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
-  }
+  }, [periodDays]);
 
-  if (contextLoading || loading) {
-    return (
-      <AdminShell>
-        <PageLayout title="Analytics" description="System-wide analytics and insights">
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </PageLayout>
-      </AdminShell>
-    );
-  }
+  useEffect(() => {
+    if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
+    if (isSuperAdmin) loadAnalytics();
+  }, [isSuperAdmin, contextLoading, router, loadAnalytics]);
 
-  if (!isSuperAdmin) {
+  if (contextLoading || !isSuperAdmin) return null;
+
+  const totalBookings = bookingsSeries.reduce((s, p) => s + Number(p.value), 0);
+  const totalNewSalons = salonsSeries.reduce((s, p) => s + Number(p.value), 0);
+  const avgActive = activeSeries.length > 0 ? Math.round(activeSeries.reduce((s, p) => s + Number(p.value), 0) / activeSeries.length) : 0;
+  const totalPlans = planDist.reduce((s, p) => s + Number(p.count), 0);
+
+  // Simple SVG bar chart renderer
+  function BarChart({ data, color = "#3b82f6" }: { data: TimeSeriesPoint[]; color?: string }) {
+    if (data.length === 0) return <p className="text-sm text-muted-foreground">No data</p>;
+    const max = Math.max(...data.map((d) => Number(d.value)), 1);
+    const w = 100 / data.length;
     return (
-      <AdminShell>
-        <PageLayout title="Access Denied" description="You must be a super admin to access this page">
-          <p className="text-sm text-destructive">You do not have permission to access this page.</p>
-        </PageLayout>
-      </AdminShell>
+      <svg viewBox="0 0 100 40" className="w-full h-32" preserveAspectRatio="none">
+        {data.map((d, i) => (
+          <rect key={i} x={i * w + w * 0.1} y={40 - (Number(d.value) / max) * 38} width={w * 0.8} height={(Number(d.value) / max) * 38} fill={color} rx={0.5} opacity={0.85} />
+        ))}
+      </svg>
     );
   }
 
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout
-          title="Analytics"
-          description="System-wide analytics and insights"
-        >
-          {error && (
-            <ErrorMessage
-              message={error}
-              onDismiss={() => setError(null)}
-              variant="destructive"
-              className="mb-4"
-            />
-          )}
+        <PageLayout title="Metrics" description="Platform analytics and growth metrics" showPeriodSelector period={period} onPeriodChange={setPeriod}>
+          {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
-          {stats && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Salons</CardTitle>
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalSalons}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.activeSalons} active
-                  </p>
-                </CardContent>
-              </Card>
+          {/* KPI row */}
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
+            <KpiCard title="Bookings" value={totalBookings} icon={Calendar} trendData={bookingsSeries.map((d) => Number(d.value))} period={period} />
+            <KpiCard title="New Salons" value={totalNewSalons} icon={Building2} trendData={salonsSeries.map((d) => Number(d.value))} period={period} />
+            <KpiCard title="Avg. Active/day" value={avgActive} icon={TrendingUp} period={period} />
+            <KpiCard title="Total Salons" value={totalPlans} icon={Users} />
+          </div>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Across all salons
-                  </p>
-                </CardContent>
-              </Card>
+          {/* Charts row */}
+          <div className="grid gap-6 lg:grid-cols-2 mb-6">
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Bookings / day</CardTitle></CardHeader>
+              <CardContent><BarChart data={bookingsSeries} color="#3b82f6" /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">New Salons / day</CardTitle></CardHeader>
+              <CardContent><BarChart data={salonsSeries} color="#8b5cf6" /></CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Active Salons / day</CardTitle></CardHeader>
+              <CardContent><BarChart data={activeSeries} color="#10b981" /></CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalBookings.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    All time
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Salons</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.activeSalons}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.totalSalons > 0
-                      ? `${Math.round((stats.activeSalons / stats.totalSalons) * 100)}% of total`
-                      : "0%"}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {stats && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Plan Distribution</CardTitle>
-              </CardHeader>
+            {/* Activation Funnel */}
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Activation Funnel</CardTitle></CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Starter</span>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.planDistribution.starter} salons
-                      </span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{
-                          width: `${
-                            stats.totalSalons > 0
-                              ? (stats.planDistribution.starter / stats.totalSalons) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
+                {funnel.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> : (
+                  <div className="space-y-3">
+                    {funnel.map((step, i) => {
+                      const pct = funnel[0].count > 0 ? Math.round((Number(step.count) / Number(funnel[0].count)) * 100) : 0;
+                      return (
+                        <div key={step.step}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>{step.step}</span>
+                            <span className="text-muted-foreground">{step.count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Pro</span>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.planDistribution.pro} salons
-                      </span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{
-                          width: `${
-                            stats.totalSalons > 0
-                              ? (stats.planDistribution.pro / stats.totalSalons) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Business</span>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.planDistribution.business} salons
-                      </span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{
-                          width: `${
-                            stats.totalSalons > 0
-                              ? (stats.planDistribution.business / stats.totalSalons) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
-          )}
+          </div>
+
+          {/* Bottom row: Top salons + Plan distribution */}
+          <div className="grid gap-6 lg:grid-cols-3 mb-6">
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Top Salons (by bookings)</CardTitle></CardHeader>
+              <CardContent>
+                <DataTable
+                  columns={topSalonColumns}
+                  data={topSalons}
+                  totalCount={topSalons.length}
+                  rowKey={(r) => r.salon_id}
+                  page={0}
+                  pageSize={10}
+                  onPageChange={() => {}}
+                  loading={loading}
+                  emptyMessage="No data"
+                  storageKey="top-salons"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Plan Distribution</CardTitle></CardHeader>
+              <CardContent>
+                {planDist.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> : (
+                  <div className="space-y-3">
+                    {planDist.map((p) => {
+                      const pct = totalPlans > 0 ? Math.round((Number(p.count) / totalPlans) * 100) : 0;
+                      return (
+                        <div key={p.plan}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="capitalize">{p.plan}</span>
+                            <span className="text-muted-foreground">{p.count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div className={`h-2 rounded-full ${PLAN_COLORS[p.plan] ?? "bg-primary"}`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </PageLayout>
       </AdminShell>
     </ErrorBoundary>
   );
 }
-

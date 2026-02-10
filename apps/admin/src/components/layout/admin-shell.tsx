@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
+import { CommandPalette } from "@/components/shared/command-palette";
 import type { AppLocale } from "@/i18n/translations";
 import { FAVICON_PATH } from "@/lib/constants";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
@@ -26,6 +27,17 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  HeartPulse,
+  Inbox,
+  AlertTriangle,
+  UserCheck,
+  CreditCard,
+  ToggleRight,
+  ShieldCheck,
+  Database,
+  BarChart3,
+  GitBranch,
+  MessageSquare,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -51,6 +63,7 @@ type AdminShellProps = {
 export function AdminShell({ children }: AdminShellProps) {
   return (
     <ErrorBoundary>
+      <CommandPalette />
       <AdminShellContent>{children}</AdminShellContent>
     </ErrorBoundary>
   );
@@ -157,16 +170,40 @@ function AdminShellContent({ children }: AdminShellProps) {
   // Admin-specific navigation items organized by sections
   const overviewItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/system-health", label: "System Health", icon: HeartPulse },
   ];
 
-  const managementItems = [
+  const operationsItems = [
+    { href: "/support", label: "Support Inbox", icon: Inbox },
+    { href: "/incidents", label: "Incidents", icon: AlertTriangle },
+  ];
+
+  const tenantsItems = [
     { href: "/salons", label: "Salons", icon: Building2 },
+    { href: "/onboarding", label: "Onboarding", icon: GitBranch },
+    { href: "/plans", label: "Plans & Billing", icon: CreditCard },
+  ];
+
+  const usersItems = [
     { href: "/users", label: "Users", icon: Users },
+    { href: "/admins", label: "Admins", icon: UserCheck },
+  ];
+
+  const securityItems = [
     { href: "/audit-logs", label: "Audit Logs", icon: FileText },
+    { href: "/security-events", label: "Security Events", icon: ShieldCheck },
+    { href: "/data-tools", label: "Data Tools", icon: Database },
   ];
 
   const analyticsItems = [
-    { href: "/analytics", label: "Analytics", icon: TrendingUp },
+    { href: "/analytics", label: "Metrics", icon: TrendingUp },
+    { href: "/analytics/cohorts", label: "Cohorts", icon: BarChart3 },
+    { href: "/feature-flags", label: "Feature Flags", icon: ToggleRight },
+  ];
+
+  const productItems = [
+    { href: "/changelog", label: "Changelog", icon: GitBranch },
+    { href: "/feedback", label: "Feedback", icon: MessageSquare },
   ];
 
   if (!mounted || !isSuperAdmin) {
@@ -425,15 +462,78 @@ function AdminShellContent({ children }: AdminShellProps) {
                 </div>
               </div>
 
-              {/* Management Section */}
+              {/* Operations Section */}
               <div>
                 {!sidebarCollapsed && (
                   <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Management
+                    Operations
                   </p>
                 )}
                 <div className="flex flex-col gap-1.5">
-                  {managementItems.map((item) => (
+                  {operationsItems.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      collapsed={sidebarCollapsed}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tenants Section */}
+              <div>
+                {!sidebarCollapsed && (
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Tenants
+                  </p>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  {tenantsItems.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      collapsed={sidebarCollapsed}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Users & Access Section */}
+              <div>
+                {!sidebarCollapsed && (
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Users & Access
+                  </p>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  {usersItems.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      collapsed={sidebarCollapsed}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Security & Compliance Section */}
+              <div>
+                {!sidebarCollapsed && (
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Security
+                  </p>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  {securityItems.map((item) => (
                     <NavLink
                       key={item.href}
                       href={item.href}
@@ -455,6 +555,27 @@ function AdminShellContent({ children }: AdminShellProps) {
                 )}
                 <div className="flex flex-col gap-1.5">
                   {analyticsItems.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      collapsed={sidebarCollapsed}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Section */}
+              <div>
+                {!sidebarCollapsed && (
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Product
+                  </p>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  {productItems.map((item) => (
                     <NavLink
                       key={item.href}
                       href={item.href}
@@ -538,13 +659,70 @@ function AdminShellContent({ children }: AdminShellProps) {
                   </div>
                 </div>
 
-                {/* Management Section */}
+                {/* Operations Section */}
                 <div>
                   <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Management
+                    Operations
                   </p>
                   <div className="flex flex-col gap-1.5">
-                    {managementItems.map((item) => (
+                    {operationsItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tenants Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Tenants
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {tenantsItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Users & Access Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Users & Access
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {usersItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Security Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Security
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {securityItems.map((item) => (
                       <NavLink
                         key={item.href}
                         href={item.href}
@@ -564,6 +742,25 @@ function AdminShellContent({ children }: AdminShellProps) {
                   </p>
                   <div className="flex flex-col gap-1.5">
                     {analyticsItems.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        collapsed={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Product Section */}
+                <div>
+                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Product
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {productItems.map((item) => (
                       <NavLink
                         key={item.href}
                         href={item.href}

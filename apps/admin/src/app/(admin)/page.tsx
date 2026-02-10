@@ -1,369 +1,300 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { translations } from "@/i18n/translations";
-import {
-  getAllSalonsForAdmin,
-  getAllUsersForAdmin,
-  updateSalonPlan,
-  setSalonActive,
-  getSalonUsageStats,
-} from "@/lib/services/admin-service";
-import type { AdminSalon, AdminUser } from "@/lib/services/admin-service";
-import { getAddonsForSalon } from "@/lib/repositories/addons";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { KpiCard } from "@/components/shared/kpi-card";
+import { QuickActions, type QuickAction } from "@/components/shared/quick-actions";
+import { NeedsAttentionFeed, type AttentionItem } from "@/components/shared/needs-attention-feed";
+import { RecentActivity, type ActivityEvent } from "@/components/shared/recent-activity";
+import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { supabase } from "@/lib/supabase-client";
 import { logError } from "@/lib/services/logger";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreVertical, TrendingUp, Users, Calendar, Scissors, UserCircle } from "lucide-react";
+  Building2,
+  UserPlus,
+  CreditCard,
+  Pause,
+  Download,
+  Search,
+  TrendingUp,
+  Users,
+  Calendar,
+  AlertTriangle,
+  Inbox,
+  Activity,
+} from "lucide-react";
 
-type Salon = AdminSalon;
-type User = AdminUser;
+type DashboardKpis = {
+  active_salons: number;
+  active_salons_prev: number;
+  new_salons: number;
+  new_salons_prev: number;
+  activated_salons: number;
+  total_bookings: number;
+  total_bookings_prev: number;
+  open_support_cases: number;
+  total_users: number;
+};
 
-export default function AdminPage() {
-  const { locale } = useLocale();
+type TrendPoint = { day: string; value: number };
+
+export default function AdminDashboardPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
-  const t = translations[locale].admin;
 
-  const [salons, setSalons] = useState<Salon[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
-  const [showPlanDialog, setShowPlanDialog] = useState(false);
-  const [showStatsDialog, setShowStatsDialog] = useState(false);
-  const [usageStats, setUsageStats] = useState<{
-    employee_count: number;
-    booking_count: number;
-    booking_count_30d: number;
-    customer_count: number;
-    service_count: number;
-  } | null>(null);
-  const [salonAddons, setSalonAddons] = useState<Array<{ type: string; qty: number }>>([]);
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("7d");
+  const [kpis, setKpis] = useState<DashboardKpis | null>(null);
+  const [trends, setTrends] = useState<Record<string, number[]>>({});
+  const [attentionItems, setAttentionItems] = useState<AttentionItem[]>([]);
+  const [recentEvents, setRecentEvents] = useState<ActivityEvent[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerEvent, setDrawerEvent] = useState<ActivityEvent | null>(null);
+
+  const periodDays = period === "7d" ? 7 : period === "30d" ? 30 : 90;
 
   useEffect(() => {
-    // Redirect if not superadmin
     if (!contextLoading && !isSuperAdmin) {
       router.push("/login");
-      // Note: with basePath="/admin" in production, this navigates to /admin/login
       return;
     }
+    if (isSuperAdmin) loadDashboard();
+  }, [isSuperAdmin, contextLoading, router, periodDays]);
 
-    if (isSuperAdmin) {
-      loadData();
-    }
-  }, [isSuperAdmin, contextLoading, router]);
-
-  async function loadData() {
+  async function loadDashboard() {
     setLoading(true);
     setError(null);
-
     try {
-      // Load all salons and users using admin service
-      const [salonsResult, usersResult] = await Promise.all([
-        getAllSalonsForAdmin(),
-        getAllUsersForAdmin(),
-      ]);
+      const [kpiResult, bookingsTrend, salonsTrend, attentionResult, eventsResult] =
+        await Promise.all([
+          supabase.rpc("get_admin_dashboard_kpis", { period_days: periodDays }),
+          supabase.rpc("get_admin_kpi_trend", { metric: "bookings", period_days: periodDays }),
+          supabase.rpc("get_admin_kpi_trend", { metric: "new_salons", period_days: periodDays }),
+          supabase.rpc("get_needs_attention_items", { lim: 10 }),
+          supabase
+            .from("security_audit_log")
+            .select("id, action, resource_type, user_id, salon_id, created_at, metadata")
+            .order("created_at", { ascending: false })
+            .limit(20),
+        ]);
 
-      // Handle errors gracefully - don't crash if one fails
-      if (salonsResult.error) {
-        logError("Error loading salons", salonsResult.error);
-        // Continue with empty salons array instead of showing error
-        setSalons([]);
-      } else {
-        setSalons(salonsResult.data || []);
+      if (kpiResult.data?.[0]) setKpis(kpiResult.data[0]);
+      if (kpiResult.error) logError("KPI load error", kpiResult.error);
+
+      const bt = (bookingsTrend.data as TrendPoint[] | null)?.map((d) => d.value) ?? [];
+      const st = (salonsTrend.data as TrendPoint[] | null)?.map((d) => d.value) ?? [];
+      setTrends({ bookings: bt, new_salons: st });
+
+      if (attentionResult.data) {
+        setAttentionItems(
+          (attentionResult.data as Array<Record<string, unknown>>).map((item) => ({
+            id: item.item_id as string,
+            type: (item.item_type as AttentionItem["type"]) || "manual",
+            title: item.title as string,
+            description: item.description as string,
+            entityType: item.entity_type as "salon" | "user",
+            entityId: item.entity_id as string,
+            entityName: item.entity_name as string,
+            severity: (item.severity as AttentionItem["severity"]) || "medium",
+            createdAt: item.created_at as string,
+          }))
+        );
       }
 
-      if (usersResult.error) {
-        logError("Error loading users", usersResult.error);
-        // Continue with empty users array instead of showing error
-        setUsers([]);
-      } else {
-        setUsers(usersResult.data || []);
+      if (eventsResult.data) {
+        setRecentEvents(
+          eventsResult.data.map((e) => ({
+            id: e.id,
+            action: e.action,
+            resource_type: e.resource_type,
+            user_id: e.user_id,
+            salon_id: e.salon_id,
+            created_at: e.created_at,
+            metadata: e.metadata as Record<string, unknown> | null,
+          }))
+        );
       }
     } catch (err) {
-      logError("Error in loadData", err);
-      // Don't set error state - just log it and continue with empty data
-      setSalons([]);
-      setUsers([]);
+      logError("Dashboard load error", err);
+      setError("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
   }
 
+  function calcChange(current: number, prev: number): number | null {
+    if (prev === 0) return current > 0 ? 100 : null;
+    return ((current - prev) / prev) * 100;
+  }
+
+  const quickActions: QuickAction[] = [
+    { id: "create-salon", label: "Create Salon", icon: Building2, onClick: () => router.push("/salons") },
+    { id: "invite-user", label: "Invite User", icon: UserPlus, onClick: () => router.push("/users") },
+    { id: "change-plan", label: "Change Plan", icon: CreditCard, onClick: () => router.push("/plans") },
+    { id: "suspend", label: "Suspend", icon: Pause, onClick: () => router.push("/salons") },
+    { id: "export", label: "Export Report", icon: Download, onClick: () => router.push("/analytics") },
+    { id: "audit-search", label: "Audit Search", icon: Search, onClick: () => router.push("/audit-logs") },
+  ];
+
   if (contextLoading || loading) {
     return (
       <AdminShell>
         <PageLayout title="Admin Dashboard" description="Loading...">
-          <p className="text-sm text-muted-foreground">{t.loading}</p>
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
         </PageLayout>
       </AdminShell>
     );
   }
 
-  if (!isSuperAdmin) {
-    return (
-      <AdminShell>
-        <PageLayout title="Access Denied" description="You must be a super admin">
-          <p className="text-sm text-destructive">{t.mustBeSuperAdmin}</p>
-        </PageLayout>
-      </AdminShell>
-    );
-  }
+  if (!isSuperAdmin) return null;
 
   return (
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="Admin Dashboard"
-          description="Overview of all salons and users in the system"
+          title="Dashboard"
+          description="Platform overview and operations"
+          showCard={false}
+          showPeriodSelector
+          period={period}
+          onPeriodChange={setPeriod}
         >
           {error && (
-            <ErrorMessage
-              message={error}
-              onDismiss={() => setError(null)}
-              variant="destructive"
-              className="mb-4"
+            <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />
+          )}
+
+          {/* Section 1: KPI Row */}
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6">
+            <KpiCard
+              title="Active Salons"
+              value={kpis?.active_salons ?? 0}
+              change={kpis ? calcChange(kpis.active_salons, kpis.active_salons_prev) : null}
+              period={period === "90d" ? "90d" : period}
+              icon={Building2}
+              onClick={() => router.push("/salons")}
             />
-          )}
+            <KpiCard
+              title="New Salons"
+              value={kpis?.new_salons ?? 0}
+              change={kpis ? calcChange(kpis.new_salons, kpis.new_salons_prev) : null}
+              period={period === "90d" ? "90d" : period}
+              trendData={trends.new_salons}
+              icon={TrendingUp}
+              onClick={() => router.push("/salons")}
+            />
+            <KpiCard
+              title="Activated Salons"
+              value={kpis?.activated_salons ?? 0}
+              icon={Activity}
+              onClick={() => router.push("/onboarding")}
+            />
+            <KpiCard
+              title="Bookings"
+              value={kpis?.total_bookings ?? 0}
+              change={kpis ? calcChange(kpis.total_bookings, kpis.total_bookings_prev) : null}
+              period={period === "90d" ? "90d" : period}
+              trendData={trends.bookings}
+              icon={Calendar}
+            />
+            <KpiCard
+              title="Total Users"
+              value={kpis?.total_users ?? 0}
+              icon={Users}
+              onClick={() => router.push("/users")}
+            />
+            <KpiCard
+              title="Open Cases"
+              value={kpis?.open_support_cases ?? 0}
+              icon={Inbox}
+              positiveIsGood={false}
+              onClick={() => router.push("/support")}
+            />
+          </div>
 
-          {/* Quick Stats */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Salons</CardTitle>
+          {/* Section 2 + 3: Needs Attention + Quick Actions side by side */}
+          <div className="grid gap-6 lg:grid-cols-3 mb-6">
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  Needs Attention
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{salons.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  {salons.filter((s) => s.is_public).length} active
-                </p>
+                <NeedsAttentionFeed
+                  items={attentionItems}
+                  onView={(item) => {
+                    if (item.entityType === "salon") router.push("/salons");
+                    else router.push("/users");
+                  }}
+                  onResolve={() => loadDashboard()}
+                  maxItems={5}
+                />
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Across all salons
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Salons</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {salons.filter((s) => s.is_public).length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {salons.length > 0
-                    ? `${Math.round((salons.filter((s) => s.is_public).length / salons.length) * 100)}% of total`
-                    : "0%"}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {users.filter((u) => u.is_superadmin).length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  System administrators
-                </p>
+                <QuickActions actions={quickActions} className="grid-cols-2 lg:grid-cols-2" />
               </CardContent>
             </Card>
           </div>
 
-          {/* Quick Links */}
-          <div className="grid gap-4 md:grid-cols-3 mb-6">
-            <Link href="/salons">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
-                <CardHeader>
-                  <CardTitle className="text-base">Manage Salons</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    View and manage all salons, change plans, and view statistics
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/users">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
-                <CardHeader>
-                  <CardTitle className="text-base">Manage Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    View all users and their roles across the system
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/analytics">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
-                <CardHeader>
-                  <CardTitle className="text-base">Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    System-wide analytics and insights
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-
-      {/* Plan Change Dialog */}
-      <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Plan for {selectedSalon?.name}</DialogTitle>
-            <DialogDescription>
-              Select a new plan for this salon. This will immediately update their plan limits.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            {(["starter", "pro", "business"] as const).map((plan) => (
-              <Button
-                key={plan}
-                variant={selectedSalon?.plan === plan ? "default" : "outline"}
-                className="w-full justify-start"
-                onClick={async () => {
-                  if (!selectedSalon?.id) return;
-                  const { error: updateError } = await updateSalonPlan(
-                    selectedSalon.id,
-                    plan
-                  );
-                  if (updateError) {
-                    setError(updateError);
-                  } else {
-                    await loadData();
-                    setShowPlanDialog(false);
-                  }
+          {/* Section 4: Recent Activity */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RecentActivity
+                events={recentEvents}
+                onEventClick={(event) => {
+                  setDrawerEvent(event);
+                  setDrawerOpen(true);
                 }}
-              >
-                {plan.charAt(0).toUpperCase() + plan.slice(1)}
-              </Button>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                maxEvents={15}
+              />
+            </CardContent>
+          </Card>
 
-      {/* Usage Stats Dialog */}
-      <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Usage Statistics - {selectedSalon?.name}</DialogTitle>
-            <DialogDescription>
-              Current usage and statistics for this salon
-            </DialogDescription>
-          </DialogHeader>
-          {usageStats && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Employees</span>
-                  </div>
-                  <p className="text-2xl font-bold">{usageStats.employee_count}</p>
+          {/* Event Detail Drawer */}
+          <DetailDrawer
+            open={drawerOpen}
+            onOpenChange={setDrawerOpen}
+            title="Event Detail"
+            description={drawerEvent?.action ?? ""}
+          >
+            {drawerEvent && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Action:</span> <span className="font-medium">{drawerEvent.action}</span></div>
+                  <div><span className="text-muted-foreground">Type:</span> <span className="font-medium">{drawerEvent.resource_type}</span></div>
+                  <div><span className="text-muted-foreground">User:</span> <span className="font-mono text-xs">{drawerEvent.user_id ?? "System"}</span></div>
+                  <div><span className="text-muted-foreground">Time:</span> <span>{new Date(drawerEvent.created_at).toLocaleString()}</span></div>
                 </div>
-                <div className="p-3 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Total Bookings</span>
+                {drawerEvent.metadata && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Metadata</p>
+                    <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
+                      {JSON.stringify(drawerEvent.metadata, null, 2)}
+                    </pre>
                   </div>
-                  <p className="text-2xl font-bold">{usageStats.booking_count}</p>
-                </div>
-                <div className="p-3 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Bookings (30d)</span>
-                  </div>
-                  <p className="text-2xl font-bold">{usageStats.booking_count_30d}</p>
-                </div>
-                <div className="p-3 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <UserCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Customers</span>
-                  </div>
-                  <p className="text-2xl font-bold">{usageStats.customer_count}</p>
-                </div>
-                <div className="p-3 border rounded-lg col-span-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Scissors className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Services</span>
-                  </div>
-                  <p className="text-2xl font-bold">{usageStats.service_count}</p>
-                </div>
+                )}
               </div>
-              {salonAddons.length > 0 && (
-                <div className="p-3 border rounded-lg">
-                  <span className="text-sm font-medium mb-2 block">Add-ons</span>
-                  <div className="space-y-1">
-                    {salonAddons.map((addon, idx) => (
-                      <div key={idx} className="text-sm">
-                        {addon.type === "extra_staff" ? "Extra Staff" : "Extra Languages"}:{" "}
-                        {addon.qty}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowStatsDialog(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      </PageLayout>
-    </AdminShell>
+            )}
+          </DetailDrawer>
+        </PageLayout>
+      </AdminShell>
     </ErrorBoundary>
   );
 }
-

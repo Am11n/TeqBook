@@ -45,6 +45,21 @@ type PageLayoutProps = {
    * @default true
    */
   showHeader?: boolean;
+
+  /**
+   * Show period selector in header
+   */
+  showPeriodSelector?: boolean;
+
+  /**
+   * Current period selection
+   */
+  period?: "7d" | "30d" | "90d";
+
+  /**
+   * Period change callback
+   */
+  onPeriodChange?: (period: "7d" | "30d" | "90d") => void;
 };
 
 /**
@@ -75,6 +90,9 @@ export function PageLayout({
   className,
   showCard = true,
   showHeader = true,
+  showPeriodSelector,
+  period,
+  onPeriodChange,
 }: PageLayoutProps) {
   return (
     <DashboardShell>
@@ -83,6 +101,10 @@ export function PageLayout({
           title={title}
           description={description}
           actions={actions}
+          breadcrumbs={breadcrumbs}
+          showPeriodSelector={showPeriodSelector}
+          period={period}
+          onPeriodChange={onPeriodChange}
         />
       )}
 

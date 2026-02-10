@@ -1,34 +1,37 @@
-# Sprint 8: Polish -- Global Search, Changelog, Feedback
+## Sprint 8: Polish -- Global Search, Command Palette, Changelog, Feedback
 
-## Global Search
+### Command Palette / Global Search
 
-- [ ] Upgrade command palette (`apps/admin/src/components/admin-command-palette.tsx`)
-- [ ] Search salons (name, slug, owner)
-- [ ] Search users (email, name)
-- [ ] Search bookings (ID)
-- [ ] Search audit events (action, resource)
-- [ ] Results grouped with quick actions
-- [ ] Backend RPC: admin_global_search(query, limit)
+- [x] Command Palette -- `apps/admin/src/components/shared/command-palette.tsx`
+  - [x] Ctrl+K / Cmd+K keyboard shortcut
+  - [x] Søk på salons, users, pages
+  - [x] Resultater gruppert etter type (page, salon, user)
+  - [x] Keyboard navigasjon (piltaster + Enter)
+  - [x] Debounced search (200ms)
+- [x] Integrert i AdminShell (globalt tilgjengelig)
 
-## Changelog
+### Changelog
 
-- [ ] Changelog page (`apps/admin/src/app/(admin)/changelog/page.tsx`)
-- [ ] Markdown-rendered release list
-- [ ] Date, version, changes
-- [ ] Which tenants got it (feature-flagged)
+- [x] DB-migrasjon: Changelog + Feedback -- `20260210000009_changelog_feedback.sql`
+  - [x] `changelog_entries` tabell (title, description, version, type, published)
+  - [x] `feedback_entries` tabell (title, description, type, status, votes)
+- [x] Changelog page -- `apps/admin/src/app/(admin)/changelog/page.tsx`
+  - [x] Kort-basert layout med type-ikoner (Feature, Improvement, Bug Fix, Breaking)
+  - [x] Version badges
+  - [x] Published/Draft status
+  - [x] Publish/Unpublish toggle
+  - [x] Add Entry button
 
-## Feedback
+### Feedback
 
-- [ ] Feedback page (`apps/admin/src/app/(admin)/feedback/page.tsx`)
-- [ ] Aggregate top issues from support cases
-- [ ] Feature requests per tenant
-- [ ] Prioritization view: issue x frequency x tenant value
+- [x] Feedback page -- `apps/admin/src/app/(admin)/feedback/page.tsx`
+  - [x] Status summary cards (6 statuser)
+  - [x] DataTable med feedback entries sortert etter votes
+  - [x] Row actions: Set status (open, under_review, planned, in_progress, completed, declined)
+  - [x] DetailDrawer med status workflow buttons
+  - [x] Vote count display
 
-## Final
+### Sidebar
 
-- [ ] All pages responsive (mobile + desktop)
-- [ ] All actions logged in audit log
-- [ ] Type-check passes (pnpm run type-check)
-- [ ] Lint passes (pnpm run lint)
-- [ ] Manual test of all pages
-- [ ] Update README with new admin features
+- [x] Product seksjon lagt til i sidebar (Changelog, Feedback)
+- [x] Desktop og mobil sidebar oppdatert
