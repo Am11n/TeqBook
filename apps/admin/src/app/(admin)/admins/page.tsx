@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { UserCheck, Plus, Shield } from "lucide-react";
+import { UserCheck, Plus } from "lucide-react";
 import { format } from "date-fns";
 
 type AdminUser = {
@@ -34,7 +34,7 @@ const ADMIN_ROLES = ["full_admin", "support_admin", "billing_admin", "security_a
 
 const columns: ColumnDef<AdminUser>[] = [
   { id: "email", header: "Email", cell: (r) => <span className="font-medium">{r.email}</span>, sticky: true, hideable: false },
-  { id: "is_superadmin", header: "Super Admin", cell: (r) => r.is_superadmin ? <Badge variant="outline" className="gap-1 border-purple-200 bg-purple-50 text-purple-700"><Shield className="h-3 w-3" />Yes</Badge> : <Badge variant="secondary">No</Badge> },
+  { id: "is_superadmin", header: "Super Admin", cell: (r) => r.is_superadmin ? <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-700">Yes</Badge> : <Badge variant="secondary">No</Badge> },
   { id: "admin_role", header: "Admin Role", cell: (r) => r.admin_role ? <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.admin_role] ?? ""}`}>{r.admin_role.replace(/_/g, " ")}</span> : "-", sortable: true },
   { id: "created_at", header: "Joined", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
 ];
@@ -49,13 +49,34 @@ export default function AdminsPage() {
   const loadAdmins = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error: e } = await supabase
-        .from("profiles")
-        .select("user_id, email, is_superadmin, admin_role, created_at")
-        .eq("is_superadmin", true)
-        .order("created_at", { ascending: false });
+      // Use RPC to join profiles + auth.users (email lives on auth.users, not profiles)
+      const { data, error: e } = await supabase.rpc("get_users_paginated", {
+        filters: { is_superadmin: "true" } as unknown as Record<string, unknown>,
+        sort_col: "created_at",
+        sort_dir: "desc",
+        lim: 100,
+        off: 0,
+      });
       if (e) { setError(e.message); return; }
-      setAdmins((data as AdminUser[]) ?? []);
+
+      // Also get admin_role from profiles (not in the RPC)
+      const rows = (data ?? []) as Array<{
+        user_id: string; email: string; is_superadmin: boolean;
+        user_created_at: string;
+      }>;
+      const userIds = rows.map((r) => r.user_id);
+      const { data: roleData } = userIds.length > 0
+        ? await supabase.from("profiles").select("user_id, admin_role").in("user_id", userIds)
+        : { data: [] };
+      const roleMap = new Map((roleData ?? []).map((r: { user_id: string; admin_role: string | null }) => [r.user_id, r.admin_role]));
+
+      setAdmins(rows.map((r) => ({
+        user_id: r.user_id,
+        email: r.email,
+        is_superadmin: r.is_superadmin,
+        admin_role: roleMap.get(r.user_id) ?? null,
+        created_at: r.user_created_at,
+      })));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {

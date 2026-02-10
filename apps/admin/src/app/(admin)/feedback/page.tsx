@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { MessageSquare, ThumbsUp } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 
 type FeedbackEntry = {
@@ -46,7 +46,7 @@ const columns: ColumnDef<FeedbackEntry>[] = [
   { id: "title", header: "Title", cell: (r) => <span className="font-medium">{r.title}</span>, sticky: true, hideable: false },
   { id: "type", header: "Type", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_COLORS[r.type]}`}>{r.type.replace(/_/g, " ")}</span>, sortable: true },
   { id: "status", header: "Status", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status]}`}>{r.status.replace(/_/g, " ")}</span>, sortable: true },
-  { id: "votes", header: "Votes", cell: (r) => <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{r.votes}</span>, sortable: true },
+  { id: "votes", header: "Votes", cell: (r) => r.votes, sortable: true },
   { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
 ];
 

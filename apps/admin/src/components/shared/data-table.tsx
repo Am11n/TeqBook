@@ -57,6 +57,8 @@ export type ColumnDef<T> = {
   header: string;
   /** Render function for cell content */
   cell: (row: T) => ReactNode;
+  /** Extract a sortable value from the row. If not provided, uses row[id]. */
+  getValue?: (row: T) => unknown;
   /** Whether this column is sortable (default: true) */
   sortable?: boolean;
   /** Whether this column is visible by default (default: true) */
@@ -323,28 +325,43 @@ export function DataTable<T>({
     [sortColumn, sortDirection, onSortChange]
   );
 
-  // Client-side sorted data (used when no onSortChange – i.e., parent doesn't handle sorting)
+  // Client-side sorting – always applied to visible data.
+  // For server-side tables (onSortChange provided), the server handles the primary sort,
+  // but we also sort client-side so columns the server doesn't support still work on the current page.
   const sortedData = useMemo(() => {
-    if (onSortChange || !sortColumn) return data;
+    if (!sortColumn) return data;
     const col = columns.find((c) => c.id === sortColumn);
-    if (!col) return data;
     return [...data].sort((a, b) => {
-      const aVal = (a as Record<string, unknown>)[sortColumn];
-      const bVal = (b as Record<string, unknown>)[sortColumn];
+      // Use getValue if defined, otherwise fall back to row[id]
+      const aVal = col?.getValue ? col.getValue(a) : (a as Record<string, unknown>)[sortColumn];
+      const bVal = col?.getValue ? col.getValue(b) : (b as Record<string, unknown>)[sortColumn];
+      // If neither row has this property, preserve original order
+      if (aVal === undefined && bVal === undefined) return 0;
       if (aVal == null && bVal == null) return 0;
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       let cmp = 0;
-      if (typeof aVal === "number" && typeof bVal === "number") {
+      if (aVal instanceof Date && bVal instanceof Date) {
+        cmp = aVal.getTime() - bVal.getTime();
+      } else if (typeof aVal === "number" && typeof bVal === "number") {
         cmp = aVal - bVal;
       } else if (typeof aVal === "boolean" && typeof bVal === "boolean") {
         cmp = aVal === bVal ? 0 : aVal ? -1 : 1;
       } else {
-        cmp = String(aVal).localeCompare(String(bVal), undefined, { sensitivity: "base", numeric: true });
+        // Try parsing as dates if they look like ISO strings
+        const aStr = String(aVal);
+        const bStr = String(bVal);
+        const aDate = Date.parse(aStr);
+        const bDate = Date.parse(bStr);
+        if (!isNaN(aDate) && !isNaN(bDate) && aStr.length > 8) {
+          cmp = aDate - bDate;
+        } else {
+          cmp = aStr.localeCompare(bStr, undefined, { sensitivity: "base", numeric: true });
+        }
       }
       return sortDirection === "desc" ? -cmp : cmp;
     });
-  }, [data, sortColumn, sortDirection, onSortChange, columns]);
+  }, [data, sortColumn, sortDirection, columns]);
 
   // Save current view
   const handleSaveView = useCallback(() => {

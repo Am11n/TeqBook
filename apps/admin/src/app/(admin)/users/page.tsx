@@ -6,14 +6,14 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { DataTable, type ColumnDef, type RowAction, type BulkAction } from "@/components/shared/data-table";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Shield } from "lucide-react";
+import { Plus } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRow = {
@@ -43,10 +43,7 @@ const columns: ColumnDef<UserRow>[] = [
     </div>
   ), sticky: true, hideable: false },
   { id: "role", header: "Role", cell: (r) => (
-    <div className="flex items-center gap-1">
-      {r.is_superadmin && <Shield className="h-3 w-3 text-purple-500" />}
-      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? ""}`}>{r.is_superadmin ? "Super Admin" : r.role?.replace(/_/g, " ") ?? "user"}</span>
-    </div>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? ""}`}>{r.is_superadmin ? "Super Admin" : r.role?.replace(/_/g, " ") ?? "user"}</span>
   ), sortable: true },
   { id: "salon_name", header: "Salon", cell: (r) => r.salon_name ?? "-" },
   { id: "last_sign_in", header: "Last Login", cell: (r) => r.last_sign_in ? format(new Date(r.last_sign_in), "MMM d, HH:mm") : "Never", sortable: true },
@@ -89,7 +86,7 @@ export default function AdminUsersPage() {
         id: (d.user_id as string) ?? (d.id as string),
         email: d.email as string,
         name: (d.name as string) ?? null,
-        role: (d.role as string) ?? "user",
+        role: (d.is_superadmin as boolean) ? "super_admin" : (d.role as string) ?? "user",
         salon_name: (d.salon_name as string) ?? null,
         salon_id: (d.salon_id as string) ?? null,
         is_superadmin: (d.is_superadmin as boolean) ?? false,
@@ -135,8 +132,8 @@ export default function AdminUsersPage() {
     { label: "Force Logout", onClick: async (u) => { console.log("Force logout", u.id); }, separator: true },
   ];
 
-  const bulkActions: BulkAction[] = [
-    { label: "Export Selected", onClick: (ids) => { console.log("Export users", ids); } },
+  const bulkActions = [
+    { label: "Export Selected", onClick: (ids: string[]) => { console.log("Export users", ids); } },
   ];
 
   if (contextLoading || !isSuperAdmin) return null;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@teqbook/shared/supabase/server-client";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const salonId = request.nextUrl.searchParams.get("salon_id");
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       bookings: bookings.data ?? [],
       services: services.data ?? [],
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

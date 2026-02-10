@@ -33,7 +33,7 @@ function getOnboardingStep(salon: OnboardingSalon): { label: string; pct: number
 
 const columns: ColumnDef<OnboardingSalon>[] = [
   { id: "name", header: "Salon", cell: (r) => <span className="font-medium">{r.name}</span>, sticky: true, hideable: false },
-  { id: "step", header: "Onboarding Step", cell: (r) => {
+  { id: "step", header: "Onboarding Step", getValue: (r) => getOnboardingStep(r).pct, cell: (r) => {
     const step = getOnboardingStep(r);
     return (
       <div className="flex items-center gap-2">
@@ -43,8 +43,8 @@ const columns: ColumnDef<OnboardingSalon>[] = [
     );
   }},
   { id: "owner_email", header: "Owner", cell: (r) => r.owner_email ?? "-" },
-  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
-  { id: "hours_since", header: "Hours since", cell: (r) => `${differenceInHours(new Date(), new Date(r.created_at))}h`, sortable: true },
+  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy") },
+  { id: "hours_since", header: "Hours since", getValue: (r) => new Date(r.created_at).getTime(), cell: (r) => `${differenceInHours(new Date(), new Date(r.created_at))}h` },
 ];
 
 export default function OnboardingPage() {
@@ -62,35 +62,55 @@ export default function OnboardingPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // Get salons that haven't completed onboarding (no booking yet), last 90 days
-      const since = new Date(Date.now() - 90 * 86400000).toISOString();
+      // Step 1: Get ALL salons via existing RPC (returns owner_email correctly)
+      const { data: rpcRows, error: rpcErr } = await supabase.rpc("get_salons_paginated", {
+        filters: {} as unknown as Record<string, unknown>,
+        sort_col: "created_at",
+        sort_dir: "desc",
+        lim: 500,
+        off: 0,
+      });
 
-      const { data: salonRows } = await supabase
-        .from("salons")
-        .select("id, name, slug, created_at")
-        .gte("created_at", since)
-        .order("created_at", { ascending: false });
+      if (rpcErr) throw rpcErr;
+      const salonRows = (rpcRows ?? []) as Array<{
+        id: string; name: string; slug: string; created_at: string;
+        owner_email: string | null;
+      }>;
 
-      if (!salonRows) { setSalons([]); setLoading(false); return; }
+      if (salonRows.length === 0) { setSalons([]); setFunnelSteps([]); setLoading(false); return; }
 
-      // Enrich with onboarding steps
-      const enriched: OnboardingSalon[] = await Promise.all(
-        salonRows.map(async (s) => {
-          const [emp, svc, bk, owner] = await Promise.all([
-            supabase.from("employees").select("id", { count: "exact", head: true }).eq("salon_id", s.id),
-            supabase.from("services").select("id", { count: "exact", head: true }).eq("salon_id", s.id),
-            supabase.from("bookings").select("id", { count: "exact", head: true }).eq("salon_id", s.id),
-            supabase.from("profiles").select("email").eq("salon_id", s.id).eq("role", "salon_owner").limit(1),
-          ]);
-          return {
-            ...s,
-            has_employee: (emp.count ?? 0) > 0,
-            has_service: (svc.count ?? 0) > 0,
-            has_booking: (bk.count ?? 0) > 0,
-            owner_email: owner.data?.[0]?.email ?? null,
-          };
-        })
-      );
+      // Step 2: Get onboarding status for ALL salons in ONE RPC call
+      const salonIds = salonRows.map((s) => s.id);
+      const { data: statusRows, error: statusErr } = await supabase.rpc("get_salon_onboarding_status", {
+        salon_ids: salonIds,
+      });
+
+      if (statusErr) throw statusErr;
+
+      // Build a lookup map: salon_id -> { has_employee, has_service, has_booking }
+      const statusMap = new Map<string, { has_employee: boolean; has_service: boolean; has_booking: boolean }>();
+      for (const row of (statusRows ?? []) as Array<{ salon_id: string; has_employee: boolean; has_service: boolean; has_booking: boolean }>) {
+        statusMap.set(row.salon_id, {
+          has_employee: row.has_employee,
+          has_service: row.has_service,
+          has_booking: row.has_booking,
+        });
+      }
+
+      // Step 3: Merge salon info with onboarding status
+      const enriched: OnboardingSalon[] = salonRows.map((s) => {
+        const status = statusMap.get(s.id);
+        return {
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+          created_at: s.created_at,
+          has_employee: status?.has_employee ?? false,
+          has_service: status?.has_service ?? false,
+          has_booking: status?.has_booking ?? false,
+          owner_email: s.owner_email ?? null,
+        };
+      });
 
       setSalons(enriched);
 
@@ -130,7 +150,7 @@ export default function OnboardingPage() {
 
           {/* Funnel summary */}
           <Card className="mb-6">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Activation Funnel (last 90 days)</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Activation Funnel</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-4">
                 {funnelSteps.map((step, i) => {
@@ -150,8 +170,8 @@ export default function OnboardingPage() {
 
           <DataTable
             columns={columns}
-            data={salons.filter((s) => !s.has_booking)}
-            totalCount={incompleteCount}
+            data={salons}
+            totalCount={salons.length}
             rowKey={(r) => r.id}
             page={page}
             pageSize={25}

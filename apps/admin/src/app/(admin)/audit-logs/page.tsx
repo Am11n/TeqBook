@@ -242,7 +242,7 @@ export default function AuditLogsPage() {
                 </div>
 
                 {/* Before/After diff */}
-                {((selectedLog as Record<string, unknown>).before_state || (selectedLog as Record<string, unknown>).after_state) && (
+                {Boolean((selectedLog as Record<string, unknown>).before_state || (selectedLog as Record<string, unknown>).after_state) && (
                   <div>
                     <p className="text-sm font-medium mb-2">Changes (diff)</p>
                     <div className="grid grid-cols-2 gap-2">

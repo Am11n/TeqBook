@@ -6,7 +6,7 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { DataTable, type ColumnDef, type RowAction, type BulkAction } from "@/components/shared/data-table";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { ImpersonationDrawer } from "@/components/shared/impersonation-drawer";
@@ -51,7 +51,7 @@ const columns: ColumnDef<SalonRow>[] = [
     </div>
   ), sticky: true, hideable: false },
   { id: "plan", header: "Plan", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PLAN_COLORS[r.plan] ?? ""}`}>{r.plan}</span>, sortable: true },
-  { id: "status", header: "Status", cell: (r) => <Badge variant="outline" className={r.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{r.is_public ? "Active" : "Inactive"}</Badge>, sortable: true },
+  { id: "status", header: "Status", getValue: (r) => r.is_public ? 1 : 0, cell: (r) => <Badge variant="outline" className={r.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{r.is_public ? "Active" : "Inactive"}</Badge>, sortable: true },
   { id: "salon_type", header: "Type", cell: (r) => r.salon_type ?? "-", defaultVisible: false },
   { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
   { id: "last_active", header: "Last Active", cell: (r) => r.last_active ? format(new Date(r.last_active), "MMM d") : "-", sortable: true },
@@ -155,9 +155,9 @@ export default function AdminSalonsPage() {
     { label: "Toggle Status", separator: true, onClick: async (s) => { await setSalonActive(s.id, !s.is_public); loadSalons(); } },
   ];
 
-  const bulkActions: BulkAction[] = [
-    { label: "Export Selected", onClick: (ids) => { console.log("Export", ids); } },
-    { label: "Suspend", variant: "destructive", onClick: async (ids) => { for (const id of ids) { await setSalonActive(id, false); } loadSalons(); } },
+  const bulkActions = [
+    { label: "Export Selected", onClick: (ids: string[]) => { console.log("Export", ids); } },
+    { label: "Suspend", variant: "destructive" as const, onClick: async (ids: string[]) => { for (const id of ids) { await setSalonActive(id, false); } loadSalons(); } },
   ];
 
   if (contextLoading || !isSuperAdmin) return null;
@@ -188,11 +188,6 @@ export default function AdminSalonsPage() {
             loading={loading}
             emptyMessage="No salons found"
             storageKey="salons-pro"
-            savedViews={[
-              { id: "new-7d", label: "New (last 7d)", filters: {} },
-              { id: "inactive-30d", label: "Inactive 30d", filters: {} },
-              { id: "trial-ending", label: "Trial ending", filters: {} },
-            ]}
           />
 
           {/* Salon Detail Drawer */}

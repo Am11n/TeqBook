@@ -36,7 +36,7 @@ const PLAN_COLORS: Record<string, string> = {
 const columns: ColumnDef<SalonPlanRow>[] = [
   { id: "name", header: "Salon", cell: (r) => <span className="font-medium">{r.name}</span>, sticky: true, hideable: false },
   { id: "plan", header: "Current Plan", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PLAN_COLORS[r.plan] ?? ""}`}>{r.plan}</span>, sortable: true },
-  { id: "status", header: "Status", cell: (r) => <Badge variant="outline" className={r.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{r.is_public ? "Active" : "Inactive"}</Badge> },
+  { id: "status", header: "Status", getValue: (r) => r.is_public ? 1 : 0, cell: (r) => <Badge variant="outline" className={r.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{r.is_public ? "Active" : "Inactive"}</Badge> },
   { id: "owner_email", header: "Owner", cell: (r) => r.owner_email ?? "-" },
   { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
 ];
@@ -79,7 +79,7 @@ export default function PlansPage() {
     if (isSuperAdmin) loadData();
   }, [isSuperAdmin, contextLoading, router, loadData]);
 
-  async function changePlan(salonId: string, plan: string) {
+  async function changePlan(salonId: string, plan: "starter" | "pro" | "business") {
     const { error: e } = await updateSalonPlan(salonId, plan);
     if (e) setError(e);
     else { loadData(); setDrawerOpen(false); }
