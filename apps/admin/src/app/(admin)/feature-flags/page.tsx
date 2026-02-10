@@ -70,7 +70,7 @@ export default function FeatureFlagsPage() {
           title="Feature Flags"
           description={`${enabledCount} of ${flags.length} flags enabled`}
           breadcrumbs={<span>Analytics / Feature Flags</span>}
-          actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add Flag</Button>}
+          actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add Flag</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 

@@ -24,7 +24,7 @@ export default function DesignSystemPage() {
           <h2 className="text-lg font-semibold mb-1">Color Tokens</h2>
           <p className="text-sm text-muted-foreground mb-4">
             These are the CSS custom properties from <code className="text-xs bg-muted px-1.5 py-0.5 rounded">globals.css</code>. 
-            <strong className="ml-1">Primary is near-black</strong> -- never use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;default&quot;</code> for status indicators.
+            <strong className="ml-1">Primary is near-black with white foreground</strong> -- used for default buttons and badges.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {[
@@ -84,9 +84,9 @@ export default function DesignSystemPage() {
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-1">Buttons</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            <strong>Rule:</strong> Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;outline&quot;</code> for most actions. 
-            Only use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;default&quot;</code> (black) for 
-            the single most important CTA on a page.
+            <strong>Rule:</strong> Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;default&quot;</code> (black with white text) for primary actions. 
+            Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;outline&quot;</code> for secondary actions 
+            and <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;ghost&quot;</code> for tertiary / inline actions.
           </p>
           <Card>
             <CardContent className="pt-4">
@@ -107,17 +107,17 @@ export default function DesignSystemPage() {
                 <div>
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">Sizes</p>
                   <div className="flex flex-wrap gap-3 items-center">
-                    <Button variant="outline" size="sm">Small</Button>
-                    <Button variant="outline" size="default">Default</Button>
-                    <Button variant="outline" size="lg">Large</Button>
-                    <Button variant="outline" size="icon"><Plus className="h-4 w-4" /></Button>
+                    <Button size="sm">Small</Button>
+                    <Button size="default">Default</Button>
+                    <Button size="lg">Large</Button>
+                    <Button size="icon"><Plus className="h-4 w-4" /></Button>
                   </div>
                 </div>
                 {/* With icons */}
                 <div>
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">With Icons (typical admin pattern)</p>
                   <div className="flex flex-wrap gap-3 items-center">
-                    <Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" /> Create</Button>
+                    <Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Create</Button>
                     <Button variant="outline" size="sm" className="gap-1"><Download className="h-4 w-4" /> Export</Button>
                     <Button variant="outline" size="sm" className="gap-1"><Search className="h-4 w-4" /> Search</Button>
                     <Button variant="destructive" size="sm" className="gap-1"><Trash2 className="h-4 w-4" /> Delete</Button>
@@ -127,8 +127,8 @@ export default function DesignSystemPage() {
                 <div>
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">Disabled</p>
                   <div className="flex flex-wrap gap-3 items-center">
+                    <Button disabled>Disabled Default</Button>
                     <Button variant="outline" disabled>Disabled Outline</Button>
-                    <Button variant="default" disabled>Disabled Default</Button>
                   </div>
                 </div>
               </div>
@@ -140,8 +140,8 @@ export default function DesignSystemPage() {
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-1">Badges</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            <strong>Rule:</strong> Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;outline&quot;</code> for most things. 
-            Add semantic colors with className. <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;default&quot;</code> is black and should be rare.
+            <strong>Rule:</strong> Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;default&quot;</code> (black + white text) for emphasis. 
+            Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded">variant=&quot;outline&quot;</code> + className for semantic status colors.
           </p>
           <Card>
             <CardContent className="pt-4">
@@ -150,7 +150,7 @@ export default function DesignSystemPage() {
                 <div>
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">Built-in Variants</p>
                   <div className="flex flex-wrap gap-3 items-center">
-                    <Badge variant="default">Default (black -- rare)</Badge>
+                    <Badge variant="default">Default (black + white text)</Badge>
                     <Badge variant="secondary">Secondary</Badge>
                     <Badge variant="outline">Outline</Badge>
                     <Badge variant="destructive">Destructive</Badge>
@@ -284,12 +284,12 @@ export default function DesignSystemPage() {
             <CardContent className="pt-4">
               <div className="space-y-3 text-sm">
                 <div className="grid grid-cols-[180px_1fr] gap-2 items-center">
-                  <span className="font-medium">Action button:</span>
-                  <code className="text-xs bg-muted px-2 py-1 rounded">{`<Button variant="outline" size="sm">`}</code>
+                  <span className="font-medium">Primary action:</span>
+                  <code className="text-xs bg-muted px-2 py-1 rounded">{`<Button size="sm">`} (default = black + white text)</code>
                 </div>
                 <div className="grid grid-cols-[180px_1fr] gap-2 items-center">
-                  <span className="font-medium">Primary CTA (rare):</span>
-                  <code className="text-xs bg-muted px-2 py-1 rounded">{`<Button>`} (default = black)</code>
+                  <span className="font-medium">Secondary action:</span>
+                  <code className="text-xs bg-muted px-2 py-1 rounded">{`<Button variant="outline" size="sm">`}</code>
                 </div>
                 <div className="grid grid-cols-[180px_1fr] gap-2 items-center">
                   <span className="font-medium">Danger action:</span>

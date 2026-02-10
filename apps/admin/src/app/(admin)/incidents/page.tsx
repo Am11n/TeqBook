@@ -89,7 +89,7 @@ export default function IncidentsPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Incidents" description="Track and manage platform incidents" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />New Incident</Button>}>
+        <PageLayout title="Incidents" description="Track and manage platform incidents" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />New Incident</Button>}>
           <DataTable
             columns={columns}
             data={incidents}

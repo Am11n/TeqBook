@@ -72,7 +72,7 @@ export default function ChangelogPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Changelog" description="Track what was launched and when" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Add Entry</Button>}>
+        <PageLayout title="Changelog" description="Track what was launched and when" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Add Entry</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           {entries.length === 0 ? (

@@ -99,7 +99,7 @@ export default function SupportInboxPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Case</Button>}>
+        <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Case</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
           <DataTable
             columns={columns}

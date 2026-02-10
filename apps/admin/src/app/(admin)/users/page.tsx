@@ -144,7 +144,7 @@ export default function AdminUsersPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Users" description="Manage platform users and access" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Invite User</Button>}>
+        <PageLayout title="Users" description="Manage platform users and access" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Invite User</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           <DataTable
@@ -158,7 +158,7 @@ export default function AdminUsersPage() {
             onSearchChange={setSearch}
             searchQuery={search}
             searchPlaceholder="Search users..."
-            sortBy={sortBy}
+            sortColumn={sortBy}
             sortDirection={sortDir}
             onSortChange={(col, dir) => { setSortBy(col); setSortDir(dir); }}
             rowActions={rowActions}

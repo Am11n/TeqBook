@@ -165,7 +165,7 @@ export default function AdminSalonsPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Salons" description="Manage and monitor all salons" actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Salon</Button>}>
+        <PageLayout title="Salons" description="Manage and monitor all salons" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Salon</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           <DataTable
@@ -179,7 +179,7 @@ export default function AdminSalonsPage() {
             onSearchChange={setSearch}
             searchQuery={search}
             searchPlaceholder="Search salons..."
-            sortBy={sortBy}
+            sortColumn={sortBy}
             sortDirection={sortDir}
             onSortChange={(col, dir) => { setSortBy(col); setSortDir(dir); }}
             rowActions={rowActions}

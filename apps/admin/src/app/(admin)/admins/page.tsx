@@ -94,7 +94,7 @@ export default function AdminsPage() {
           title="Admins"
           description="Manage admin users and their roles"
           breadcrumbs={<span>Users & Access / Admins</span>}
-          actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />Add Admin</Button>}
+          actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Add Admin</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 

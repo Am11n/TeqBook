@@ -120,7 +120,7 @@ export default function DataToolsPage() {
           title="Data Tools"
           description={`${pendingCount} pending requests`}
           breadcrumbs={<span>Security / Data Tools</span>}
-          actions={<Button variant="outline" size="sm" className="gap-1"><Plus className="h-4 w-4" />New Request</Button>}
+          actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />New Request</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 

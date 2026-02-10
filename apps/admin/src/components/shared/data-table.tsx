@@ -57,7 +57,7 @@ export type ColumnDef<T> = {
   header: string;
   /** Render function for cell content */
   cell: (row: T) => ReactNode;
-  /** Whether this column is sortable (default: false) */
+  /** Whether this column is sortable (default: true) */
   sortable?: boolean;
   /** Whether this column is visible by default (default: true) */
   defaultVisible?: boolean;
@@ -209,8 +209,8 @@ export function DataTable<T>({
   page = 0,
   pageSize = 25,
   onPageChange,
-  sortColumn,
-  sortDirection,
+  sortColumn: controlledSortColumn,
+  sortDirection: controlledSortDirection,
   onSortChange,
   searchQuery = "",
   onSearchChange,
@@ -226,6 +226,14 @@ export function DataTable<T>({
   headerContent,
   className,
 }: DataTableProps<T>) {
+  // Internal sort state (used when no onSortChange is provided – client-side sorting)
+  const [internalSortColumn, setInternalSortColumn] = useState<string | undefined>(undefined);
+  const [internalSortDirection, setInternalSortDirection] = useState<SortDirection>("asc");
+
+  // Use controlled values when provided, otherwise use internal state
+  const sortColumn = controlledSortColumn ?? internalSortColumn;
+  const sortDirection = controlledSortDirection ?? internalSortDirection;
+
   // Column visibility
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
@@ -294,18 +302,49 @@ export function DataTable<T>({
     [selectedKeys, onBulkSelectionChange]
   );
 
-  // Sort handler
+  // Sort handler – works in both controlled (server-side) and uncontrolled (client-side) modes
   const handleSort = useCallback(
     (colId: string) => {
-      if (!onSortChange) return;
-      if (sortColumn === colId) {
-        onSortChange(colId, sortDirection === "asc" ? "desc" : "asc");
-      } else {
-        onSortChange(colId, "asc");
+      const nextDir =
+        sortColumn === colId
+          ? sortDirection === "asc"
+            ? "desc"
+            : "asc"
+          : "asc";
+
+      if (onSortChange) {
+        // Controlled mode – let parent handle it
+        onSortChange(colId, nextDir);
       }
+      // Always update internal state so the arrow indicator shows
+      setInternalSortColumn(colId);
+      setInternalSortDirection(nextDir);
     },
     [sortColumn, sortDirection, onSortChange]
   );
+
+  // Client-side sorted data (used when no onSortChange – i.e., parent doesn't handle sorting)
+  const sortedData = useMemo(() => {
+    if (onSortChange || !sortColumn) return data;
+    const col = columns.find((c) => c.id === sortColumn);
+    if (!col) return data;
+    return [...data].sort((a, b) => {
+      const aVal = (a as Record<string, unknown>)[sortColumn];
+      const bVal = (b as Record<string, unknown>)[sortColumn];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      let cmp = 0;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        cmp = aVal - bVal;
+      } else if (typeof aVal === "boolean" && typeof bVal === "boolean") {
+        cmp = aVal === bVal ? 0 : aVal ? -1 : 1;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal), undefined, { sensitivity: "base", numeric: true });
+      }
+      return sortDirection === "desc" ? -cmp : cmp;
+    });
+  }, [data, sortColumn, sortDirection, onSortChange, columns]);
 
   // Save current view
   const handleSaveView = useCallback(() => {
@@ -545,31 +584,37 @@ export function DataTable<T>({
                   </TableHead>
                 )}
 
-                {visibleColumns.map((col) => (
-                  <TableHead
-                    key={col.id}
-                    className={cn(
-                      col.minWidth,
-                      col.sticky &&
-                        "sticky left-0 z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]",
-                      col.sortable && "cursor-pointer select-none"
-                    )}
-                    onClick={
-                      col.sortable ? () => handleSort(col.id) : undefined
-                    }
-                  >
-                    <div className="flex items-center gap-1">
-                      {col.header}
-                      {col.sortable && sortColumn === col.id && (
-                        sortDirection === "asc" ? (
-                          <ArrowUp className="h-3 w-3 text-primary" />
-                        ) : (
-                          <ArrowDown className="h-3 w-3 text-primary" />
-                        )
+                {visibleColumns.map((col) => {
+                  const isSortable = col.sortable !== false;
+                  const isActiveSort = sortColumn === col.id;
+                  return (
+                    <TableHead
+                      key={col.id}
+                      className={cn(
+                        col.minWidth,
+                        col.sticky &&
+                          "sticky left-0 z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]",
+                        isSortable && "cursor-pointer select-none group/sort"
                       )}
-                    </div>
-                  </TableHead>
-                ))}
+                      onClick={
+                        isSortable ? () => handleSort(col.id) : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1">
+                        {col.header}
+                        {isSortable && isActiveSort ? (
+                          sortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 text-primary" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 text-primary" />
+                          )
+                        ) : isSortable ? (
+                          <ArrowUp className="h-3 w-3 text-muted-foreground/0 group-hover/sort:text-muted-foreground/40 transition-colors" />
+                        ) : null}
+                      </div>
+                    </TableHead>
+                  );
+                })}
 
                 {/* Row actions column */}
                 {rowActions && rowActions.length > 0 && (
@@ -600,7 +645,7 @@ export function DataTable<T>({
                     )}
                   </TableRow>
                 ))
-              ) : data.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={
@@ -614,7 +659,7 @@ export function DataTable<T>({
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((row) => {
+                sortedData.map((row) => {
                   const key = rowKey(row);
                   const isSelected = selectedKeys.has(key);
                   return (
