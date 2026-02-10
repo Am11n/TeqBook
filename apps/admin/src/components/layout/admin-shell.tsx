@@ -156,17 +156,17 @@ function AdminShellContent({ children }: AdminShellProps) {
 
   // Admin-specific navigation items organized by sections
   const overviewItems = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/", label: "Dashboard", icon: LayoutDashboard },
   ];
 
   const managementItems = [
-    { href: "/admin/salons", label: "Salons", icon: Building2 },
-    { href: "/admin/users", label: "Users", icon: Users },
-    { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
+    { href: "/salons", label: "Salons", icon: Building2 },
+    { href: "/users", label: "Users", icon: Users },
+    { href: "/audit-logs", label: "Audit Logs", icon: FileText },
   ];
 
   const analyticsItems = [
-    { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
+    { href: "/analytics", label: "Analytics", icon: TrendingUp },
   ];
 
   if (!mounted || !isSuperAdmin) {
@@ -193,7 +193,7 @@ function AdminShellContent({ children }: AdminShellProps) {
 
           {/* Desktop: Logo + Admin */}
           <Link
-            href="/admin"
+            href="/"
             className="hidden items-center gap-3 transition-all duration-150 hover:scale-105 hover:drop-shadow-[0_2px_8px_rgba(29,78,216,0.15)] md:flex"
           >
             <Image
@@ -211,7 +211,7 @@ function AdminShellContent({ children }: AdminShellProps) {
 
           {/* Mobile: Logo centered */}
           <Link
-            href="/admin"
+            href="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80 md:hidden"
           >
             <Image

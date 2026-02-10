@@ -73,7 +73,7 @@ export default function GlobalError({
               Prøv på nytt
             </button>
             <a
-              href="/admin"
+              href="/"
               style={{
                 padding: "0.5rem 1rem",
                 fontSize: "1rem",

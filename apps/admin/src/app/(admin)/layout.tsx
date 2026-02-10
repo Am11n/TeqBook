@@ -1,28 +1,24 @@
 "use client";
 
-import { ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 /**
- * Admin Layout
- * 
- * This layout ensures that admin pages are NOT wrapped in DashboardShell.
- * Admin pages should only use AdminShell, not DashboardShell.
+ * Admin Layout (route group)
+ *
+ * Auth guard for all admin pages. Redirects to /login if the user is not a superadmin.
+ * Admin pages use AdminShell individually for their layout chrome.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { isSuperAdmin, loading } = useCurrentSalon();
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    // Only redirect if we're sure the user is not a superadmin
-    if (!loading && !isSuperAdmin && pathname.startsWith("/admin")) {
+    if (!loading && !isSuperAdmin) {
       router.push("/login");
     }
-  }, [isSuperAdmin, loading, pathname, router]);
+  }, [isSuperAdmin, loading, router]);
 
   // Don't render anything if not superadmin (will redirect)
   if (!loading && !isSuperAdmin) {

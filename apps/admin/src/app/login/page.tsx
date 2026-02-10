@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
     logSecurity("Successful admin login", { email, userId: signInData.user.id });
 
     // Redirect to admin dashboard
-    router.push("/admin");
+    router.push("/");
   }
 
   return (

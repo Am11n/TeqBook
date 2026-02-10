@@ -112,10 +112,10 @@ export function useDashboardMenuItems({
         icon: Settings,
       });
     }
-    // Only show admin link if not already on admin pages
-    if (isSuperAdmin && !pathname.startsWith("/admin")) {
+    // Show admin dashboard link for superadmins
+    if (isSuperAdmin) {
       items.push({
-        href: "/admin",
+        href: "/",
         label: translations[appLocale].admin.title,
         icon: Shield,
       });

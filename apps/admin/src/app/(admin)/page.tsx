@@ -69,6 +69,7 @@ export default function AdminPage() {
     // Redirect if not superadmin
     if (!contextLoading && !isSuperAdmin) {
       router.push("/login");
+      // Note: with basePath="/admin" in production, this navigates to /admin/login
       return;
     }
 
@@ -209,7 +210,7 @@ export default function AdminPage() {
 
           {/* Quick Links */}
           <div className="grid gap-4 md:grid-cols-3 mb-6">
-            <Link href="/admin/salons">
+            <Link href="/salons">
               <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
                 <CardHeader>
                   <CardTitle className="text-base">Manage Salons</CardTitle>
@@ -222,7 +223,7 @@ export default function AdminPage() {
               </Card>
             </Link>
 
-            <Link href="/admin/users">
+            <Link href="/users">
               <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
                 <CardHeader>
                   <CardTitle className="text-base">Manage Users</CardTitle>
@@ -235,7 +236,7 @@ export default function AdminPage() {
               </Card>
             </Link>
 
-            <Link href="/admin/analytics">
+            <Link href="/analytics">
               <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
                 <CardHeader>
                   <CardTitle className="text-base">Analytics</CardTitle>
