@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -45,7 +45,7 @@ const columns: ColumnDef<AuditLog>[] = [
   { id: "resource_id", header: "Resource ID", cell: (r) => r.resource_id ? <span className="font-mono text-xs">{r.resource_id.slice(0, 8)}...</span> : "-", defaultVisible: false },
 ];
 
-export default function AuditLogsPage() {
+function AuditLogsContent() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -286,5 +286,13 @@ export default function AuditLogsPage() {
         </PageLayout>
       </AdminShell>
     </ErrorBoundary>
+  );
+}
+
+export default function AuditLogsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuditLogsContent />
+    </Suspense>
   );
 }
