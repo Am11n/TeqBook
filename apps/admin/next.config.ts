@@ -44,8 +44,8 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
       isDevelopment
-        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co"
-        : "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com"
+        : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
       "frame-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",

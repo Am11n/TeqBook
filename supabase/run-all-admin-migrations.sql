@@ -431,7 +431,7 @@ BEGIN
   RETURN QUERY
     WITH salon_cohorts AS (SELECT id, DATE_TRUNC('week', created_at)::DATE AS cohort FROM salons WHERE created_at >= CURRENT_DATE - (period_weeks * 7 || ' days')::INTERVAL),
     activity AS (SELECT DISTINCT b.salon_id, DATE_TRUNC('week', b.created_at)::DATE AS activity_week FROM bookings b WHERE b.created_at >= CURRENT_DATE - (period_weeks * 7 || ' days')::INTERVAL)
-    SELECT sc.cohort, EXTRACT(WEEK FROM (a.activity_week - sc.cohort))::INT AS w_offset,
+    SELECT sc.cohort, ((a.activity_week - sc.cohort) / 7)::INT AS w_offset,
       ROUND(COUNT(DISTINCT a.salon_id)::NUMERIC / NULLIF(COUNT(DISTINCT sc.id), 0)::NUMERIC * 100, 1)
     FROM salon_cohorts sc LEFT JOIN activity a ON a.salon_id = sc.id AND a.activity_week >= sc.cohort
     GROUP BY sc.cohort, w_offset ORDER BY sc.cohort, w_offset;

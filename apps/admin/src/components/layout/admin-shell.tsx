@@ -206,6 +206,29 @@ function AdminShellContent({ children }: AdminShellProps) {
     { href: "/feedback", label: "Feedback", icon: MessageSquare },
   ];
 
+  // Collect all nav hrefs and find the longest prefix match for the current pathname.
+  // This ensures that only the most specific route is marked as active.
+  // E.g. on /analytics/cohorts, only "Cohorts" is active, not "Metrics" (/analytics).
+  const allNavHrefs = [
+    ...overviewItems, ...operationsItems, ...tenantsItems,
+    ...usersItems, ...securityItems, ...analyticsItems, ...productItems,
+  ].map((i) => i.href);
+
+  const activeHref = (() => {
+    let best: string | null = null;
+    for (const href of allNavHrefs) {
+      if (pathname === href || pathname.startsWith(href + "/")) {
+        if (!best || href.length > best.length) best = href;
+      }
+    }
+    // Special case: "/" matches everything via startsWith, only activate for exact match
+    if (best === "/" && pathname !== "/") {
+      const nonRoot = allNavHrefs.filter((h) => h !== "/" && (pathname === h || pathname.startsWith(h + "/")));
+      if (nonRoot.length > 0) best = nonRoot.reduce((a, b) => a.length >= b.length ? a : b);
+    }
+    return best;
+  })();
+
   if (!mounted || !isSuperAdmin) {
     return null;
   }
@@ -455,7 +478,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -476,7 +499,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -497,7 +520,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -518,7 +541,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -539,7 +562,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -560,7 +583,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -581,7 +604,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      isActive={activeHref === item.href}
                       collapsed={sidebarCollapsed}
                     />
                   ))}
@@ -652,7 +675,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -671,7 +694,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -690,7 +713,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -709,7 +732,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -728,7 +751,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -747,7 +770,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}
@@ -766,7 +789,7 @@ function AdminShellContent({ children }: AdminShellProps) {
                         href={item.href}
                         label={item.label}
                         icon={item.icon}
-                        isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                        isActive={activeHref === item.href}
                         collapsed={false}
                       />
                     ))}

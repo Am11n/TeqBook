@@ -125,7 +125,7 @@ BEGIN
     )
     SELECT
       sc.cohort,
-      EXTRACT(WEEK FROM (a.activity_week - sc.cohort))::INT AS w_offset,
+      ((a.activity_week - sc.cohort) / 7)::INT AS w_offset,
       ROUND(COUNT(DISTINCT a.salon_id)::NUMERIC / NULLIF(COUNT(DISTINCT sc.id), 0)::NUMERIC * 100, 1)
     FROM salon_cohorts sc
     LEFT JOIN activity a ON a.salon_id = sc.id AND a.activity_week >= sc.cohort
