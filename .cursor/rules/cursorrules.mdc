@@ -1,0 +1,68 @@
+---
+name: cursorrules
+description: This is a new rule
+---
+
+# Overview
+
+# TeqBook Cursor Rules
+
+## Admin App – Page Structure
+
+Every page inside `apps/admin/src/app/(admin)/` MUST follow this exact pattern:
+
+```tsx
+<ErrorBoundary>
+  <AdminShell>
+    <PageLayout title="..." description="..." actions={...}>
+      {/* page content */}
+    </PageLayout>
+  </AdminShell>
+</ErrorBoundary>
+```
+
+### Critical: DashboardShell admin route bypass
+
+`PageLayout` internally wraps content in `DashboardShell`. For admin pages, `DashboardShell` has a bypass list that makes it pass children through without rendering the dashboard sidebar/header.
+
+**When you create a new admin page, you MUST add its route to the `adminRoutes` array in `apps/admin/src/components/layout/dashboard-shell.tsx`.**
+
+If you forget this step, the page will render with BOTH the admin sidebar AND the dashboard sidebar (nested shells).
+
+File: `apps/admin/src/components/layout/dashboard-shell.tsx`
+Look for:
+```ts
+const adminRoutes = [
+  "/", "/login",
+  "/salons", "/users", ...
+];
+```
+
+Add your new route there.
+
+## UI Styling
+
+- Buttons for primary actions use `variant="default"` (NOT `variant="outline"` or `variant="primary"`).
+- Never put icons inside table cells/columns unless explicitly asked.
+- The admin app uses Tailwind v4. Shared UI packages are scanned via `@source` directives in `globals.css`.
+
+## Sidebar Navigation
+
+- The sidebar uses a "longest prefix match" algorithm for active state. When adding new nav items, ensure the `href` values don't cause multiple items to highlight. See `admin-shell.tsx` for the `activeHref` logic.
+
+## DataTable Sorting
+
+- `DataTable` always applies client-side sorting.
+- For computed columns (e.g. "status" derived from `is_public`), use the `getValue` property on `ColumnDef` so sorting works correctly.
+- The prop for sort column is `sortColumn` (NOT `sortBy`).
+
+## Supabase / Backend
+
+- Admin API routes that need Supabase should import from `@/lib/supabase/server` (NOT from `@teqbook/shared/supabase/server-client` directly).
+- The admin app uses `trailingSlash: true` in `next.config.ts`. When fetching internal API routes client-side, always include the trailing slash (e.g. `fetch("/api/health/")`).
+
+## General
+
+- Always check for linter errors after editing files.
+- Never commit `.env` files or secrets.
+- Use `useSearchParams()` only inside a `<Suspense>` boundary to avoid prerendering errors.
