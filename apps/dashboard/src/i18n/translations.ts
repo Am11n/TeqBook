@@ -465,6 +465,23 @@ export type ShiftsMessages = {
   colTime: string;
   colActions: string;
   delete: string;
+  // Week view
+  addShiftCta: string;
+  hoursThisWeek: string;
+  daysWorking: string;
+  lowCapacity: string;
+  overlap: string;
+  outsideHours: string;
+  weekNumber: string;
+  totalHours: string;
+  activeEmployees: string;
+  copyWeek: string;
+  useTemplate: string;
+  copyMondayToWeek: string;
+  saved: string;
+  override: string;
+  template: string;
+  today: string;
 };
 
 export type PersonallisteMessages = {

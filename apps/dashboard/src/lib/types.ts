@@ -136,6 +136,17 @@ export type Shift = {
   };
 };
 
+export type ShiftOverride = {
+  id: string;
+  salon_id: string;
+  employee_id: string;
+  override_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  source: "manual" | "copied" | "template";
+  created_at: string;
+};
+
 export type EmployeeService = {
   employee_id: string;
   service_id: string;

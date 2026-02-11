@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -9,20 +9,27 @@ import { useFeatures } from "@/lib/hooks/use-features";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useShifts } from "@/lib/hooks/shifts/useShifts";
 import { useEditShift } from "@/lib/hooks/shifts/useEditShift";
+import { useInlineShiftEdit } from "@/lib/hooks/shifts/useInlineShiftEdit";
+import { useShiftOverrides } from "@/lib/hooks/shifts/useShiftOverrides";
+import { useOpeningHoursForShifts } from "@/lib/hooks/shifts/useOpeningHoursForShifts";
 import { deleteShift } from "@/lib/repositories/shifts";
+import { createShift as createShiftRepo } from "@/lib/repositories/shifts";
 import {
   getInitialWeekStart,
   changeWeek,
   goToTodayWeek,
+  getWeekDates,
+  getWeekdayNumber,
 } from "@/lib/utils/shifts/shifts-utils";
 import { CreateShiftForm } from "@/components/shifts/CreateShiftForm";
 import { ShiftsWeekView } from "@/components/shifts/ShiftsWeekView";
 import { ShiftsListView } from "@/components/shifts/ShiftsListView";
 import { EditShiftDialog } from "@/components/shifts/EditShiftDialog";
+import { WeekSummaryHeader } from "@/components/shifts/WeekSummaryHeader";
+import { BulkActionsBar } from "@/components/shifts/BulkActionsBar";
 import { Sparkles, X, Plus } from "lucide-react";
 import type { Shift } from "@/lib/types";
 
@@ -36,6 +43,11 @@ export default function ShiftsPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const weekStartISO = useMemo(
+    () => currentWeekStart.toISOString().slice(0, 10),
+    [currentWeekStart]
+  );
 
   const {
     employees,
@@ -54,11 +66,23 @@ export default function ShiftsPage() {
     },
   });
 
+  const { overrides, copyWeek, reload: reloadOverrides } = useShiftOverrides(weekStartISO);
+
+  const {
+    isOutsideOpeningHours,
+    getBreaksForDay,
+    breaks,
+  } = useOpeningHoursForShifts();
+
   const editShift = useEditShift({
     shifts,
     onShiftUpdated: (shift) => {
       updateShift(shift);
     },
+  });
+
+  const inlineEdit = useInlineShiftEdit(salon?.id, (updatedShift) => {
+    updateShift(updatedShift);
   });
 
   const handleDelete = async (id: string) => {
@@ -83,9 +107,72 @@ export default function ShiftsPage() {
     setCurrentWeekStart(goToTodayWeek());
   };
 
-  const handleQuickCreate = (employeeId: string, weekday: number) => {
+  const handleQuickCreate = (_employeeId: string, _weekday: number) => {
     setShowCreateDialog(true);
   };
+
+  // Bulk action: copy current week to next week
+  const handleCopyWeek = useCallback(async () => {
+    const nextWeekStart = new Date(currentWeekStart);
+    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    const toISO = nextWeekStart.toISOString().slice(0, 10);
+    return await copyWeek(weekStartISO, toISO);
+  }, [copyWeek, weekStartISO, currentWeekStart]);
+
+  // Bulk action: use default template (create 09-17 shifts for all employees Mon-Fri)
+  const handleUseTemplate = useCallback(async () => {
+    if (!salon?.id) return { count: 0, error: "No salon" };
+    let count = 0;
+    for (const emp of employees) {
+      for (let weekday = 1; weekday <= 5; weekday++) {
+        const { error } = await createShiftRepo({
+          salon_id: salon.id,
+          employee_id: emp.id,
+          weekday,
+          start_time: "09:00",
+          end_time: "17:00",
+        });
+        if (!error) count++;
+      }
+    }
+    if (count > 0) await loadShifts();
+    return { count, error: null };
+  }, [salon?.id, employees, loadShifts]);
+
+  // Bulk action: copy monday shifts to tue-fri
+  const handleCopyMondayToWeek = useCallback(async () => {
+    if (!salon?.id) return { count: 0, error: "No salon" };
+    const mondayShifts = shifts.filter((s) => s.weekday === 1);
+    if (mondayShifts.length === 0) return { count: 0, error: null };
+
+    let count = 0;
+    for (const s of mondayShifts) {
+      for (let weekday = 2; weekday <= 5; weekday++) {
+        const { error } = await createShiftRepo({
+          salon_id: salon.id,
+          employee_id: s.employee_id,
+          weekday,
+          start_time: s.start_time,
+          end_time: s.end_time,
+        });
+        if (!error) count++;
+      }
+    }
+    if (count > 0) await loadShifts();
+    return { count, error: null };
+  }, [salon?.id, shifts, loadShifts]);
+
+  // Collect all breaks for the week into a flat array
+  const weekBreaks = useMemo(() => {
+    const allBreaks = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(currentWeekStart);
+      d.setDate(d.getDate() + i);
+      const weekday = d.getDay();
+      allBreaks.push(...getBreaksForDay(weekday));
+    }
+    return allBreaks;
+  }, [currentWeekStart, getBreaksForDay]);
 
   return (
     <ErrorBoundary>
@@ -129,54 +216,104 @@ export default function ShiftsPage() {
         </div>
       )}
 
-      <div className="mt-6">
-        <Card className="p-4 sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-medium">{t.tableTitle}</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setViewMode(viewMode === "list" ? "week" : "list")}
-              >
-                {viewMode === "list" ? "Week View" : "List View"}
-              </Button>
-            </div>
-          </div>
+      <div className="mt-6 space-y-4">
+        {/* Week summary header */}
+        {viewMode === "week" && (
+          <WeekSummaryHeader
+            weekStart={currentWeekStart}
+            shifts={shifts}
+            overrides={overrides}
+            employeeCount={employees.length}
+            locale={appLocale}
+            translations={{
+              weekNumber: t.weekNumber ?? "Uke",
+              totalHours: t.totalHours ?? "arbeidstimer",
+              activeEmployees: t.activeEmployees ?? "ansatte",
+            }}
+          />
+        )}
 
-          {loading ? (
-            <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-          ) : viewMode === "week" ? (
-            <ShiftsWeekView
-              employees={employees}
-              shifts={shifts}
-              currentWeekStart={currentWeekStart}
-              locale={appLocale}
-              translations={{
-                emptyTitle: t.emptyTitle,
-                emptyDescription: t.emptyDescription,
-              }}
-              onWeekChange={handleWeekChange}
-              onGoToToday={handleGoToToday}
-              onEditShift={editShift.openEditModal}
-              onDeleteShift={handleDelete}
-              onQuickCreate={handleQuickCreate}
-            />
-          ) : (
-            <ShiftsListView
-              shifts={shifts}
-              locale={appLocale}
-              translations={{
-                emptyTitle: t.emptyTitle,
-                emptyDescription: t.emptyDescription,
-                mobileUnknownEmployee: t.mobileUnknownEmployee,
-              }}
-              onEditShift={editShift.openEditModal}
-              onDeleteShift={handleDelete}
-            />
-          )}
-        </Card>
+        {/* Bulk actions bar */}
+        {viewMode === "week" && employees.length > 0 && (
+          <BulkActionsBar
+            onCopyWeek={handleCopyWeek}
+            onUseTemplate={handleUseTemplate}
+            onCopyMondayToWeek={handleCopyMondayToWeek}
+            translations={{
+              copyWeek: t.copyWeek ?? "Kopier uke",
+              useTemplate: t.useTemplate ?? "Bruk mal",
+              copyMondayToWeek: t.copyMondayToWeek ?? "Kopier mandag → hele uken",
+            }}
+          />
+        )}
+
+        {/* View mode toggle */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-foreground">{t.tableTitle}</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode(viewMode === "list" ? "week" : "list")}
+          >
+            {viewMode === "list" ? "Week View" : "List View"}
+          </Button>
+        </div>
+
+        {loading ? (
+          <p className="text-sm text-muted-foreground">{t.loading}</p>
+        ) : viewMode === "week" ? (
+          <ShiftsWeekView
+            employees={employees}
+            shifts={shifts}
+            overrides={overrides}
+            breaks={weekBreaks}
+            currentWeekStart={currentWeekStart}
+            locale={appLocale}
+            isOutsideOpeningHours={isOutsideOpeningHours}
+            editingShiftId={inlineEdit.editing?.shiftId ?? null}
+            editingState={
+              inlineEdit.editing
+                ? { startTime: inlineEdit.editing.startTime, endTime: inlineEdit.editing.endTime }
+                : null
+            }
+            editSaving={inlineEdit.saving}
+            wasSavedId={inlineEdit.editing ? null : null}
+            onStartEdit={inlineEdit.startEdit}
+            onEditChange={inlineEdit.updateEditValue}
+            onEditSave={inlineEdit.saveEdit}
+            onEditCancel={inlineEdit.cancelEdit}
+            onWeekChange={handleWeekChange}
+            onGoToToday={handleGoToToday}
+            onDeleteShift={handleDelete}
+            onQuickCreate={handleQuickCreate}
+            translations={{
+              emptyTitle: t.emptyTitle,
+              emptyDescription: t.emptyDescription,
+              addShiftCta: t.addShiftCta ?? "Legg til",
+              overlap: t.overlap ?? "Overlapp",
+              outsideHours: t.outsideHours ?? "Utenfor åpningstid",
+              override: t.override ?? "Overstyrt",
+              saved: t.saved ?? "Lagret",
+              hoursThisWeek: t.hoursThisWeek ?? "timer denne uken",
+              daysWorking: t.daysWorking ?? "dager",
+              lowCapacity: t.lowCapacity ?? "Lav kapasitet",
+              today: t.today ?? "I dag",
+            }}
+          />
+        ) : (
+          <ShiftsListView
+            shifts={shifts}
+            locale={appLocale}
+            translations={{
+              emptyTitle: t.emptyTitle,
+              emptyDescription: t.emptyDescription,
+              mobileUnknownEmployee: t.mobileUnknownEmployee,
+            }}
+            onEditShift={editShift.openEditModal}
+            onDeleteShift={handleDelete}
+          />
+        )}
       </div>
 
       <CreateShiftForm

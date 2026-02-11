@@ -25,6 +25,17 @@ export type EmployeeAccent = {
   border: string;
 };
 
+export type EmployeeAccentFull = EmployeeAccent & {
+  /** Background for shift cards */
+  bg: string;
+  /** Hover background for shift cards */
+  bgHover: string;
+  /** Left border accent for shift cards (3px stripe) */
+  borderLeft: string;
+  /** Text color for labels in colored context */
+  text: string;
+};
+
 export type DensityConfig = {
   slotHeight: number;
   fontSize: string;
@@ -122,12 +133,31 @@ const ACCENT_PALETTE: EmployeeAccent[] = [
   { dot: "bg-fuchsia-400", border: "border-t-fuchsia-400" },
 ];
 
-export function getEmployeeAccent(employeeId: string): EmployeeAccent {
+const ACCENT_FULL_PALETTE: EmployeeAccentFull[] = [
+  { dot: "bg-blue-400", border: "border-t-blue-400", bg: "bg-blue-50 dark:bg-blue-950/40", bgHover: "hover:bg-blue-100 dark:hover:bg-blue-900/50", borderLeft: "border-l-blue-400", text: "text-blue-700 dark:text-blue-300" },
+  { dot: "bg-emerald-400", border: "border-t-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40", bgHover: "hover:bg-emerald-100 dark:hover:bg-emerald-900/50", borderLeft: "border-l-emerald-400", text: "text-emerald-700 dark:text-emerald-300" },
+  { dot: "bg-amber-400", border: "border-t-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40", bgHover: "hover:bg-amber-100 dark:hover:bg-amber-900/50", borderLeft: "border-l-amber-400", text: "text-amber-700 dark:text-amber-300" },
+  { dot: "bg-purple-400", border: "border-t-purple-400", bg: "bg-purple-50 dark:bg-purple-950/40", bgHover: "hover:bg-purple-100 dark:hover:bg-purple-900/50", borderLeft: "border-l-purple-400", text: "text-purple-700 dark:text-purple-300" },
+  { dot: "bg-rose-400", border: "border-t-rose-400", bg: "bg-rose-50 dark:bg-rose-950/40", bgHover: "hover:bg-rose-100 dark:hover:bg-rose-900/50", borderLeft: "border-l-rose-400", text: "text-rose-700 dark:text-rose-300" },
+  { dot: "bg-cyan-400", border: "border-t-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-950/40", bgHover: "hover:bg-cyan-100 dark:hover:bg-cyan-900/50", borderLeft: "border-l-cyan-400", text: "text-cyan-700 dark:text-cyan-300" },
+  { dot: "bg-lime-400", border: "border-t-lime-400", bg: "bg-lime-50 dark:bg-lime-950/40", bgHover: "hover:bg-lime-100 dark:hover:bg-lime-900/50", borderLeft: "border-l-lime-400", text: "text-lime-700 dark:text-lime-300" },
+  { dot: "bg-fuchsia-400", border: "border-t-fuchsia-400", bg: "bg-fuchsia-50 dark:bg-fuchsia-950/40", bgHover: "hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/50", borderLeft: "border-l-fuchsia-400", text: "text-fuchsia-700 dark:text-fuchsia-300" },
+];
+
+function employeeHash(employeeId: string): number {
   let hash = 0;
   for (let i = 0; i < employeeId.length; i++) {
     hash = ((hash << 5) - hash + employeeId.charCodeAt(i)) | 0;
   }
-  return ACCENT_PALETTE[Math.abs(hash) % ACCENT_PALETTE.length];
+  return Math.abs(hash);
+}
+
+export function getEmployeeAccent(employeeId: string): EmployeeAccent {
+  return ACCENT_PALETTE[employeeHash(employeeId) % ACCENT_PALETTE.length];
+}
+
+export function getEmployeeAccentFull(employeeId: string): EmployeeAccentFull {
+  return ACCENT_FULL_PALETTE[employeeHash(employeeId) % ACCENT_FULL_PALETTE.length];
 }
 
 // ─── Density Config ────────────────────────────────────
