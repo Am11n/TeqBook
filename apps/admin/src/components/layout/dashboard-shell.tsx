@@ -57,7 +57,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     "/", "/login",
     "/salons", "/users", "/analytics", "/audit-logs",
     "/support", "/incidents", "/system-health", "/onboarding",
-    "/plans", "/feature-flags", "/security-events", "/data-tools",
+    "/plans", "/plan-features", "/feature-flags", "/security-events", "/data-tools",
     "/admins", "/changelog", "/feedback", "/design-system",
     "/profile",
   ];

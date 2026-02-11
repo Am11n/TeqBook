@@ -38,6 +38,7 @@ import {
   BarChart3,
   GitBranch,
   MessageSquare,
+  Puzzle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -182,6 +183,7 @@ function AdminShellContent({ children }: AdminShellProps) {
     { href: "/salons", label: "Salons", icon: Building2 },
     { href: "/onboarding", label: "Onboarding", icon: GitBranch },
     { href: "/plans", label: "Plans & Billing", icon: CreditCard },
+    { href: "/plan-features", label: "Plan Features", icon: Puzzle },
   ];
 
   const usersItems = [
