@@ -33,6 +33,7 @@ export const FEATURE_LIMITS: Record<string, FeatureLimitConfig> = {
   EXPORTS:             { limitType: "none" },
   CUSTOMER_HISTORY:    { limitType: "none" },
   ONLINE_PAYMENTS:     { limitType: "none" },
+  SUPPORT:             { limitType: "none" },
 };
 
 /**
@@ -46,6 +47,7 @@ export const FEATURE_CATEGORIES: Record<string, string[]> = {
   "Notifications":       ["SMS_NOTIFICATIONS", "EMAIL_NOTIFICATIONS", "WHATSAPP"],
   "Reporting & Data":    ["ADVANCED_REPORTS", "EXPORTS", "CUSTOMER_HISTORY"],
   "Products & Payments": ["INVENTORY", "ONLINE_PAYMENTS"],
+  "Support":             ["SUPPORT"],
   "Branding & Language": ["BRANDING", "MULTILINGUAL"],
 };
 
