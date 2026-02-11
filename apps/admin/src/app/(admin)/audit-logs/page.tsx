@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { EntityLink } from "@/components/shared/entity-link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -234,8 +235,8 @@ function AuditLogsContent() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Action:</span> <Badge variant="outline">{selectedLog.action}</Badge></div>
                   <div><span className="text-muted-foreground">Resource:</span> {selectedLog.resource_type}</div>
-                  <div><span className="text-muted-foreground">User:</span> <span className="font-mono text-xs">{selectedLog.user_id ?? "System"}</span></div>
-                  <div><span className="text-muted-foreground">Salon:</span> <span className="font-mono text-xs">{selectedLog.salon_id ?? "-"}</span></div>
+                  <div><span className="text-muted-foreground">User:</span> {selectedLog.user_id ? <EntityLink type="user" id={selectedLog.user_id} /> : <span className="text-muted-foreground">System</span>}</div>
+                  <div><span className="text-muted-foreground">Salon:</span> {selectedLog.salon_id ? <EntityLink type="salon" id={selectedLog.salon_id} /> : <span className="text-muted-foreground">-</span>}</div>
                   <div><span className="text-muted-foreground">Time:</span> {format(new Date(selectedLog.created_at), "PPpp")}</div>
                   <div><span className="text-muted-foreground">IP:</span> {selectedLog.ip_address ?? "-"}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">User Agent:</span> <span className="text-xs">{selectedLog.user_agent ?? "-"}</span></div>

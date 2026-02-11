@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { EntityLink } from "@/components/shared/entity-link";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { ImpersonationDrawer } from "@/components/shared/impersonation-drawer";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ import {
   getSalonUsageStats,
 } from "@/lib/services/admin-service";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Power, CreditCard, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 type SalonRow = {
@@ -79,6 +80,9 @@ export default function AdminSalonsPage() {
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [usageStats, setUsageStats] = useState<Record<string, number> | null>(null);
 
+  // Recent activity for drawer
+  const [recentActivity, setRecentActivity] = useState<Array<{ id: string; action: string; created_at: string }>>([]);
+
   // Impersonation state
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatedSalon, setImpersonatedSalon] = useState<SalonRow | null>(null);
@@ -134,9 +138,19 @@ export default function AdminSalonsPage() {
   const handleRowClick = useCallback(async (salon: SalonRow) => {
     setSelectedSalon(salon);
     setDrawerOpen(true);
+    setRecentActivity([]);
     loadNotes(salon.id);
-    const { data } = await getSalonUsageStats(salon.id);
-    if (data) setUsageStats(data);
+    const [statsRes, activityRes] = await Promise.all([
+      getSalonUsageStats(salon.id),
+      supabase
+        .from("security_audit_log")
+        .select("id, action, created_at")
+        .eq("salon_id", salon.id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
+    if (statsRes.data) setUsageStats(statsRes.data);
+    if (activityRes.data) setRecentActivity(activityRes.data);
   }, [loadNotes]);
 
   const handleCreateNote = useCallback(async (content: string, tags: NoteTag[]) => {
@@ -194,25 +208,74 @@ export default function AdminSalonsPage() {
           <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedSalon?.name ?? "Salon"} description={selectedSalon?.slug ?? ""}>
             {selectedSalon && (
               <div className="space-y-6">
+                {/* Status + Plan */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Plan:</span> <Badge variant="outline">{selectedSalon.plan}</Badge></div>
                   <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={selectedSalon.is_public ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{selectedSalon.is_public ? "Active" : "Inactive"}</Badge></div>
                   <div><span className="text-muted-foreground">Owner:</span> {selectedSalon.owner_email ?? "N/A"}</div>
                   <div><span className="text-muted-foreground">Created:</span> {format(new Date(selectedSalon.created_at), "PPP")}</div>
-                  {usageStats && (
-                    <>
-                      <div><span className="text-muted-foreground">Employees:</span> {usageStats.employee_count}</div>
-                      <div><span className="text-muted-foreground">Bookings (total):</span> {usageStats.booking_count}</div>
-                      <div><span className="text-muted-foreground">Bookings (30d):</span> {usageStats.booking_count_30d}</div>
-                      <div><span className="text-muted-foreground">Customers:</span> {usageStats.customer_count}</div>
-                    </>
-                  )}
                 </div>
+
+                {/* Quick Actions */}
                 <div>
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => { setImpersonatedSalon(selectedSalon); setImpersonating(true); }}>
-                    <Eye className="h-3 w-3" /> Impersonate
-                  </Button>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quick Actions</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => { setImpersonatedSalon(selectedSalon); setImpersonating(true); }}>
+                      <Eye className="h-3 w-3" /> Impersonate
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push("/plans")}>
+                      <CreditCard className="h-3 w-3" /> Change Plan
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={async () => { await setSalonActive(selectedSalon.id, !selectedSalon.is_public); loadSalons(); setDrawerOpen(false); }}>
+                      <Power className="h-3 w-3" /> {selectedSalon.is_public ? "Suspend" : "Activate"}
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/audit-logs?salon=${selectedSalon.id}`)}>
+                      <FileText className="h-3 w-3" /> Audit Trail
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Booking Stats */}
+                {usageStats && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Stats</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg border p-3 text-center">
+                        <p className="text-lg font-bold">{usageStats.employee_count}</p>
+                        <p className="text-[10px] text-muted-foreground">Employees</p>
+                      </div>
+                      <div className="rounded-lg border p-3 text-center">
+                        <p className="text-lg font-bold">{usageStats.customer_count}</p>
+                        <p className="text-[10px] text-muted-foreground">Customers</p>
+                      </div>
+                      <div className="rounded-lg border p-3 text-center">
+                        <p className="text-lg font-bold">{usageStats.booking_count_30d}</p>
+                        <p className="text-[10px] text-muted-foreground">Bookings (30d)</p>
+                      </div>
+                      <div className="rounded-lg border p-3 text-center">
+                        <p className="text-lg font-bold">{usageStats.booking_count}</p>
+                        <p className="text-[10px] text-muted-foreground">Bookings (total)</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Activity */}
+                {recentActivity.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recent Activity</p>
+                    <div className="space-y-1.5">
+                      {recentActivity.map((a) => (
+                        <div key={a.id} className="flex items-center justify-between text-xs p-2 rounded border">
+                          <span className="font-medium">{a.action}</span>
+                          <span className="text-muted-foreground">{format(new Date(a.created_at), "MMM d, HH:mm")}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
                 <NotesPanel entityType="salon" entityId={selectedSalon.id} notes={notes} onCreateNote={handleCreateNote} />
               </div>
             )}

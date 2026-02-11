@@ -231,8 +231,13 @@ export default function AdminDashboardPage() {
                 <NeedsAttentionFeed
                   items={attentionItems}
                   onView={(item) => {
-                    if (item.entityType === "salon") router.push("/salons");
-                    else router.push("/users");
+                    if (item.id.startsWith("case-")) {
+                      router.push("/support");
+                    } else if (item.entityType === "salon") {
+                      router.push(`/salons?highlight=${item.entityId}`);
+                    } else {
+                      router.push(`/users?highlight=${item.entityId}`);
+                    }
                   }}
                   onResolve={() => loadDashboard()}
                   maxItems={5}

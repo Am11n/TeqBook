@@ -6,6 +6,7 @@ import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { InsightText } from "@/components/shared/insight-text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
@@ -86,6 +87,48 @@ export default function AdminAnalyticsPage() {
   const avgActive = activeSeries.length > 0 ? Math.round(activeSeries.reduce((s, p) => s + Number(p.value), 0) / activeSeries.length) : 0;
   const totalPlans = planDist.reduce((s, p) => s + Number(p.count), 0);
 
+  // ── Compute insight messages ──────────────────────────
+  // Funnel: find biggest drop-off step
+  const funnelInsight = (() => {
+    if (funnel.length < 2) return null;
+    let biggestDrop = 0;
+    let dropStep = "";
+    for (let i = 1; i < funnel.length; i++) {
+      const drop = Number(funnel[i - 1].count) - Number(funnel[i].count);
+      if (drop > biggestDrop) {
+        biggestDrop = drop;
+        dropStep = funnel[i].step;
+      }
+    }
+    if (!dropStep || biggestDrop === 0) return null;
+    const activationRate = funnel[0].count > 0
+      ? Math.round((Number(funnel[funnel.length - 1].count) / Number(funnel[0].count)) * 100)
+      : 0;
+    return `Activation rate: ${activationRate}%. Most salons drop at "${dropStep}" (${biggestDrop} salons lost).`;
+  })();
+
+  // Bookings trend: compare first vs second half of period
+  const bookingsInsight = (() => {
+    if (bookingsSeries.length < 4) return null;
+    const mid = Math.floor(bookingsSeries.length / 2);
+    const firstHalf = bookingsSeries.slice(0, mid).reduce((s, p) => s + Number(p.value), 0);
+    const secondHalf = bookingsSeries.slice(mid).reduce((s, p) => s + Number(p.value), 0);
+    if (firstHalf === 0) return null;
+    const changePct = Math.round(((secondHalf - firstHalf) / firstHalf) * 100);
+    if (changePct === 0) return "Booking volume is stable across the period.";
+    return `Bookings ${changePct > 0 ? "up" : "down"} ${Math.abs(changePct)}% in the second half of this period vs the first half.`;
+  })();
+
+  // Plan distribution insight
+  const planInsight = (() => {
+    if (planDist.length === 0 || totalPlans === 0) return null;
+    const starterCount = planDist.find((p) => p.plan === "starter")?.count ?? 0;
+    const starterPct = Math.round((Number(starterCount) / totalPlans) * 100);
+    if (starterPct > 50) return `${starterPct}% of salons are on the Starter plan. Upsell opportunity.`;
+    const proPct = Math.round((Number(planDist.find((p) => p.plan === "pro")?.count ?? 0) / totalPlans) * 100);
+    return `Pro plan adoption: ${proPct}%. Starter: ${starterPct}%.`;
+  })();
+
   // Simple SVG bar chart renderer
   function BarChart({ data, color = "#3b82f6" }: { data: TimeSeriesPoint[]; color?: string }) {
     if (data.length === 0) return <p className="text-sm text-muted-foreground">No data</p>;
@@ -118,7 +161,10 @@ export default function AdminAnalyticsPage() {
           <div className="grid gap-6 lg:grid-cols-2 mb-6">
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm">Bookings / day</CardTitle></CardHeader>
-              <CardContent><BarChart data={bookingsSeries} color="#3b82f6" /></CardContent>
+              <CardContent>
+                <BarChart data={bookingsSeries} color="#3b82f6" />
+                {bookingsInsight && <InsightText message={bookingsInsight} />}
+              </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm">New Salons / day</CardTitle></CardHeader>
@@ -149,6 +195,7 @@ export default function AdminAnalyticsPage() {
                         </div>
                       );
                     })}
+                    {funnelInsight && <InsightText message={funnelInsight} />}
                   </div>
                 )}
               </CardContent>
@@ -194,6 +241,7 @@ export default function AdminAnalyticsPage() {
                         </div>
                       );
                     })}
+                    {planInsight && <InsightText message={planInsight} />}
                   </div>
                 )}
               </CardContent>

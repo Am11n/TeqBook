@@ -8,12 +8,13 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { EntityLink } from "@/components/shared/entity-link";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Plus } from "lucide-react";
+import { Plus, Building2, FileText, LogOut } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRow = {
@@ -66,6 +67,7 @@ export default function AdminUsersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [notes, setNotes] = useState<AdminNote[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Array<{ id: string; action: string; created_at: string }>>([]);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -116,7 +118,15 @@ export default function AdminUsersPage() {
   const handleRowClick = useCallback(async (user: UserRow) => {
     setSelectedUser(user);
     setDrawerOpen(true);
+    setRecentActivity([]);
     loadNotes(user.id);
+    const { data: activityData } = await supabase
+      .from("security_audit_log")
+      .select("id, action, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (activityData) setRecentActivity(activityData);
   }, [loadNotes]);
 
   const handleCreateNote = useCallback(async (content: string, tags: NoteTag[]) => {
@@ -169,13 +179,49 @@ export default function AdminUsersPage() {
           <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedUser?.email ?? "User"} description={selectedUser?.role ?? ""}>
             {selectedUser && (
               <div className="space-y-6">
+                {/* User Info */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Email:</span> {selectedUser.email}</div>
                   <div><span className="text-muted-foreground">Role:</span> <Badge variant="outline">{selectedUser.is_superadmin ? "Super Admin" : selectedUser.role}</Badge></div>
-                  <div><span className="text-muted-foreground">Salon:</span> {selectedUser.salon_name ?? "None"}</div>
+                  <div><span className="text-muted-foreground">Salon:</span> {selectedUser.salon_id ? <EntityLink type="salon" id={selectedUser.salon_id} label={selectedUser.salon_name} /> : <span className="text-muted-foreground">None</span>}</div>
                   <div><span className="text-muted-foreground">Created:</span> {format(new Date(selectedUser.created_at), "PPP")}</div>
                   <div><span className="text-muted-foreground">Last login:</span> {selectedUser.last_sign_in ? format(new Date(selectedUser.last_sign_in), "PPpp") : "Never"}</div>
                 </div>
+
+                {/* Quick Actions */}
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quick Actions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedUser.salon_id && (
+                      <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/salons?highlight=${selectedUser.salon_id}`)}>
+                        <Building2 className="h-3 w-3" /> View Salon
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/audit-logs?user=${selectedUser.id}`)}>
+                      <FileText className="h-3 w-3" /> Audit Trail
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => { console.log("Force logout", selectedUser.id); }}>
+                      <LogOut className="h-3 w-3" /> Force Logout
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Recent Activity */}
+                {recentActivity.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recent Activity</p>
+                    <div className="space-y-1.5">
+                      {recentActivity.map((a) => (
+                        <div key={a.id} className="flex items-center justify-between text-xs p-2 rounded border">
+                          <span className="font-medium">{a.action}</span>
+                          <span className="text-muted-foreground">{format(new Date(a.created_at), "MMM d, HH:mm")}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
                 <NotesPanel entityType="user" entityId={selectedUser.id} notes={notes} onCreateNote={handleCreateNote} />
               </div>
             )}

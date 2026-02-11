@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
+import { EntityLink } from "@/components/shared/entity-link";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,7 +126,7 @@ export default function SupportInboxPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Status:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${STATUS_COLORS[selectedCase.status]}`}>{selectedCase.status}</span></div>
                   <div><span className="text-muted-foreground">Priority:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${PRIORITY_COLORS[selectedCase.priority]}`}>{selectedCase.priority}</span></div>
-                  <div><span className="text-muted-foreground">Salon:</span> {selectedCase.salon_name ?? "N/A"}</div>
+                  <div><span className="text-muted-foreground">Salon:</span> {selectedCase.salon_id ? <EntityLink type="salon" id={selectedCase.salon_id} label={selectedCase.salon_name} /> : <span className="text-muted-foreground">N/A</span>}</div>
                   <div><span className="text-muted-foreground">Assignee:</span> {selectedCase.assignee_email ?? "Unassigned"}</div>
                   <div className="col-span-2"><span className="text-muted-foreground">Created:</span> {format(new Date(selectedCase.created_at), "PPpp")}</div>
                 </div>
