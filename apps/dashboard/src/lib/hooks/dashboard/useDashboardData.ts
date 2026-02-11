@@ -33,7 +33,7 @@ type PerformanceData = {
 type TimeRange = "daily" | "weekly" | "monthly";
 
 export function useDashboardData(timeRange: TimeRange = "weekly") {
-  const { salon, isReady, user } = useCurrentSalon();
+  const { salon, isReady, user, profile } = useCurrentSalon();
   const [mounted, setMounted] = useState(false);
   const [todaysBookings, setTodaysBookings] = useState<Booking[]>([]);
   const [bookingsCount, setBookingsCount] = useState(0);
@@ -47,13 +47,15 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
     setMounted(true);
   }, []);
 
-  // Get owner name from user email
+  // Get owner name: prefer first_name from profile, fall back to email prefix
   useEffect(() => {
-    if (user?.email) {
+    if (profile?.first_name) {
+      setOwnerName(profile.first_name);
+    } else if (user?.email) {
       const name = user.email.split("@")[0];
       setOwnerName(name.charAt(0).toUpperCase() + name.slice(1));
     }
-  }, [user?.email]);
+  }, [profile?.first_name, user?.email]);
 
   const loadPerformanceData = async (salonId: string, range: TimeRange) => {
     const now = new Date();
