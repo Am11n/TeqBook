@@ -170,6 +170,7 @@ export const tl: TranslationNamespaces = {
     customers: "Mga customer",
     bookings: "Mga booking",
     personalliste: "Rehistro ng staff",
+    feedback: "Feedback",
     support: "Support",
     onboarding: "Onboarding",
     settings: "Settings",

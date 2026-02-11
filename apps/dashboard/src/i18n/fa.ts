@@ -220,6 +220,7 @@ export const fa: TranslationNamespaces = {
     customers: "مشتریان",
     bookings: "نوبت‌ها",
     personalliste: "ثبت پرسنل",
+    feedback: "بازخورد",
     support: "Support",
     onboarding: "راه‌اندازی اولیه",
     settings: "Settings",

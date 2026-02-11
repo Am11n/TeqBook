@@ -166,6 +166,7 @@ export const hi: TranslationNamespaces = {
     customers: "ग्राहक",
     bookings: "बुकिंग्स",
     personalliste: "कर्मचारी रजिस्टर",
+    feedback: "प्रतिक्रिया",
     support: "Support",
     onboarding: "सेटअप",
     settings: "Settings",

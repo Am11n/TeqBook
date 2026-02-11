@@ -170,6 +170,7 @@ export const vi: TranslationNamespaces = {
     customers: "Khách hàng",
     bookings: "Đặt lịch",
     personalliste: "Sổ nhân sự",
+    feedback: "Phản hồi",
     support: "Support",
     onboarding: "Onboarding",
     settings: "Settings",

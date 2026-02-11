@@ -165,6 +165,7 @@ export const ar: TranslationNamespaces = {
     customers: "العملاء",
     bookings: "الحجوزات",
     personalliste: "سجل الموظفين",
+    feedback: "ملاحظات",
     support: "Support",
     onboarding: "إعداد الصالون",
     settings: "Settings",

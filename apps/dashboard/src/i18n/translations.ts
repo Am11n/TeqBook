@@ -176,6 +176,7 @@ export type DashboardMessages = {
   customers: string;
   bookings: string;
   personalliste: string;
+  feedback: string;
   support: string;
   onboarding: string;
   settings: string;

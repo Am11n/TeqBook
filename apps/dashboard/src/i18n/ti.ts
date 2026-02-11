@@ -168,6 +168,7 @@ export const ti: TranslationNamespaces = {
     customers: "ደኣንነት",
     bookings: "መመዝገብታት",
     personalliste: "ዝርዝር ሰራተኞች",
+    feedback: "Feedback",
     support: "Support",
     onboarding: "ጀማሪ ምድላይ",
     settings: "Settings",

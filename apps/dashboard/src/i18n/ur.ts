@@ -169,6 +169,7 @@ export const ur: TranslationNamespaces = {
     customers: "کسٹمرز",
     bookings: "بُکنگز",
     personalliste: "اسٹاف رجسٹر",
+    feedback: "رائے",
     support: "Support",
     onboarding: "سیٹ اَپ",
     settings: "Settings",

@@ -220,6 +220,7 @@ export const dar: TranslationNamespaces = {
     customers: "مشتریان",
     bookings: "نوبت‌ها",
     personalliste: "ثبت پرسنل",
+    feedback: "بازخورد",
     support: "Support",
     onboarding: "راه‌اندازی ابتدایی",
     settings: "Settings",

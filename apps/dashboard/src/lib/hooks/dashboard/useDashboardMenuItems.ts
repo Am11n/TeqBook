@@ -14,6 +14,7 @@ import {
   Package,
   FileCheck,
   Headset,
+  MessageSquare,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
 import {
@@ -115,6 +116,14 @@ export function useDashboardMenuItems({
 
   const systemItems = useMemo<MenuItem[]>(() => {
     const items: MenuItem[] = [];
+    // Feedback is visible to all logged-in roles
+    if (isReady) {
+      items.push({
+        href: "/feedback",
+        label: texts.feedback ?? "Feedback",
+        icon: MessageSquare,
+      });
+    }
     // Support is visible to all logged-in roles
     if (isReady) {
       items.push({
@@ -139,7 +148,7 @@ export function useDashboardMenuItems({
       });
     }
     return items;
-  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations, texts.support]);
+  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations, texts.feedback, texts.support]);
 
   return {
     overviewItems,
