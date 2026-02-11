@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { findFirstAvailableSlots } from "@/lib/repositories/schedule-segments";
 import type { AvailableSlotBatch, Service } from "@/lib/types";
@@ -23,6 +25,8 @@ interface FindFirstAvailableProps {
 
 export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindFirstAvailableProps) {
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
   const [services, setServices] = useState<Service[]>([]);
   const [serviceId, setServiceId] = useState("");
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().slice(0, 10));
@@ -70,8 +74,9 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
 
   const formatSlotDate = (isoString: string) => {
     const tz = salon?.timezone || "UTC";
+    const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
     try {
-      return new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: tz }).format(new Date(isoString));
+      return new Intl.DateTimeFormat(resolvedLocale, { weekday: "short", month: "short", day: "numeric", timeZone: tz }).format(new Date(isoString));
     } catch {
       return new Date(isoString).toLocaleDateString();
     }
@@ -79,8 +84,14 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
 
   const formatSlotTime = (isoString: string) => {
     const tz = salon?.timezone || "UTC";
+    const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
     try {
-      return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz }).format(new Date(isoString));
+      return new Intl.DateTimeFormat(resolvedLocale, {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: tz,
+        ...(appLocale === "nb" ? { hour12: false } : {}),
+      }).format(new Date(isoString));
     } catch {
       return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }

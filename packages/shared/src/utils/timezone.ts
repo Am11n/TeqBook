@@ -100,6 +100,77 @@ export function getCommonTimezones(): Array<{ value: string; label: string }> {
   ];
 }
 
+// =====================================================
+// Timezone-aware time part extraction (cached)
+// =====================================================
+
+/** Cached Intl.DateTimeFormat instances per timezone to avoid alloc in hot render paths */
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function getOrCreateFormatter(timezone: string): Intl.DateTimeFormat {
+  let fmt = formatterCache.get(timezone);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      weekday: "short",
+      hour12: false,
+      timeZone: timezone,
+    });
+    formatterCache.set(timezone, fmt);
+  }
+  return fmt;
+}
+
+export interface ZonedTimeParts {
+  year: number;
+  month: number;
+  day: number;
+  weekday: string;
+  hour: number;
+  minute: number;
+}
+
+/** Parse an ISO timestamp into its calendar parts in a given timezone. Uses a cached formatter. */
+export function getTimePartsInTimezone(isoString: string, timezone: string): ZonedTimeParts {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) {
+    console.warn(`Invalid ISO string passed to getTimePartsInTimezone: ${isoString}`);
+    return { year: 0, month: 0, day: 0, weekday: "", hour: 0, minute: 0 };
+  }
+  const fmt = getOrCreateFormatter(timezone);
+  const parts = fmt.formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || "0";
+  const h = parseInt(get("hour"), 10);
+  return {
+    year: parseInt(get("year"), 10),
+    month: parseInt(get("month"), 10),
+    day: parseInt(get("day"), 10),
+    weekday: get("weekday"),
+    hour: h === 24 ? 0 : h, // midnight edge case
+    minute: parseInt(get("minute"), 10),
+  };
+}
+
+/** Convenience: extract just the hour in a timezone */
+export function getHoursInTimezone(isoString: string, timezone: string): number {
+  return getTimePartsInTimezone(isoString, timezone).hour;
+}
+
+/** Convenience: extract just the minute in a timezone */
+export function getMinutesInTimezone(isoString: string, timezone: string): number {
+  return getTimePartsInTimezone(isoString, timezone).minute;
+}
+
+/** Get today's date string (YYYY-MM-DD) in a given timezone */
+export function getTodayInTimezone(timezone: string): string {
+  const parts = getTimePartsInTimezone(new Date().toISOString(), timezone);
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+}
+
 export function localTimeToUTC(localDate: Date, timezone: string): string {
   try {
     const formatter = new Intl.DateTimeFormat("en-US", {

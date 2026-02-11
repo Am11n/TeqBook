@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { formatTimeInTimezone } from "@/lib/utils/timezone";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { formatTimeInTimezone, getHoursInTimezone, getMinutesInTimezone } from "@/lib/utils/timezone";
 import { getBookingClasses } from "@/lib/ui/calendar-theme";
 
 interface BookingEventProps {
@@ -17,21 +20,23 @@ interface BookingEventProps {
   };
 }
 
-function formatTimeRange(booking: CalendarBooking, timezone: string): string {
+function formatTimeRange(booking: CalendarBooking, timezone: string, locale: string): string {
   try {
-    const startTime = formatTimeInTimezone(booking.start_time, timezone, "en-US", {
+    const startTime = formatTimeInTimezone(booking.start_time, timezone, locale, {
       hour: "numeric",
       minute: "2-digit",
     });
-    const endTime = formatTimeInTimezone(booking.end_time, timezone, "en-US", {
+    const endTime = formatTimeInTimezone(booking.end_time, timezone, locale, {
       hour: "numeric",
       minute: "2-digit",
     });
     return `${startTime} – ${endTime}`;
   } catch {
-    const start = new Date(booking.start_time);
-    const end = new Date(booking.end_time);
-    return `${start.getHours().toString().padStart(2, "0")}:${start.getMinutes().toString().padStart(2, "0")} – ${end.getHours().toString().padStart(2, "0")}:${end.getMinutes().toString().padStart(2, "0")}`;
+    const sH = getHoursInTimezone(booking.start_time, timezone);
+    const sM = getMinutesInTimezone(booking.start_time, timezone);
+    const eH = getHoursInTimezone(booking.end_time, timezone);
+    const eM = getMinutesInTimezone(booking.end_time, timezone);
+    return `${sH.toString().padStart(2, "0")}:${sM.toString().padStart(2, "0")} – ${eH.toString().padStart(2, "0")}:${eM.toString().padStart(2, "0")}`;
   }
 }
 
@@ -44,18 +49,40 @@ export function BookingEvent({
 }: BookingEventProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
-  const [showHover, setShowHover] = useState(false);
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const [hoverPos, setHoverPos] = useState<{ top: number; left: number } | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = useCallback(() => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setHoverPos({
+      top: rect.top,
+      left: rect.left + rect.width / 2,
+    });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoverPos(null);
+  }, []);
 
   const height = style?.height ? parseInt(String(style.height)) : 40;
   const isCompact = height < 50;
   const problems = booking._problems || [];
   const classes = getBookingClasses(booking.status);
 
+  // Separate layout styles (position/size for DayView grid) from visual styles
+  const { position, top: styleTop, left: styleLeft, width: styleWidth, zIndex: styleZIndex, height: styleHeight, ...visualStyle } = (style || {}) as React.CSSProperties & Record<string, unknown>;
+  const layoutStyle: React.CSSProperties = { position, top: styleTop, left: styleLeft, width: styleWidth, zIndex: styleZIndex, height: styleHeight } as React.CSSProperties;
+
   return (
     <div
-      className="relative group"
-      onMouseEnter={() => setShowHover(true)}
-      onMouseLeave={() => setShowHover(false)}
+      ref={cardRef}
+      className="group"
+      style={layoutStyle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         onClick={(e) => {
@@ -64,7 +91,7 @@ export function BookingEvent({
         }}
         className={`cursor-pointer overflow-hidden ${densityPadding()} ${classes.card} ${isSelected ? "ring-2 ring-ring ring-offset-1" : ""} ${onClick ? "hover:shadow-md" : ""}`}
         style={{
-          ...style,
+          ...visualStyle,
           minHeight: "36px",
         }}
       >
@@ -93,7 +120,7 @@ export function BookingEvent({
 
         {/* Time */}
         <p className={`text-[11px] leading-tight ${classes.subtitle}`}>
-          {formatTimeRange(booking, timezone)}
+          {formatTimeRange(booking, timezone, appLocale)}
         </p>
 
         {/* Customer (only if not too compact) */}
@@ -116,9 +143,16 @@ export function BookingEvent({
         )}
       </div>
 
-      {/* Hover preview card */}
-      {showHover && (
-        <div className="absolute left-full top-0 ml-2 z-30 w-56 rounded-lg border bg-popover p-3 shadow-lg text-xs pointer-events-none animate-in fade-in-0 zoom-in-95">
+      {/* Hover preview card — rendered via portal to escape overflow:auto */}
+      {hoverPos && createPortal(
+        <div
+          className="fixed z-50 w-56 rounded-lg border bg-popover p-3 shadow-lg text-xs pointer-events-none animate-in fade-in-0 zoom-in-95"
+          style={{
+            top: `${hoverPos.top - 8}px`,
+            left: `${hoverPos.left}px`,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
           <p className="font-semibold text-sm">
             {booking.customers?.full_name ?? translations.unknownCustomer}
           </p>
@@ -132,7 +166,7 @@ export function BookingEvent({
             </p>
             <p>
               <span className="font-medium text-foreground">Time:</span>{" "}
-              {formatTimeRange(booking, timezone)}
+              {formatTimeRange(booking, timezone, appLocale)}
             </p>
             {booking.services?.duration_minutes && (
               <p>
@@ -168,7 +202,10 @@ export function BookingEvent({
               </p>
             )}
           </div>
-        </div>
+          {/* Small arrow pointing down */}
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 h-3 w-3 rotate-45 border-b border-r bg-popover" />
+        </div>,
+        document.body
       )}
     </div>
   );

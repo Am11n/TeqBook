@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { validateBookingChange } from "@/lib/repositories/schedule-segments";
 import { updateBooking } from "@/lib/services/bookings-service";
 import { localISOStringToUTC } from "@/lib/utils/timezone";
@@ -27,6 +29,8 @@ interface RescheduleModalProps {
 export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: RescheduleModalProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
   const [validation, setValidation] = useState<ConflictResponse | null>(null);
@@ -108,7 +112,13 @@ export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: 
 
   const formatSlotTime = (isoString: string) => {
     try {
-      return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: timezone }).format(new Date(isoString));
+      const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
+      return new Intl.DateTimeFormat(resolvedLocale, {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: timezone,
+        ...(appLocale === "nb" ? { hour12: false } : {}),
+      }).format(new Date(isoString));
     } catch {
       return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }

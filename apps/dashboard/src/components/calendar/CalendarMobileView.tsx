@@ -4,6 +4,8 @@ import { formatTimeRange } from "@/lib/utils/calendar/calendar-utils";
 import { getBookingClasses } from "@/lib/ui/calendar-theme";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface CalendarMobileViewProps {
   employees: Array<{ id: string; full_name: string }>;
@@ -21,6 +23,8 @@ export function CalendarMobileView({
 }: CalendarMobileViewProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
 
   return (
     <div className="space-y-3 md:hidden">
@@ -39,7 +43,7 @@ export function CalendarMobileView({
                     className={`px-2 py-2 text-xs overflow-hidden ${bClasses.card}`}
                   >
                     <p className={`font-semibold ${bClasses.title}`}>{b.services?.name ?? translations.unknownService}</p>
-                    <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>{formatTimeRange(b, timezone)}</p>
+                    <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>{formatTimeRange(b, timezone, appLocale)}</p>
                     <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>
                       {b.customers?.full_name ?? translations.unknownCustomer}
                     </p>

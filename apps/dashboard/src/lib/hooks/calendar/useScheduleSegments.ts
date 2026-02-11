@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getScheduleSegments } from "@/lib/repositories/schedule-segments";
+import { getTimePartsInTimezone } from "@/lib/utils/timezone";
 import type { ScheduleSegment } from "@/lib/types";
 
 interface UseScheduleSegmentsOptions {
@@ -88,6 +89,7 @@ export function useScheduleSegments({ date, employeeIds, enabled = true }: UseSc
   );
 
   /** Get earliest open and latest close across all employees (for grid range) */
+  const timezone = salon?.timezone || "UTC";
   const gridRange = useCallback(() => {
     const workingSegments = segments.filter((s) => s.segment_type === "working");
     if (workingSegments.length === 0) return { startHour: 8, endHour: 20 };
@@ -96,9 +98,11 @@ export function useScheduleSegments({ date, employeeIds, enabled = true }: UseSc
     let latest = 0;
 
     for (const s of workingSegments) {
-      const startHour = new Date(s.start_time).getHours();
-      const endHour = new Date(s.end_time).getHours();
-      const endMin = new Date(s.end_time).getMinutes();
+      const startParts = getTimePartsInTimezone(s.start_time, timezone);
+      const endParts = getTimePartsInTimezone(s.end_time, timezone);
+      const startHour = startParts.hour;
+      const endHour = endParts.hour;
+      const endMin = endParts.minute;
       if (startHour < earliest) earliest = startHour;
       if (endHour > latest || (endHour === latest && endMin > 0)) latest = endMin > 0 ? endHour + 1 : endHour;
     }
@@ -107,7 +111,7 @@ export function useScheduleSegments({ date, employeeIds, enabled = true }: UseSc
       startHour: Math.max(0, earliest - 1),
       endHour: Math.min(24, latest + 1),
     };
-  }, [segments]);
+  }, [segments, timezone]);
 
   return {
     segments,

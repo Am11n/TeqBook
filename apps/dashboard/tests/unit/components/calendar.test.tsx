@@ -68,6 +68,7 @@ describe("DayView", () => {
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
         segments={mockSegments}
         gridRange={mockGridRange}
+        timezone="UTC"
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -88,6 +89,7 @@ describe("DayView", () => {
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
         segments={mockSegments}
         gridRange={mockGridRange}
+        timezone="UTC"
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -107,6 +109,7 @@ describe("DayView", () => {
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
         segments={mockSegments}
         gridRange={mockGridRange}
+        timezone="UTC"
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -126,6 +129,7 @@ describe("DayView", () => {
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
         segments={mockSegments}
         gridRange={mockGridRange}
+        timezone="UTC"
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",

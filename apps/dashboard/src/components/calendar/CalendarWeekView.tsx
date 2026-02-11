@@ -85,12 +85,12 @@ export function CalendarWeekView({
               <div className="flex items-center justify-between">
                 <p className={`text-xs font-medium ${isToday(date) ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`}>
                   {timezone
-                    ? new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+                    ? new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : locale || "en", {
                         weekday: "short",
                         day: "numeric",
                         timeZone: timezone,
                       }).format(new Date(date + "T00:00:00"))
-                    : new Date(date + "T00:00:00").toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
+                    : new Date(date + "T00:00:00").toLocaleDateString(locale === "nb" ? "nb-NO" : locale || "en", {
                         weekday: "short",
                         day: "numeric",
                       })}
@@ -129,7 +129,7 @@ export function CalendarWeekView({
                         {b.services?.name ?? translations.unknownService}
                       </p>
                       <p className={`text-[11px] ${bClasses.subtitle}`}>
-                        {formatTimeRange(b, timezone)}
+                        {formatTimeRange(b, timezone, locale)}
                       </p>
                     </div>
                   );

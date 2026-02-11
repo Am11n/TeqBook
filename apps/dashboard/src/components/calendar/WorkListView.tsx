@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { Clock, User, AlertTriangle } from "lucide-react";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getBookingBadgeClasses } from "@/lib/ui/calendar-theme";
 
 interface WorkListViewProps {
@@ -14,6 +16,8 @@ interface WorkListViewProps {
 export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
 
   // Sort: problem bookings first (unpaid, unconfirmed, conflict), then by start time
   const sorted = useMemo(() => {
@@ -28,10 +32,12 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
 
   const formatTime = (iso: string) => {
     try {
-      return new Intl.DateTimeFormat("en-US", {
+      const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
+      return new Intl.DateTimeFormat(resolvedLocale, {
         hour: "numeric",
         minute: "2-digit",
         timeZone: timezone,
+        ...(appLocale === "nb" ? { hour12: false } : {}),
       }).format(new Date(iso));
     } catch {
       return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

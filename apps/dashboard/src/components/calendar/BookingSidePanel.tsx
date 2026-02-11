@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 
@@ -34,6 +36,8 @@ export function BookingSidePanel({
 }: BookingSidePanelProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
   const [updating, setUpdating] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -43,7 +47,7 @@ export function BookingSidePanel({
 
   const formatTime = (isoString: string) => {
     try {
-      return formatTimeInTimezone(isoString, timezone, "en-US", {
+      return formatTimeInTimezone(isoString, timezone, appLocale, {
         hour: "numeric",
         minute: "2-digit",
       });
@@ -54,7 +58,7 @@ export function BookingSidePanel({
 
   const formatDate = (isoString: string) => {
     try {
-      return new Intl.DateTimeFormat("en-US", {
+      return new Intl.DateTimeFormat(appLocale === "nb" ? "nb-NO" : appLocale, {
         weekday: "short",
         month: "short",
         day: "numeric",

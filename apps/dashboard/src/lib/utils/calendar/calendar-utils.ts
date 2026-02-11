@@ -1,3 +1,14 @@
+/**
+ * Calendar Utilities — Timezone/Locale Contract
+ *
+ * - Storage:        All DB times are ISO TIMESTAMPTZ in UTC.
+ * - Grid positioning: Always use salon.timezone (never browser local / Date.getHours()).
+ * - Text formatting: Always use user locale via useLocale() (never hardcode "en-US").
+ * - "Today" / "Now": Always use salon.timezone (never new Date().getHours()).
+ * - Locale source:  Components call useLocale() directly (locale = UI context).
+ * - Timezone source: Threaded as prop from page (timezone = domain data from salon).
+ */
+
 import type { CalendarBooking, BookingProblem } from "@/lib/types";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 
@@ -5,16 +16,17 @@ import { formatTimeInTimezone } from "@/lib/utils/timezone";
  * Format day heading
  */
 export function formatDayHeading(dateString: string, locale: string, timezone?: string | null): string {
+  const resolvedLocale = locale === "nb" ? "nb-NO" : locale || "en";
   const date = new Date(dateString + "T00:00:00");
   if (timezone) {
-    return new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+    return new Intl.DateTimeFormat(resolvedLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
       timeZone: timezone,
     }).format(date);
   }
-  return date.toLocaleDateString(locale === "nb" ? "nb-NO" : "en-US", {
+  return date.toLocaleDateString(resolvedLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -23,15 +35,16 @@ export function formatDayHeading(dateString: string, locale: string, timezone?: 
 
 /**
  * Format time range for a booking
- * Uses salon timezone if provided
+ * Uses salon timezone if provided, user locale for formatting.
  */
-export function formatTimeRange(booking: CalendarBooking, timezone?: string | null): string {
+export function formatTimeRange(booking: CalendarBooking, timezone?: string | null, locale?: string): string {
+  const displayLocale = locale || "en-US";
   if (timezone) {
-    const startTime = formatTimeInTimezone(booking.start_time, timezone, "en-US", {
+    const startTime = formatTimeInTimezone(booking.start_time, timezone, displayLocale, {
       hour: "numeric",
       minute: "2-digit",
     });
-    const endTime = formatTimeInTimezone(booking.end_time, timezone, "en-US", {
+    const endTime = formatTimeInTimezone(booking.end_time, timezone, displayLocale, {
       hour: "numeric",
       minute: "2-digit",
     });
@@ -39,10 +52,10 @@ export function formatTimeRange(booking: CalendarBooking, timezone?: string | nu
   }
   const start = new Date(booking.start_time);
   const end = new Date(booking.end_time);
-  return `${start.toLocaleTimeString("en-US", {
+  return `${start.toLocaleTimeString(displayLocale, {
     hour: "numeric",
     minute: "2-digit",
-  })} - ${end.toLocaleTimeString("en-US", {
+  })} - ${end.toLocaleTimeString(displayLocale, {
     hour: "numeric",
     minute: "2-digit",
   })}`;

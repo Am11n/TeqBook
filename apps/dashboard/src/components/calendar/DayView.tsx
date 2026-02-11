@@ -11,6 +11,11 @@ import {
   getDensityConfig,
   type CalendarDensity,
 } from "@/lib/ui/calendar-theme";
+import {
+  getHoursInTimezone,
+  getMinutesInTimezone,
+  getTodayInTimezone,
+} from "@/lib/utils/timezone";
 
 interface DayViewProps {
   selectedDate: string;
@@ -18,6 +23,7 @@ interface DayViewProps {
   bookingsForDayByEmployee: Record<string, CalendarBooking[]>;
   segments: ScheduleSegment[];
   gridRange: { startHour: number; endHour: number };
+  timezone: string;
   onBookingClick?: (booking: CalendarBooking) => void;
   onSlotClick?: (employeeId: string, time: string) => void;
   onBlockTimeClick?: (employeeId: string, time: string) => void;
@@ -35,6 +41,7 @@ export function DayView({
   bookingsForDayByEmployee,
   segments,
   gridRange,
+  timezone,
   onBookingClick,
   onSlotClick,
   onBlockTimeClick,
@@ -68,7 +75,7 @@ export function DayView({
     };
   });
 
-  const isToday = selectedDate === new Date().toISOString().slice(0, 10);
+  const isToday = selectedDate === getTodayInTimezone(timezone);
 
   // Update current time every minute
   useEffect(() => {
@@ -79,37 +86,35 @@ export function DayView({
   // Scroll to current time on mount
   useEffect(() => {
     if (scrollContainerRef.current && isToday) {
-      const now = new Date();
-      const hours = now.getHours();
+      const nowIso = new Date().toISOString();
+      const hours = getHoursInTimezone(nowIso, timezone);
       if (hours >= startHour && hours < endHour) {
-        const minutes = now.getMinutes();
+        const minutes = getMinutesInTimezone(nowIso, timezone);
         const slotIndex = (hours - startHour) * 2 + Math.floor(minutes / 30);
         scrollContainerRef.current.scrollTop = slotIndex * SLOT_HEIGHT - 100;
       }
     }
-  }, [selectedDate, isToday, startHour, endHour, SLOT_HEIGHT]);
+  }, [selectedDate, isToday, startHour, endHour, SLOT_HEIGHT, timezone]);
 
-  // Now line position
+  // Now line position (uses salon timezone)
   const getNowLinePosition = () => {
     if (!isToday) return null;
-    const now = new Date();
-    const hours = now.getHours();
+    const nowIso = new Date().toISOString();
+    const hours = getHoursInTimezone(nowIso, timezone);
     if (hours < startHour || hours >= endHour) return null;
-    const minutes = now.getMinutes();
+    const minutes = getMinutesInTimezone(nowIso, timezone);
     const slotIndex = (hours - startHour) * 2 + Math.floor(minutes / 30);
     return slotIndex * SLOT_HEIGHT + (minutes % 30) * (SLOT_HEIGHT / 30);
   };
 
   const nowLinePosition = getNowLinePosition();
 
-  // Booking position calculation
+  // Booking position calculation (timezone-aware)
   const getBookingPosition = (booking: CalendarBooking) => {
-    const start = new Date(booking.start_time);
-    const end = new Date(booking.end_time);
-    const startH = start.getHours();
-    const startM = start.getMinutes();
-    const endH = end.getHours();
-    const endM = end.getMinutes();
+    const startH = getHoursInTimezone(booking.start_time, timezone);
+    const startM = getMinutesInTimezone(booking.start_time, timezone);
+    const endH = getHoursInTimezone(booking.end_time, timezone);
+    const endM = getMinutesInTimezone(booking.end_time, timezone);
 
     const clampedStartH = Math.max(startH, startHour);
     const clampedStartM = startH < startHour ? 0 : startM;
@@ -130,14 +135,17 @@ export function DayView({
     return { top, height: Math.max(height, densityConfig.minCardHeight) };
   };
 
-  // Segment position calculation
+  // Segment position calculation (timezone-aware)
   const getSegmentPosition = (segment: ScheduleSegment) => {
-    const start = new Date(segment.start_time);
-    const end = new Date(segment.end_time);
-    const startH = Math.max(start.getHours(), startHour);
-    const startM = start.getHours() < startHour ? 0 : start.getMinutes();
-    const endH = Math.min(end.getHours(), endHour);
-    const endM = end.getHours() >= endHour ? 0 : end.getMinutes();
+    const rawStartH = getHoursInTimezone(segment.start_time, timezone);
+    const rawStartM = getMinutesInTimezone(segment.start_time, timezone);
+    const rawEndH = getHoursInTimezone(segment.end_time, timezone);
+    const rawEndM = getMinutesInTimezone(segment.end_time, timezone);
+
+    const startH = Math.max(rawStartH, startHour);
+    const startM = rawStartH < startHour ? 0 : rawStartM;
+    const endH = Math.min(rawEndH, endHour);
+    const endM = rawEndH >= endHour ? 0 : rawEndM;
 
     const startPx =
       ((startH - startHour) * 2 + startM / 30) * SLOT_HEIGHT;
@@ -298,8 +306,8 @@ export function DayView({
                 {/* Booking events */}
                 {bookings
                   .filter((b) => {
-                    const h = new Date(b.start_time).getHours();
-                    const eh = new Date(b.end_time).getHours();
+                    const h = getHoursInTimezone(b.start_time, timezone);
+                    const eh = getHoursInTimezone(b.end_time, timezone);
                     return h < endHour && eh >= startHour;
                   })
                   .map((booking) => {

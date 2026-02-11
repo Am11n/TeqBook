@@ -22,6 +22,7 @@ import { ChangeEmployeeModal } from "@/components/calendar/ChangeEmployeeModal";
 import { CommandPalette } from "@/components/calendar/CommandPalette";
 import { WorkListView } from "@/components/calendar/WorkListView";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { getHoursInTimezone, getMinutesInTimezone } from "@/lib/utils/timezone";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CalendarBooking, Booking, AvailableSlotBatch, ScheduleSegment } from "@/lib/types";
 
@@ -212,9 +213,11 @@ export default function CalendarPage() {
   }, []);
 
   const handleFindAvailableSlotSelected = useCallback((slot: AvailableSlotBatch) => {
+    const tz = salon?.timezone || "UTC";
     const slotDate = new Date(slot.slot_start).toISOString().slice(0, 10);
-    const startTime = new Date(slot.slot_start);
-    const time = `${startTime.getHours().toString().padStart(2, "0")}:${startTime.getMinutes().toString().padStart(2, "0")}`;
+    const hours = getHoursInTimezone(slot.slot_start, tz);
+    const minutes = getMinutesInTimezone(slot.slot_start, tz);
+    const time = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
     setQuickCreatePrefill({
       employeeId: slot.employee_id,
       time,
@@ -222,7 +225,7 @@ export default function CalendarPage() {
     });
     setShowFindAvailable(false);
     setShowQuickCreate(true);
-  }, []);
+  }, [salon?.timezone]);
 
   // Filtered employees
   const displayEmployees = filterEmployeeId && filterEmployeeId !== "all"
@@ -322,6 +325,7 @@ export default function CalendarPage() {
                     bookingsForDayByEmployee={enrichedBookingsByEmployee}
                     segments={segments}
                     gridRange={gridRange}
+                    timezone={salon?.timezone || "UTC"}
                     density={density}
                     selectedBookingId={selectedBooking?.id}
                     onBookingClick={handleBookingClick}
