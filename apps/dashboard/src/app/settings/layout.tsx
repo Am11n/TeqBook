@@ -65,7 +65,9 @@ export default function SettingsLayout({
   const t = translations[appLocale].settings;
 
   // Determine active tab based on pathname
-  const activeTab = pathname.includes("/notifications")
+  const activeTab = pathname.includes("/opening-hours")
+    ? "opening-hours"
+    : pathname.includes("/notifications")
     ? "notifications"
     : pathname.includes("/billing")
     ? "billing"
@@ -83,15 +85,17 @@ export default function SettingsLayout({
           <Tabs value={activeTab} className="w-full" onValueChange={(value) => {
             // Use client-side navigation for instant tab switching
             if (value === "general") router.push("/settings/general");
+            else if (value === "opening-hours") router.push("/settings/opening-hours");
             else if (value === "notifications") router.push("/settings/notifications");
             else if (value === "billing") router.push("/settings/billing");
             else if (value === "security") router.push("/settings/security");
             else if (value === "branding") router.push("/settings/branding");
           }}>
-            <TabsList className={`grid w-full max-w-2xl ${
-              featuresMounted && hasFeature("BRANDING") ? "grid-cols-5" : "grid-cols-4"
+            <TabsList className={`grid w-full max-w-3xl ${
+              featuresMounted && hasFeature("BRANDING") ? "grid-cols-6" : "grid-cols-5"
             }`}>
               <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
+              <TabsTrigger value="opening-hours">{t.openingHoursTab}</TabsTrigger>
               <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
               <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>

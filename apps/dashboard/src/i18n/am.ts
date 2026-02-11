@@ -507,6 +507,7 @@ export const am: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "የስራ ሰዓታት",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

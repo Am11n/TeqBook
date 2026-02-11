@@ -521,6 +521,7 @@ export const vi: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "Giờ mở cửa",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

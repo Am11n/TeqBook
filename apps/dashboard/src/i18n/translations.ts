@@ -503,6 +503,7 @@ export type SettingsMessages = {
   title: string;
   description: string;
   generalTab: string;
+  openingHoursTab: string;
   notificationsTab: string;
   billingTab: string;
   brandingTab: string;

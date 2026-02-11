@@ -502,6 +502,7 @@ export const fa: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "ساعات کاری",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

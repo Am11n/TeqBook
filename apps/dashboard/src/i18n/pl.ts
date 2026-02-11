@@ -43,6 +43,7 @@ export const pl: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "Godziny otwarcia",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

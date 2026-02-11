@@ -517,6 +517,7 @@ export const ur: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "کام کے اوقات",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

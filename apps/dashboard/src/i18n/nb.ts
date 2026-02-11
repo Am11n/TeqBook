@@ -516,6 +516,7 @@ export const nb: TranslationNamespaces = {
     title: "Innstillinger",
     description: "Administrer salong-innstillinger og preferanser.",
     generalTab: "Generelt",
+    openingHoursTab: "Åpningstider",
     notificationsTab: "Varsler",
     billingTab: "Fakturering",
     brandingTab: "Merkevare",

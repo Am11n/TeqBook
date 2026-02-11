@@ -494,6 +494,7 @@ export const zh: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "营业时间",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",

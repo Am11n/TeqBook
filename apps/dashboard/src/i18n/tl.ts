@@ -520,6 +520,7 @@ export const tl: TranslationNamespaces = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
+    openingHoursTab: "Oras ng Bukas",
     notificationsTab: "Notifications",
     billingTab: "Billing",
     brandingTab: "Branding",
