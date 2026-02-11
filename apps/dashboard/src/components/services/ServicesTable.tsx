@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { formatPrice, getCategoryLabel } from "@/lib/utils/services/services-utils";
 import type { Service } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Trash2 } from "lucide-react";
 
 interface ServicesTableProps {
   services: Service[];
@@ -37,45 +37,49 @@ export function ServicesTable({
   onDelete,
   translations,
 }: ServicesTableProps) {
-  const columns: ColumnDefinition<Service>[] = [
+  const columns: ColumnDef<Service>[] = [
     {
       id: "name",
-      label: translations.colName,
-      render: (service) => (
+      header: translations.colName,
+      cell: (service) => (
         <div className="font-medium">{service.name}</div>
       ),
+      getValue: (service) => service.name,
     },
     {
       id: "category",
-      label: translations.colCategory,
-      render: (service) => (
+      header: translations.colCategory,
+      cell: (service) => (
         <div className="text-xs text-muted-foreground">
           {getCategoryLabel(service.category, translations)}
         </div>
       ),
+      getValue: (service) => service.category ?? "",
     },
     {
       id: "duration",
-      label: translations.colDuration,
-      render: (service) => (
+      header: translations.colDuration,
+      cell: (service) => (
         <div className="text-xs text-muted-foreground">
           {service.duration_minutes} min
         </div>
       ),
+      getValue: (service) => service.duration_minutes,
     },
     {
       id: "price",
-      label: translations.colPrice,
-      render: (service) => (
+      header: translations.colPrice,
+      cell: (service) => (
         <div className="text-xs text-muted-foreground">
           {formatPrice(service.price_cents, locale)}
         </div>
       ),
+      getValue: (service) => service.price_cents,
     },
     {
       id: "status",
-      label: translations.colStatus,
-      render: (service) => (
+      header: translations.colStatus,
+      cell: (service) => (
         <Badge
           variant="outline"
           className={
@@ -87,53 +91,29 @@ export function ServicesTable({
           {service.is_active ? translations.active : translations.inactive}
         </Badge>
       ),
+      getValue: (service) => (service.is_active ? 1 : 0),
+    },
+  ];
+
+  const getRowActions = (service: Service): RowAction<Service>[] => [
+    {
+      label: translations.delete,
+      icon: Trash2,
+      onClick: (s) => onDelete(s.id),
+      variant: "destructive",
     },
   ];
 
   return (
     <div className="mt-4 hidden md:block">
-      <TableWithViews
-        tableId="services"
+      <DataTable
         columns={columns}
         data={services}
-        onDelete={(service) => onDelete(service.id)}
-        renderDetails={(service) => (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg">{service.name}</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {getCategoryLabel(service.category, translations)}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Duration</p>
-                <p className="text-sm text-muted-foreground">{service.duration_minutes} minutes</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Price</p>
-                <p className="text-sm text-muted-foreground">{formatPrice(service.price_cents, locale)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Status</p>
-                <Badge
-                  variant="outline"
-                  className={
-                    service.is_active
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-zinc-200 bg-zinc-100 text-zinc-600"
-                  }
-                >
-                  {service.is_active ? translations.active : translations.inactive}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        )}
+        rowKey={(s) => s.id}
+        getRowActions={getRowActions}
+        storageKey="dashboard-services"
         emptyMessage="No services available"
-        actionsLabel={translations.colActions}
       />
     </div>
   );
 }
-

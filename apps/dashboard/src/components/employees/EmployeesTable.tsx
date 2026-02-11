@@ -1,8 +1,9 @@
 "use client";
 
-import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import type { Employee, Service } from "@/lib/types";
+import { Edit, Trash2 } from "lucide-react";
 
 interface EmployeesTableProps {
   employees: Employee[];
@@ -32,47 +33,51 @@ export function EmployeesTable({
   onEdit,
   translations,
 }: EmployeesTableProps) {
-  const columns: ColumnDefinition<Employee>[] = [
+  const columns: ColumnDef<Employee>[] = [
     {
       id: "name",
-      label: translations.colName,
-      render: (employee) => (
+      header: translations.colName,
+      cell: (employee) => (
         <div className="font-medium">{employee.full_name}</div>
       ),
+      getValue: (employee) => employee.full_name,
     },
     {
       id: "role",
-      label: translations.colRole,
-      render: (employee) => (
+      header: translations.colRole,
+      cell: (employee) => (
         <div className="text-xs text-muted-foreground">{employee.role || "-"}</div>
       ),
+      getValue: (employee) => employee.role ?? "",
     },
     {
       id: "contact",
-      label: translations.colContact,
-      render: (employee) => (
+      header: translations.colContact,
+      cell: (employee) => (
         <div className="text-xs text-muted-foreground">
           {employee.email && <div>{employee.email}</div>}
           {employee.phone && <div>{employee.phone}</div>}
           {!employee.email && !employee.phone && "-"}
         </div>
       ),
+      getValue: (employee) => employee.email ?? employee.phone ?? "",
     },
     {
       id: "services",
-      label: translations.colServices,
-      render: (employee) => (
+      header: translations.colServices,
+      cell: (employee) => (
         <div className="text-xs text-muted-foreground">
           {employeeServicesMap[employee.id]?.length > 0
             ? employeeServicesMap[employee.id].map((s) => s.name).join(", ")
             : "-"}
         </div>
       ),
+      getValue: (employee) => employeeServicesMap[employee.id]?.length ?? 0,
     },
     {
       id: "status",
-      label: translations.colStatus,
-      render: (employee) => (
+      header: translations.colStatus,
+      cell: (employee) => (
         <Badge
           variant="outline"
           className={
@@ -84,60 +89,35 @@ export function EmployeesTable({
           {employee.is_active ? translations.active : translations.inactive}
         </Badge>
       ),
+      getValue: (employee) => (employee.is_active ? 1 : 0),
+    },
+  ];
+
+  const getRowActions = (employee: Employee): RowAction<Employee>[] => [
+    {
+      label: translations.edit,
+      icon: Edit,
+      onClick: (e) => onEdit(e),
+    },
+    {
+      label: translations.delete,
+      icon: Trash2,
+      onClick: (e) => onDelete(e.id),
+      variant: "destructive",
+      separator: true,
     },
   ];
 
   return (
     <div className="mt-4 hidden md:block">
-      <TableWithViews
-        tableId="employees"
+      <DataTable
         columns={columns}
         data={employees}
-        onEdit={onEdit}
-        onDelete={(employee) => onDelete(employee.id)}
-        renderDetails={(employee) => (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg">{employee.full_name}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{employee.role || "No role"}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">{employee.email || "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Phone</p>
-                <p className="text-sm text-muted-foreground">{employee.phone || "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Status</p>
-                <Badge
-                  variant="outline"
-                  className={
-                    employee.is_active
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-zinc-200 bg-zinc-100 text-zinc-600"
-                  }
-                >
-                  {employee.is_active ? translations.active : translations.inactive}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Services</p>
-                <p className="text-sm text-muted-foreground">
-                  {employeeServicesMap[employee.id]?.length > 0
-                    ? employeeServicesMap[employee.id].map((s) => s.name).join(", ")
-                    : "None"}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        rowKey={(e) => e.id}
+        getRowActions={getRowActions}
+        storageKey="dashboard-employees"
         emptyMessage="No employees available"
-        actionsLabel={translations.colActions}
       />
     </div>
   );
 }
-

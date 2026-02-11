@@ -1,9 +1,8 @@
 "use client";
 
-import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import type { Customer } from "@/lib/types";
+import { Eye, Trash2 } from "lucide-react";
 
 interface CustomersTableProps {
   customers: Customer[];
@@ -27,86 +26,77 @@ export function CustomersTable({
   onDelete,
   translations,
 }: CustomersTableProps) {
-  const columns: ColumnDefinition<Customer>[] = [
+  const columns: ColumnDef<Customer>[] = [
     {
       id: "name",
-      label: translations.colName,
-      render: (customer) => (
+      header: translations.colName,
+      cell: (customer) => (
         <div className="font-medium">{customer.full_name}</div>
       ),
+      getValue: (customer) => customer.full_name,
     },
     {
       id: "contact",
-      label: translations.colContact,
-      render: (customer) => (
+      header: translations.colContact,
+      cell: (customer) => (
         <div className="text-xs text-muted-foreground">
           {customer.email && <div>{customer.email}</div>}
           {customer.phone && <div>{customer.phone}</div>}
           {!customer.email && !customer.phone && "-"}
         </div>
       ),
+      getValue: (customer) => customer.email ?? customer.phone ?? "",
     },
     {
       id: "notes",
-      label: translations.colNotes,
-      render: (customer) => (
+      header: translations.colNotes,
+      cell: (customer) => (
         <div className="text-xs text-muted-foreground">{customer.notes || "-"}</div>
       ),
+      sortable: false,
     },
     {
       id: "gdpr",
-      label: translations.colGdpr,
-      render: (customer) => (
+      header: translations.colGdpr,
+      cell: (customer) => (
         <div className="text-xs text-muted-foreground">
           {customer.gdpr_consent ? translations.consentYes : translations.consentNo}
         </div>
       ),
+      getValue: (customer) => (customer.gdpr_consent ? 1 : 0),
     },
   ];
 
+  const getRowActions = (customer: Customer): RowAction<Customer>[] => {
+    const actions: RowAction<Customer>[] = [];
+    if (canViewHistory) {
+      actions.push({
+        label: "View History",
+        icon: Eye,
+        onClick: (c) => {
+          window.location.href = `/customers/${c.id}/history`;
+        },
+      });
+    }
+    actions.push({
+      label: translations.delete,
+      icon: Trash2,
+      onClick: (c) => onDelete(c.id),
+      variant: "destructive",
+      separator: true,
+    });
+    return actions;
+  };
+
   return (
     <div className="mt-4 hidden md:block">
-      <TableWithViews
-        tableId="customers"
+      <DataTable
         columns={columns}
         data={customers}
-        onDelete={(customer) => onDelete(customer.id)}
-        onViewDetails={(customer) => {
-          if (canViewHistory) {
-            window.location.href = `/customers/${customer.id}/history`;
-          }
-        }}
-        renderDetails={(customer) => (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg">{customer.full_name}</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">{customer.email || "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Phone</p>
-                <p className="text-sm text-muted-foreground">{customer.phone || "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">GDPR Consent</p>
-                <p className="text-sm text-muted-foreground">
-                  {customer.gdpr_consent ? translations.consentYes : translations.consentNo}
-                </p>
-              </div>
-              {customer.notes && (
-                <div className="col-span-2">
-                  <p className="text-sm font-medium">Notes</p>
-                  <p className="text-sm text-muted-foreground">{customer.notes}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        rowKey={(c) => c.id}
+        getRowActions={getRowActions}
+        storageKey="dashboard-customers"
         emptyMessage="No customers available"
-        actionsLabel={translations.colActions}
       />
     </div>
   );

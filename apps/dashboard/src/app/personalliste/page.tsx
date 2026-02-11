@@ -5,21 +5,14 @@ import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { MoreVertical } from "lucide-react";
+import { Edit } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { usePersonalliste } from "@/lib/hooks/personalliste/usePersonalliste";
 import { exportPersonallisteToCSV } from "@/lib/services/export-service";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
@@ -76,6 +69,89 @@ function formatDuration(
   if (h === 0) return `${m} min`;
   if (m === 0) return `${h} ${hourChar}`;
   return `${h} ${hourChar} ${m} min`;
+}
+
+function PersonallisteDataTable({
+  entries,
+  loading,
+  locale,
+  translations: t,
+  onEdit,
+}: {
+  entries: PersonallisteEntry[];
+  loading: boolean;
+  locale: string;
+  translations: Record<string, string>;
+  onEdit: (entry: PersonallisteEntry) => void;
+}) {
+  const columns: ColumnDef<PersonallisteEntry>[] = [
+    {
+      id: "date",
+      header: t.colDate,
+      cell: (row) => <span>{row.date}</span>,
+      getValue: (row) => row.date,
+    },
+    {
+      id: "employee",
+      header: t.colEmployee,
+      cell: (row) => <span>{row.employees?.full_name ?? "–"}</span>,
+      getValue: (row) => row.employees?.full_name ?? "",
+    },
+    {
+      id: "check_in",
+      header: t.colCheckIn,
+      cell: (row) => <span>{formatTime(row.check_in)}</span>,
+      getValue: (row) => row.check_in ?? "",
+    },
+    {
+      id: "check_out",
+      header: t.colCheckOut,
+      cell: (row) => <span>{formatTime(row.check_out)}</span>,
+      getValue: (row) => row.check_out ?? "",
+    },
+    {
+      id: "duration",
+      header: t.colDuration,
+      cell: (row) => <span>{formatDuration(row.duration_minutes, locale)}</span>,
+      getValue: (row) => row.duration_minutes ?? 0,
+    },
+    {
+      id: "status",
+      header: t.colStatus,
+      cell: (row) => <span>{row.status === "edited" ? t.statusEdited : t.statusOk}</span>,
+      getValue: (row) => row.status ?? "",
+    },
+    {
+      id: "changed_at",
+      header: t.colChangedBy,
+      cell: (row) => (
+        <span className="text-muted-foreground text-xs">
+          {row.changed_at ? formatDateTime(row.changed_at) : "–"}
+        </span>
+      ),
+      getValue: (row) => row.changed_at ?? "",
+    },
+  ];
+
+  const getRowActions = (row: PersonallisteEntry): RowAction<PersonallisteEntry>[] => [
+    {
+      label: t.edit,
+      icon: Edit,
+      onClick: (entry) => onEdit(entry),
+    },
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={entries}
+      rowKey={(row) => row.id}
+      getRowActions={getRowActions}
+      loading={loading}
+      storageKey="dashboard-personalliste"
+      emptyMessage={`${t.emptyTitle} – ${t.emptyDescription}`}
+    />
+  );
 }
 
 export default function PersonallistePage() {
@@ -188,71 +264,16 @@ export default function PersonallistePage() {
               </Button>
             </div>
 
-            {loading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-              </div>
-            ) : entries.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
-                <p className="font-medium text-foreground">{t.emptyTitle}</p>
-                <p className="text-sm mt-1">{t.emptyDescription}</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t.colDate}</TableHead>
-                    <TableHead>{t.colEmployee}</TableHead>
-                    <TableHead>{t.colCheckIn}</TableHead>
-                    <TableHead>{t.colCheckOut}</TableHead>
-                    <TableHead>{t.colDuration}</TableHead>
-                    <TableHead>{t.colStatus}</TableHead>
-                    <TableHead>{t.colChangedBy}</TableHead>
-                    <TableHead className="w-20">{t.edit}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {entries.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{row.date}</TableCell>
-                      <TableCell>
-                        {row.employees?.full_name ?? "–"}
-                      </TableCell>
-                      <TableCell>{formatTime(row.check_in)}</TableCell>
-                      <TableCell>{formatTime(row.check_out)}</TableCell>
-                      <TableCell>
-                        {formatDuration(row.duration_minutes, appLocale)}
-                      </TableCell>
-                      <TableCell>
-                        {row.status === "edited" ? t.statusEdited : t.statusOk}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {row.changed_at
-                          ? formatDateTime(row.changed_at)
-                          : "–"}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          aria-label={t.edit}
-                          onClick={() => {
-                            setEditingEntry(row);
-                            setEditOpen(true);
-                          }}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <PersonallisteDataTable
+              entries={entries}
+              loading={loading}
+              locale={appLocale}
+              translations={t}
+              onEdit={(entry) => {
+                setEditingEntry(entry);
+                setEditOpen(true);
+              }}
+            />
           </>
         )}
       </PageLayout>

@@ -1,10 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { TableWithViews, type ColumnDefinition } from "@/components/tables/TableWithViews";
+import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import type { Booking, Shift } from "@/lib/types";
 import { formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable } from "@/lib/utils/bookings/bookings-utils";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { Trash2 } from "lucide-react";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -30,7 +31,7 @@ interface BookingsTableProps {
     statusCompleted: string;
     statusCancelled: string;
     statusScheduled: string;
-    cancelButton?: string; // Optional: label for cancel action
+    cancelButton?: string;
   };
   locale: string;
   onCancelBooking: (booking: Booking) => void;
@@ -47,38 +48,42 @@ export function BookingsTable({
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
 
-  const columns: ColumnDefinition<Booking>[] = [
+  const columns: ColumnDef<Booking>[] = [
     {
       id: "date",
-      label: translations.colDate,
-      render: (booking) => (
+      header: translations.colDate,
+      cell: (booking) => (
         <div className="text-xs text-muted-foreground">
           {formatDate(booking.start_time, locale, timezone)}
         </div>
       ),
+      getValue: (booking) => booking.start_time,
     },
     {
       id: "time",
-      label: translations.colTime,
-      render: (booking) => (
+      header: translations.colTime,
+      cell: (booking) => (
         <div className="text-xs text-muted-foreground">
           {formatTime(booking.start_time, locale, timezone)} – {formatTime(booking.end_time, locale, timezone)}
         </div>
       ),
+      getValue: (booking) => booking.start_time,
+      sortable: false,
     },
     {
       id: "service",
-      label: translations.colService,
-      render: (booking) => (
+      header: translations.colService,
+      cell: (booking) => (
         <div className="text-xs text-muted-foreground">
           {booking.services?.name ?? translations.unknownService}
         </div>
       ),
+      getValue: (booking) => booking.services?.name ?? "",
     },
     {
       id: "employee",
-      label: translations.colEmployee,
-      render: (booking) => (
+      header: translations.colEmployee,
+      cell: (booking) => (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {booking.employees?.full_name ?? translations.unknownEmployee}
           {!hasEmployeeAvailable(booking, employees, shifts) && (
@@ -88,20 +93,22 @@ export function BookingsTable({
           )}
         </div>
       ),
+      getValue: (booking) => booking.employees?.full_name ?? "",
     },
     {
       id: "customer",
-      label: translations.colCustomer,
-      render: (booking) => (
+      header: translations.colCustomer,
+      cell: (booking) => (
         <div className="text-xs text-muted-foreground">
           {booking.customers?.full_name ?? translations.unknownCustomer}
         </div>
       ),
+      getValue: (booking) => booking.customers?.full_name ?? "",
     },
     {
       id: "status",
-      label: translations.colStatus,
-      render: (booking) => (
+      header: translations.colStatus,
+      cell: (booking) => (
         <Badge
           variant="outline"
           className={`border px-2 py-0.5 text-[11px] ${statusColor(booking.status)}`}
@@ -109,20 +116,23 @@ export function BookingsTable({
           {statusLabel(booking.status, translations)}
         </Badge>
       ),
+      getValue: (booking) => booking.status,
     },
     {
       id: "type",
-      label: translations.colType,
-      render: (booking) => (
+      header: translations.colType,
+      cell: (booking) => (
         <div className="text-xs text-muted-foreground">
           {booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline}
         </div>
       ),
+      getValue: (booking) => (booking.is_walk_in ? 1 : 0),
+      defaultVisible: false,
     },
     {
       id: "notes",
-      label: translations.colNotes,
-      render: (booking) => (
+      header: translations.colNotes,
+      cell: (booking) => (
         <div className="space-y-1 text-xs text-muted-foreground">
           {booking.notes && <div>{booking.notes}</div>}
           {booking.products && booking.products.length > 0 && (
@@ -138,74 +148,35 @@ export function BookingsTable({
           {!booking.notes && (!booking.products || booking.products.length === 0) && "-"}
         </div>
       ),
+      sortable: false,
+      defaultVisible: false,
     },
   ];
 
+  const getRowActions = (booking: Booking): RowAction<Booking>[] => {
+    if (booking.status === "cancelled" || booking.status === "completed") {
+      return [];
+    }
+    return [
+      {
+        label: translations.cancelButton || (locale === "nb" ? "Avbryt" : "Cancel"),
+        icon: Trash2,
+        onClick: (b) => onCancelBooking(b),
+        variant: "destructive",
+      },
+    ];
+  };
+
   return (
     <div className="hidden md:block">
-      <TableWithViews
-        tableId="bookings"
+      <DataTable
         columns={columns}
         data={bookings}
-        onDelete={(booking) => {
-          onCancelBooking(booking);
-        }}
-        canDelete={(booking) => {
-          // Only show cancel action for bookings that can be cancelled
-          return booking.status !== "cancelled" && booking.status !== "completed";
-        }}
-        deleteLabel={translations.cancelButton || (locale === "nb" ? "Avbryt" : "Cancel")}
-        renderDetails={(booking) => (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg">
-                {booking.services?.name ?? translations.unknownService}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {formatDate(booking.start_time, locale, timezone)} at {formatTime(booking.start_time, locale, timezone)}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium">Customer</p>
-                <p className="text-sm text-muted-foreground">
-                  {booking.customers?.full_name ?? translations.unknownCustomer}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Employee</p>
-                <p className="text-sm text-muted-foreground">
-                  {booking.employees?.full_name ?? translations.unknownEmployee}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Status</p>
-                <Badge
-                  variant="outline"
-                  className={`border px-2 py-0.5 text-[11px] ${statusColor(booking.status)}`}
-                >
-                  {statusLabel(booking.status, translations)}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Type</p>
-                <p className="text-sm text-muted-foreground">
-                  {booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline}
-                </p>
-              </div>
-              {booking.notes && (
-                <div className="col-span-2">
-                  <p className="text-sm font-medium">Notes</p>
-                  <p className="text-sm text-muted-foreground">{booking.notes}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        rowKey={(b) => b.id}
+        getRowActions={getRowActions}
+        storageKey="dashboard-bookings"
         emptyMessage="No bookings available"
-        actionsLabel="Actions"
       />
     </div>
   );
 }
-
