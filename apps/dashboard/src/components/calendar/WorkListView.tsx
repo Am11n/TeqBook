@@ -1,24 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Clock, User, CreditCard, Phone, AlertTriangle } from "lucide-react";
+import { Clock, User, AlertTriangle } from "lucide-react";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { getBookingBadgeClasses } from "@/lib/ui/calendar-theme";
 
 interface WorkListViewProps {
   bookings: CalendarBooking[];
   onBookingClick?: (booking: CalendarBooking) => void;
-}
-
-function getStatusBadgeClass(status: string): string {
-  switch (status) {
-    case "confirmed": return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
-    case "pending": return "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300";
-    case "completed": return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-    case "cancelled": return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
-    case "no-show": return "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300";
-    default: return "bg-gray-100 text-gray-700";
-  }
 }
 
 export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
@@ -108,7 +98,7 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
               )}
             </div>
             <div>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full capitalize ${getStatusBadgeClass(booking.status)}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full capitalize ${getBookingBadgeClasses(booking.status)}`}>
                 {booking.status}
               </span>
             </div>

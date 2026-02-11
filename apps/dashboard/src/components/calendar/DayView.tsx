@@ -5,6 +5,12 @@ import type { CalendarBooking, ScheduleSegment } from "@/lib/types";
 import { BookingEvent } from "./BookingEvent";
 import { TimeBlockEvent } from "./TimeBlockEvent";
 import { SlotContextMenu } from "./SlotContextMenu";
+import {
+  getSegmentClasses,
+  getEmployeeAccent,
+  getDensityConfig,
+  type CalendarDensity,
+} from "@/lib/ui/calendar-theme";
 
 interface DayViewProps {
   selectedDate: string;
@@ -15,13 +21,13 @@ interface DayViewProps {
   onBookingClick?: (booking: CalendarBooking) => void;
   onSlotClick?: (employeeId: string, time: string) => void;
   onBlockTimeClick?: (employeeId: string, time: string) => void;
+  density?: CalendarDensity;
+  selectedBookingId?: string;
   translations: {
     unknownService: string;
     unknownCustomer: string;
   };
 }
-
-const SLOT_HEIGHT = 40; // px per 30-minute slot
 
 export function DayView({
   selectedDate,
@@ -32,8 +38,13 @@ export function DayView({
   onBookingClick,
   onSlotClick,
   onBlockTimeClick,
+  density = "comfortable",
+  selectedBookingId,
   translations,
 }: DayViewProps) {
+  const densityConfig = getDensityConfig(density);
+  const SLOT_HEIGHT = densityConfig.slotHeight;
+
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const nowLineRef = useRef<HTMLDivElement>(null);
@@ -76,7 +87,7 @@ export function DayView({
         scrollContainerRef.current.scrollTop = slotIndex * SLOT_HEIGHT - 100;
       }
     }
-  }, [selectedDate, isToday, startHour, endHour]);
+  }, [selectedDate, isToday, startHour, endHour, SLOT_HEIGHT]);
 
   // Now line position
   const getNowLinePosition = () => {
@@ -116,7 +127,7 @@ export function DayView({
       (clampedEndM % 30) * (SLOT_HEIGHT / 30) -
       (clampedStartM % 30) * (SLOT_HEIGHT / 30);
 
-    return { top, height: Math.max(height, SLOT_HEIGHT * 0.5) };
+    return { top, height: Math.max(height, densityConfig.minCardHeight) };
   };
 
   // Segment position calculation
@@ -153,7 +164,7 @@ export function DayView({
         time,
       });
     },
-    [startHour]
+    [startHour, SLOT_HEIGHT]
   );
 
   const totalHeight = totalSlots * SLOT_HEIGHT;
@@ -162,40 +173,30 @@ export function DayView({
       ? `calc((100% - 64px) / ${employees.length})`
       : "0";
 
-  // Get segment bg class
-  const getSegmentBg = (type: string) => {
-    switch (type) {
-      case "working":
-        return "bg-green-50/40 dark:bg-green-950/20";
-      case "break":
-        return "bg-gray-100 dark:bg-gray-800/50 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,0.04)_4px,rgba(0,0,0,0.04)_8px)]";
-      case "time_block":
-        return "bg-gray-200/70 dark:bg-gray-700/50";
-      case "buffer":
-        return "bg-amber-50/50 dark:bg-amber-950/20 bg-[repeating-linear-gradient(0deg,transparent,transparent_3px,rgba(0,0,0,0.03)_3px,rgba(0,0,0,0.03)_6px)]";
-      case "closed":
-        return "bg-gray-100 dark:bg-gray-800/60 bg-[repeating-linear-gradient(-45deg,transparent,transparent_6px,rgba(0,0,0,0.06)_6px,rgba(0,0,0,0.06)_12px)]";
-      default:
-        return "";
-    }
-  };
-
   return (
     <div className="relative w-full overflow-hidden rounded-lg border bg-background">
-      {/* Sticky header with employee names */}
+      {/* Sticky header with employee names + accent */}
       <div className="sticky top-0 z-20 flex border-b bg-background">
-        <div className="w-16 shrink-0 border-r bg-muted/50 px-1 py-1.5 text-[10px] font-medium text-muted-foreground">
+        <div className="w-16 shrink-0 border-r bg-muted/50 px-1 py-1.5 text-xs font-medium text-muted-foreground">
           Time
         </div>
-        {employees.map((employee) => (
-          <div
-            key={employee.id}
-            className="flex-1 border-r px-2 py-1.5 text-xs font-medium truncate last:border-r-0"
-            style={{ width: employeeWidth }}
-          >
-            {employee.full_name}
-          </div>
-        ))}
+        {employees.map((employee) => {
+          const accent = getEmployeeAccent(employee.id);
+          return (
+            <div
+              key={employee.id}
+              className={`relative flex-1 border-r last:border-r-0 border-t-2 ${accent.border}`}
+              style={{ width: employeeWidth }}
+            >
+              <div className="flex items-center gap-1.5 px-2 py-1.5">
+                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${accent.dot}`} />
+                <span className="text-sm font-medium truncate">
+                  {employee.full_name}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Scrollable time grid */}
@@ -214,7 +215,7 @@ export function DayView({
                 style={{ height: `${SLOT_HEIGHT}px` }}
               >
                 {slot.minutes === 0 && (
-                  <span className="absolute left-1 top-0.5 text-[10px] font-medium text-muted-foreground">
+                  <span className="absolute left-1 top-0.5 text-xs font-semibold text-foreground">
                     {slot.time}
                   </span>
                 )}
@@ -264,7 +265,7 @@ export function DayView({
                     return (
                       <div
                         key={`seg-${i}`}
-                        className={`absolute left-0 right-0 pointer-events-none ${getSegmentBg(segment.segment_type)}`}
+                        className={`absolute left-0 right-0 pointer-events-none ${getSegmentClasses(segment.segment_type)}`}
                         style={{ top: `${top}px`, height: `${height}px` }}
                       >
                         {segment.segment_type === "time_block" && (
@@ -275,12 +276,12 @@ export function DayView({
                           />
                         )}
                         {segment.segment_type === "break" && height > 16 && (
-                          <span className="absolute left-1 top-0.5 text-[9px] text-muted-foreground/70 pointer-events-none">
+                          <span className="absolute left-1 top-0.5 text-xs text-muted-foreground/70 pointer-events-none">
                             {segment.metadata.break_label || "Break"}
                           </span>
                         )}
                         {segment.segment_type === "closed" && height > 20 && (
-                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-muted-foreground/50 pointer-events-none">
+                          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-muted-foreground/50 pointer-events-none">
                             {segment.metadata.reason_code === "salon_closed"
                               ? "Closed"
                               : segment.metadata.reason_code === "no_shifts"
@@ -307,6 +308,7 @@ export function DayView({
                       <BookingEvent
                         key={booking.id}
                         booking={booking}
+                        isSelected={booking.id === selectedBookingId}
                         style={{
                           position: "absolute",
                           top: `${top}px`,
@@ -324,20 +326,20 @@ export function DayView({
             );
           })}
 
-          {/* Now line indicator */}
+          {/* Now line indicator (premium) */}
           {isToday && nowLinePosition !== null && (
             <div
               ref={nowLineRef}
               className="absolute left-16 right-0 z-10 flex items-center pointer-events-none"
               style={{ top: `${nowLinePosition}px` }}
             >
-              <div className="absolute -left-1 h-2 w-2 rounded-full bg-red-500" />
-              <div className="h-[2px] w-full bg-red-500/80" />
-              <span className="absolute -left-16 text-[9px] font-medium text-red-500 bg-background px-1 rounded">
-                {currentTime.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+              {/* Glow dot */}
+              <div className="absolute -left-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-red-500/20" />
+              {/* Line */}
+              <div className="h-[2px] w-full bg-red-500" />
+              {/* Now badge */}
+              <span className="absolute -left-16 bg-red-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                Now
               </span>
             </div>
           )}

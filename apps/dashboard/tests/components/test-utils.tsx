@@ -57,6 +57,8 @@ export const mockService = (overrides = {}) => ({
   name: "Haircut",
   category: "cut",
   duration_minutes: 30,
+  prep_minutes: 0,
+  cleanup_minutes: 0,
   price_cents: 35000,
   sort_order: 0,
   is_active: true,

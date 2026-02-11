@@ -23,7 +23,46 @@ import { CommandPalette } from "@/components/calendar/CommandPalette";
 import { WorkListView } from "@/components/calendar/WorkListView";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { CalendarBooking, Booking, AvailableSlotBatch } from "@/lib/types";
+import type { CalendarBooking, Booking, AvailableSlotBatch, ScheduleSegment } from "@/lib/types";
+
+function OperationalEmptyState({ segments }: { segments: ScheduleSegment[] }) {
+  // Calculate open capacity from working segments
+  const workingMinutes = segments
+    .filter((s) => s.segment_type === "working")
+    .reduce((sum, s) => {
+      const start = new Date(s.start_time).getTime();
+      const end = new Date(s.end_time).getTime();
+      return sum + (end - start) / 60000;
+    }, 0);
+
+  const bookedMinutes = segments
+    .filter((s) => s.segment_type === "booking")
+    .reduce((sum, s) => {
+      const start = new Date(s.start_time).getTime();
+      const end = new Date(s.end_time).getTime();
+      return sum + (end - start) / 60000;
+    }, 0);
+
+  const openHours = Math.max(0, (workingMinutes - bookedMinutes) / 60);
+  const capacityPct = workingMinutes > 0 ? Math.round(((workingMinutes - bookedMinutes) / workingMinutes) * 100) : 100;
+
+  return (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <p className="text-sm font-medium text-foreground">
+        {capacityPct >= 100 ? "100% available" : `${capacityPct}% available`}
+      </p>
+      {openHours > 0 && (
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {openHours.toFixed(1)}h open capacity
+        </p>
+      )}
+      <p className="mt-2 text-xs text-muted-foreground">
+        Press <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">N</kbd> for a new booking, or{" "}
+        <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd> for actions.
+      </p>
+    </div>
+  );
+}
 
 export default function CalendarPage() {
   const { locale } = useLocale();
@@ -37,6 +76,8 @@ export default function CalendarPage() {
     error,
     viewMode,
     setViewMode,
+    density,
+    setDensity,
     filterEmployeeId,
     setFilterEmployeeId,
     selectedDate,
@@ -202,6 +243,8 @@ export default function CalendarPage() {
           setSelectedDate={setSelectedDate}
           filterEmployeeId={filterEmployeeId}
           setFilterEmployeeId={setFilterEmployeeId}
+          density={density}
+          setDensity={setDensity}
           employees={employees}
           locale={appLocale}
           translations={{
@@ -279,6 +322,8 @@ export default function CalendarPage() {
                     bookingsForDayByEmployee={enrichedBookingsByEmployee}
                     segments={segments}
                     gridRange={gridRange}
+                    density={density}
+                    selectedBookingId={selectedBooking?.id}
                     onBookingClick={handleBookingClick}
                     onSlotClick={handleSlotClick}
                     onBlockTimeClick={handleBlockTimeClick}
@@ -310,17 +355,9 @@ export default function CalendarPage() {
                 )}
               </div>
 
-              {/* Empty state for day/list view with no bookings */}
+              {/* Operational empty state for day/list view with no bookings */}
               {!hasBookingsForDay && (viewMode === "day" || viewMode === "list") && (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No bookings for this day.
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Press <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">N</kbd> for a new booking, or{" "}
-                    <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd> for actions.
-                  </p>
-                </div>
+                <OperationalEmptyState segments={segments} />
               )}
             </>
           )}

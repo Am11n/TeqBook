@@ -4,6 +4,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 import type { CalendarBooking } from "@/lib/types";
+import type { CalendarDensity } from "@/lib/ui/calendar-theme";
 
 interface UseCalendarOptions {
   translations: {
@@ -20,6 +21,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "list">("day");
+  const [density, setDensity] = useState<CalendarDensity>("comfortable");
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
@@ -183,6 +185,8 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     error,
     viewMode,
     setViewMode,
+    density,
+    setDensity,
     filterEmployeeId,
     setFilterEmployeeId,
     selectedDate,

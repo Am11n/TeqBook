@@ -1,11 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { DayView } from "@/components/calendar/DayView";
 import { BookingEvent } from "@/components/calendar/BookingEvent";
-import type { CalendarBooking } from "@/lib/types";
+import type { CalendarBooking, ScheduleSegment } from "@/lib/types";
 
 vi.mock("@/components/salon-provider", () => ({
   useCurrentSalon: () => ({ salon: { timezone: "UTC" } }),
+}));
+
+vi.mock("@/components/locale-provider", () => ({
+  useLocale: () => ({ locale: "en" }),
+}));
+
+vi.mock("@/i18n/normalizeLocale", () => ({
+  normalizeLocale: () => "en",
 }));
 
 // Mock data
@@ -21,6 +29,7 @@ const mockBooking: CalendarBooking = {
   status: "confirmed",
   is_walk_in: false,
   customer_id: "cust1",
+  notes: null,
   customers: { full_name: "Test Customer" },
   employees: { id: "emp1", full_name: "John Doe" },
   services: { name: "Haircut" },
@@ -31,6 +40,25 @@ const mockBookingsForDayByEmployee = {
   emp2: [],
 };
 
+const mockSegments: ScheduleSegment[] = [
+  {
+    employee_id: "emp1",
+    segment_type: "working",
+    start_time: "2024-01-15T08:00:00Z",
+    end_time: "2024-01-15T18:00:00Z",
+    metadata: {},
+  },
+  {
+    employee_id: "emp2",
+    segment_type: "working",
+    start_time: "2024-01-15T08:00:00Z",
+    end_time: "2024-01-15T18:00:00Z",
+    metadata: {},
+  },
+];
+
+const mockGridRange = { startHour: 7, endHour: 19 };
+
 describe("DayView", () => {
   it("renders time grid with 30-minute intervals", () => {
     render(
@@ -38,6 +66,8 @@ describe("DayView", () => {
         selectedDate="2024-01-15"
         employees={mockEmployees}
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
+        segments={mockSegments}
+        gridRange={mockGridRange}
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -45,7 +75,7 @@ describe("DayView", () => {
       />
     );
 
-    // DayView shows 09:00–21:00; check that time labels are rendered
+    // DayView shows grid range 07:00–19:00; check that time labels are rendered
     expect(screen.getByText("09:00")).toBeInTheDocument();
     expect(screen.getByText("12:00")).toBeInTheDocument();
   });
@@ -56,6 +86,8 @@ describe("DayView", () => {
         selectedDate="2024-01-15"
         employees={mockEmployees}
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
+        segments={mockSegments}
+        gridRange={mockGridRange}
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -73,6 +105,8 @@ describe("DayView", () => {
         selectedDate="2024-01-15"
         employees={mockEmployees}
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
+        segments={mockSegments}
+        gridRange={mockGridRange}
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -84,13 +118,14 @@ describe("DayView", () => {
     expect(screen.getByText("Test Customer")).toBeInTheDocument();
   });
 
-  it("shades non-business hours when opening hours provided", () => {
+  it("renders with segments providing background layers", () => {
     render(
       <DayView
         selectedDate="2024-01-15"
         employees={mockEmployees}
         bookingsForDayByEmployee={mockBookingsForDayByEmployee}
-        openingHours={{ open_time: "09:00", close_time: "17:00" }}
+        segments={mockSegments}
+        gridRange={mockGridRange}
         translations={{
           unknownService: "Unknown Service",
           unknownCustomer: "Unknown Customer",
@@ -98,12 +133,10 @@ describe("DayView", () => {
       />
     );
 
-    // Business hours shading is applied via CSS classes
+    // Segments are rendered as background layers; employee names confirm the grid rendered
     const container = screen.getByText("John Doe").closest("div")?.parentElement;
     expect(container).toBeInTheDocument();
   });
-
-
 });
 
 describe("BookingEvent", () => {
@@ -121,8 +154,6 @@ describe("BookingEvent", () => {
     expect(screen.getByText("Haircut")).toBeInTheDocument();
     expect(screen.getByText("Test Customer")).toBeInTheDocument();
   });
-
-
 
   it("calls onClick when clicked", () => {
     const onClick = vi.fn();
@@ -144,7 +175,7 @@ describe("BookingEvent", () => {
     expect(onClick).toHaveBeenCalledWith(mockBooking);
   });
 
-  it("shows correct status color", () => {
+  it("shows correct status color via theme tokens", () => {
     const { container } = render(
       <BookingEvent
         booking={mockBooking}
@@ -155,7 +186,7 @@ describe("BookingEvent", () => {
       />
     );
 
-    // Check that status color class is applied
+    // Confirmed status gets blue-50 background from calendar-theme tokens
     const bookingCard = container.querySelector(".bg-blue-50");
     expect(bookingCard).toBeInTheDocument();
   });

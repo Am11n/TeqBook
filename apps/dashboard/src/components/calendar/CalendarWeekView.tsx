@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { formatTimeRange, getStatusColor, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
+import { formatTimeRange, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
+import { getBookingClasses } from "@/lib/ui/calendar-theme";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 
@@ -113,23 +114,26 @@ export function CalendarWeekView({
 
               {/* Booking cards */}
               <div className="mt-2 space-y-1">
-                {visible.map((b) => (
-                  <div
-                    key={b.id}
-                    className={`rounded border px-1.5 py-1 text-[10px] cursor-pointer transition-colors hover:shadow-sm ${getStatusColor(b.status)}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onBookingClick?.(b);
-                    }}
-                  >
-                    <p className="font-medium truncate">
-                      {b.services?.name ?? translations.unknownService}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground">
-                      {formatTimeRange(b, timezone)}
-                    </p>
-                  </div>
-                ))}
+                {visible.map((b) => {
+                  const bClasses = getBookingClasses(b.status);
+                  return (
+                    <div
+                      key={b.id}
+                      className={`px-1.5 py-1 text-xs cursor-pointer overflow-hidden ${bClasses.card}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onBookingClick?.(b);
+                      }}
+                    >
+                      <p className={`font-semibold truncate ${bClasses.title}`}>
+                        {b.services?.name ?? translations.unknownService}
+                      </p>
+                      <p className={`text-[11px] ${bClasses.subtitle}`}>
+                        {formatTimeRange(b, timezone)}
+                      </p>
+                    </div>
+                  );
+                })}
 
                 {/* Overflow counter */}
                 {overflow > 0 && (

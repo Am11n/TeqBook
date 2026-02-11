@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Search, List, Command } from "lucide-react";
+import { Plus, Search, List, Command, Rows3, Rows4 } from "lucide-react";
 import { changeDate } from "@/lib/utils/calendar/calendar-utils";
+import type { CalendarDensity } from "@/lib/ui/calendar-theme";
 
 interface CalendarControlsProps {
   viewMode: "day" | "week" | "list";
@@ -11,6 +12,8 @@ interface CalendarControlsProps {
   setSelectedDate: (date: string) => void;
   filterEmployeeId: string;
   setFilterEmployeeId: (id: string) => void;
+  density: CalendarDensity;
+  setDensity: (density: CalendarDensity) => void;
   employees: Array<{ id: string; full_name: string }>;
   locale: string;
   translations: {
@@ -36,6 +39,8 @@ export function CalendarControls({
   setSelectedDate,
   filterEmployeeId,
   setFilterEmployeeId,
+  density,
+  setDensity,
   employees,
   locale,
   translations,
@@ -102,7 +107,7 @@ export function CalendarControls({
         </div>
       </div>
 
-      {/* Row 2: View mode + filters + navigation */}
+      {/* Row 2: View mode + filters + density + navigation */}
       <div className="flex flex-wrap items-center gap-2">
         {/* View mode toggle */}
         <div className="flex items-center gap-0.5 rounded-md border bg-card px-1 py-0.5">
@@ -133,6 +138,30 @@ export function CalendarControls({
           >
             <List className="h-3 w-3" />
             List
+          </Button>
+        </div>
+
+        {/* Density toggle */}
+        <div className="flex items-center gap-0.5 rounded-md border bg-card px-1 py-0.5">
+          <Button
+            type="button"
+            variant={density === "compact" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setDensity("compact")}
+            className="h-7 text-xs gap-1"
+            title="Compact view"
+          >
+            <Rows4 className="h-3 w-3" />
+          </Button>
+          <Button
+            type="button"
+            variant={density === "comfortable" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setDensity("comfortable")}
+            className="h-7 text-xs gap-1"
+            title="Comfortable view"
+          >
+            <Rows3 className="h-3 w-3" />
           </Button>
         </div>
 

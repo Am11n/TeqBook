@@ -49,24 +49,6 @@ export function formatTimeRange(booking: CalendarBooking, timezone?: string | nu
 }
 
 /**
- * Get status color class
- */
-export function getStatusColor(status: string | null | undefined): string {
-  switch (status) {
-    case "confirmed":
-      return "bg-blue-50 border-blue-200";
-    case "completed":
-      return "bg-green-50 border-green-200";
-    case "cancelled":
-      return "bg-red-50 border-red-200";
-    case "no-show":
-      return "bg-orange-50 border-orange-200";
-    default:
-      return "bg-gray-50 border-gray-200";
-  }
-}
-
-/**
  * Get week dates from start date
  */
 export function getWeekDates(startDate: string): string[] {

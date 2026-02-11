@@ -4,32 +4,17 @@ import { useState } from "react";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
+import { getBookingClasses } from "@/lib/ui/calendar-theme";
 
 interface BookingEventProps {
   booking: CalendarBooking;
   style?: React.CSSProperties;
   onClick?: (booking: CalendarBooking) => void;
+  isSelected?: boolean;
   translations: {
     unknownService: string;
     unknownCustomer: string;
   };
-}
-
-function getStatusColor(status: string | null | undefined): string {
-  switch (status) {
-    case "confirmed":
-      return "bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800";
-    case "pending":
-      return "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800";
-    case "completed":
-      return "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-800";
-    case "cancelled":
-      return "bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-800 opacity-50";
-    case "no-show":
-      return "bg-orange-50 border-orange-200 dark:bg-orange-950/40 dark:border-orange-800";
-    default:
-      return "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700";
-  }
 }
 
 function formatTimeRange(booking: CalendarBooking, timezone: string): string {
@@ -54,6 +39,7 @@ export function BookingEvent({
   booking,
   style,
   onClick,
+  isSelected,
   translations,
 }: BookingEventProps) {
   const { salon } = useCurrentSalon();
@@ -63,6 +49,7 @@ export function BookingEvent({
   const height = style?.height ? parseInt(String(style.height)) : 40;
   const isCompact = height < 50;
   const problems = booking._problems || [];
+  const classes = getBookingClasses(booking.status);
 
   return (
     <div
@@ -75,8 +62,11 @@ export function BookingEvent({
           e.stopPropagation();
           onClick?.(booking);
         }}
-        className={`cursor-pointer rounded border px-1.5 py-0.5 text-[10px] shadow-sm transition-all overflow-hidden ${getStatusColor(booking.status)} ${onClick ? "hover:shadow-md hover:ring-1 hover:ring-ring/20" : ""}`}
-        style={style}
+        className={`cursor-pointer overflow-hidden ${densityPadding()} ${classes.card} ${isSelected ? "ring-2 ring-ring ring-offset-1" : ""} ${onClick ? "hover:shadow-md" : ""}`}
+        style={{
+          ...style,
+          minHeight: "36px",
+        }}
       >
         {/* Problem badges */}
         {problems.length > 0 && (
@@ -91,27 +81,27 @@ export function BookingEvent({
               <span className="h-1.5 w-1.5 rounded-full bg-orange-400" title="Unconfirmed" />
             )}
             {problems.includes("missing_contact") && (
-              <span className="h-1.5 w-1.5 rounded-full bg-gray-400" title="Missing contact" />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" title="Missing contact" />
             )}
           </div>
         )}
 
         {/* Service name */}
-        <p className="font-medium truncate leading-tight pr-4">
+        <p className={`text-xs font-semibold truncate leading-tight pr-4 ${classes.title}`}>
           {booking.services?.name ?? translations.unknownService}
         </p>
 
         {/* Time */}
-        <p className="text-[9px] text-muted-foreground leading-tight">
+        <p className={`text-[11px] leading-tight ${classes.subtitle}`}>
           {formatTimeRange(booking, timezone)}
         </p>
 
         {/* Customer (only if not too compact) */}
         {!isCompact && (
-          <p className="text-[9px] text-muted-foreground truncate leading-tight">
+          <p className={`text-xs font-medium truncate leading-tight ${classes.subtitle}`}>
             {booking.customers?.full_name ?? translations.unknownCustomer}
             {booking.is_walk_in && (
-              <span className="ml-1 text-[8px] px-1 rounded bg-muted text-muted-foreground">
+              <span className="ml-1 text-[10px] px-1 rounded bg-muted text-muted-foreground">
                 walk-in
               </span>
             )}
@@ -120,7 +110,7 @@ export function BookingEvent({
 
         {/* New customer badge */}
         {!isCompact && problems.includes("new_customer") && (
-          <span className="inline-block mt-0.5 text-[8px] px-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+          <span className="inline-block mt-0.5 text-[10px] px-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
             New
           </span>
         )}
@@ -182,4 +172,8 @@ export function BookingEvent({
       )}
     </div>
   );
+}
+
+function densityPadding(): string {
+  return "px-2 py-1";
 }
