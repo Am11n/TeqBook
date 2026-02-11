@@ -86,13 +86,13 @@ export function useDashboardMenuItems({
       const hasReports = features.includes("ADVANCED_REPORTS");
 
       if (canManageServices(userRole) && hasInventory) {
-        items.push({ href: "/products", label: "Products", icon: Package });
+        items.push({ href: "/products", label: texts.products, icon: Package });
       }
       if (canManageShifts(userRole) && hasShifts) {
         items.push({ href: "/shifts", label: texts.shifts, icon: Clock });
       }
       if (canViewReports(userRole) && hasReports) {
-        items.push({ href: "/reports", label: "Reports", icon: TrendingUp });
+        items.push({ href: "/reports", label: texts.reports, icon: TrendingUp });
       }
     }
 
@@ -106,6 +106,8 @@ export function useDashboardMenuItems({
     texts.services,
     texts.customers,
     texts.shifts,
+    texts.products,
+    texts.reports,
   ]);
 
   const complianceItems = useMemo<MenuItem[]>(() => {

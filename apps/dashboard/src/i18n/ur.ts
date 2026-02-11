@@ -183,6 +183,15 @@ export const ur: TranslationNamespaces = {
     login: "لاگ اِن",
     logout: "لاگ آؤٹ",
     langLabel: "زبان",
+    sectionOverview: "جائزہ",
+    sectionOperations: "آپریشنز",
+    sectionManagement: "انتظام",
+    sectionCompliance: "تعمیل",
+    sectionSystem: "سسٹم",
+    products: "مصنوعات",
+    reports: "رپورٹس",
+    collapseSidebar: "سائیڈبار سکیڑیں",
+    expandSidebar: "سائیڈبار پھیلائیں",
   },
   
   home: {

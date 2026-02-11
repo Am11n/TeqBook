@@ -185,6 +185,15 @@ export const so: TranslationNamespaces = {
     login: "Soo gal",
     logout: "Ka bax",
     langLabel: "Luuqad",
+    sectionOverview: "Guudmar",
+    sectionOperations: "Hawlgalyo",
+    sectionManagement: "Maamulka",
+    sectionCompliance: "Horumar",
+    sectionSystem: "Nidaamka",
+    products: "Badeecadaha",
+    reports: "Warbixinaha",
+    collapseSidebar: "Yaree sidebar-ka",
+    expandSidebar: "Weynee sidebar-ka",
   },
   
   home: {

@@ -185,6 +185,15 @@ export const tl: TranslationNamespaces = {
     login: "Mag-log in",
     logout: "Mag-logout",
     langLabel: "Wika",
+    sectionOverview: "Pangkalahatang-ideya",
+    sectionOperations: "Mga operasyon",
+    sectionManagement: "Pamamahala",
+    sectionCompliance: "Pagsunod",
+    sectionSystem: "Sistema",
+    products: "Mga produkto",
+    reports: "Mga ulat",
+    collapseSidebar: "I-collapse ang sidebar",
+    expandSidebar: "Palawakin ang sidebar",
   },
   
   home: {

@@ -21,6 +21,15 @@ interface DashboardSidebarProps {
   systemItems: MenuItem[];
   pathname: string;
   builtForText: string;
+  sectionLabels: {
+    overview: string;
+    operations: string;
+    management: string;
+    compliance: string;
+    system: string;
+    collapseSidebar: string;
+    expandSidebar: string;
+  };
 }
 
 export function DashboardSidebar({
@@ -33,6 +42,7 @@ export function DashboardSidebar({
   systemItems,
   pathname,
   builtForText,
+  sectionLabels,
 }: DashboardSidebarProps) {
   return (
     <aside
@@ -48,7 +58,7 @@ export function DashboardSidebar({
             {!sidebarCollapsed && (
               <div className="mb-2 flex items-center justify-between px-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Overview
+                  {sectionLabels.overview}
                 </p>
                 <TooltipProvider>
                   <Tooltip>
@@ -56,12 +66,12 @@ export function DashboardSidebar({
                       <button
                         onClick={onToggleSidebar}
                         className="flex h-6 w-6 items-center justify-center rounded border border-primary/20 bg-primary/10 transition-colors hover:bg-primary/20 hover:border-primary/30"
-                        aria-label="Collapse sidebar"
+                        aria-label={sectionLabels.collapseSidebar}
                       >
                         <ChevronLeft className="h-3 w-3 text-primary" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Collapse sidebar</TooltipContent>
+                    <TooltipContent side="right">{sectionLabels.collapseSidebar}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -74,12 +84,12 @@ export function DashboardSidebar({
                       <button
                         onClick={onToggleSidebar}
                         className="flex h-6 w-6 items-center justify-center rounded border border-blue-200/60 bg-blue-50/80 transition-colors hover:bg-blue-100/60 hover:border-blue-300/60"
-                        aria-label="Expand sidebar"
+                        aria-label={sectionLabels.expandSidebar}
                       >
                         <ChevronRight className="h-3 w-3 text-primary" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Expand sidebar</TooltipContent>
+                    <TooltipContent side="right">{sectionLabels.expandSidebar}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -102,7 +112,7 @@ export function DashboardSidebar({
           <div>
             {!sidebarCollapsed && (
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Operations
+                {sectionLabels.operations}
               </p>
             )}
             <div className="flex flex-col gap-1.5">
@@ -123,7 +133,7 @@ export function DashboardSidebar({
           <div>
             {!sidebarCollapsed && (
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Management
+                {sectionLabels.management}
               </p>
             )}
             <div className="flex flex-col gap-1.5">
@@ -144,7 +154,7 @@ export function DashboardSidebar({
           <div>
             {!sidebarCollapsed && complianceItems.length > 0 && (
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Compliance
+                {sectionLabels.compliance}
               </p>
             )}
             <div className="flex flex-col gap-1.5">
@@ -165,7 +175,7 @@ export function DashboardSidebar({
           <div>
             {!sidebarCollapsed && (
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                System
+                {sectionLabels.system}
               </p>
             )}
             <div className="flex flex-col gap-1.5">

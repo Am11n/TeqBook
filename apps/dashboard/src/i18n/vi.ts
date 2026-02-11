@@ -185,6 +185,15 @@ export const vi: TranslationNamespaces = {
     login: "Đăng nhập",
     logout: "Đăng xuất",
     langLabel: "Ngôn ngữ",
+    sectionOverview: "Tổng quan",
+    sectionOperations: "Vận hành",
+    sectionManagement: "Quản lý",
+    sectionCompliance: "Tuân thủ",
+    sectionSystem: "Hệ thống",
+    products: "Sản phẩm",
+    reports: "Báo cáo",
+    collapseSidebar: "Thu gọn thanh bên",
+    expandSidebar: "Mở rộng thanh bên",
   },
   
   home: {

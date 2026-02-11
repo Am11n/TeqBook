@@ -184,6 +184,15 @@ export const tr: TranslationNamespaces = {
     login: "Giriş yap",
     logout: "Çıkış yap",
     langLabel: "Dil",
+    sectionOverview: "Genel bakış",
+    sectionOperations: "Operasyonlar",
+    sectionManagement: "Yönetim",
+    sectionCompliance: "Uyumluluk",
+    sectionSystem: "Sistem",
+    products: "Ürünler",
+    reports: "Raporlar",
+    collapseSidebar: "Kenar çubuğunu daralt",
+    expandSidebar: "Kenar çubuğunu genişlet",
   },
   
   home: {

@@ -245,6 +245,15 @@ export const pl: TranslationNamespaces = {
     login: "Zaloguj się",
     logout: "Wyloguj się",
     langLabel: "Język",
+    sectionOverview: "Przegląd",
+    sectionOperations: "Operacje",
+    sectionManagement: "Zarządzanie",
+    sectionCompliance: "Zgodność",
+    sectionSystem: "System",
+    products: "Produkty",
+    reports: "Raporty",
+    collapseSidebar: "Zwiń panel",
+    expandSidebar: "Rozwiń panel",
   },
   
   home: {

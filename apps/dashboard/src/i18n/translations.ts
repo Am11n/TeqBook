@@ -189,6 +189,18 @@ export type DashboardMessages = {
   login: string;
   logout: string;
   langLabel: string;
+  // Sidebar section headers
+  sectionOverview: string;
+  sectionOperations: string;
+  sectionManagement: string;
+  sectionCompliance: string;
+  sectionSystem: string;
+  // Extra menu labels
+  products: string;
+  reports: string;
+  // Sidebar tooltips
+  collapseSidebar: string;
+  expandSidebar: string;
 };
 
 export type HomeMessages = {

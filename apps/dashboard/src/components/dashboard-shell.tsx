@@ -170,6 +170,15 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
           systemItems={systemItems}
           pathname={pathname}
           builtForText={texts.builtFor}
+          sectionLabels={{
+            overview: texts.sectionOverview,
+            operations: texts.sectionOperations,
+            management: texts.sectionManagement,
+            compliance: texts.sectionCompliance,
+            system: texts.sectionSystem,
+            collapseSidebar: texts.collapseSidebar,
+            expandSidebar: texts.expandSidebar,
+          }}
         />
 
         <main className="flex flex-1 flex-col overflow-y-auto">
@@ -200,6 +209,13 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
         pathname={pathname}
         builtForText={texts.builtFor}
         closeNavText={texts.closeNav}
+        sectionLabels={{
+          overview: texts.sectionOverview,
+          operations: texts.sectionOperations,
+          management: texts.sectionManagement,
+          compliance: texts.sectionCompliance,
+          system: texts.sectionSystem,
+        }}
       />
     </div>
   );

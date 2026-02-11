@@ -16,6 +16,13 @@ interface MobileNavigationProps {
   pathname: string;
   builtForText: string;
   closeNavText: string;
+  sectionLabels: {
+    overview: string;
+    operations: string;
+    management: string;
+    compliance: string;
+    system: string;
+  };
 }
 
 export function MobileNavigation({
@@ -29,6 +36,7 @@ export function MobileNavigation({
   pathname,
   builtForText,
   closeNavText,
+  sectionLabels,
 }: MobileNavigationProps) {
   if (!open) return null;
 
@@ -61,7 +69,7 @@ export function MobileNavigation({
             {/* Overview Section */}
             <div>
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Overview
+                {sectionLabels.overview}
               </p>
               <div className="flex flex-col gap-1.5">
                 {overviewItems.map((item) => (
@@ -80,7 +88,7 @@ export function MobileNavigation({
             {/* Operations Section */}
             <div>
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Operations
+                {sectionLabels.operations}
               </p>
               <div className="flex flex-col gap-1.5">
                 {operationsItems.map((item) => (
@@ -99,7 +107,7 @@ export function MobileNavigation({
             {/* Management Section */}
             <div>
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Management
+                {sectionLabels.management}
               </p>
               <div className="flex flex-col gap-1.5">
                 {managementItems.map((item) => (
@@ -120,7 +128,7 @@ export function MobileNavigation({
               {complianceItems.length > 0 && (
                 <>
                   <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Compliance
+                    {sectionLabels.compliance}
                   </p>
                   <div className="flex flex-col gap-1.5">
                     {complianceItems.map((item) => (
@@ -141,7 +149,7 @@ export function MobileNavigation({
             {/* System Section */}
             <div>
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                System
+                {sectionLabels.system}
               </p>
               <div className="flex flex-col gap-1.5">
                 {systemItems.map((item) => (

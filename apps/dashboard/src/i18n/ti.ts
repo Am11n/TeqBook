@@ -183,6 +183,15 @@ export const ti: TranslationNamespaces = {
     login: "መግቢ",
     logout: "ወጻኢ",
     langLabel: "ቋንቋ",
+    sectionOverview: "Overview",
+    sectionOperations: "Operations",
+    sectionManagement: "Management",
+    sectionCompliance: "Compliance",
+    sectionSystem: "System",
+    products: "Products",
+    reports: "Reports",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
   },
   
   home: {
