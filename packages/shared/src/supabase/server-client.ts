@@ -12,11 +12,13 @@ import { finalSupabaseAnonKey, finalSupabaseUrl } from "./config";
 /**
  * Create a Supabase client for server components (SSR-safe)
  * Uses Next.js cookies() API for cookie-based session management
+ * @param cookieName Optional custom cookie name to isolate sessions between apps
  */
-export async function createServerSupabaseClient(): Promise<SupabaseClient> {
+export async function createServerSupabaseClient(cookieName?: string): Promise<SupabaseClient> {
   const cookieStore = await cookies();
 
   return createServerClient(finalSupabaseUrl, finalSupabaseAnonKey, {
+    ...(cookieName ? { cookieOptions: { name: cookieName } } : {}),
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -36,12 +38,15 @@ export async function createServerSupabaseClient(): Promise<SupabaseClient> {
 
 /**
  * Create a Supabase client for API routes (route handlers)
+ * @param cookieName Optional custom cookie name to isolate sessions between apps
  */
 export function createServerSupabaseClientForRouteHandler(
   request: NextRequest,
-  response: NextResponse
+  response: NextResponse,
+  cookieName?: string
 ): SupabaseClient {
   return createServerClient(finalSupabaseUrl, finalSupabaseAnonKey, {
+    ...(cookieName ? { cookieOptions: { name: cookieName } } : {}),
     cookies: {
       getAll() {
         return request.cookies.getAll().map((cookie: { name: string; value: string }) => ({

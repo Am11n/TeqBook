@@ -28,6 +28,7 @@ export default function ProfilePage() {
     saving,
     error,
     success,
+    userId,
     userEmail,
     profile,
     firstName,
@@ -223,7 +224,7 @@ export default function ProfilePage() {
                     User ID
                   </span>
                   <span className="text-xs font-mono text-muted-foreground">
-                    {profile?.user_id ? `${profile.user_id.slice(0, 8)}...` : "-"}
+                    {userId ? `${userId.slice(0, 8)}...` : "-"}
                   </span>
                 </div>
               </CardContent>

@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { signInWithPassword } from "@/lib/services/auth-service";
+import { createBrowserSupabaseClient } from "@teqbook/shared";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { initSession } from "@/lib/services/session-service";
 import { logSecurity, logError } from "@/lib/services/logger";
@@ -15,6 +15,9 @@ const MotionDiv = dynamic(
   { ssr: false },
 );
 
+/** Cookie name must match apps/admin/src/lib/supabase/client.ts */
+const ADMIN_COOKIE_NAME = "sb-admin-auth-token";
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,81 +25,104 @@ export default function AdminLoginPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
+  // Create a Supabase client that stores the session in the admin cookie
+  // so the admin app on :3003 can read it
+  const adminSupabase = useRef(createBrowserSupabaseClient(ADMIN_COOKIE_NAME));
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setStatus("loading");
     setError(null);
 
-    // Sign in using auth service
-    const { data: signInData, error: signInError } = await signInWithPassword(
-      email,
-      password,
-    );
+    if (!email || !password) {
+      setError("E-post og passord er påkrevd.");
+      setStatus("error");
+      return;
+    }
 
-    if (signInError) {
-      let errorMessage = signInError;
+    try {
+      // Sign in using the admin-specific Supabase client
+      const { data, error: signInError } =
+        await adminSupabase.current.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (signInError.includes("Invalid login credentials")) {
-        errorMessage = "Ugyldig e-post eller passord.";
-      } else if (signInError.includes("Email not confirmed")) {
-        errorMessage = "Bekreft e-postadressen din før du logger inn.";
+      if (signInError) {
+        let errorMessage = signInError.message;
+
+        if (signInError.message.includes("Invalid login credentials")) {
+          errorMessage = "Ugyldig e-post eller passord.";
+        } else if (signInError.message.includes("Email not confirmed")) {
+          errorMessage = "Bekreft e-postadressen din før du logger inn.";
+        }
+
+        setError(errorMessage);
+        setStatus("error");
+        logSecurity("Failed admin login attempt", {
+          email,
+          error: signInError.message,
+        });
+        logError("Admin login error", new Error(signInError.message), {
+          email,
+        });
+        return;
       }
 
-      setError(errorMessage);
-      setStatus("error");
-      logSecurity("Failed admin login attempt", { email, error: signInError });
-      logError("Admin login error", new Error(signInError), { email });
-      return;
-    }
+      if (!data?.user) {
+        setError("Innlogging feilet. Prøv igjen.");
+        setStatus("error");
+        return;
+      }
 
-    if (!signInData?.user) {
-      setError("Innlogging feilet. Prøv igjen.");
-      setStatus("error");
-      return;
-    }
+      // Initialize session tracking
+      initSession(false);
 
-    // Initialize session tracking
-    initSession(false);
+      // Get user profile
+      const { data: profile, error: profileError } = await getProfileForUser(
+        data.user.id,
+      );
 
-    // Get user profile
-    const { data: profile, error: profileError } = await getProfileForUser(
-      signInData.user.id,
-    );
+      if (profileError) {
+        setError("Kunne ikke laste brukerprofil.");
+        setStatus("error");
+        return;
+      }
 
-    if (profileError) {
-      setError("Kunne ikke laste brukerprofil.");
-      setStatus("error");
-      return;
-    }
+      if (!profile) {
+        setError("Ingen profil funnet.");
+        setStatus("error");
+        return;
+      }
 
-    if (!profile) {
-      setError("Ingen profil funnet.");
-      setStatus("error");
-      return;
-    }
+      // Check if user is superadmin
+      if (!profile.is_superadmin) {
+        setError(
+          "Du har ikke tilgang til admin-panelet. Kun superadmins kan logge inn her.",
+        );
+        setStatus("error");
+        logSecurity("Non-superadmin attempted admin login", {
+          email,
+          userId: data.user.id,
+        });
+        return;
+      }
 
-    // Check if user is superadmin
-    if (!profile.is_superadmin) {
+      // Log successful admin login
+      logSecurity("Successful admin login", {
+        email,
+        userId: data.user.id,
+      });
+
+      // Full page navigation to admin dashboard (must bypass client-side router
+      // because /admin/ is served via a server-level rewrite to the admin app)
+      window.location.href = "/admin/";
+    } catch (err) {
       setError(
-        "Du har ikke tilgang til admin-panelet. Kun superadmins kan logge inn her.",
+        err instanceof Error ? err.message : "En ukjent feil oppstod.",
       );
       setStatus("error");
-      logSecurity("Non-superadmin attempted admin login", {
-        email,
-        userId: signInData.user.id,
-      });
-      return;
     }
-
-    // Log successful admin login
-    logSecurity("Successful admin login", {
-      email,
-      userId: signInData.user.id,
-    });
-
-    // Full page navigation to admin dashboard (must bypass client-side router
-    // because /admin/ is served via a server-level rewrite to the admin app)
-    window.location.href = "/admin/";
   }
 
   return (

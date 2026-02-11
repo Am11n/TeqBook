@@ -178,6 +178,7 @@ export function useProfile() {
     saving,
     error,
     success,
+    userId: user?.id ?? null,
     userEmail,
     profile,
     firstName,

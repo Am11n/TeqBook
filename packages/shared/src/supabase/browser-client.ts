@@ -9,9 +9,12 @@ import { finalSupabaseAnonKey, finalSupabaseUrl } from "./config";
 /**
  * Create a Supabase client for client components (browser)
  * Uses browser cookies for session management
+ * @param cookieName Optional custom cookie name to isolate sessions between apps
  */
-export function createBrowserSupabaseClient(): SupabaseClient {
-  return createBrowserClient(finalSupabaseUrl, finalSupabaseAnonKey) as unknown as SupabaseClient;
+export function createBrowserSupabaseClient(cookieName?: string): SupabaseClient {
+  return createBrowserClient(finalSupabaseUrl, finalSupabaseAnonKey, {
+    ...(cookieName ? { cookieOptions: { name: cookieName } } : {}),
+  }) as unknown as SupabaseClient;
 }
 
 let browserClientInstance: SupabaseClient | null = null;
