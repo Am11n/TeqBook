@@ -15,6 +15,7 @@ export type SupportCase = {
   priority: string;
   title: string;
   description: string | null;
+  category: string | null;
   assignee_id: string | null;
   assignee_email: string | null;
   metadata: Record<string, unknown> | null;

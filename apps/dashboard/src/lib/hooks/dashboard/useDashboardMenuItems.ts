@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Package,
   FileCheck,
+  Headset,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
 import {
@@ -114,6 +115,14 @@ export function useDashboardMenuItems({
 
   const systemItems = useMemo<MenuItem[]>(() => {
     const items: MenuItem[] = [];
+    // Support is visible to all logged-in roles
+    if (isReady) {
+      items.push({
+        href: "/support",
+        label: texts.support ?? "Support",
+        icon: Headset,
+      });
+    }
     if (canAccessSettings(userRole)) {
       items.push({
         href: "/settings/general",
@@ -130,7 +139,7 @@ export function useDashboardMenuItems({
       });
     }
     return items;
-  }, [userRole, isSuperAdmin, pathname, appLocale, translations]);
+  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations, texts.support]);
 
   return {
     overviewItems,

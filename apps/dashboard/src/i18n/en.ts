@@ -167,6 +167,7 @@ export const en: TranslationNamespaces = {
     customers: "Customers",
     bookings: "Bookings",
     personalliste: "Staff register",
+    support: "Support",
     onboarding: "Onboarding",
     settings: "Settings",
     tagline:

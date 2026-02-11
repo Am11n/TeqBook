@@ -157,6 +157,7 @@ export const zh: TranslationNamespaces = {
     customers: "客户",
     bookings: "预约",
     personalliste: "员工名册",
+    support: "Support",
     onboarding: "入门设置",
     settings: "Settings",
     tagline: "在一个地方管理沙龙、员工、服务和营业时间。",

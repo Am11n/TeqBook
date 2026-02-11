@@ -227,6 +227,7 @@ export const pl: TranslationNamespaces = {
     customers: "Klienci",
     bookings: "Rezerwacje",
     personalliste: "Rejestr pracowników",
+    support: "Support",
     onboarding: "Onboarding",
     settings: "Settings",
     tagline:

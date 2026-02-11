@@ -167,6 +167,7 @@ export const tr: TranslationNamespaces = {
     customers: "Müşteriler",
     bookings: "Randevular",
     personalliste: "Personel listesi",
+    support: "Support",
     onboarding: "Başlangıç",
     settings: "Settings",
     tagline:

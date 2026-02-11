@@ -218,6 +218,7 @@ export const fa: TranslationNamespaces = {
     customers: "مشتریان",
     bookings: "نوبت‌ها",
     personalliste: "ثبت پرسنل",
+    support: "Support",
     onboarding: "راه‌اندازی اولیه",
     settings: "Settings",
     tagline:

@@ -163,6 +163,7 @@ export const am: TranslationNamespaces = {
     customers: "ደንበኞች",
     bookings: "ቀጠሮዎች",
     personalliste: "የሰራተኞች ምድብ",
+    support: "Support",
     onboarding: "መጀመርያ ምዝገባ",
     settings: "Settings",
     tagline:

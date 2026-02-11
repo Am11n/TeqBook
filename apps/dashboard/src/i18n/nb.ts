@@ -167,6 +167,7 @@ export const nb: TranslationNamespaces = {
     customers: "Kunder",
     bookings: "Bookinger",
     personalliste: "Personalliste",
+    support: "Support",
     onboarding: "Onboarding",
     settings: "Innstillinger",
     tagline:
