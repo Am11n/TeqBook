@@ -46,6 +46,48 @@ Add your new route there.
 - Never put icons inside table cells/columns unless explicitly asked.
 - The admin app uses Tailwind v4. Shared UI packages are scanned via `@source` directives in `globals.css`.
 
+## Dialogs / Modals
+
+**ALL dialogs and modals MUST use the Radix `Dialog` component** from `@/components/ui/dialog`. Never create custom modal wrappers with `fixed inset-0` or side-panel slide-ins. Every dialog must follow this exact pattern:
+
+```tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+// Props: open: boolean, onOpenChange: (open: boolean) => void
+<Dialog open={open} onOpenChange={onOpenChange}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Title</DialogTitle>
+      <DialogDescription>Description</DialogDescription>
+    </DialogHeader>
+
+    {/* Content / form */}
+
+    <DialogFooter>
+      <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+      <Button type="submit">Confirm</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+**Key rules:**
+- Use `open` / `onOpenChange` props (controlled) — never uncontrolled.
+- Use `DialogContent className="max-w-md"` (or `max-w-lg` for larger forms). Never full-screen or side-panel.
+- Use `DialogHeader` with `DialogTitle` and optional `DialogDescription`.
+- Use `DialogFooter` for action buttons.
+- For scrollable content inside a dialog, wrap the body in `<div className="max-h-[60vh] overflow-y-auto">`.
+- The `DialogContent` component already provides: backdrop, close button (X), centered positioning, zoom animation, and Escape-to-close.
+
+Reference implementation: `apps/dashboard/src/components/bookings/CreateBookingDialog.tsx`.
+
 ## Dropdowns inside Dialogs
 
 **ALWAYS use native `<select>` elements for dropdowns inside Dialog boxes.** Never use the Radix `Select` component (`SelectTrigger` / `SelectContent` / `SelectItem`) inside a `Dialog`. Radix Select portals its dropdown to `<body>`, causing z-index conflicts with the Dialog overlay — the options become invisible.

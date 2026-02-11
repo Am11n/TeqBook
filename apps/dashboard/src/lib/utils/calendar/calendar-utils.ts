@@ -1,4 +1,4 @@
-import type { CalendarBooking } from "@/lib/types";
+import type { CalendarBooking, BookingProblem } from "@/lib/types";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 
 /**
@@ -92,5 +92,30 @@ export function changeDate(currentDate: string, offset: number): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Compute problem flags for a booking.
+ * These are UI-computed from booking data.
+ */
+export function computeBookingProblems(booking: CalendarBooking): BookingProblem[] {
+  const problems: BookingProblem[] = [];
+
+  // Unconfirmed: status is pending
+  if (booking.status === "pending" || booking.status === "scheduled") {
+    problems.push("unconfirmed");
+  }
+
+  // Missing contact: no phone number
+  if (!booking.customers?.phone) {
+    problems.push("missing_contact");
+  }
+
+  // TODO: More sophisticated checks:
+  // - "unpaid": requires payment data (not yet available in CalendarBooking)
+  // - "conflict": requires overlap check across bookings
+  // - "new_customer": requires checking first-booking status
+
+  return problems;
 }
 

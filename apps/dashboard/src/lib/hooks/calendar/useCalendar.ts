@@ -19,7 +19,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
   const [bookings, setBookings] = useState<CalendarBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [viewMode, setViewMode] = useState<"day" | "week" | "list">("day");
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
@@ -82,11 +82,12 @@ export function useCalendar({ translations }: UseCalendarOptions) {
       const startOfPeriod = new Date(date);
       const endOfPeriod = new Date(date);
 
-      if (viewMode === "day") {
-        endOfPeriod.setHours(23, 59, 59, 999);
-      } else {
+      if (viewMode === "week") {
         // Week view: add 6 days
         endOfPeriod.setDate(endOfPeriod.getDate() + 6);
+        endOfPeriod.setHours(23, 59, 59, 999);
+      } else {
+        // Day or list view
         endOfPeriod.setHours(23, 59, 59, 999);
       }
 
@@ -113,11 +114,12 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     const startOfPeriod = new Date(date);
     const endOfPeriod = new Date(date);
 
-    if (viewMode === "day") {
-      endOfPeriod.setHours(23, 59, 59, 999);
-    } else {
+    if (viewMode === "week") {
       // Week view: add 6 days
       endOfPeriod.setDate(endOfPeriod.getDate() + 6);
+      endOfPeriod.setHours(23, 59, 59, 999);
+    } else {
+      // Day or list view
       endOfPeriod.setHours(23, 59, 59, 999);
     }
 
@@ -152,11 +154,10 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     const startOfPeriod = new Date(date);
     const endOfPeriod = new Date(date);
 
-    if (viewMode === "day") {
+    if (viewMode === "week") {
+      endOfPeriod.setDate(endOfPeriod.getDate() + 6);
       endOfPeriod.setHours(23, 59, 59, 999);
     } else {
-      // Week view: add 6 days
-      endOfPeriod.setDate(endOfPeriod.getDate() + 6);
       endOfPeriod.setHours(23, 59, 59, 999);
     }
 

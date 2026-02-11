@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Plus, Search, List, Command } from "lucide-react";
 import { changeDate } from "@/lib/utils/calendar/calendar-utils";
 
 interface CalendarControlsProps {
-  viewMode: "day" | "week";
-  setViewMode: (mode: "day" | "week") => void;
+  viewMode: "day" | "week" | "list";
+  setViewMode: (mode: "day" | "week" | "list") => void;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   filterEmployeeId: string;
@@ -23,6 +24,9 @@ interface CalendarControlsProps {
   };
   formatDayHeading: (date: string) => string;
   getWeekDates: (date: string) => string[];
+  onNewBooking?: () => void;
+  onFindAvailable?: () => void;
+  onCommandPalette?: () => void;
 }
 
 export function CalendarControls({
@@ -37,19 +41,71 @@ export function CalendarControls({
   translations,
   formatDayHeading,
   getWeekDates,
+  onNewBooking,
+  onFindAvailable,
+  onCommandPalette,
 }: CalendarControlsProps) {
   return (
-    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-xs font-medium text-muted-foreground">{translations.selectedDayLabel}</span>
-        <span className="text-sm font-medium">
-          {viewMode === "day"
-            ? formatDayHeading(selectedDate)
-            : `${formatDayHeading(selectedDate)} - ${formatDayHeading(getWeekDates(selectedDate)[6])}`}
-        </span>
+    <div className="mt-4 space-y-3">
+      {/* Row 1: Date heading + action buttons */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-xs font-medium text-muted-foreground">{translations.selectedDayLabel}</span>
+          <span className="text-sm font-medium">
+            {viewMode === "week"
+              ? `${formatDayHeading(selectedDate)} – ${formatDayHeading(getWeekDates(selectedDate)[6])}`
+              : formatDayHeading(selectedDate)}
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* New booking button */}
+          {onNewBooking && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onNewBooking}
+              className="h-7 text-xs gap-1"
+            >
+              <Plus className="h-3 w-3" />
+              New
+            </Button>
+          )}
+
+          {/* Find available */}
+          {onFindAvailable && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onFindAvailable}
+              className="h-7 text-xs gap-1"
+            >
+              <Search className="h-3 w-3" />
+              Find slot
+            </Button>
+          )}
+
+          {/* Command palette */}
+          {onCommandPalette && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onCommandPalette}
+              className="h-7 text-xs gap-1"
+              title="⌘K"
+            >
+              <Command className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Row 2: View mode + filters + navigation */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1 rounded-md border bg-card px-2 py-1">
+        {/* View mode toggle */}
+        <div className="flex items-center gap-0.5 rounded-md border bg-card px-1 py-0.5">
           <Button
             type="button"
             variant={viewMode === "day" ? "default" : "ghost"}
@@ -68,7 +124,19 @@ export function CalendarControls({
           >
             {translations.viewWeek}
           </Button>
+          <Button
+            type="button"
+            variant={viewMode === "list" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className="h-7 text-xs gap-1"
+          >
+            <List className="h-3 w-3" />
+            List
+          </Button>
         </div>
+
+        {/* Employee filter */}
         <select
           value={filterEmployeeId}
           onChange={(e) => setFilterEmployeeId(e.target.value)}
@@ -81,47 +149,54 @@ export function CalendarControls({
             </option>
           ))}
         </select>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            const offset = viewMode === "day" ? -1 : -7;
-            const newDate = changeDate(selectedDate, offset);
-            setSelectedDate(newDate);
-          }}
-        >
-          {translations.prev}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, "0");
-            const day = String(today.getDate()).padStart(2, "0");
-            setSelectedDate(`${year}-${month}-${day}`);
-          }}
-        >
-          {translations.today}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            const offset = viewMode === "day" ? 1 : 7;
-            const newDate = changeDate(selectedDate, offset);
-            setSelectedDate(newDate);
-          }}
-        >
-          {translations.next}
-        </Button>
+
+        {/* Date navigation */}
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              const offset = viewMode === "week" ? -7 : -1;
+              setSelectedDate(changeDate(selectedDate, offset));
+            }}
+          >
+            {translations.prev}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              const today = new Date();
+              const year = today.getFullYear();
+              const month = String(today.getMonth() + 1).padStart(2, "0");
+              const day = String(today.getDate()).padStart(2, "0");
+              setSelectedDate(`${year}-${month}-${day}`);
+            }}
+          >
+            {translations.today}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              const offset = viewMode === "week" ? 7 : 1;
+              setSelectedDate(changeDate(selectedDate, offset));
+            }}
+          >
+            {translations.next}
+          </Button>
+        </div>
+
+        {/* Date picker */}
         <input
           type="date"
           value={selectedDate}
@@ -132,4 +207,3 @@ export function CalendarControls({
     </div>
   );
 }
-
