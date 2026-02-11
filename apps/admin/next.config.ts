@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Served at teqbook.com/admin when behind Public app rewrites.
-  // Standalone (e.g. localhost:3003): no basePath needed, so / works directly.
-  // Set NEXT_PUBLIC_ADMIN_BASE_PATH=/admin in production env to enable basePath.
-  basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH ?? "",
+  // On Vercel, always use /admin as basePath so asset URLs are correct.
+  // Locally (no VERCEL env), basePath is empty so / works on localhost:3003.
+  basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || (process.env.VERCEL === "1" ? "/admin" : ""),
 
   // Admin app: stricter security
   images: {

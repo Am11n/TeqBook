@@ -46,6 +46,36 @@ Add your new route there.
 - Never put icons inside table cells/columns unless explicitly asked.
 - The admin app uses Tailwind v4. Shared UI packages are scanned via `@source` directives in `globals.css`.
 
+## Dropdowns inside Dialogs
+
+**ALWAYS use native `<select>` elements for dropdowns inside Dialog boxes.** Never use the Radix `Select` component (`SelectTrigger` / `SelectContent` / `SelectItem`) inside a `Dialog`. Radix Select portals its dropdown to `<body>`, causing z-index conflicts with the Dialog overlay — the options become invisible.
+
+Use this pattern (same as `BookingForm.tsx`):
+
+```tsx
+<select
+  id="my-field"
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+  required
+  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+>
+  <option value="">Placeholder...</option>
+  {items.map((item) => (
+    <option key={item.id} value={item.id}>{item.name}</option>
+  ))}
+</select>
+```
+
+The Radix `Select` component is fine on regular pages (outside Dialogs).
+
+## Auth / Cookie Isolation
+
+- The **admin app** uses a custom cookie name `sb-admin-auth-token` (set in `apps/admin/src/lib/supabase/client.ts` and `server.ts`).
+- The **dashboard app** and **public app** use the default Supabase cookie name (no custom name).
+- The **`/login-admin`** page on the public app creates its own Supabase client with the admin cookie name so the session is readable by the admin app.
+- Never change the dashboard cookie name to something custom — it must match the public app (default) so the login → redirect flow works.
+
 ## Sidebar Navigation
 
 - The sidebar uses a "longest prefix match" algorithm for active state. When adding new nav items, ensure the `href` values don't cause multiple items to highlight. See `admin-shell.tsx` for the `activeHref` logic.

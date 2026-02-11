@@ -2,8 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Served at teqbook.com/dashboard when behind Public app rewrites.
-  // Standalone (e.g. localhost:3002): use basePath only when env is set so / works locally.
-  basePath: process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH ?? "",
+  // On Vercel, always use /dashboard as basePath so asset URLs are correct.
+  // Locally (no VERCEL env), basePath is empty so / works on localhost:3002.
+  basePath: process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH || (process.env.VERCEL === "1" ? "/dashboard" : ""),
 
   // Dashboard app: standard Next.js config
   images: {
