@@ -1,7 +1,7 @@
 -- =====================================================
 -- Add last_active to get_salons_paginated
 -- =====================================================
--- last_active = most recent booking created_at for the salon.
+-- last_active = most recent activity (bookings, employees, customers, services, salon updates).
 -- Also adds sorting support for last_active.
 -- =====================================================
 
@@ -79,10 +79,15 @@ BEGIN
      FROM bookings b
      WHERE b.salon_id = s.id
        AND b.created_at >= NOW() - INTERVAL '7 days')::BIGINT AS booking_count_7d,
-    -- Last active: most recent booking
-    (SELECT MAX(b.created_at)
-     FROM bookings b
-     WHERE b.salon_id = s.id) AS last_active,
+    -- Last active: most recent activity across bookings, employees, customers, services; fallback to salon created_at
+    GREATEST(
+      s.created_at,
+      COALESCE((SELECT MAX(b.created_at) FROM bookings b WHERE b.salon_id = s.id), s.created_at),
+      COALESCE((SELECT MAX(e.created_at) FROM employees e WHERE e.salon_id = s.id), s.created_at),
+      COALESCE((SELECT MAX(c.created_at) FROM customers c WHERE c.salon_id = s.id), s.created_at),
+      COALESCE((SELECT MAX(sv.created_at) FROM services sv WHERE sv.salon_id = s.id), s.created_at),
+      COALESCE(s.updated_at, s.created_at)
+    ) AS last_active,
     total AS total_count
   FROM salons s
   WHERE (filters->>'plan' IS NULL OR s.plan::TEXT = filters->>'plan')
