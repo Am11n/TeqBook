@@ -111,6 +111,7 @@ export async function createSalonForCurrentUser(
     online_booking_enabled: boolean;
     is_public: boolean;
     whatsapp_number?: string | null;
+    timezone?: string;
   }
 ): Promise<{ data: string | null; error: string | null }> {
   try {
@@ -121,6 +122,7 @@ export async function createSalonForCurrentUser(
       online_booking_enabled_param: input.online_booking_enabled,
       is_public_param: input.is_public,
       whatsapp_number_param: input.whatsapp_number || null,
+      timezone_param: input.timezone || "Europe/Oslo",
     });
 
     if (error) {

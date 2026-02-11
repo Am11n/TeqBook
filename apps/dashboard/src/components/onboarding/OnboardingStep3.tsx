@@ -3,10 +3,12 @@
 import { motion } from "framer-motion";
 import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
 import type { AppLocale } from "@/i18n/translations";
+import { getCountryLabel } from "@/lib/utils/onboarding/country-timezones";
 
 interface OnboardingStep3Props {
   name: string;
   salonType: SalonType;
+  country: string;
   preferredLanguage: AppLocale;
   onlineBooking: boolean;
   publicBooking: boolean;
@@ -17,6 +19,7 @@ interface OnboardingStep3Props {
     summaryLabel: string;
     summarySalonName: string;
     summarySalonType: string;
+    summaryCountry: string;
     summaryPaymentMethod: string;
     summaryPreferredLanguage: string;
     summaryOnlineBooking: string;
@@ -39,6 +42,7 @@ interface OnboardingStep3Props {
 export function OnboardingStep3({
   name,
   salonType,
+  country,
   preferredLanguage,
   onlineBooking,
   publicBooking,
@@ -94,6 +98,10 @@ export function OnboardingStep3({
                 }[salonType]
               }
             </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-600">{translations.summaryCountry}:</span>
+            <span className="font-medium text-slate-900">{getCountryLabel(country)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-600">{translations.summaryPaymentMethod}:</span>

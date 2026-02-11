@@ -72,6 +72,8 @@ export default function OnboardingPage() {
                     setName={onboarding.setName}
                     salonType={onboarding.salonType}
                     setSalonType={onboarding.setSalonType}
+                    country={onboarding.country}
+                    setCountry={onboarding.setCountry}
                     whatsappNumber={onboarding.whatsappNumber}
                     setWhatsappNumber={onboarding.setWhatsappNumber}
                     preferredLanguage={onboarding.preferredLanguage}
@@ -89,6 +91,7 @@ export default function OnboardingPage() {
                       salonTypeOther: t.salonTypeOther,
                       paymentMethodLabel: t.paymentMethodLabel,
                       paymentMethodPhysicalOnly: t.paymentMethodPhysicalOnly,
+                      countryLabel: t.countryLabel,
                       preferredLanguageLabel: t.preferredLanguageLabel,
                       whatsappNumberLabel: t.whatsappNumberLabel,
                       whatsappNumberHint: t.whatsappNumberHint,
@@ -138,6 +141,7 @@ export default function OnboardingPage() {
                   <OnboardingStep3
                     name={onboarding.name}
                     salonType={onboarding.salonType}
+                    country={onboarding.country}
                     preferredLanguage={onboarding.preferredLanguage}
                     onlineBooking={onboarding.onlineBooking}
                     publicBooking={onboarding.publicBooking}
@@ -148,6 +152,7 @@ export default function OnboardingPage() {
                       summaryLabel: t.summaryLabel,
                       summarySalonName: t.summarySalonName,
                       summarySalonType: t.summarySalonType,
+                      summaryCountry: t.summaryCountry,
                       summaryPaymentMethod: t.summaryPaymentMethod,
                       summaryPreferredLanguage: t.summaryPreferredLanguage,
                       summaryOnlineBooking: t.summaryOnlineBooking,

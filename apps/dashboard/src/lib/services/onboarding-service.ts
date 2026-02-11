@@ -15,6 +15,7 @@ export type CreateSalonInput = {
   online_booking_enabled: boolean;
   is_public: boolean;
   whatsapp_number?: string | null;
+  timezone?: string;
 };
 
 export type OpeningHourInput = {
@@ -43,6 +44,7 @@ export async function createSalonForCurrentUser(
     online_booking_enabled: input.online_booking_enabled,
     is_public: input.is_public,
     whatsapp_number: input.whatsapp_number || null,
+    timezone: input.timezone || "Europe/Oslo",
   });
 }
 

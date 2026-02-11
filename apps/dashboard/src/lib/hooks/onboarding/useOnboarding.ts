@@ -1,10 +1,11 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { createSalonForCurrentUser, createOpeningHours } from "@/lib/services/onboarding-service";
 import type { AppLocale } from "@/i18n/translations";
 import type { OpeningHours, SalonType, OnboardingStep } from "@/lib/utils/onboarding/onboarding-utils";
 import { DEFAULT_OPENING_HOURS } from "@/lib/utils/onboarding/onboarding-utils";
+import { DEFAULT_COUNTRY, getTimezoneForCountry } from "@/lib/utils/onboarding/country-timezones";
 
 interface UseOnboardingOptions {
   initialLocale: AppLocale;
@@ -24,6 +25,8 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
   // Step 1: Grunninfo
   const [name, setName] = useState("");
   const [salonType, setSalonType] = useState<SalonType>("barber");
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const timezone = useMemo(() => getTimezoneForCountry(country), [country]);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<AppLocale>(initialLocale);
 
@@ -45,6 +48,7 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
       online_booking_enabled: onlineBooking,
       is_public: publicBooking,
       whatsapp_number: whatsappNumber.trim() || null,
+      timezone,
     });
 
     if (salonError || !salonId) {
@@ -104,6 +108,9 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
     setName,
     salonType,
     setSalonType,
+    country,
+    setCountry,
+    timezone,
     whatsappNumber,
     setWhatsappNumber,
     preferredLanguage,

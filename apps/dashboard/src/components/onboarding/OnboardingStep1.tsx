@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 import { Field } from "@/components/form/Field";
 import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
 import type { AppLocale } from "@/i18n/translations";
+import { COUNTRIES } from "@/lib/utils/onboarding/country-timezones";
 
 interface OnboardingStep1Props {
   name: string;
   setName: (name: string) => void;
   salonType: SalonType;
   setSalonType: (type: SalonType) => void;
+  country: string;
+  setCountry: (code: string) => void;
   whatsappNumber: string;
   setWhatsappNumber: (number: string) => void;
   preferredLanguage: AppLocale;
@@ -27,6 +30,7 @@ interface OnboardingStep1Props {
     salonTypeOther: string;
     paymentMethodLabel: string;
     paymentMethodPhysicalOnly: string;
+    countryLabel: string;
     preferredLanguageLabel: string;
     whatsappNumberLabel: string;
     whatsappNumberHint: string;
@@ -40,6 +44,8 @@ export function OnboardingStep1({
   setName,
   salonType,
   setSalonType,
+  country,
+  setCountry,
   whatsappNumber,
   setWhatsappNumber,
   preferredLanguage,
@@ -86,6 +92,21 @@ export function OnboardingStep1({
         <div className="rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-600">
           {translations.paymentMethodPhysicalOnly}
         </div>
+      </Field>
+
+      <Field label={translations.countryLabel} htmlFor="country">
+        <select
+          id="country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
+        >
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </Field>
 
       <Field label={translations.preferredLanguageLabel} htmlFor="preferredLanguage">

@@ -114,6 +114,7 @@ export type OnboardingMessages = {
   salonTypeOther: string;
   paymentMethodLabel: string;
   paymentMethodPhysicalOnly: string;
+  countryLabel: string;
   preferredLanguageLabel: string;
   whatsappNumberLabel: string;
   whatsappNumberPlaceholder: string;
@@ -149,6 +150,7 @@ export type OnboardingMessages = {
   summaryLabel: string;
   summarySalonName: string;
   summarySalonType: string;
+  summaryCountry: string;
   summaryPaymentMethod: string;
   summaryPreferredLanguage: string;
   summaryOpeningHours: string;
