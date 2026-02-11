@@ -35,6 +35,8 @@ interface BookingsTableProps {
   };
   locale: string;
   onCancelBooking: (booking: Booking) => void;
+  /** Optional content rendered in the toolbar next to Views/Columns buttons */
+  filterContent?: React.ReactNode;
 }
 
 export function BookingsTable({
@@ -44,6 +46,7 @@ export function BookingsTable({
   translations,
   locale,
   onCancelBooking,
+  filterContent,
 }: BookingsTableProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
@@ -176,6 +179,7 @@ export function BookingsTable({
         getRowActions={getRowActions}
         storageKey="dashboard-bookings"
         emptyMessage="No bookings available"
+        toolbarEndContent={filterContent}
       />
     </div>
   );

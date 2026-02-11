@@ -64,6 +64,7 @@ export type Service = {
 
 export type Booking = {
   id: string;
+  employee_id?: string | null;
   start_time: string;
   end_time: string;
   status: BookingStatus | string; // Can be enum or text for backward compatibility

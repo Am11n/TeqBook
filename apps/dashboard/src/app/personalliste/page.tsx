@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -77,12 +77,14 @@ function PersonallisteDataTable({
   locale,
   translations: t,
   onEdit,
+  headerContent,
 }: {
   entries: PersonallisteEntry[];
   loading: boolean;
   locale: string;
   translations: Record<string, string>;
   onEdit: (entry: PersonallisteEntry) => void;
+  headerContent?: ReactNode;
 }) {
   const columns: ColumnDef<PersonallisteEntry>[] = [
     {
@@ -150,6 +152,7 @@ function PersonallisteDataTable({
       loading={loading}
       storageKey="dashboard-personalliste"
       emptyMessage={`${t.emptyTitle} – ${t.emptyDescription}`}
+      headerContent={headerContent}
     />
   );
 }
@@ -233,37 +236,6 @@ export default function PersonallistePage() {
               />
             )}
 
-            <div className="flex flex-wrap items-end gap-4 mb-6">
-              <div className="space-y-2">
-                <Label htmlFor="personalliste-dateFrom">{t.dateFrom}</Label>
-                <Input
-                  id="personalliste-dateFrom"
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-40"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="personalliste-dateTo">{t.dateTo}</Label>
-                <Input
-                  id="personalliste-dateTo"
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-40"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportCsv}
-                disabled={exporting || loading}
-              >
-                {exporting ? "…" : t.exportCsv}
-              </Button>
-            </div>
-
             <PersonallisteDataTable
               entries={entries}
               loading={loading}
@@ -273,6 +245,39 @@ export default function PersonallistePage() {
                 setEditingEntry(entry);
                 setEditOpen(true);
               }}
+              headerContent={
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="personalliste-dateFrom" className="text-xs">{t.dateFrom}</Label>
+                    <Input
+                      id="personalliste-dateFrom"
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="w-36 h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="personalliste-dateTo" className="text-xs">{t.dateTo}</Label>
+                    <Input
+                      id="personalliste-dateTo"
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="w-36 h-9"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9"
+                    onClick={handleExportCsv}
+                    disabled={exporting || loading}
+                  >
+                    {exporting ? "…" : t.exportCsv}
+                  </Button>
+                </div>
+              }
             />
           </>
         )}

@@ -47,8 +47,8 @@ const columns: ColumnDef<UserRow>[] = [
     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? ""}`}>{r.is_superadmin ? "Super Admin" : r.role?.replace(/_/g, " ") ?? "user"}</span>
   ), sortable: true },
   { id: "salon_name", header: "Salon", cell: (r) => r.salon_name ?? "-" },
-  { id: "last_sign_in", header: "Last Login", cell: (r) => r.last_sign_in ? format(new Date(r.last_sign_in), "MMM d, HH:mm") : "Never", sortable: true },
-  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, yyyy"), sortable: true },
+  { id: "last_sign_in", header: "Last Login", cell: (r) => r.last_sign_in ? format(new Date(r.last_sign_in), "dd.MM.yyyy, HH:mm") : "Never", sortable: true },
+  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "dd.MM.yyyy, HH:mm"), sortable: true },
 ];
 
 export default function AdminUsersPage() {

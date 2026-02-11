@@ -139,8 +139,10 @@ type DataTableProps<T> = {
   loading?: boolean;
   /** Empty state message */
   emptyMessage?: string;
-  /** Additional header content (filters etc.) */
+  /** Additional header content (filters etc.) – rendered left of the toolbar */
   headerContent?: ReactNode;
+  /** Content rendered on the right side of the toolbar, next to Views/Columns buttons */
+  toolbarEndContent?: ReactNode;
   /** Additional CSS classes */
   className?: string;
 };
@@ -228,6 +230,7 @@ export function DataTable<T>({
   loading = false,
   emptyMessage = "No data found",
   headerContent,
+  toolbarEndContent,
   className,
 }: DataTableProps<T>) {
   // Internal sort state (used when no onSortChange is provided – client-side sorting)
@@ -363,12 +366,13 @@ export function DataTable<T>({
   // Save current view
   const handleSaveView = useCallback(() => {
     if (!storageKey || !newViewName.trim()) return;
+    // Capture ALL columns — visible if columnVisibility[id] is not explicitly false
     const view: SavedView = {
       id: crypto.randomUUID(),
       name: newViewName.trim(),
-      visibleColumns: Object.entries(columnVisibility)
-        .filter(([, v]) => v)
-        .map(([k]) => k),
+      visibleColumns: columns
+        .filter((col) => columnVisibility[col.id] !== false)
+        .map((col) => col.id),
       sortColumn,
       sortDirection,
       searchQuery,
@@ -380,6 +384,7 @@ export function DataTable<T>({
   }, [
     storageKey,
     newViewName,
+    columns,
     columnVisibility,
     sortColumn,
     sortDirection,
@@ -390,18 +395,25 @@ export function DataTable<T>({
   // Apply saved view
   const handleApplyView = useCallback(
     (view: SavedView) => {
+      // Set visibility for every known column
       const vis: Record<string, boolean> = {};
       columns.forEach((col) => {
         vis[col.id] = view.visibleColumns.includes(col.id);
       });
       setColumnVisibility(vis);
+
+      // Restore sort (internal state + external callback)
       if (view.sortColumn) {
         setInternalSortColumn(view.sortColumn);
         setInternalSortDirection(view.sortDirection ?? "asc");
         if (onSortChange) {
           onSortChange(view.sortColumn, view.sortDirection ?? "asc");
         }
+      } else {
+        setInternalSortColumn(undefined);
+        setInternalSortDirection("asc");
       }
+
       if (view.searchQuery !== undefined && onSearchChange) {
         onSearchChange(view.searchQuery);
       }
@@ -423,7 +435,7 @@ export function DataTable<T>({
   const hasRowActions = !!(rowActions && rowActions.length > 0) || !!getRowActions;
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
@@ -443,13 +455,15 @@ export function DataTable<T>({
         {headerContent}
 
         <div className="flex items-center gap-1.5 ml-auto">
+          {/* Toolbar end content (filters etc.) */}
+          {toolbarEndContent}
+
           {/* Saved Views */}
           {storageKey && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                  <Bookmark className="h-3.5 w-3.5" />
-                  Views
+                <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Bookmark className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-64 p-3">
@@ -465,16 +479,18 @@ export function DataTable<T>({
                   {savedViews.map((view) => (
                     <div
                       key={view.id}
-                      className="flex items-center justify-between gap-2"
+                      className="flex items-center justify-between gap-2 -mx-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors cursor-pointer"
+                      onClick={() => handleApplyView(view)}
                     >
-                      <button
-                        onClick={() => handleApplyView(view)}
-                        className="text-sm hover:text-primary truncate text-left"
-                      >
+                      <span className="text-sm truncate text-left">
                         {view.name}
-                      </button>
+                      </span>
                       <button
-                        onClick={() => handleDeleteView(view.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteView(view.id);
+                        }}
                         className="text-muted-foreground hover:text-destructive shrink-0"
                       >
                         <X className="h-3 w-3" />
@@ -493,6 +509,7 @@ export function DataTable<T>({
                         }}
                       />
                       <Button
+                        type="button"
                         size="sm"
                         variant="outline"
                         className="h-7 text-xs px-2"
@@ -511,9 +528,8 @@ export function DataTable<T>({
           {/* Column Visibility */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                <Columns3 className="h-3.5 w-3.5" />
-                Columns
+              <Button variant="outline" size="icon" className="h-9 w-9">
+                <Columns3 className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-48 p-3">

@@ -583,11 +583,11 @@ export default function PlanFeaturesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="text-left p-3 font-medium sticky left-0 bg-muted/50 min-w-[240px] z-10">
+                    <th className="text-left px-4 py-3 font-medium sticky left-0 bg-muted/50 min-w-[240px] z-10">
                       Feature
                     </th>
                     {PLAN_TYPES.map((plan) => (
-                      <th key={plan} className="p-3 text-center min-w-[160px]">
+                      <th key={plan} className="px-4 py-3 text-center min-w-[160px]">
                         <PlanColumnHeader plan={plan} />
                       </th>
                     ))}
@@ -600,7 +600,7 @@ export default function PlanFeaturesPage() {
                       <tr className="bg-muted/30">
                         <td
                           colSpan={4}
-                          className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                          className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                         >
                           {category}
                         </td>
@@ -614,7 +614,7 @@ export default function PlanFeaturesPage() {
                             className="border-b last:border-b-0 hover:bg-muted/20 transition-colors"
                           >
                             {/* Feature name */}
-                            <td className="p-3 sticky left-0 bg-background z-10">
+                            <td className="px-4 py-3 sticky left-0 bg-background z-10">
                               <div>
                                 <p className="font-medium">{feature.name}</p>
                                 <p className="text-xs text-muted-foreground">
@@ -625,7 +625,7 @@ export default function PlanFeaturesPage() {
                             {/* Plan cells */}
                             {PLAN_TYPES.map((plan) => {
                               const cell = matrix[feature.id]?.[plan];
-                              if (!cell) return <td key={plan} className="p-3" />;
+                              if (!cell) return <td key={plan} className="px-4 py-3" />;
 
                               const origCell = originalMatrix[feature.id]?.[plan];
                               const changed =
@@ -637,7 +637,7 @@ export default function PlanFeaturesPage() {
                               return (
                                 <td
                                   key={plan}
-                                  className={`p-3 text-center ${
+                                  className={`px-4 py-3 text-center ${
                                     changed ? "bg-amber-50/50" : ""
                                   }`}
                                 >
