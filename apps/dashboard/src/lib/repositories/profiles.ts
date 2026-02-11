@@ -152,6 +152,42 @@ export async function updateUserPreferences(
 }
 
 /**
+ * Upsert user profile (INSERT if not exists, UPDATE if exists)
+ * Used during signup when the profiles row may not yet exist.
+ */
+export async function upsertProfile(
+  userId: string,
+  updates: {
+    first_name?: string | null;
+    last_name?: string | null;
+    avatar_url?: string | null;
+  }
+): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          user_id: userId,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Update user profile
  * Note: Handles both old schema (without first_name, last_name, avatar_url) and new schema
  */

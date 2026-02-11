@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { getCurrentUser } from "@/lib/services/auth-service";
+import { getCurrentUser, updateUserMetadata } from "@/lib/services/auth-service";
 import { getProfileForUser, updateProfile } from "@/lib/services/profiles-service";
 import { uploadAvatar, deleteAvatar } from "@/lib/services/storage-service";
 
@@ -36,7 +36,7 @@ export function useProfile() {
       setError(null);
 
       try {
-        // Get current user email
+        // Get current user email and metadata
         const { data: currentUser } = await getCurrentUser();
         if (currentUser?.email) {
           setUserEmail(currentUser.email);
@@ -48,9 +48,41 @@ export function useProfile() {
           if (profileError) {
             setError(profileError);
           } else if (profileData) {
-            setProfile(profileData);
-            setFirstName(profileData.first_name || "");
-            setLastName(profileData.last_name || "");
+            let resolvedFirstName = profileData.first_name || "";
+            let resolvedLastName = profileData.last_name || "";
+
+            // Auto-sync: if profile is missing name but auth user_metadata has it, use that and save
+            const meta = currentUser?.user_metadata;
+            if (meta && (!resolvedFirstName || !resolvedLastName)) {
+              const metaFirst = meta.first_name as string | undefined;
+              const metaLast = meta.last_name as string | undefined;
+              let needsSync = false;
+
+              if (!resolvedFirstName && metaFirst) {
+                resolvedFirstName = metaFirst;
+                needsSync = true;
+              }
+              if (!resolvedLastName && metaLast) {
+                resolvedLastName = metaLast;
+                needsSync = true;
+              }
+
+              // Persist the synced names to the profile so this only runs once
+              if (needsSync) {
+                await updateProfile(user.id, {
+                  first_name: resolvedFirstName || null,
+                  last_name: resolvedLastName || null,
+                });
+              }
+            }
+
+            setProfile({
+              ...profileData,
+              first_name: resolvedFirstName || null,
+              last_name: resolvedLastName || null,
+            });
+            setFirstName(resolvedFirstName);
+            setLastName(resolvedLastName);
             setAvatarUrl(profileData.avatar_url || null);
             setIsDirty(false);
           }
@@ -146,6 +178,12 @@ export function useProfile() {
         setSaving(false);
         return;
       }
+
+      // Also sync name to auth user_metadata so it's always recoverable
+      await updateUserMetadata({
+        first_name: firstName || null,
+        last_name: lastName || null,
+      });
 
       // Reload profile
       const { data: profileData } = await getProfileForUser(user.id);

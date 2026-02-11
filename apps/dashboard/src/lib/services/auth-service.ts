@@ -79,7 +79,7 @@ export async function signInWithPassword(
 export async function signUp(
   email: string,
   password: string,
-  options?: { redirectTo?: string }
+  options?: { redirectTo?: string; firstName?: string; lastName?: string }
 ): Promise<{ data: { user: User | null } | null; error: string | null }> {
   // Validation
   if (!email || !password) {
@@ -113,7 +113,13 @@ export async function signUp(
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: options?.redirectTo ? { emailRedirectTo: options.redirectTo } : undefined,
+      options: {
+        ...(options?.redirectTo ? { emailRedirectTo: options.redirectTo } : {}),
+        data: {
+          first_name: options?.firstName || null,
+          last_name: options?.lastName || null,
+        },
+      },
     });
 
     if (error) {
@@ -258,6 +264,27 @@ export async function updatePassword(
     return { error: null };
   } catch (err) {
     logError("Exception updating password", err);
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Update user metadata (first_name, last_name) on the auth user
+ * This ensures the name is always recoverable even if the profiles table has issues
+ */
+export async function updateUserMetadata(data: {
+  first_name?: string | null;
+  last_name?: string | null;
+}): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase.auth.updateUser({ data });
+    if (error) {
+      return { error: error.message };
+    }
+    return { error: null };
+  } catch (err) {
     return {
       error: err instanceof Error ? err.message : "Unknown error",
     };

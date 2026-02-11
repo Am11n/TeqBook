@@ -4,7 +4,7 @@
 // Business logic layer for user profiles
 // Orchestrates repository calls and handles domain rules
 
-import { getProfileByUserId, updateUserPreferences, updateProfile as updateProfileRepo } from "@/lib/repositories/profiles";
+import { getProfileByUserId, updateUserPreferences, updateProfile as updateProfileRepo, upsertProfile as upsertProfileRepo } from "@/lib/repositories/profiles";
 import type { Profile } from "@/lib/types";
 
 // Re-export Profile type for consumers
@@ -101,5 +101,40 @@ export async function updateProfile(
 
   // Call repository
   return await updateProfileRepo(userId, updates);
+}
+
+/**
+ * Upsert profile during signup (creates profile row if it doesn't exist yet)
+ */
+export async function upsertProfile(
+  userId: string,
+  updates: {
+    first_name?: string | null;
+    last_name?: string | null;
+  }
+): Promise<{ error: string | null }> {
+  if (!userId) {
+    return { error: "User ID is required" };
+  }
+
+  // Validate first_name
+  if (updates.first_name !== undefined) {
+    const trimmed = updates.first_name?.trim() || null;
+    if (trimmed && trimmed.length > 50) {
+      return { error: "First name must be 50 characters or less" };
+    }
+    updates.first_name = trimmed;
+  }
+
+  // Validate last_name
+  if (updates.last_name !== undefined) {
+    const trimmed = updates.last_name?.trim() || null;
+    if (trimmed && trimmed.length > 50) {
+      return { error: "Last name must be 50 characters or less" };
+    }
+    updates.last_name = trimmed;
+  }
+
+  return await upsertProfileRepo(userId, updates);
 }
 

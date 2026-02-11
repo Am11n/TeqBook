@@ -1,7 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/services/auth-service";
-import { updateProfile } from "@/lib/services/profiles-service";
+import { upsertProfile } from "@/lib/services/profiles-service";
 import { validatePassword } from "@/lib/utils/signup/signup-utils";
 
 interface UseSignupOptions {
@@ -63,8 +63,11 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
     }
 
     try {
-      // Sign up user
-      const { data: signUpData, error: signUpError } = await signUp(email, password);
+      // Sign up user (also stores name in auth user_metadata as backup)
+      const { data: signUpData, error: signUpError } = await signUp(email, password, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
 
       if (signUpError || !signUpData?.user) {
         setError(signUpError || "Failed to create account");
@@ -72,8 +75,9 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
         return;
       }
 
-      // Update profile with first name and last name
-      const { error: profileError } = await updateProfile(signUpData.user.id, {
+      // Upsert profile with first name and last name
+      // Uses upsert because the profiles row may not exist yet at signup time
+      const { error: profileError } = await upsertProfile(signUpData.user.id, {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
       });
