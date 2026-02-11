@@ -23,7 +23,7 @@ import { CreateShiftForm } from "@/components/shifts/CreateShiftForm";
 import { ShiftsWeekView } from "@/components/shifts/ShiftsWeekView";
 import { ShiftsListView } from "@/components/shifts/ShiftsListView";
 import { EditShiftDialog } from "@/components/shifts/EditShiftDialog";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, X, Plus } from "lucide-react";
 import type { Shift } from "@/lib/types";
 
 export default function ShiftsPage() {
@@ -35,6 +35,7 @@ export default function ShiftsPage() {
   const [viewMode, setViewMode] = useState<"list" | "week">("week");
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const {
     employees,
@@ -83,14 +84,22 @@ export default function ShiftsPage() {
   };
 
   const handleQuickCreate = (employeeId: string, weekday: number) => {
-    // Scroll to form - this will be handled by CreateShiftForm
-    document.getElementById("shift-form")?.scrollIntoView({ behavior: "smooth" });
+    setShowCreateDialog(true);
   };
 
   return (
     <ErrorBoundary>
     <DashboardShell>
-      <PageHeader title={t.title} description={t.description} />
+      <PageHeader
+        title={t.title}
+        description={t.description}
+        actions={
+          <Button size="sm" className="gap-1.5" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4" />
+            {t.newShift}
+          </Button>
+        }
+      />
 
       {/* Upgrade nudge for starter salons without SHIFTS feature */}
       {!featuresLoading && !hasFeature("SHIFTS") && !nudgeDismissed && (
@@ -120,27 +129,8 @@ export default function ShiftsPage() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)]">
-        <CreateShiftForm
-          employees={employees}
-          shifts={shifts}
-          locale={appLocale}
-          translations={{
-            newShift: t.newShift,
-            employeeLabel: t.employeeLabel,
-            employeePlaceholder: t.employeePlaceholder,
-            weekdayLabel: t.weekdayLabel,
-            startLabel: t.startLabel,
-            endLabel: t.endLabel,
-            addButton: t.addButton,
-            saving: t.saving,
-            needEmployeeHint: t.needEmployeeHint,
-            addError: t.addError,
-          }}
-          onShiftCreated={addShift}
-        />
-
-        <Card className="p-4">
+      <div className="mt-6">
+        <Card className="p-4 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-medium">{t.tableTitle}</h2>
             <div className="flex items-center gap-2">
@@ -188,6 +178,27 @@ export default function ShiftsPage() {
           )}
         </Card>
       </div>
+
+      <CreateShiftForm
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        employees={employees}
+        shifts={shifts}
+        locale={appLocale}
+        translations={{
+          newShift: t.newShift,
+          employeeLabel: t.employeeLabel,
+          employeePlaceholder: t.employeePlaceholder,
+          weekdayLabel: t.weekdayLabel,
+          startLabel: t.startLabel,
+          endLabel: t.endLabel,
+          addButton: t.addButton,
+          saving: t.saving,
+          needEmployeeHint: t.needEmployeeHint,
+          addError: t.addError,
+        }}
+        onShiftCreated={addShift}
+      />
 
       <EditShiftDialog
         open={editShift.isDialogOpen}
