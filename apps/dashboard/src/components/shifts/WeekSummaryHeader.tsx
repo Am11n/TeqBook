@@ -2,6 +2,7 @@
 
 import type { Shift } from "@/lib/types";
 import type { ShiftOverride } from "@/lib/types";
+import { dateToLocalString } from "@/lib/utils/date-utils";
 
 interface WeekSummaryHeaderProps {
   weekStart: Date;
@@ -81,10 +82,7 @@ export function WeekSummaryHeader({
   for (let i = 0; i < 7; i++) {
     const dt = new Date(weekStart);
     dt.setDate(dt.getDate() + i);
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, "0");
-    const d = String(dt.getDate()).padStart(2, "0");
-    weekDates.push(`${y}-${m}-${d}`);
+    weekDates.push(dateToLocalString(dt));
   }
 
   const totalHours = computeTotalHours(shifts, overrides, weekDates);
