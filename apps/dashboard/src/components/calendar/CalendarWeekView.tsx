@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { formatTimeRange, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
 import { getBookingClasses } from "@/lib/ui/calendar-theme";
+import { getTodayLocal } from "@/lib/utils/date-utils";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 
@@ -32,7 +33,8 @@ export function CalendarWeekView({
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
   const weekDates = getWeekDates(selectedDate);
-  const isToday = (date: string) => date === new Date().toISOString().slice(0, 10);
+  const todayStr = getTodayLocal();
+  const isToday = (date: string) => date === todayStr;
 
   // Build per-day stats
   const dayStats = useMemo(() => {
