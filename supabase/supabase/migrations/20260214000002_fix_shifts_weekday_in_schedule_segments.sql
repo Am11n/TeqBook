@@ -52,8 +52,11 @@ BEGIN
   IF v_timezone IS NULL THEN v_timezone := 'UTC'; END IF;
 
   -- ─── Weekday calculation ──────────────────────────────
+  -- IMPORTANT: Use p_date directly (DATE type), NOT p_date::TIMESTAMP AT TIME ZONE.
+  -- The AT TIME ZONE conversion shifts midnight to the previous day in UTC,
+  -- causing EXTRACT(DOW) to return the wrong weekday for timezones east of UTC.
   -- v_dow_pg: 0=Sunday, 1=Monday, ..., 6=Saturday (matches JS getDay AND shifts.weekday)
-  v_dow_pg := EXTRACT(DOW FROM (p_date::TIMESTAMP AT TIME ZONE v_timezone));
+  v_dow_pg := EXTRACT(DOW FROM p_date);
   -- v_dow_oh: 0=Monday, ..., 6=Sunday (matches opening_hours.day_of_week)
   IF v_dow_pg = 0 THEN v_dow_oh := 6;
   ELSE v_dow_oh := v_dow_pg - 1;
