@@ -58,19 +58,14 @@ export function formatWeekday(value: number, weekdays: WeekdayOption[]): string 
 
 /**
  * Get week dates (Monday to Sunday) from a week start date.
- * Uses local date formatting to avoid UTC timezone shift
- * (toISOString() converts to UTC which can shift the date backwards).
+ * Uses local date formatting to avoid UTC timezone shift.
  */
 export function getWeekDates(weekStart: Date): string[] {
   const dates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const date = new Date(weekStart);
     date.setDate(date.getDate() + i);
-    // Format as YYYY-MM-DD in local timezone (not UTC)
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    dates.push(`${y}-${m}-${d}`);
+    dates.push(dateToLocalString(date));
   }
   return dates;
 }
@@ -150,16 +145,5 @@ export function goToTodayWeek(): Date {
   return getInitialWeekStart();
 }
 
-/**
- * Get today's date as YYYY-MM-DD in local timezone.
- * Use this instead of `new Date().toISOString().slice(0, 10)` which
- * returns UTC and can shift the date backwards for timezones east of UTC.
- */
-export function getTodayLocal(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+// getTodayLocal and dateToLocalString are re-exported from @/lib/utils/date-utils above.
 
