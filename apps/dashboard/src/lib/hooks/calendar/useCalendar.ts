@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getBookingsForCalendar } from "@/lib/repositories/bookings";
+import { getTodayLocal } from "@/lib/utils/date-utils";
 import type { CalendarBooking } from "@/lib/types";
 import type { CalendarDensity } from "@/lib/ui/calendar-theme";
 
@@ -23,10 +24,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
   const [viewMode, setViewMode] = useState<"day" | "week" | "list">("day");
   const [density, setDensity] = useState<CalendarDensity>("comfortable");
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().slice(0, 10);
-  });
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayLocal());
 
   // Redirect unauthenticated users to login
   useEffect(() => {
