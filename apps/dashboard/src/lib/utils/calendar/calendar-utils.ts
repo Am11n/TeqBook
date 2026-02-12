@@ -11,6 +11,7 @@
 
 import type { CalendarBooking, BookingProblem } from "@/lib/types";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
+import { dateToLocalString } from "@/lib/utils/date-utils";
 
 /**
  * Format day heading
@@ -62,7 +63,8 @@ export function formatTimeRange(booking: CalendarBooking, timezone?: string | nu
 }
 
 /**
- * Get week dates from start date
+ * Get week dates from start date.
+ * Uses local date formatting to avoid UTC timezone shift.
  */
 export function getWeekDates(startDate: string): string[] {
   const dates: string[] = [];
@@ -70,7 +72,7 @@ export function getWeekDates(startDate: string): string[] {
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
-    dates.push(date.toISOString().slice(0, 10));
+    dates.push(dateToLocalString(date));
   }
   return dates;
 }
