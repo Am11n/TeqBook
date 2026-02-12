@@ -1,4 +1,8 @@
 import type { Shift } from "@/lib/types";
+import { dateToLocalString, getTodayLocal } from "@/lib/utils/date-utils";
+
+// Re-export shared date helpers so existing imports keep working
+export { getTodayLocal, dateToLocalString };
 
 export interface WeekdayOption {
   value: number;
