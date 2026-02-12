@@ -43,6 +43,7 @@ export default function ShiftsPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [prefillEmployeeId, setPrefillEmployeeId] = useState<string | undefined>(undefined);
 
   const weekStartISO = useMemo(
     () => currentWeekStart.toISOString().slice(0, 10),
@@ -71,6 +72,7 @@ export default function ShiftsPage() {
   const {
     isOutsideOpeningHours,
     getBreaksForDay,
+    getOpeningHoursForDay,
     breaks,
   } = useOpeningHoursForShifts();
 
@@ -84,6 +86,11 @@ export default function ShiftsPage() {
   const inlineEdit = useInlineShiftEdit(salon?.id, (updatedShift) => {
     updateShift(updatedShift);
   });
+
+  // Smart defaults: use salon's Monday opening hours as default start/end for new shifts
+  const mondayHours = getOpeningHoursForDay(1); // 1 = Monday
+  const defaultStartTime = mondayHours?.open_time?.slice(0, 5) ?? "09:00";
+  const defaultEndTime = mondayHours?.close_time?.slice(0, 5) ?? "17:00";
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this shift?")) return;
@@ -107,7 +114,8 @@ export default function ShiftsPage() {
     setCurrentWeekStart(goToTodayWeek());
   };
 
-  const handleQuickCreate = (_employeeId: string, _weekday: number) => {
+  const handleQuickCreate = (employeeId: string, _weekday: number) => {
+    setPrefillEmployeeId(employeeId);
     setShowCreateDialog(true);
   };
 
@@ -181,7 +189,7 @@ export default function ShiftsPage() {
         title={t.title}
         description={t.description}
         actions={
-          <Button size="sm" className="gap-1.5" onClick={() => setShowCreateDialog(true)}>
+          <Button size="sm" className="gap-1.5" onClick={() => { setPrefillEmployeeId(undefined); setShowCreateDialog(true); }}>
             <Plus className="h-4 w-4" />
             {t.newShift}
           </Button>
@@ -304,21 +312,38 @@ export default function ShiftsPage() {
         ) : (
           <ShiftsListView
             shifts={shifts}
+            employees={employees}
             locale={appLocale}
             translations={{
               emptyTitle: t.emptyTitle,
               emptyDescription: t.emptyDescription,
               mobileUnknownEmployee: t.mobileUnknownEmployee,
+              daysWorking: t.daysWorking ?? "days",
+              noShiftsForEmployee: t.noShiftsForEmployee ?? "No shifts configured",
+              addShiftCta: t.addShiftCta ?? "Add shift",
+              overlap: t.overlap ?? "Overlap",
+              invalidTime: t.invalidTime ?? "Invalid time",
+              setupShiftsTitle: t.setupShiftsTitle ?? "Set up working hours",
+              setupShiftsDescription: t.setupShiftsDescription ?? "Define working hours for your employees so the system can calculate available booking slots.",
+              collapseAll: t.collapseAll ?? "Collapse all",
+              expandAll: t.expandAll ?? "Expand all",
             }}
             onEditShift={editShift.openEditModal}
             onDeleteShift={handleDelete}
+            onQuickCreate={(empId) => {
+              setPrefillEmployeeId(empId);
+              setShowCreateDialog(true);
+            }}
           />
         )}
       </div>
 
       <CreateShiftForm
         open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
+        onOpenChange={(open) => {
+          setShowCreateDialog(open);
+          if (!open) setPrefillEmployeeId(undefined);
+        }}
         employees={employees}
         shifts={shifts}
         locale={appLocale}
@@ -335,6 +360,9 @@ export default function ShiftsPage() {
           addError: t.addError,
         }}
         onShiftCreated={addShift}
+        defaultEmployeeId={prefillEmployeeId}
+        defaultStartTime={defaultStartTime}
+        defaultEndTime={defaultEndTime}
       />
 
       <EditShiftDialog

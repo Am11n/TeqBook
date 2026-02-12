@@ -505,6 +505,13 @@ export const nb: TranslationNamespaces = {
     override: "Overstyrt",
     template: "Fast mal",
     today: "I dag",
+    // List view
+    noShiftsForEmployee: "Ingen arbeidstider satt",
+    invalidTime: "Ugyldig tid",
+    setupShiftsTitle: "Sett opp arbeidstider",
+    setupShiftsDescription: "Definer arbeidstider for ansatte slik at systemet kan beregne ledige bookingtider.",
+    collapseAll: "Skjul alle",
+    expandAll: "Vis alle",
   },
   personalliste: {
     title: "Personalliste",

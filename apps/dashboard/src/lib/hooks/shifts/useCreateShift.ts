@@ -10,18 +10,27 @@ interface UseCreateShiftOptions {
   translations: {
     addError: string;
   };
+  /** Pre-select employee when opening from a specific employee section */
+  initialEmployeeId?: string;
+  /** Smart default start time (e.g. salon opening hours). Falls back to "09:00" */
+  initialStartTime?: string;
+  /** Smart default end time (e.g. salon closing hours). Falls back to "17:00" */
+  initialEndTime?: string;
 }
 
 export function useCreateShift({
   shifts,
   onShiftCreated,
   translations,
+  initialEmployeeId = "",
+  initialStartTime = "09:00",
+  initialEndTime = "17:00",
 }: UseCreateShiftOptions) {
   const { salon } = useCurrentSalon();
-  const [employeeId, setEmployeeId] = useState("");
+  const [employeeId, setEmployeeId] = useState(initialEmployeeId);
   const [weekday, setWeekday] = useState<number>(1);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("17:00");
+  const [startTime, setStartTime] = useState(initialStartTime);
+  const [endTime, setEndTime] = useState(initialEndTime);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,19 +64,25 @@ export function useCreateShift({
 
     onShiftCreated(data);
     
-    // Reset form
-    setEmployeeId("");
+    // Reset form to initial defaults
+    setEmployeeId(initialEmployeeId);
     setWeekday(1);
-    setStartTime("09:00");
-    setEndTime("17:00");
+    setStartTime(initialStartTime);
+    setEndTime(initialEndTime);
     setSaving(false);
   };
 
   const reset = () => {
-    setEmployeeId("");
+    setEmployeeId(initialEmployeeId);
     setWeekday(1);
-    setStartTime("09:00");
-    setEndTime("17:00");
+    setStartTime(initialStartTime);
+    setEndTime(initialEndTime);
+    setError(null);
+  };
+
+  /** Pre-fill the form with a specific employee (called from quick-create CTAs) */
+  const prefill = (empId: string) => {
+    setEmployeeId(empId);
     setError(null);
   };
 
@@ -85,6 +100,7 @@ export function useCreateShift({
     setError,
     handleSubmit,
     reset,
+    prefill,
   };
 }
 

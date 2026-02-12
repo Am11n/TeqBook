@@ -494,6 +494,13 @@ export type ShiftsMessages = {
   override: string;
   template: string;
   today: string;
+  // List view
+  noShiftsForEmployee: string;
+  invalidTime: string;
+  setupShiftsTitle: string;
+  setupShiftsDescription: string;
+  collapseAll: string;
+  expandAll: string;
 };
 
 export type PersonallisteMessages = {

@@ -142,7 +142,7 @@ export function ShiftsWeekView({
 
           {/* Employee rows */}
           <div className="divide-y">
-            {employees.map((employee) => (
+            {employees.map((employee, empIndex) => (
               <div
                 key={employee.id}
                 className="grid grid-cols-[200px_repeat(7,minmax(100px,1fr))]"
@@ -151,6 +151,7 @@ export function ShiftsWeekView({
                 <div className="sticky left-0 z-10 border-r bg-card">
                   <EmployeeSidebar
                     employee={employee}
+                    employeeIndex={empIndex}
                     shifts={shifts}
                     overrides={overrides}
                     weekDates={weekDates}
@@ -175,6 +176,7 @@ export function ShiftsWeekView({
                     >
                       <ShiftCell
                         employeeId={employee.id}
+                        employeeIndex={empIndex}
                         date={date}
                         weekday={weekdayNum}
                         shifts={shifts}

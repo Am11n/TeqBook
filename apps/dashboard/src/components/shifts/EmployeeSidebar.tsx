@@ -1,12 +1,13 @@
 "use client";
 
-import { getEmployeeAccentFull } from "@/lib/ui/calendar-theme";
+import { getEmployeeAccentFullByIndex } from "@/lib/ui/calendar-theme";
 import { AlertTriangle } from "lucide-react";
 import type { Shift } from "@/lib/types";
 import type { ShiftOverride } from "@/lib/types";
 
 interface EmployeeSidebarProps {
   employee: { id: string; full_name: string };
+  employeeIndex: number;
   shifts: Shift[];
   overrides: ShiftOverride[];
   weekDates: string[];
@@ -85,13 +86,14 @@ function computeEmployeeWeekStats(
 
 export function EmployeeSidebar({
   employee,
+  employeeIndex,
   shifts,
   overrides,
   weekDates,
   lowCapacityThreshold,
   translations: t,
 }: EmployeeSidebarProps) {
-  const accent = getEmployeeAccentFull(employee.id);
+  const accent = getEmployeeAccentFullByIndex(employeeIndex);
   const stats = computeEmployeeWeekStats(
     employee.id,
     shifts,

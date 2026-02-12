@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Edit, Trash2, Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getEmployeeAccentFull } from "@/lib/ui/calendar-theme";
+import { getEmployeeAccentFullByIndex } from "@/lib/ui/calendar-theme";
 import { InlineTimeEditor } from "@/components/shifts/InlineTimeEditor";
 import type { Shift } from "@/lib/types";
 import type { ShiftOverride } from "@/lib/types";
@@ -11,6 +11,7 @@ import type { BreakRow } from "@/lib/repositories/opening-hours";
 
 interface ShiftCellProps {
   employeeId: string;
+  employeeIndex: number;
   date: string;
   weekday: number;
   shifts: Shift[];
@@ -41,6 +42,7 @@ interface ShiftCellProps {
 
 export function ShiftCell({
   employeeId,
+  employeeIndex,
   date,
   weekday,
   shifts: allShifts,
@@ -59,7 +61,7 @@ export function ShiftCell({
   onQuickCreate,
   translations: t,
 }: ShiftCellProps) {
-  const accent = getEmployeeAccentFull(employeeId);
+  const accent = getEmployeeAccentFullByIndex(employeeIndex);
 
   // Determine what to render: overrides take precedence
   const dayOverrides = useMemo(

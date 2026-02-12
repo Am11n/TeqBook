@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,12 @@ interface CreateShiftFormProps {
     addError: string;
   };
   onShiftCreated: (shift: Shift) => void;
+  /** Pre-select this employee when dialog opens (from quick-create CTA) */
+  defaultEmployeeId?: string;
+  /** Smart default start time from salon opening hours */
+  defaultStartTime?: string;
+  /** Smart default end time from salon opening hours */
+  defaultEndTime?: string;
 }
 
 export function CreateShiftForm({
@@ -43,6 +50,9 @@ export function CreateShiftForm({
   locale,
   translations,
   onShiftCreated,
+  defaultEmployeeId,
+  defaultStartTime,
+  defaultEndTime,
 }: CreateShiftFormProps) {
   const {
     employeeId,
@@ -57,6 +67,7 @@ export function CreateShiftForm({
     error,
     setError,
     handleSubmit,
+    prefill,
   } = useCreateShift({
     shifts,
     onShiftCreated: (shift) => {
@@ -66,7 +77,16 @@ export function CreateShiftForm({
     translations: {
       addError: translations.addError,
     },
+    initialStartTime: defaultStartTime,
+    initialEndTime: defaultEndTime,
   });
+
+  // When the dialog opens with a pre-selected employee, apply it
+  useEffect(() => {
+    if (open && defaultEmployeeId) {
+      prefill(defaultEmployeeId);
+    }
+  }, [open, defaultEmployeeId, prefill]);
 
   const weekdays = getWeekdays(locale);
 

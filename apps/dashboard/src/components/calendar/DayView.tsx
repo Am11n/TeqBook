@@ -7,7 +7,7 @@ import { TimeBlockEvent } from "./TimeBlockEvent";
 import { SlotContextMenu } from "./SlotContextMenu";
 import {
   getSegmentClasses,
-  getEmployeeAccent,
+  getEmployeeAccentByIndex,
   getDensityConfig,
   type CalendarDensity,
 } from "@/lib/ui/calendar-theme";
@@ -188,8 +188,8 @@ export function DayView({
         <div className="w-16 shrink-0 border-r bg-muted/50 px-1 py-1.5 text-xs font-medium text-muted-foreground">
           Time
         </div>
-        {employees.map((employee) => {
-          const accent = getEmployeeAccent(employee.id);
+        {employees.map((employee, empIndex) => {
+          const accent = getEmployeeAccentByIndex(empIndex);
           return (
             <div
               key={employee.id}

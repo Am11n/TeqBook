@@ -140,3 +140,49 @@ export async function deleteShift(
   }
 }
 
+/**
+ * Bulk-create shifts in a single insert call.
+ * Far more efficient than calling createShift() in a loop.
+ */
+export async function createShiftsBulk(
+  shifts: CreateShiftInput[]
+): Promise<{ created: number; error: string | null }> {
+  if (shifts.length === 0) return { created: 0, error: null };
+  try {
+    const { data, error } = await supabase
+      .from("shifts")
+      .insert(shifts)
+      .select("id");
+
+    if (error) return { created: 0, error: error.message };
+    return { created: data?.length ?? 0, error: null };
+  } catch (err) {
+    return {
+      created: 0,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Delete all shifts for a specific employee (used in "replace all" copy mode).
+ */
+export async function deleteShiftsForEmployee(
+  salonId: string,
+  employeeId: string
+): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase
+      .from("shifts")
+      .delete()
+      .eq("salon_id", salonId)
+      .eq("employee_id", employeeId);
+
+    return { error: error?.message ?? null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+

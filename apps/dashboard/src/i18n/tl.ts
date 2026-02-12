@@ -509,6 +509,12 @@ export const tl: TranslationNamespaces = {
     override: "Na-override",
     template: "Template",
     today: "Ngayon",
+    noShiftsForEmployee: "No shifts configured",
+    invalidTime: "Invalid time",
+    setupShiftsTitle: "Set up working hours",
+    setupShiftsDescription: "Define working hours for your employees so the system can calculate available booking slots.",
+    collapseAll: "Collapse all",
+    expandAll: "Expand all",
   },
   personalliste: {
     title: "Staff register",
