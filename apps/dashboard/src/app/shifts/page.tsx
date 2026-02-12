@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -16,21 +16,18 @@ import { useInlineShiftEdit } from "@/lib/hooks/shifts/useInlineShiftEdit";
 import { useShiftOverrides } from "@/lib/hooks/shifts/useShiftOverrides";
 import { useOpeningHoursForShifts } from "@/lib/hooks/shifts/useOpeningHoursForShifts";
 import { deleteShift } from "@/lib/repositories/shifts";
-import { createShift as createShiftRepo } from "@/lib/repositories/shifts";
 import {
   getInitialWeekStart,
   changeWeek,
   goToTodayWeek,
-  getWeekDates,
-  getWeekdayNumber,
 } from "@/lib/utils/shifts/shifts-utils";
 import { CreateShiftForm } from "@/components/shifts/CreateShiftForm";
 import { ShiftsWeekView } from "@/components/shifts/ShiftsWeekView";
 import { ShiftsListView } from "@/components/shifts/ShiftsListView";
 import { EditShiftDialog } from "@/components/shifts/EditShiftDialog";
 import { WeekSummaryHeader } from "@/components/shifts/WeekSummaryHeader";
-import { BulkActionsBar } from "@/components/shifts/BulkActionsBar";
-import { Sparkles, X, Plus } from "lucide-react";
+import { CopyShiftsDialog } from "@/components/shifts/CopyShiftsDialog";
+import { Sparkles, X, Plus, Copy } from "lucide-react";
 import type { Shift } from "@/lib/types";
 
 export default function ShiftsPage() {
@@ -43,6 +40,7 @@ export default function ShiftsPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [prefillEmployeeId, setPrefillEmployeeId] = useState<string | undefined>(undefined);
 
   const weekStartISO = useMemo(
@@ -67,7 +65,7 @@ export default function ShiftsPage() {
     },
   });
 
-  const { overrides, copyWeek, reload: reloadOverrides } = useShiftOverrides(weekStartISO);
+  const { overrides } = useShiftOverrides(weekStartISO);
 
   const {
     isOutsideOpeningHours,
@@ -119,57 +117,6 @@ export default function ShiftsPage() {
     setShowCreateDialog(true);
   };
 
-  // Bulk action: copy current week to next week
-  const handleCopyWeek = useCallback(async () => {
-    const nextWeekStart = new Date(currentWeekStart);
-    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
-    const toISO = nextWeekStart.toISOString().slice(0, 10);
-    return await copyWeek(weekStartISO, toISO);
-  }, [copyWeek, weekStartISO, currentWeekStart]);
-
-  // Bulk action: use default template (create 09-17 shifts for all employees Mon-Fri)
-  const handleUseTemplate = useCallback(async () => {
-    if (!salon?.id) return { count: 0, error: "No salon" };
-    let count = 0;
-    for (const emp of employees) {
-      for (let weekday = 1; weekday <= 5; weekday++) {
-        const { error } = await createShiftRepo({
-          salon_id: salon.id,
-          employee_id: emp.id,
-          weekday,
-          start_time: "09:00",
-          end_time: "17:00",
-        });
-        if (!error) count++;
-      }
-    }
-    if (count > 0) await loadShifts();
-    return { count, error: null };
-  }, [salon?.id, employees, loadShifts]);
-
-  // Bulk action: copy monday shifts to tue-fri
-  const handleCopyMondayToWeek = useCallback(async () => {
-    if (!salon?.id) return { count: 0, error: "No salon" };
-    const mondayShifts = shifts.filter((s) => s.weekday === 1);
-    if (mondayShifts.length === 0) return { count: 0, error: null };
-
-    let count = 0;
-    for (const s of mondayShifts) {
-      for (let weekday = 2; weekday <= 5; weekday++) {
-        const { error } = await createShiftRepo({
-          salon_id: salon.id,
-          employee_id: s.employee_id,
-          weekday,
-          start_time: s.start_time,
-          end_time: s.end_time,
-        });
-        if (!error) count++;
-      }
-    }
-    if (count > 0) await loadShifts();
-    return { count, error: null };
-  }, [salon?.id, shifts, loadShifts]);
-
   // Collect all breaks for the week into a flat array
   const weekBreaks = useMemo(() => {
     const allBreaks = [];
@@ -189,10 +136,23 @@ export default function ShiftsPage() {
         title={t.title}
         description={t.description}
         actions={
-          <Button size="sm" className="gap-1.5" onClick={() => { setPrefillEmployeeId(undefined); setShowCreateDialog(true); }}>
-            <Plus className="h-4 w-4" />
-            {t.newShift}
-          </Button>
+          <div className="flex items-center gap-2">
+            {employees.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => setShowCopyDialog(true)}
+              >
+                <Copy className="h-4 w-4" />
+                {t.copyShifts}
+              </Button>
+            )}
+            <Button size="sm" className="gap-1.5" onClick={() => { setPrefillEmployeeId(undefined); setShowCreateDialog(true); }}>
+              <Plus className="h-4 w-4" />
+              {t.newShift}
+            </Button>
+          </div>
         }
       />
 
@@ -237,20 +197,6 @@ export default function ShiftsPage() {
               weekNumber: t.weekNumber ?? "Uke",
               totalHours: t.totalHours ?? "arbeidstimer",
               activeEmployees: t.activeEmployees ?? "ansatte",
-            }}
-          />
-        )}
-
-        {/* Bulk actions bar */}
-        {viewMode === "week" && employees.length > 0 && (
-          <BulkActionsBar
-            onCopyWeek={handleCopyWeek}
-            onUseTemplate={handleUseTemplate}
-            onCopyMondayToWeek={handleCopyMondayToWeek}
-            translations={{
-              copyWeek: t.copyWeek ?? "Kopier uke",
-              useTemplate: t.useTemplate ?? "Bruk mal",
-              copyMondayToWeek: t.copyMondayToWeek ?? "Kopier mandag → hele uken",
             }}
           />
         )}
@@ -389,6 +335,50 @@ export default function ShiftsPage() {
         editEndTime={editShift.editEndTime}
         setEditEndTime={editShift.setEditEndTime}
         onSubmit={editShift.handleSubmit}
+      />
+
+      <CopyShiftsDialog
+        open={showCopyDialog}
+        onOpenChange={setShowCopyDialog}
+        employees={employees}
+        shifts={shifts}
+        locale={appLocale}
+        getOpeningHoursForDay={getOpeningHoursForDay}
+        loadShifts={loadShifts}
+        translations={{
+          copyShifts: t.copyShifts,
+          copyStepSource: t.copyStepSource,
+          copyStepPattern: t.copyStepPattern,
+          copyStepTargets: t.copyStepTargets,
+          copyFromEmployee: t.copyFromEmployee,
+          copyFromOpeningHours: t.copyFromOpeningHours,
+          copyNoShiftsHint: t.copyNoShiftsHint,
+          copyAddInterval: t.copyAddInterval,
+          copyMondayToRest: t.copyMondayToRest,
+          copyTotalHours: t.copyTotalHours,
+          copySelectTargets: t.copySelectTargets,
+          copySearchEmployee: t.copySearchEmployee,
+          copySelectAll: t.copySelectAll,
+          copySelectNone: t.copySelectNone,
+          copySelectWithoutShifts: t.copySelectWithoutShifts,
+          copyStrategyAdditive: t.copyStrategyAdditive,
+          copyStrategyAdditiveDesc: t.copyStrategyAdditiveDesc,
+          copyStrategyReplace: t.copyStrategyReplace,
+          copyStrategyReplaceDesc: t.copyStrategyReplaceDesc,
+          copyStrategyReplaceConfirm: t.copyStrategyReplaceConfirm,
+          copyPreviewCreate: t.copyPreviewCreate,
+          copyPreviewSkip: t.copyPreviewSkip,
+          copyPreviewConflict: t.copyPreviewConflict,
+          copyPreviewDetails: t.copyPreviewDetails,
+          copyApplyButton: t.copyApplyButton,
+          copyApplyingButton: t.copyApplyingButton,
+          copyResultToast: t.copyResultToast,
+          copyResultSkipped: t.copyResultSkipped,
+          copyResultClose: t.copyResultClose,
+          copyBack: t.copyBack,
+          copyNext: t.copyNext,
+          daysWorking: t.daysWorking,
+        }}
       />
     </DashboardShell>
     </ErrorBoundary>
