@@ -21,6 +21,7 @@ import {
   changeWeek,
   goToTodayWeek,
 } from "@/lib/utils/shifts/shifts-utils";
+import { dateToLocalString } from "@/lib/utils/date-utils";
 import { CreateShiftForm } from "@/components/shifts/CreateShiftForm";
 import { ShiftsWeekView } from "@/components/shifts/ShiftsWeekView";
 import { ShiftsListView } from "@/components/shifts/ShiftsListView";
@@ -43,12 +44,7 @@ export default function ShiftsPage() {
   const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [prefillEmployeeId, setPrefillEmployeeId] = useState<string | undefined>(undefined);
 
-  const weekStartISO = useMemo(() => {
-    const y = currentWeekStart.getFullYear();
-    const m = String(currentWeekStart.getMonth() + 1).padStart(2, "0");
-    const d = String(currentWeekStart.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }, [currentWeekStart]);
+  const weekStartISO = useMemo(() => dateToLocalString(currentWeekStart), [currentWeekStart]);
 
   const {
     employees,
