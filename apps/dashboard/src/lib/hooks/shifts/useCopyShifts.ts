@@ -112,15 +112,17 @@ export function buildPatternFromShifts(
 
 /**
  * Build a WeekPattern from salon opening hours.
+ * getOpeningHoursForDay accepts JS weekday (0=Sun, 1=Mon, ..., 6=Sat)
+ * and handles the OH convention conversion internally.
  */
 export function buildPatternFromOpeningHours(
   getOpeningHoursForDay: (weekday: number) => { open_time: string; close_time: string } | null
 ): WeekPattern {
   const pattern: WeekPattern = {};
-  // opening hours use 0=Sun, 1=Mon...6=Sat
   for (let isoDay = 1; isoDay <= 7; isoDay++) {
-    const dbDay = isoDay === 7 ? 0 : isoDay; // ISO→DB weekday
-    const oh = getOpeningHoursForDay(dbDay);
+    // Convert ISO weekday (1=Mon..7=Sun) to JS getDay() (0=Sun, 1=Mon..6=Sat)
+    const jsDay = isoDay === 7 ? 0 : isoDay;
+    const oh = getOpeningHoursForDay(jsDay);
     if (oh) {
       pattern[isoDay] = {
         enabled: true,

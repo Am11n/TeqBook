@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getWeekDates, getWeekdayNumber } from "@/lib/utils/shifts/shifts-utils";
+import { getWeekDates, getWeekdayNumber, getTodayLocal } from "@/lib/utils/shifts/shifts-utils";
 import { EmployeeSidebar } from "@/components/shifts/EmployeeSidebar";
 import { ShiftCell } from "@/components/shifts/ShiftCell";
 import type { Shift, ShiftOverride } from "@/lib/types";
@@ -70,6 +70,7 @@ export function ShiftsWeekView({
   translations: t,
 }: ShiftsWeekViewProps) {
   const weekDates = useMemo(() => getWeekDates(currentWeekStart), [currentWeekStart]);
+  const todayStr = useMemo(() => getTodayLocal(), []);
 
   const resolvedLocale = locale === "nb" ? "nb-NO" : locale === "ar" ? "ar-SA" : "en-US";
 
@@ -115,7 +116,7 @@ export function ShiftsWeekView({
             {/* Day headers */}
             {weekDates.map((date) => {
               const d = new Date(date + "T00:00:00");
-              const isToday = date === new Date().toISOString().slice(0, 10);
+              const isToday = date === todayStr;
               return (
                 <div
                   key={date}
@@ -168,7 +169,7 @@ export function ShiftsWeekView({
                 {/* Day cells */}
                 {weekDates.map((date) => {
                   const weekdayNum = getWeekdayNumber(date);
-                  const isToday = date === new Date().toISOString().slice(0, 10);
+                  const isToday = date === todayStr;
                   return (
                     <div
                       key={date}

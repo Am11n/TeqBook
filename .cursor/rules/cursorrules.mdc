@@ -133,6 +133,21 @@ The Radix `Select` component is fine on regular pages (outside Dialogs).
 - Admin API routes that need Supabase should import from `@/lib/supabase/server` (NOT from `@teqbook/shared/supabase/server-client` directly).
 - The admin app uses `trailingSlash: true` in `next.config.ts`. When fetching internal API routes client-side, always include the trailing slash (e.g. `fetch("/api/health/")`).
 
+## Weekday Numbering Convention
+
+The codebase uses Monday-first weeks everywhere in the UI. Two different numbering systems exist in the database:
+
+- **opening_hours.day_of_week**: 0=Monday, 1=Tuesday, ..., 6=Sunday (set by onboarding, see `onboarding-utils.ts`)
+- **shifts.weekday**: 0=Sunday, 1=Monday, ..., 6=Saturday (JS `Date.getDay()` convention)
+
+**Rules:**
+- All week views (calendar, shifts, opening hours) MUST start on Monday.
+- When reading opening hours, use the helpers in `useOpeningHoursForShifts.ts` which accept JS weekday (`getDay()`: 0=Sun, 1=Mon, ..., 6=Sat) and convert to the OH convention internally.
+- Never assume 0=Sunday or 0=Monday without checking which table you are reading from.
+- The pattern editor in `CopyShiftsDialog` uses ISO weekdays internally (1=Monday, 7=Sunday).
+- When converting ISO weekday to JS: `jsDay = isoDay === 7 ? 0 : isoDay`
+- When converting JS to OH: `ohDay = jsDay === 0 ? 6 : jsDay - 1` (handled by `jsWeekdayToOH` in the hook)
+
 ## General
 
 - Always check for linter errors after editing files.

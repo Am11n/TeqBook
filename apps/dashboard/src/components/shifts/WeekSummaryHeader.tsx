@@ -76,12 +76,15 @@ export function WeekSummaryHeader({
 }: WeekSummaryHeaderProps) {
   const weekNum = getISOWeekNumber(weekStart);
 
-  // Build week dates for calculation
+  // Build week dates for calculation (use local timezone, not UTC)
   const weekDates: string[] = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + i);
-    weekDates.push(d.toISOString().slice(0, 10));
+    const dt = new Date(weekStart);
+    dt.setDate(dt.getDate() + i);
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, "0");
+    const d = String(dt.getDate()).padStart(2, "0");
+    weekDates.push(`${y}-${m}-${d}`);
   }
 
   const totalHours = computeTotalHours(shifts, overrides, weekDates);

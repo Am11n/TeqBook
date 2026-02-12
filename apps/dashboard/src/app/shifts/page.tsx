@@ -43,10 +43,12 @@ export default function ShiftsPage() {
   const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [prefillEmployeeId, setPrefillEmployeeId] = useState<string | undefined>(undefined);
 
-  const weekStartISO = useMemo(
-    () => currentWeekStart.toISOString().slice(0, 10),
-    [currentWeekStart]
-  );
+  const weekStartISO = useMemo(() => {
+    const y = currentWeekStart.getFullYear();
+    const m = String(currentWeekStart.getMonth() + 1).padStart(2, "0");
+    const d = String(currentWeekStart.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }, [currentWeekStart]);
 
   const {
     employees,

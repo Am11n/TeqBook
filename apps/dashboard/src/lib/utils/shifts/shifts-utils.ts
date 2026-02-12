@@ -53,14 +53,20 @@ export function formatWeekday(value: number, weekdays: WeekdayOption[]): string 
 }
 
 /**
- * Get week dates (Monday to Sunday) from a week start date
+ * Get week dates (Monday to Sunday) from a week start date.
+ * Uses local date formatting to avoid UTC timezone shift
+ * (toISOString() converts to UTC which can shift the date backwards).
  */
 export function getWeekDates(weekStart: Date): string[] {
   const dates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const date = new Date(weekStart);
     date.setDate(date.getDate() + i);
-    dates.push(date.toISOString().slice(0, 10));
+    // Format as YYYY-MM-DD in local timezone (not UTC)
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    dates.push(`${y}-${m}-${d}`);
   }
   return dates;
 }
@@ -110,14 +116,17 @@ export function hasOverlappingShifts(
 }
 
 /**
- * Get initial week start date (Monday of current week)
+ * Get initial week start date (Monday of current week).
+ * Always returns local midnight on Monday.
  */
 export function getInitialWeekStart(): Date {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday
-  const monday = new Date(today.setDate(diff));
-  monday.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  // Offset to Monday: Sun(0)->-6, Mon(1)->0, Tue(2)->-1, ..., Sat(6)->-5
+  const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + offset);
   return monday;
 }
 
@@ -135,5 +144,18 @@ export function changeWeek(weekStart: Date, offset: number): Date {
  */
 export function goToTodayWeek(): Date {
   return getInitialWeekStart();
+}
+
+/**
+ * Get today's date as YYYY-MM-DD in local timezone.
+ * Use this instead of `new Date().toISOString().slice(0, 10)` which
+ * returns UTC and can shift the date backwards for timezones east of UTC.
+ */
+export function getTodayLocal(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
