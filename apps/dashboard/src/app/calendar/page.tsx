@@ -27,6 +27,22 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CalendarBooking, Booking, AvailableSlotBatch, ScheduleSegment } from "@/lib/types";
 
 function OperationalEmptyState({ segments }: { segments: ScheduleSegment[] }) {
+  // Check if the day is closed (all segments are "closed", or no segments at all)
+  const isClosed =
+    segments.length === 0 ||
+    segments.every((s) => s.segment_type === "closed");
+
+  if (isClosed) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <p className="text-sm font-medium text-muted-foreground">Stengt</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Ingen ansatte jobber denne dagen.
+        </p>
+      </div>
+    );
+  }
+
   // Calculate open capacity from working segments
   const workingMinutes = segments
     .filter((s) => s.segment_type === "working")
@@ -45,7 +61,9 @@ function OperationalEmptyState({ segments }: { segments: ScheduleSegment[] }) {
     }, 0);
 
   const openHours = Math.max(0, (workingMinutes - bookedMinutes) / 60);
-  const capacityPct = workingMinutes > 0 ? Math.round(((workingMinutes - bookedMinutes) / workingMinutes) * 100) : 100;
+  const capacityPct = workingMinutes > 0
+    ? Math.round(((workingMinutes - bookedMinutes) / workingMinutes) * 100)
+    : 0;
 
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
