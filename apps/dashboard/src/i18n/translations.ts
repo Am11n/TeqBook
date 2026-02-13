@@ -956,6 +956,19 @@ export type NotificationsMessages = {
   newBookingBody: string;
 };
 
+export type FeatureGateMessages = {
+  upgradeRequired: string;
+  upgradeDescription: string;
+  viewPlans: string;
+  goBack: string;
+  shiftsDescription?: string;
+  inventoryDescription?: string;
+  advanced_reportsDescription?: string;
+  exportsDescription?: string;
+  brandingDescription?: string;
+  [key: string]: string | undefined;
+};
+
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
   login: LoginMessages;
@@ -974,6 +987,7 @@ export type TranslationNamespaces = {
   admin: AdminMessages;
   products: ProductsMessages;
   notifications: NotificationsMessages;
+  featureGate: FeatureGateMessages;
 };
 
 import { nb } from "./nb";

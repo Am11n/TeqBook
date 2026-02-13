@@ -7,6 +7,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useBranding } from "@/lib/hooks/branding/useBranding";
 import { LivePreviewCard } from "@/components/branding/LivePreviewCard";
 import { BrandingForm } from "@/components/branding/BrandingForm";
+import { FeatureGate } from "@/components/feature-gate";
 
 export default function BrandingSettingsPage() {
   const { locale } = useLocale();
@@ -17,6 +18,7 @@ export default function BrandingSettingsPage() {
   const branding = useBranding();
 
   return (
+    <FeatureGate feature="BRANDING" wrapInShell={false}>
     <div className="space-y-6">
       {branding.showPreview && (
         <LivePreviewCard
@@ -62,5 +64,6 @@ export default function BrandingSettingsPage() {
         }}
       />
     </div>
+    </FeatureGate>
   );
 }

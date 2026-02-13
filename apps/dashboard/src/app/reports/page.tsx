@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FeatureGate } from "@/components/feature-gate";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
@@ -45,6 +46,7 @@ export default function ReportsPage() {
   }
 
   return (
+    <FeatureGate feature="ADVANCED_REPORTS">
     <DashboardShell>
       <PageHeader title="Reports & Analytics" description="View insights and performance metrics" />
 
@@ -85,5 +87,6 @@ export default function ReportsPage() {
         averageBookingDuration={averageBookingDuration}
       />
     </DashboardShell>
+    </FeatureGate>
   );
 }

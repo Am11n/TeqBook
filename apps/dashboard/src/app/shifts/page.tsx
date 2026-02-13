@@ -5,8 +5,8 @@ import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { useFeatures } from "@/lib/hooks/use-features";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { FeatureGate } from "@/components/feature-gate";
 import { PageHeader } from "@/components/layout/page-header";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import { ShiftsListView } from "@/components/shifts/ShiftsListView";
 import { EditShiftDialog } from "@/components/shifts/EditShiftDialog";
 import { WeekSummaryHeader } from "@/components/shifts/WeekSummaryHeader";
 import { CopyShiftsDialog } from "@/components/shifts/CopyShiftsDialog";
-import { Sparkles, X, Plus, Copy } from "lucide-react";
+import { Plus, Copy } from "lucide-react";
 import type { Shift } from "@/lib/types";
 
 export default function ShiftsPage() {
@@ -36,10 +36,8 @@ export default function ShiftsPage() {
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].shifts;
   const { salon } = useCurrentSalon();
-  const { hasFeature, loading: featuresLoading } = useFeatures();
   const [viewMode, setViewMode] = useState<"list" | "week">("week");
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
-  const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [prefillEmployeeId, setPrefillEmployeeId] = useState<string | undefined>(undefined);
@@ -128,6 +126,7 @@ export default function ShiftsPage() {
   }, [currentWeekStart, getBreaksForDay]);
 
   return (
+    <FeatureGate feature="SHIFTS">
     <ErrorBoundary>
     <DashboardShell>
       <PageHeader
@@ -153,34 +152,6 @@ export default function ShiftsPage() {
           </div>
         }
       />
-
-      {/* Upgrade nudge for starter salons without SHIFTS feature */}
-      {!featuresLoading && !hasFeature("SHIFTS") && !nudgeDismissed && (
-        <div className="mt-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <Sparkles className="h-5 w-5 shrink-0 text-amber-600" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-900">
-              Want to set individual schedules per employee?
-            </p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              Advanced shift planning is available on Pro. Your salon currently uses opening hours for availability.
-            </p>
-          </div>
-          <a
-            href="/settings/billing"
-            className="shrink-0 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700"
-          >
-            Upgrade
-          </a>
-          <button
-            type="button"
-            onClick={() => setNudgeDismissed(true)}
-            className="shrink-0 rounded p-1 text-amber-600 hover:bg-amber-100 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
 
       <div className="mt-6 space-y-4">
         {/* Week summary header */}
@@ -380,5 +351,6 @@ export default function ShiftsPage() {
       />
     </DashboardShell>
     </ErrorBoundary>
+    </FeatureGate>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FeatureGate } from "@/components/feature-gate";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
@@ -81,6 +82,7 @@ export default function ExportPage() {
   };
 
   return (
+    <FeatureGate feature="EXPORTS">
     <DashboardShell>
       <PageHeader
         title="Export Data"
@@ -198,6 +200,7 @@ export default function ExportPage() {
         </Card>
       </div>
     </DashboardShell>
+    </FeatureGate>
   );
 }
 
