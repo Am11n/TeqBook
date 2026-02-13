@@ -850,6 +850,38 @@ export type SettingsMessages = {
   bookingChangesDescription?: string;
   bookingCancellationsLabel?: string;
   bookingCancellationsDescription?: string;
+  // General tab -- new fields
+  businessAddressLabel?: string;
+  businessAddressPlaceholder?: string;
+  orgNumberLabel?: string;
+  orgNumberPlaceholder?: string;
+  bookingUrlLabel?: string;
+  copyLink?: string;
+  copied?: string;
+  bookingPolicyTitle?: string;
+  bookingPolicyDescription?: string;
+  cancellationHoursLabel?: string;
+  cancellationHoursHint?: string;
+  defaultBufferLabel?: string;
+  defaultBufferHint?: string;
+  shownOnBookingPage?: string;
+  contactSectionTitle?: string;
+  contactSectionDescription?: string;
+  emailLabel?: string;
+  // Status indicator
+  missingSettingsName?: string;
+  missingBookingLanguage?: string;
+  allSettingsConfigured?: string;
+  // Notifications -- status
+  activeStatus?: string;
+  disabledStatus?: string;
+  // Security
+  twoFactorRecommendation?: string;
+  currentSession?: string;
+  // Billing
+  inactiveStatus?: string;
+  invoicesEmptyState?: string;
+  learnBillingLink?: string;
 };
 
 export type AdminMessages = {

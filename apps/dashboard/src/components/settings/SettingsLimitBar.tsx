@@ -24,8 +24,8 @@ export function SettingsLimitBar({
   if (limit === null) return null;
 
   const percentage = Math.min((current / limit) * 100, 100);
+  const isOverLimit = current > limit;
   const isAtLimit = current >= limit;
-  const isNearLimit = percentage >= 80 && !isAtLimit;
 
   return (
     <div className="space-y-1.5">
@@ -33,7 +33,7 @@ export function SettingsLimitBar({
         <span className="text-muted-foreground">
           {label}: <span className="tabular-nums font-medium text-foreground">{current}/{limit}</span>
         </span>
-        {onAction && actionLabel && (
+        {onAction && actionLabel && isAtLimit && (
           <button
             type="button"
             onClick={onAction}
@@ -47,11 +47,11 @@ export function SettingsLimitBar({
         <div
           className={cn(
             "h-full rounded-full transition-all duration-300",
-            isAtLimit
+            isOverLimit
               ? "bg-destructive"
-              : isNearLimit
-                ? "bg-yellow-500"
-                : "bg-green-500",
+              : isAtLimit
+                ? "bg-muted-foreground/50"
+                : "bg-primary/40",
           )}
           style={{ width: `${percentage}%` }}
         />

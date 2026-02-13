@@ -38,6 +38,11 @@ export type Salon = {
   payment_failed_at?: string | null;
   last_payment_retry_at?: string | null;
   payment_status?: "active" | "failed" | "grace_period" | "restricted" | null;
+  // General settings fields
+  business_address?: string | null;
+  org_number?: string | null;
+  cancellation_hours?: number | null;
+  default_buffer_minutes?: number | null;
 };
 
 /**
@@ -49,7 +54,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -80,7 +85,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -158,6 +163,10 @@ export async function updateSalon(
     timezone?: string | null;
     currency?: string | null;
     theme?: SalonTheme | null;
+    business_address?: string | null;
+    org_number?: string | null;
+    cancellation_hours?: number | null;
+    default_buffer_minutes?: number | null;
   }
 ): Promise<{ error: string | null }> {
   try {

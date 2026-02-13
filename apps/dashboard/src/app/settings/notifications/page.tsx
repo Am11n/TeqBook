@@ -181,22 +181,36 @@ export default function NotificationsPage() {
           <div className="flex items-center gap-2">
             <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-sm font-medium">{label}</span>
+            <Badge
+              variant={isChecked ? "default" : "secondary"}
+              className="text-[10px] px-1.5 py-0 h-4 leading-4"
+            >
+              {isChecked
+                ? (t.activeStatus ?? "Active")
+                : (t.disabledStatus ?? "Disabled")}
+            </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
 
-          {/* Reminder timing dropdown */}
-          {showTiming && isChecked && (
-            <div className="mt-2 flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <select
-                value={form.values.reminderTiming}
-                onChange={(e) => form.setValue("reminderTiming", e.target.value)}
-                className="h-8 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
-              >
-                <option value="24h">24 hours before</option>
-                <option value="2h">2 hours before</option>
-                <option value="both">Both (24h + 2h)</option>
-              </select>
+          {/* Reminder timing dropdown -- smooth expand */}
+          {showTiming && (
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                isChecked ? "max-h-12 opacity-100 mt-2" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <select
+                  value={form.values.reminderTiming}
+                  onChange={(e) => form.setValue("reminderTiming", e.target.value)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="24h">24 hours before</option>
+                  <option value="2h">2 hours before</option>
+                  <option value="both">Both (24h + 2h)</option>
+                </select>
+              </div>
             </div>
           )}
         </div>

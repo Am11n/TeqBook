@@ -16,6 +16,8 @@ interface SettingsSectionProps {
   titleRight?: ReactNode;
   /** "stack" = vertical fields, "rows" = FormRow label-left/field-right */
   layout?: "stack" | "rows";
+  /** "sm" = default compact title, "lg" = larger primary section title */
+  size?: "sm" | "lg";
   children: ReactNode;
   className?: string;
 }
@@ -25,6 +27,7 @@ export function SettingsSection({
   description,
   titleRight,
   layout = "stack",
+  size = "sm",
   children,
   className,
 }: SettingsSectionProps) {
@@ -32,7 +35,7 @@ export function SettingsSection({
     <Card className={cn("p-5", className)}>
       <div className="mb-4 flex items-start justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
+          <h3 className={size === "lg" ? "text-base font-semibold" : "text-sm font-semibold"}>{title}</h3>
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}

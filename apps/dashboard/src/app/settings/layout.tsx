@@ -26,11 +26,13 @@ type DirtyStateMap = Record<string, boolean>;
 interface TabGuardContextValue {
   registerDirtyState: (tabId: string, isDirty: boolean) => void;
   isAnyDirty: () => boolean;
+  reportLastSaved: (date: Date) => void;
 }
 
 const TabGuardContext = createContext<TabGuardContextValue>({
   registerDirtyState: () => {},
   isAnyDirty: () => false,
+  reportLastSaved: () => {},
 });
 
 export function useTabGuard() {
@@ -55,6 +57,7 @@ export default function SettingsLayout({
   const dirtyMapRef = useRef<DirtyStateMap>({});
   const [showGuardDialog, setShowGuardDialog] = useState(false);
   const pendingTabRef = useRef<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     setFeaturesMounted(true);
@@ -73,6 +76,10 @@ export default function SettingsLayout({
 
   const isAnyDirty = useCallback(() => {
     return Object.values(dirtyMapRef.current).some(Boolean);
+  }, []);
+
+  const reportLastSaved = useCallback((date: Date) => {
+    setLastSavedAt(date);
   }, []);
 
   // Determine active tab based on pathname
@@ -125,9 +132,16 @@ export default function SettingsLayout({
   };
 
   return (
-    <TabGuardContext.Provider value={{ registerDirtyState, isAnyDirty }}>
+    <TabGuardContext.Provider value={{ registerDirtyState, isAnyDirty, reportLastSaved }}>
       <DashboardShell>
-        <PageHeader title={t.title} description={t.description} />
+        <PageHeader
+          title={t.title}
+          description={
+            lastSavedAt
+              ? `${t.description} \u00B7 Last saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+              : t.description
+          }
+        />
         <div className="mt-6 tabular-nums">
           {mounted ? (
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>

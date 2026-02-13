@@ -486,6 +486,7 @@ export default function OpeningHoursPage() {
                     <>
                       <input
                         type="time"
+                        step="300"
                         value={day.openTime}
                         onChange={(e) => updateDay(index, { openTime: e.target.value })}
                         className="h-9 rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none transition focus:ring-1 focus:ring-ring"
@@ -495,6 +496,7 @@ export default function OpeningHoursPage() {
                       </span>
                       <input
                         type="time"
+                        step="300"
                         value={day.closeTime}
                         onChange={(e) => updateDay(index, { closeTime: e.target.value })}
                         className="h-9 rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none transition focus:ring-1 focus:ring-ring"
@@ -519,6 +521,7 @@ export default function OpeningHoursPage() {
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="time"
+                                    step="300"
                                     value={day.breakStart}
                                     onChange={(e) => updateDay(index, { breakStart: e.target.value })}
                                     className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm tabular-nums outline-none focus:ring-1 focus:ring-ring"
@@ -526,6 +529,7 @@ export default function OpeningHoursPage() {
                                   <span className="text-xs text-muted-foreground">-</span>
                                   <input
                                     type="time"
+                                    step="300"
                                     value={day.breakEnd}
                                     onChange={(e) => updateDay(index, { breakEnd: e.target.value })}
                                     className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm tabular-nums outline-none focus:ring-1 focus:ring-ring"
@@ -551,14 +555,15 @@ export default function OpeningHoursPage() {
                           </Popover>
                           /* X to quickly remove */
                         ) : (
-                          <button
-                            type="button"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
                             onClick={() => addLunchBreak(index)}
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            <Coffee className="h-3.5 w-3.5" />
-                            Add break
-                          </button>
+                            <Coffee className="h-3 w-3 mr-1" />
+                            + Break
+                          </Button>
                         )}
                       </div>
                     </>
@@ -616,7 +621,7 @@ export default function OpeningHoursPage() {
                       <button
                         key={s.date}
                         type="button"
-                        onClick={() => setNewClosureDate(s.date)}
+                        onClick={() => { setNewClosureDate(s.date); setNewClosureReason(s.label); }}
                         className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
                       >
                         {s.label}

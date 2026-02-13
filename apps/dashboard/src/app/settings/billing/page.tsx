@@ -13,7 +13,7 @@ import { AddonsCard } from "@/components/billing/AddonsCard";
 import { PlanSelectionDialog } from "@/components/billing/PlanSelectionDialog";
 import { PaymentFormDialog } from "@/components/billing/PaymentFormDialog";
 import { CancelSubscriptionDialog } from "@/components/billing/CancelSubscriptionDialog";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, FileText } from "lucide-react";
 import type { PlanType } from "@/lib/types";
 
 export default function BillingSettingsPage() {
@@ -130,9 +130,15 @@ export default function BillingSettingsPage() {
             <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="px-6 pb-4 border-t">
-            <p className="text-sm text-muted-foreground pt-4">
-              Invoice history will appear here when billing is fully implemented.
-            </p>
+            <div className="flex flex-col items-center py-6 text-center">
+              <FileText className="h-8 w-8 text-muted-foreground/40 mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Your invoices will appear here once you have an active subscription.
+              </p>
+              <a href="#" className="text-xs text-primary hover:underline mt-1">
+                Learn how billing works
+              </a>
+            </div>
           </div>
         </details>
       </Card>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -12,11 +13,17 @@ import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { useRouter } from "next/navigation";
-import { logError } from "@/lib/services/logger";
 import { getCommonTimezones } from "@/lib/utils/timezone";
 import { CURRENCIES, getCurrencyGroups } from "@/lib/utils/currencies";
 import { formatPrice } from "@/lib/utils/services/services-utils";
-import { Search } from "lucide-react";
+import {
+  Search,
+  CheckCircle,
+  AlertCircle,
+  Smartphone,
+  Copy,
+  Check,
+} from "lucide-react";
 
 // Shared settings components
 import { SettingsGrid } from "@/components/settings/SettingsGrid";
@@ -49,7 +56,7 @@ const ALL_LANGUAGES = [
 
 const RECOMMENDED_CODES = ["nb", "en", "ar", "so", "tr"];
 
-// ─── Form values type ────────────────────────────────
+// ─── Form values ─────────────────────────────────────
 
 type GeneralFormValues = {
   salonName: string;
@@ -60,9 +67,13 @@ type GeneralFormValues = {
   supportedLanguages: string[];
   defaultLanguage: string;
   userPreferredLanguage: string;
+  businessAddress: string;
+  orgNumber: string;
+  cancellationHours: number;
+  defaultBufferMinutes: number;
 };
 
-// ─── Select class (reused) ───────────────────────────
+// ─── Select class ────────────────────────────────────
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
@@ -75,19 +86,15 @@ export default function GeneralSettingsPage() {
   const router = useRouter();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].settings;
-  const { registerDirtyState } = useTabGuard();
+  const { registerDirtyState, reportLastSaved } = useTabGuard();
 
-  // Language limit
   const [languageLimit, setLanguageLimit] = useState<number | null>(null);
-
-  // Language search & show-more
   const [langSearch, setLangSearch] = useState("");
   const [showMoreLangs, setShowMoreLangs] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // User role (read-only display)
   const userRole = profile?.role || "owner";
 
-  // Load language limit
   useEffect(() => {
     async function loadLimit() {
       if (!salon?.id || !salon?.plan) return;
@@ -97,7 +104,6 @@ export default function GeneralSettingsPage() {
     loadLimit();
   }, [salon?.id, salon?.plan]);
 
-  // Build initial values from salon/profile
   const initialValues = useMemo<GeneralFormValues>(() => ({
     salonName: salon?.name || "",
     salonType: salon?.salon_type || "",
@@ -107,16 +113,20 @@ export default function GeneralSettingsPage() {
     supportedLanguages: salon?.supported_languages || ["en", "nb"],
     defaultLanguage: salon?.default_language || salon?.preferred_language || "en",
     userPreferredLanguage: profile?.preferred_language || salon?.preferred_language || "en",
+    businessAddress: salon?.business_address || "",
+    orgNumber: salon?.org_number || "",
+    cancellationHours: salon?.cancellation_hours ?? 24,
+    defaultBufferMinutes: salon?.default_buffer_minutes ?? 0,
   }), [salon, profile]);
 
-  // Validation
   const validate = useCallback((v: GeneralFormValues) => {
     const errs: Record<string, string> = {};
     if (!v.salonName.trim()) errs.salonName = "Salon name is required";
+    if (v.cancellationHours < 0) errs.cancellationHours = "Must be 0 or more";
+    if (v.defaultBufferMinutes < 0) errs.defaultBufferMinutes = "Must be 0 or more";
     return errs;
   }, []);
 
-  // Save handler
   const handleSave = useCallback(async (v: GeneralFormValues) => {
     if (!salon?.id) throw new Error("No salon");
 
@@ -128,11 +138,14 @@ export default function GeneralSettingsPage() {
       default_language: v.defaultLanguage || null,
       timezone: v.timezone || "UTC",
       currency: v.currency || "NOK",
+      business_address: v.businessAddress || null,
+      org_number: v.orgNumber || null,
+      cancellation_hours: v.cancellationHours,
+      default_buffer_minutes: v.defaultBufferMinutes,
     }, salon.plan);
 
     if (updateError) throw new Error(updateError);
 
-    // Update user preferred language if changed
     if (user?.id && v.userPreferredLanguage !== profile?.preferred_language) {
       const { error: profileError } = await updateProfile(user.id, {
         preferred_language: v.userPreferredLanguage || null,
@@ -153,12 +166,14 @@ export default function GeneralSettingsPage() {
     validate,
   });
 
-  // Register dirty state with tab guard
   useEffect(() => {
     registerDirtyState("general", form.isDirty);
   }, [form.isDirty, registerDirtyState]);
 
-  // Reset default language if removed from supported
+  useEffect(() => {
+    if (form.lastSavedAt) reportLastSaved(form.lastSavedAt);
+  }, [form.lastSavedAt, reportLastSaved]);
+
   useEffect(() => {
     const supported = form.values.supportedLanguages;
     if (supported.length > 0 && !supported.includes(form.values.defaultLanguage)) {
@@ -169,7 +184,7 @@ export default function GeneralSettingsPage() {
     }
   }, [form.values.supportedLanguages]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Language list filtering ───────────────────────
+  // ─── Language helpers ──────────────────────────────
 
   const recommended = ALL_LANGUAGES.filter((l) => RECOMMENDED_CODES.includes(l.code));
   const others = ALL_LANGUAGES.filter((l) => !RECOMMENDED_CODES.includes(l.code));
@@ -177,9 +192,7 @@ export default function GeneralSettingsPage() {
   const filterLangs = (langs: readonly { code: string; label: string; flag: string }[]) => {
     if (!langSearch.trim()) return langs;
     const q = langSearch.toLowerCase();
-    return langs.filter(
-      (l) => l.label.toLowerCase().includes(q) || l.code.toLowerCase().includes(q),
-    );
+    return langs.filter((l) => l.label.toLowerCase().includes(q) || l.code.toLowerCase().includes(q));
   };
 
   const filteredRecommended = filterLangs(recommended);
@@ -206,6 +219,34 @@ export default function GeneralSettingsPage() {
     );
   };
 
+  const langLabelFn = (code: string) => {
+    const lang = ALL_LANGUAGES.find((l) => l.code === code);
+    return lang ? `${lang.flag} ${lang.label}` : code;
+  };
+
+  // ─── Booking URL ───────────────────────────────────
+
+  const bookingUrl = typeof window !== "undefined" && salon?.slug
+    ? `${window.location.origin}/book/${salon.slug}`
+    : null;
+
+  const handleCopyUrl = async () => {
+    if (!bookingUrl) return;
+    await navigator.clipboard.writeText(bookingUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ─── Status indicator ─────────────────────────────
+
+  const getStatusMessage = () => {
+    if (!form.values.salonName.trim()) return { ok: false, msg: t.missingSettingsName ?? "Salon name is required" };
+    if (form.values.supportedLanguages.length === 0) return { ok: false, msg: t.missingBookingLanguage ?? "Missing booking language" };
+    return { ok: true, msg: t.allSettingsConfigured ?? "All core settings configured" };
+  };
+
+  const status = getStatusMessage();
+
   // ─── Render ────────────────────────────────────────
 
   if (!salon) {
@@ -220,195 +261,178 @@ export default function GeneralSettingsPage() {
     );
   }
 
-  const langLabelFn = (code: string) => {
-    const lang = ALL_LANGUAGES.find((l) => l.code === code);
-    return lang ? `${lang.flag} ${lang.label}` : code;
-  };
-
   return (
     <ErrorBoundary>
+      {/* Status indicator */}
+      <div className="flex items-center gap-1.5 mb-5">
+        {status.ok ? (
+          <CheckCircle className="h-3.5 w-3.5 text-muted-foreground" />
+        ) : (
+          <AlertCircle className="h-3.5 w-3.5 text-yellow-600" />
+        )}
+        <span className={`text-xs ${status.ok ? "text-muted-foreground" : "text-yellow-600"}`}>
+          {status.msg}
+        </span>
+      </div>
+
       <SettingsGrid
         aside={
-          <div className="space-y-6">
-            {/* ─── Booking Languages ──────────────── */}
-            <SettingsSection
-              title={t.bookingLanguagesTitle ?? "Booking Languages"}
-              description={t.bookingLanguagesDescription ?? "Languages customers can use when booking."}
-              titleRight={
-                languageLimit !== null ? (
-                  <Badge variant="outline" className="text-xs tabular-nums">
-                    {form.values.supportedLanguages.length}/{languageLimit}
-                  </Badge>
-                ) : null
-              }
-            >
-              {/* Search */}
-              <div className="relative mb-3">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  placeholder={t.searchLanguages ?? "Search languages..."}
-                  value={langSearch}
-                  onChange={(e) => setLangSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs"
-                />
-              </div>
+          /* ─── RIGHT: Booking Languages (primary card) ─── */
+          <SettingsSection
+            title={t.bookingLanguagesTitle ?? "Booking Languages"}
+            description={t.bookingLanguagesDescription ?? "Languages customers can use when booking."}
+            size="lg"
+            titleRight={
+              languageLimit !== null ? (
+                <Badge variant="outline" className="text-xs tabular-nums">
+                  {form.values.supportedLanguages.length}/{languageLimit}
+                </Badge>
+              ) : null
+            }
+          >
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder={t.searchLanguages ?? "Search languages..."}
+                value={langSearch}
+                onChange={(e) => setLangSearch(e.target.value)}
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
 
-              {/* Limit bar */}
-              {languageLimit !== null && (
-                <SettingsLimitBar
-                  label={t.languagesUsed ?? "Languages used"}
-                  current={form.values.supportedLanguages.length}
-                  limit={languageLimit}
-                  onAction={() => router.push("/settings/billing")}
-                  actionLabel={t.upgradePlan ?? "Upgrade plan"}
-                />
-              )}
+            {/* Limit bar (brand-colored, calm) */}
+            {languageLimit !== null && (
+              <SettingsLimitBar
+                label={t.languagesUsed ?? "Languages used"}
+                current={form.values.supportedLanguages.length}
+                limit={languageLimit}
+                onAction={() => router.push("/settings/billing")}
+                actionLabel={t.upgradePlan ?? "Upgrade to add more"}
+              />
+            )}
 
-              {/* Limit reached text */}
-              {languageLimit !== null &&
-                form.values.supportedLanguages.length >= languageLimit && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t.languageLimitReached ?? "Language limit reached. Upgrade to add more."}
-                  </p>
-                )}
-
-              {/* Recommended */}
-              {filteredRecommended.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-                    {t.recommendedLanguages ?? "Recommended"}
-                  </p>
-                  <div className="space-y-1">
-                    {filteredRecommended.map((lang) => (
-                      <label
-                        key={lang.code}
-                        className="flex items-center gap-2 py-0.5 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.values.supportedLanguages.includes(lang.code)}
-                          disabled={isLangDisabled(lang.code)}
-                          onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
-                          className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
-                        />
-                        <span className="text-sm">
-                          {lang.flag} {lang.label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+            {/* Recommended */}
+            {filteredRecommended.length > 0 && (
+              <div className="mt-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                  {t.recommendedLanguages ?? "Recommended"}
+                </p>
+                <div className="space-y-1">
+                  {filteredRecommended.map((lang) => (
+                    <label key={lang.code} className="flex items-center gap-2 py-0.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.values.supportedLanguages.includes(lang.code)}
+                        disabled={isLangDisabled(lang.code)}
+                        onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
+                        className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                      />
+                      <span className="text-sm">{lang.flag} {lang.label}</span>
+                    </label>
+                  ))}
                 </div>
-              )}
-
-              {/* More languages */}
-              {(showMoreLangs || langSearch.trim()) && filteredOthers.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-                    {t.moreLanguages ?? "More languages"}
-                  </p>
-                  <div className="space-y-1">
-                    {filteredOthers.map((lang) => (
-                      <label
-                        key={lang.code}
-                        className="flex items-center gap-2 py-0.5 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.values.supportedLanguages.includes(lang.code)}
-                          disabled={isLangDisabled(lang.code)}
-                          onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
-                          className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
-                        />
-                        <span className="text-sm">
-                          {lang.flag} {lang.label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {!showMoreLangs && !langSearch.trim() && (
-                <button
-                  type="button"
-                  onClick={() => setShowMoreLangs(true)}
-                  className="mt-2 text-xs text-primary hover:underline"
-                >
-                  {t.showMoreLanguages ?? `Show ${others.length} more languages`}
-                </button>
-              )}
-
-              {/* Default Language */}
-              <div className="mt-4 pt-3 border-t">
-                <FormRow label={t.defaultLanguageLabel} htmlFor="defaultLanguage">
-                  <select
-                    id="defaultLanguage"
-                    value={form.values.defaultLanguage}
-                    onChange={(e) => form.setValue("defaultLanguage", e.target.value)}
-                    className={selectClass}
-                  >
-                    {(form.values.supportedLanguages.length > 0
-                      ? form.values.supportedLanguages
-                      : ["en"]
-                    ).map((code) => (
-                      <option key={code} value={code}>
-                        {langLabelFn(code)}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
               </div>
-            </SettingsSection>
+            )}
 
-            {/* ─── Your Profile ───────────────────── */}
-            <SettingsSection
-              title={t.yourProfileTitle ?? "Your Profile"}
-              layout="rows"
-            >
-              <FormRow
-                label={t.dashboardLanguageLabel ?? "Dashboard language"}
-                htmlFor="userPreferredLanguage"
-                description={t.dashboardLanguageHint ?? "Language used in your dashboard. Can differ from the booking language."}
+            {/* More languages */}
+            {(showMoreLangs || langSearch.trim()) && filteredOthers.length > 0 && (
+              <div className="mt-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                  {t.moreLanguages ?? "More languages"}
+                </p>
+                <div className="space-y-1">
+                  {filteredOthers.map((lang) => (
+                    <label key={lang.code} className="flex items-center gap-2 py-0.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.values.supportedLanguages.includes(lang.code)}
+                        disabled={isLangDisabled(lang.code)}
+                        onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
+                        className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                      />
+                      <span className="text-sm">{lang.flag} {lang.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!showMoreLangs && !langSearch.trim() && (
+              <button
+                type="button"
+                onClick={() => setShowMoreLangs(true)}
+                className="mt-2 text-xs text-primary hover:underline"
               >
+                {t.showMoreLanguages ?? `Show more (${others.length})`}
+              </button>
+            )}
+
+            {/* Default Language */}
+            <div className="mt-4 pt-3 border-t">
+              <FormRow label={t.defaultLanguageLabel} htmlFor="defaultLanguage">
                 <select
-                  id="userPreferredLanguage"
-                  value={form.values.userPreferredLanguage}
-                  onChange={(e) => form.setValue("userPreferredLanguage", e.target.value)}
+                  id="defaultLanguage"
+                  value={form.values.defaultLanguage}
+                  onChange={(e) => form.setValue("defaultLanguage", e.target.value)}
                   className={selectClass}
                 >
                   {(form.values.supportedLanguages.length > 0
                     ? form.values.supportedLanguages
                     : ["en"]
                   ).map((code) => (
-                    <option key={code} value={code}>
-                      {langLabelFn(code)}
-                    </option>
+                    <option key={code} value={code}>{langLabelFn(code)}</option>
                   ))}
                 </select>
               </FormRow>
-
-              <FormRow label={t.yourRoleLabel ?? "Your Role"}>
-                <Badge variant="outline" className="capitalize">
-                  {userRole}
-                </Badge>
-              </FormRow>
-            </SettingsSection>
-          </div>
+            </div>
+          </SettingsSection>
         }
-      >
-        {/* ─── Left column: Salon + Localization ───── */}
-        <div className="space-y-6">
-          {/* Salon section */}
+        footer={
+          /* ─── FOOTER: Your Profile (full-width, secondary) ─── */
           <SettingsSection
-            title={t.salonSectionTitle ?? "Salon"}
-            description={t.salonSectionDescription ?? "Basic information about your salon."}
+            title={t.yourProfileTitle ?? "Your Profile"}
             layout="rows"
+            className="bg-muted/20"
           >
             <FormRow
-              label={t.salonNameLabel}
-              htmlFor="salonName"
-              required
+              label={t.dashboardLanguageLabel ?? "Dashboard language"}
+              htmlFor="userPreferredLanguage"
             >
+              <select
+                id="userPreferredLanguage"
+                value={form.values.userPreferredLanguage}
+                onChange={(e) => form.setValue("userPreferredLanguage", e.target.value)}
+                className={selectClass}
+              >
+                {(form.values.supportedLanguages.length > 0
+                  ? form.values.supportedLanguages
+                  : ["en"]
+                ).map((code) => (
+                  <option key={code} value={code}>{langLabelFn(code)}</option>
+                ))}
+              </select>
+            </FormRow>
+
+            <FormRow label={t.yourRoleLabel ?? "Role"}>
+              <Badge variant="outline" className="capitalize">{userRole}</Badge>
+            </FormRow>
+
+            <FormRow label={t.emailLabel ?? "Email"}>
+              <span className="text-sm text-muted-foreground">{user?.email ?? "—"}</span>
+            </FormRow>
+          </SettingsSection>
+        }
+      >
+        {/* ─── LEFT column: Salon Info + Localization + Contact ─── */}
+        <div className="space-y-6">
+          {/* 1) Salon Info */}
+          <SettingsSection
+            title={t.salonSectionTitle ?? "Salon Info"}
+            size="lg"
+            layout="rows"
+          >
+            <FormRow label={t.salonNameLabel} htmlFor="salonName" required>
               <Input
                 id="salonName"
                 value={form.values.salonName}
@@ -435,32 +459,57 @@ export default function GeneralSettingsPage() {
               </select>
             </FormRow>
 
-            <FormRow
-              label={t.whatsappNumberLabel}
-              htmlFor="whatsappNumber"
-              description={t.whatsappNumberHint}
-            >
-              <Input
-                id="whatsappNumber"
-                type="tel"
-                value={form.values.whatsappNumber}
-                onChange={(e) => form.setValue("whatsappNumber", e.target.value)}
-                placeholder={t.whatsappNumberPlaceholder}
+            <FormRow label={t.businessAddressLabel ?? "Business address"} htmlFor="businessAddress">
+              <textarea
+                id="businessAddress"
+                value={form.values.businessAddress}
+                onChange={(e) => form.setValue("businessAddress", e.target.value)}
+                rows={2}
+                placeholder={t.businessAddressPlaceholder ?? "Street, City, Postal code"}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
               />
             </FormRow>
+
+            <FormRow label={t.orgNumberLabel ?? "Org number"} htmlFor="orgNumber">
+              <Input
+                id="orgNumber"
+                value={form.values.orgNumber}
+                onChange={(e) => form.setValue("orgNumber", e.target.value)}
+                placeholder={t.orgNumberPlaceholder ?? "e.g. 123 456 789"}
+              />
+            </FormRow>
+
+            {/* Booking URL (read-only) */}
+            {bookingUrl && (
+              <FormRow label={t.bookingUrlLabel ?? "Booking URL"}>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
+                    {bookingUrl}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    onClick={handleCopyUrl}
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </FormRow>
+            )}
           </SettingsSection>
 
-          {/* Localization section */}
+          {/* 2) Localization */}
           <SettingsSection
             title={t.localizationTitle ?? "Localization"}
-            description={t.localizationDescription ?? "Currency and timezone for your salon."}
+            description={t.localizationDescription ?? "Used across bookings, invoices and reports."}
             layout="rows"
           >
-            <FormRow
-              label={t.currencyLabel ?? "Currency"}
-              htmlFor="currency"
-              description={t.currencyDescription ?? "Prices across your salon will be displayed in this currency."}
-            >
+            <FormRow label={t.currencyLabel ?? "Currency"} htmlFor="currency">
               <select
                 id="currency"
                 value={form.values.currency}
@@ -470,23 +519,17 @@ export default function GeneralSettingsPage() {
                 {getCurrencyGroups().map((group) => (
                   <optgroup key={group} label={group}>
                     {CURRENCIES.filter((c) => c.group === group).map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.code} — {c.name}
-                      </option>
+                      <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
                     ))}
                   </optgroup>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                 Preview: {formatPrice(125000, appLocale, form.values.currency)}
               </p>
             </FormRow>
 
-            <FormRow
-              label={t.timezoneLabel ?? "Salon Timezone"}
-              htmlFor="timezone"
-              description={t.timezoneDescription ?? "All times in your salon (bookings, calendar, emails) use this timezone."}
-            >
+            <FormRow label={t.timezoneLabel ?? "Timezone"} htmlFor="timezone">
               <select
                 id="timezone"
                 value={form.values.timezone}
@@ -494,17 +537,88 @@ export default function GeneralSettingsPage() {
                 className={selectClass}
               >
                 {getCommonTimezones().map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
+                  <option key={tz.value} value={tz.value}>{tz.label}</option>
                 ))}
               </select>
+            </FormRow>
+          </SettingsSection>
+
+          {/* 3) Contact */}
+          <SettingsSection
+            title={t.contactSectionTitle ?? "Contact"}
+            description={t.contactSectionDescription ?? "Shown on your booking page."}
+            layout="rows"
+          >
+            <FormRow
+              label={t.whatsappNumberLabel}
+              htmlFor="whatsappNumber"
+            >
+              <div className="relative">
+                <Smartphone className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="whatsappNumber"
+                  type="tel"
+                  value={form.values.whatsappNumber}
+                  onChange={(e) => form.setValue("whatsappNumber", e.target.value)}
+                  placeholder={t.whatsappNumberPlaceholder}
+                  className="pl-9"
+                />
+              </div>
+            </FormRow>
+          </SettingsSection>
+
+          {/* 4) Booking Policy */}
+          <SettingsSection
+            title={t.bookingPolicyTitle ?? "Booking Policy"}
+            description={t.bookingPolicyDescription ?? "Defaults for your booking engine."}
+            layout="rows"
+          >
+            <FormRow
+              label={t.cancellationHoursLabel ?? "Cancellation window"}
+              htmlFor="cancellationHours"
+              description={t.cancellationHoursHint ?? "Hours before appointment that customers can cancel."}
+            >
+              <div className="flex items-center gap-2">
+                <Input
+                  id="cancellationHours"
+                  type="number"
+                  min={0}
+                  value={form.values.cancellationHours}
+                  onChange={(e) => form.setValue("cancellationHours", parseInt(e.target.value) || 0)}
+                  className="w-20 tabular-nums"
+                />
+                <span className="text-sm text-muted-foreground">hours</span>
+              </div>
+              {form.errors.cancellationHours && (
+                <p className="text-xs text-destructive mt-1">{form.errors.cancellationHours}</p>
+              )}
+            </FormRow>
+
+            <FormRow
+              label={t.defaultBufferLabel ?? "Buffer time"}
+              htmlFor="defaultBufferMinutes"
+              description={t.defaultBufferHint ?? "Global prep/cleanup time between appointments."}
+            >
+              <div className="flex items-center gap-2">
+                <Input
+                  id="defaultBufferMinutes"
+                  type="number"
+                  min={0}
+                  step={5}
+                  value={form.values.defaultBufferMinutes}
+                  onChange={(e) => form.setValue("defaultBufferMinutes", parseInt(e.target.value) || 0)}
+                  className="w-20 tabular-nums"
+                />
+                <span className="text-sm text-muted-foreground">min</span>
+              </div>
+              {form.errors.defaultBufferMinutes && (
+                <p className="text-xs text-destructive mt-1">{form.errors.defaultBufferMinutes}</p>
+              )}
             </FormRow>
           </SettingsSection>
         </div>
       </SettingsGrid>
 
-      {/* Sticky save bar */}
       <StickySaveBar
         isDirty={form.isDirty}
         isValid={form.isValid}

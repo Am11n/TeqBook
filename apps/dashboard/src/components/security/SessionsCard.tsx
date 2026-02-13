@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +12,30 @@ interface SessionsCardProps {
   onReload: () => Promise<void>;
 }
 
+function getBasicDeviceInfo(): string {
+  if (typeof navigator === "undefined") return "Unknown";
+  const ua = navigator.userAgent;
+  let browser = "Browser";
+  let os = "Unknown OS";
+
+  if (ua.includes("Firefox")) browser = "Firefox";
+  else if (ua.includes("Edg")) browser = "Edge";
+  else if (ua.includes("Chrome")) browser = "Chrome";
+  else if (ua.includes("Safari")) browser = "Safari";
+
+  if (ua.includes("Mac")) os = "macOS";
+  else if (ua.includes("Win")) os = "Windows";
+  else if (ua.includes("Linux")) os = "Linux";
+  else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+  else if (ua.includes("Android")) os = "Android";
+
+  return `${browser} on ${os}`;
+}
+
 export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
   const [signingOut, setSigningOut] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const deviceInfo = useMemo(() => getBasicDeviceInfo(), []);
 
   async function handleSignOutOtherSessions() {
     if (
@@ -61,16 +82,23 @@ export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
         <InfoRow
           label="Active Sessions"
           value={`${sessionsCount} active session${sessionsCount !== 1 ? "s" : ""}`}
-          action={
-            sessionsCount > 1 ? (
-              <Button variant="outline" size="sm" onClick={handleSignOutOtherSessions} disabled={signingOut}>
-                {signingOut ? "Signing out..." : "Sign Out Other Sessions"}
-              </Button>
-            ) : null
-          }
         />
+
+        <p className="text-xs text-muted-foreground">
+          Current: {deviceInfo}
+        </p>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSignOutOtherSessions}
+          disabled={signingOut || sessionsCount <= 1}
+        >
+          {signingOut ? "Signing out..." : "Log out all other sessions"}
+        </Button>
+
         {sessionsCount <= 1 && (
-          <p className="text-sm text-muted-foreground">You are only signed in on this device.</p>
+          <p className="text-xs text-muted-foreground">You are only signed in on this device.</p>
         )}
       </CardContent>
     </Card>

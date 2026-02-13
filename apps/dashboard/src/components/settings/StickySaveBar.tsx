@@ -98,7 +98,7 @@ export function StickySaveBar({
       <div className="rounded-lg border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 shadow-lg">
         <div className="flex items-center justify-between gap-3">
           {/* Left side: status */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm" aria-live="polite" aria-atomic="true">
             {saving && (
               <>
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

@@ -260,6 +260,11 @@ export type Salon = {
   payment_failed_at?: string | null;
   last_payment_retry_at?: string | null;
   payment_status?: "active" | "failed" | "grace_period" | "restricted" | null;
+  // General settings fields
+  business_address?: string | null;
+  org_number?: string | null;
+  cancellation_hours?: number | null;
+  default_buffer_minutes?: number | null;
 };
 
 export type Profile = {

@@ -104,9 +104,9 @@ export function CurrentPlanCard({
       </Badge>
     ),
     cancelled: (
-      <Badge variant="destructive" className="text-xs">
+      <Badge variant="secondary" className="text-xs">
         <Ban className="h-3 w-3 mr-1" />
-        Cancelled
+        Inactive
       </Badge>
     ),
     trial: (
@@ -256,19 +256,17 @@ export function CurrentPlanCard({
       <div className="mt-4 flex gap-3 flex-wrap">
         {state === "cancelled" ? (
           <Button
-            variant="default"
             onClick={onShowPlanDialog}
             disabled={actionLoading}
-            className="flex-1 min-w-[200px]"
+            className="flex-1 min-w-[200px] bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-shadow"
           >
             Subscribe Now
           </Button>
         ) : state === "cancelling" ? (
           <Button
-            variant="default"
             onClick={onShowPlanDialog}
             disabled={actionLoading}
-            className="flex-1 min-w-[200px]"
+            className="flex-1 min-w-[200px] bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-shadow"
           >
             Renew Subscription
           </Button>

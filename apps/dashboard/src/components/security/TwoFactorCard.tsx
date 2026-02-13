@@ -94,6 +94,9 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
                 2FA is not enabled. Enable it to add an extra layer of security to your account.
               </AlertDescription>
             </Alert>
+            <p className="text-xs text-muted-foreground">
+              We recommend enabling 2FA for better account security.
+            </p>
 
             {!qrCode ? (
               <TwoFactorEnrollment

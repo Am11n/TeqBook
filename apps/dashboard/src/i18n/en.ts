@@ -826,6 +826,38 @@ export const en: TranslationNamespaces = {
     bookingChangesDescription: "Receive an email when a booking is modified.",
     bookingCancellationsLabel: "Booking cancellations",
     bookingCancellationsDescription: "Receive an email when a customer cancels.",
+    // General tab -- new fields
+    businessAddressLabel: "Business address",
+    businessAddressPlaceholder: "Street, City, Postal code",
+    orgNumberLabel: "Org number",
+    orgNumberPlaceholder: "e.g. 123 456 789",
+    bookingUrlLabel: "Booking URL",
+    copyLink: "Copy link",
+    copied: "Copied!",
+    bookingPolicyTitle: "Booking Policy",
+    bookingPolicyDescription: "Defaults for your booking engine.",
+    cancellationHoursLabel: "Cancellation window",
+    cancellationHoursHint: "Hours before appointment that customers can cancel.",
+    defaultBufferLabel: "Buffer time",
+    defaultBufferHint: "Global prep/cleanup time between appointments.",
+    shownOnBookingPage: "Shown on your public booking page",
+    contactSectionTitle: "Contact",
+    contactSectionDescription: "Shown on your booking page.",
+    emailLabel: "Email",
+    // Status indicator
+    missingSettingsName: "Salon name is required",
+    missingBookingLanguage: "At least one booking language is needed",
+    allSettingsConfigured: "All core settings configured",
+    // Notifications -- status
+    activeStatus: "Active",
+    disabledStatus: "Disabled",
+    // Security
+    twoFactorRecommendation: "We recommend enabling 2FA for better account security.",
+    currentSession: "Current session",
+    // Billing
+    inactiveStatus: "Inactive",
+    invoicesEmptyState: "Your invoices will appear here once you have an active subscription.",
+    learnBillingLink: "Learn how billing works",
   },
   admin: {
     title: "Admin Dashboard",

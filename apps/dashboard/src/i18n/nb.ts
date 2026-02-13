@@ -850,6 +850,38 @@ export const nb: TranslationNamespaces = {
     bookingChangesDescription: "Motta e-post når en booking endres.",
     bookingCancellationsLabel: "Bookingavlysninger",
     bookingCancellationsDescription: "Motta e-post når en kunde avlyser.",
+    // General tab -- new fields
+    businessAddressLabel: "Forretningsadresse",
+    businessAddressPlaceholder: "Gate, By, Postnummer",
+    orgNumberLabel: "Org.nummer",
+    orgNumberPlaceholder: "f.eks. 123 456 789",
+    bookingUrlLabel: "Booking-URL",
+    copyLink: "Kopier lenke",
+    copied: "Kopiert!",
+    bookingPolicyTitle: "Bookingpolicy",
+    bookingPolicyDescription: "Standardinnstillinger for bookingmotoren din.",
+    cancellationHoursLabel: "Avbestillingsfrist",
+    cancellationHoursHint: "Timer før avtalen kunden kan avbestille.",
+    defaultBufferLabel: "Buffertid",
+    defaultBufferHint: "Global forberedelse/opprydding mellom avtaler.",
+    shownOnBookingPage: "Vises på din offentlige bookingside",
+    contactSectionTitle: "Kontakt",
+    contactSectionDescription: "Vises på din bookingside.",
+    emailLabel: "E-post",
+    // Status indicator
+    missingSettingsName: "Salongnavn er påkrevd",
+    missingBookingLanguage: "Minst ett bookingspråk trengs",
+    allSettingsConfigured: "Alle kjerneinnstillinger er konfigurert",
+    // Notifications -- status
+    activeStatus: "Aktiv",
+    disabledStatus: "Deaktivert",
+    // Security
+    twoFactorRecommendation: "Vi anbefaler å aktivere 2FA for bedre kontosikkerhet.",
+    currentSession: "Nåværende økt",
+    // Billing
+    inactiveStatus: "Inaktiv",
+    invoicesEmptyState: "Fakturaene dine vises her når du har et aktivt abonnement.",
+    learnBillingLink: "Lær hvordan fakturering fungerer",
   },
   admin: {
     title: "Admin Dashboard",
