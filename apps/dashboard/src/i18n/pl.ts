@@ -408,7 +408,7 @@ export const pl: TranslationNamespaces = {
     categoryMassage: "Masaż",
     categoryOther: "Inne",
     durationLabel: "Czas trwania (minuty)",
-    priceLabel: "Cena (NOK)",
+    priceLabel: "Cena",
     sortOrderLabel: "Kolejność sortowania",    loading: "Ładowanie usług…",
     emptyTitle: "Nie dodano jeszcze żadnych usług",
     emptyDescription:

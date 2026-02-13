@@ -346,7 +346,7 @@ export const ti: TranslationNamespaces = {
     categoryMassage: "ማሰር",
     categoryOther: "ካልእ",
     durationLabel: "ናይ ግዜ ዝግዝእ (ደቒቓታት)",
-    priceLabel: "ዋጋ (NOK)",
+    priceLabel: "ዋጋ",
     sortOrderLabel: "ናይ ምደላድላ ቅደም ተኸተል",
     loading: "ኣገልግሎታት ኣብ ምጽናዕቲ ኣሎ…",
     emptyTitle: "ኣገልግሎታት የለዉን እዮም እስካሕ",

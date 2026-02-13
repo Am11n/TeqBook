@@ -45,6 +45,7 @@ interface BulkPriceDialogProps {
     transform: (priceCents: number) => number,
   ) => Promise<void>;
   translations?: BulkPriceDialogTranslations;
+  currency?: string;
 }
 
 const defaultTranslations: BulkPriceDialogTranslations = {
@@ -72,9 +73,11 @@ export function BulkPriceDialog({
   selectedIds,
   onApply,
   translations,
+  currency: currencyProp,
 }: BulkPriceDialogProps) {
   const t = { ...defaultTranslations, ...translations };
-  const formatPrice = (cents: number) => _formatPrice(cents, t.locale);
+  const currencyCode = currencyProp ?? "NOK";
+  const formatPrice = (cents: number) => _formatPrice(cents, t.locale, currencyCode);
 
   const [action, setAction] = useState<BulkAction>("adjust_percent");
   const [percent, setPercent] = useState("10");

@@ -61,6 +61,7 @@ interface ServiceDetailDialogProps {
   serviceEmployeeCountMap: Record<string, number>;
   onServiceUpdated: () => Promise<void>;
   translations: ServiceDetailDialogTranslations;
+  currency: string;
 }
 
 export function ServiceDetailDialog({
@@ -74,6 +75,7 @@ export function ServiceDetailDialog({
   serviceEmployeeCountMap,
   onServiceUpdated,
   translations: t,
+  currency,
 }: ServiceDetailDialogProps) {
   const { salon } = useCurrentSalon();
   const service = services.find((s) => s.id === serviceId) ?? null;
@@ -86,7 +88,7 @@ export function ServiceDetailDialog({
     categoryMassage: t.categoryMassage,
     categoryOther: t.categoryOther,
   };
-  const formatPrice = (cents: number) => _formatPrice(cents, t.locale);
+  const formatPrice = (cents: number) => _formatPrice(cents, t.locale, currency);
   const getCategoryLabel = (cat: string | null | undefined) =>
     _getCategoryLabel(cat, categoryLabels);
 

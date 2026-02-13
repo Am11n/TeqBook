@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useLocale } from "@/components/locale-provider";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useServices } from "@/lib/hooks/services/useServices";
@@ -25,7 +26,9 @@ import type { Service } from "@/lib/types";
 
 export default function ServicesPage() {
   const { locale } = useLocale();
+  const { salon } = useCurrentSalon();
   const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
   const t = translations[appLocale].services;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
@@ -196,6 +199,7 @@ export default function ServicesPage() {
                 onToggleActive={handleToggleActive}
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
+                currency={salonCurrency}
                 translations={{
                   active: t.active,
                   inactive: t.inactive,
@@ -219,6 +223,7 @@ export default function ServicesPage() {
                 onRowClick={detailDialog.onRowClick}
                 onEditClick={(svc) => detailDialog.openEdit(svc.id)}
                 onReorder={handleReorder}
+                currency={salonCurrency}
                 translations={{
                   colName: t.colName,
                   colCategory: t.colCategory,
@@ -314,6 +319,7 @@ export default function ServicesPage() {
             saving: t.saving ?? "Saving...",
             locale: appLocale,
           }}
+          currency={salonCurrency}
         />
 
         {/* Templates Dialog */}
@@ -330,6 +336,7 @@ export default function ServicesPage() {
           services={services}
           selectedIds={bulkSelectedIds}
           onApply={bulkUpdatePrices}
+          currency={salonCurrency}
         />
       </PageLayout>
     </ErrorBoundary>

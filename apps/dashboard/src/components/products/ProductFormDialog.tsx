@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/form/Field";
 import type { Product } from "@/lib/repositories/products";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
@@ -48,6 +49,8 @@ export function ProductFormDialog({
   saving,
   translations: t,
 }: ProductFormDialogProps) {
+  const { salon } = useCurrentSalon();
+  const salonCurrency = salon?.currency ?? "NOK";
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
   const [stock, setStock] = useState(0);
@@ -103,7 +106,7 @@ export function ProductFormDialog({
             />
           </Field>
 
-          <Field label={`${t.price} (NOK)`} htmlFor="price" required>
+          <Field label={`${t.price} (${salonCurrency})`} htmlFor="price" required>
             <Input
               id="price"
               type="number"

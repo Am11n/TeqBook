@@ -339,7 +339,7 @@ export const ar: TranslationNamespaces = {
     categoryMassage: "تدليك",
     categoryOther: "أخرى",
     durationLabel: "المدة (بالدقائق)",
-    priceLabel: "السعر (NOK)",
+    priceLabel: "السعر",
     sortOrderLabel: "ترتيب العرض",
     loading: "جارٍ تحميل الخدمات…",
     emptyTitle: "لا توجد خدمات مسجَّلة بعد",

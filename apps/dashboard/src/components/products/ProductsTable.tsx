@@ -2,7 +2,10 @@
 
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import type { Product } from "@/lib/repositories/products";
-import { formatCurrency } from "@/lib/utils/products/products-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { Edit, Trash2 } from "lucide-react";
 
 interface ProductsTableProps {
@@ -29,6 +32,11 @@ export function ProductsTable({
   deletingId,
   translations: t,
 }: ProductsTableProps) {
+  const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const columns: ColumnDef<Product>[] = [
     {
       id: "name",
@@ -43,7 +51,7 @@ export function ProductsTable({
       header: t.price,
       cell: (product) => (
         <div className="text-xs text-muted-foreground">
-          {formatCurrency(product.price_cents)}
+          {fmtPrice(product.price_cents)}
         </div>
       ),
       getValue: (product) => product.price_cents,

@@ -348,7 +348,7 @@ export const vi: TranslationNamespaces = {
     categoryMassage: "Massage",
     categoryOther: "Khác",
     durationLabel: "Thời lượng (phút)",
-    priceLabel: "Giá (NOK)",
+    priceLabel: "Giá",
     sortOrderLabel: "Thứ tự sắp xếp",
     loading: "Đang tải dịch vụ…",
     emptyTitle: "Chưa thêm dịch vụ nào",

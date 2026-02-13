@@ -17,6 +17,9 @@ import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { createBooking } from "@/lib/services/bookings-service";
 import { localISOStringToUTC } from "@/lib/utils/timezone";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { Booking, Service } from "@/lib/types";
 
 interface QuickCreatePanelProps {
@@ -44,6 +47,10 @@ export function QuickCreatePanel({
   onBookingCreated,
 }: QuickCreatePanelProps) {
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,7 +233,7 @@ export function QuickCreatePanel({
               <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} required className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2">
                 <option value="">Select service...</option>
                 {services.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min, {(s.price_cents / 100).toFixed(0)} kr)</option>
+                  <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min, {fmtPrice(s.price_cents)})</option>
                 ))}
               </select>
               {selectedService && (selectedService.prep_minutes > 0 || selectedService.cleanup_minutes > 0) && (

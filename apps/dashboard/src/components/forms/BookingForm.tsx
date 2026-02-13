@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Product } from "@/lib/repositories/products";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface BookingFormProps {
   // Form state
@@ -105,6 +109,11 @@ export function BookingForm({
   hasInventory,
   translations,
 }: BookingFormProps) {
+  const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   return (
     <div className="space-y-4">
       <div className="grid gap-3">
@@ -378,7 +387,7 @@ export function BookingForm({
                   <div className="flex-1">
                     <span className="font-medium">{product.name}</span>
                     <span className="ml-2 text-muted-foreground">
-                      ({(product.price_cents / 100).toFixed(2)} NOK)
+                      ({fmtPrice(product.price_cents)})
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -437,11 +446,10 @@ export function BookingForm({
           {selectedProducts.length > 0 && (
             <p className="text-xs text-muted-foreground">
               Total:{" "}
-              {selectedProducts.reduce((sum, sp) => {
+              {fmtPrice(selectedProducts.reduce((sum, sp) => {
                 const product = products.find((p) => p.id === sp.productId);
                 return sum + (product ? product.price_cents * sp.quantity : 0);
-              }, 0) / 100}{" "}
-              NOK
+              }, 0))}
             </p>
           )}
         </div>

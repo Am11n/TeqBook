@@ -4,7 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import type { Booking, Shift } from "@/lib/types";
 import { formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable } from "@/lib/utils/bookings/bookings-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { Trash2 } from "lucide-react";
 
 interface BookingsTableProps {
@@ -49,7 +52,11 @@ export function BookingsTable({
   filterContent,
 }: BookingsTableProps) {
   const { salon } = useCurrentSalon();
+  const { locale: localeCtx } = useLocale();
+  const appLocale = normalizeLocale(localeCtx);
+  const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -143,7 +150,7 @@ export function BookingsTable({
               {booking.products.map((bp) => (
                 <div key={bp.id} className="text-[11px]">
                   {bp.product.name} x{bp.quantity} (
-                  {((bp.price_cents * bp.quantity) / 100).toFixed(2)} NOK)
+                  {fmtPrice(bp.price_cents * bp.quantity)})
                 </div>
               ))}
             </div>

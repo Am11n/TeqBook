@@ -16,6 +16,7 @@ import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 
 interface BookingSidePanelProps {
   booking: CalendarBooking | null;
@@ -36,8 +37,10 @@ export function BookingSidePanel({
 }: BookingSidePanelProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [updating, setUpdating] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -168,7 +171,7 @@ export function BookingSidePanel({
               {booking.services?.price_cents != null && (
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <span>{(booking.services.price_cents / 100).toFixed(0)} kr</span>
+                  <span>{fmtPrice(booking.services.price_cents)}</span>
                   {problems.includes("unpaid") && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
                       Unpaid

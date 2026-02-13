@@ -52,6 +52,7 @@ export async function updateSalonSettings(
     supported_languages?: string[] | null;
     default_language?: string | null;
     timezone?: string | null;
+    currency?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;
@@ -108,6 +109,7 @@ export async function updateSalon(
     supported_languages?: string[] | null;
     default_language?: string | null;
     timezone?: string | null;
+    currency?: string | null;
     theme?: {
       primary?: string;
       secondary?: string;

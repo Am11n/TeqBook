@@ -44,6 +44,7 @@ interface ServicesTableProps {
   onEditClick: (service: Service) => void;
   onReorder: (serviceId: string, direction: "up" | "down") => void;
   translations: ServicesTableTranslations;
+  currency: string;
 }
 
 export function ServicesTable({
@@ -55,6 +56,7 @@ export function ServicesTable({
   onEditClick,
   onReorder,
   translations: t,
+  currency,
 }: ServicesTableProps) {
   const categoryLabels = {
     categoryCut: t.categoryCut,
@@ -64,7 +66,7 @@ export function ServicesTable({
     categoryMassage: t.categoryMassage,
     categoryOther: t.categoryOther,
   };
-  const formatPrice = (cents: number) => _formatPrice(cents, t.locale);
+  const formatPrice = (cents: number) => _formatPrice(cents, t.locale, currency);
   const getCategoryLabel = (cat: string | null | undefined) =>
     _getCategoryLabel(cat, categoryLabels);
 

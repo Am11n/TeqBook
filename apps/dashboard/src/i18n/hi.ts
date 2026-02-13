@@ -341,7 +341,7 @@ export const hi: TranslationNamespaces = {
     categoryMassage: "मालिश",
     categoryOther: "अन्य",
     durationLabel: "अवधि (मिनट)",
-    priceLabel: "कीमत (NOK)",
+    priceLabel: "कीमत",
     sortOrderLabel: "क्रमबद्धता",
     loading: "सेवाएँ लोड हो रही हैं…",
     emptyTitle: "अभी तक कोई सेवा रजिस्टर नहीं",

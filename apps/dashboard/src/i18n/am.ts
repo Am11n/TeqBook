@@ -338,7 +338,7 @@ export const am: TranslationNamespaces = {
     categoryNails: "Nails",
     categoryMassage: "Massage",
     categoryOther: "Other",    durationLabel: "ጊዜ (ደቂቃዎች)",
-    priceLabel: "ዋጋ (NOK)",
+    priceLabel: "ዋጋ",
     sortOrderLabel: "Sort order",    loading: "አገልግሎቶችን በመጫን ላይ…",
     emptyTitle: "ገና ምንም አገልግሎት አልተመዘገበም",
     emptyDescription:

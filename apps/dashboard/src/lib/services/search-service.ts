@@ -73,7 +73,7 @@ export async function searchSalonEntities(
     if (services) {
       services.forEach((service) => {
         const price = service.price_cents
-          ? `$${(service.price_cents / 100).toFixed(2)}`
+          ? `${(service.price_cents / 100).toLocaleString()}`
           : "";
         const duration = service.duration_minutes
           ? `${service.duration_minutes}min`

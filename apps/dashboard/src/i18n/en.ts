@@ -391,7 +391,7 @@ export const en: TranslationNamespaces = {
     categoryMassage: "Massage",
     categoryOther: "Other",
     durationLabel: "Duration (minutes)",
-    priceLabel: "Price (NOK)",
+    priceLabel: "Price",
     sortOrderLabel: "Sort order",
     loading: "Loading services…",
     emptyTitle: "No services added yet",

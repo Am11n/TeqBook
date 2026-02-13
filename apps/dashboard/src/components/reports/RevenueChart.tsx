@@ -2,7 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils/reports/reports-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface RevenueChartProps {
   loading: boolean;
@@ -10,6 +13,11 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ loading, revenueByMonth }: RevenueChartProps) {
+  const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Revenue Over Time</h3>
@@ -34,11 +42,11 @@ export function RevenueChart({ loading, revenueByMonth }: RevenueChartProps) {
                 <div
                   className="w-full rounded-t transition-all duration-300 bg-gradient-to-t from-green-600 to-green-500 opacity-80 hover:opacity-100 cursor-pointer"
                   style={{ height: `${height}%`, minHeight: "8px" }}
-                  title={`${monthLabel}: ${formatCurrency(data.revenue_cents)}`}
+                  title={`${monthLabel}: ${fmtPrice(data.revenue_cents)}`}
                 />
                 <span className="text-[10px] text-muted-foreground">{monthLabel}</span>
                 <span className="text-[10px] font-medium text-foreground">
-                  {formatCurrency(data.revenue_cents).replace("NOK", "").trim()}
+                  {fmtPrice(data.revenue_cents)}
                 </span>
               </div>
             );

@@ -8,6 +8,7 @@ import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { formatTimeInTimezone, getHoursInTimezone, getMinutesInTimezone } from "@/lib/utils/timezone";
 import { getBookingClasses } from "@/lib/ui/calendar-theme";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 
 interface BookingEventProps {
   booking: CalendarBooking;
@@ -49,8 +50,10 @@ export function BookingEvent({
 }: BookingEventProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [hoverPos, setHoverPos] = useState<{ top: number; left: number } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -183,7 +186,7 @@ export function BookingEvent({
             {booking.services?.price_cents != null && (
               <p>
                 <span className="font-medium text-foreground">Price:</span>{" "}
-                {(booking.services.price_cents / 100).toFixed(0)} kr
+                {fmtPrice(booking.services.price_cents)}
               </p>
             )}
             <p>

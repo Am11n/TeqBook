@@ -28,10 +28,11 @@ import { useFeatures } from "@/lib/hooks/use-features";
 import {
   getCustomerHistory,
   exportCustomerHistoryToCSV,
-  formatCurrency,
   formatDate,
   type CustomerHistoryData,
 } from "@/lib/services/customer-history-service";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { CustomerBookingHistoryItem } from "@/lib/repositories/bookings";
 import { ArrowLeft, Download, Calendar, User, DollarSign, Clock } from "lucide-react";
 
@@ -50,7 +51,10 @@ export default function CustomerHistoryPage() {
   const router = useRouter();
   const customerId = params.id as string;
   const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
   const { salon, isReady } = useCurrentSalon();
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const { hasFeature, loading: featuresLoading } = useFeatures();
 
   const [historyData, setHistoryData] = useState<CustomerHistoryData | null>(null);
@@ -225,7 +229,7 @@ export default function CustomerHistoryPage() {
               <StatCard
                 icon={<DollarSign className="h-5 w-5" />}
                 label="Total Spent"
-                value={formatCurrency(historyData.stats.total_spent_cents, locale)}
+                value={fmtPrice(historyData.stats.total_spent_cents)}
                 subtext={historyData.stats.favorite_service ? `Favorite: ${historyData.stats.favorite_service}` : undefined}
               />
               <StatCard
@@ -274,7 +278,7 @@ export default function CustomerHistoryPage() {
                   {/* Mobile view */}
                   <div className="space-y-3 p-4 md:hidden">
                     {historyData.bookings.map((booking) => (
-                      <BookingCard key={booking.id} booking={booking} locale={locale} />
+                      <BookingCard key={booking.id} booking={booking} locale={locale} fmtPrice={fmtPrice} />
                     ))}
                   </div>
 
@@ -313,7 +317,7 @@ export default function CustomerHistoryPage() {
                             </TableCell>
                             <TableCell className="text-right">
                               {booking.service_price_cents
-                                ? formatCurrency(booking.service_price_cents, locale)
+                                ? fmtPrice(booking.service_price_cents)
                                 : "-"}
                             </TableCell>
                           </TableRow>
@@ -388,9 +392,11 @@ function StatCard({
 function BookingCard({
   booking,
   locale,
+  fmtPrice,
 }: {
   booking: CustomerBookingHistoryItem;
   locale: string;
+  fmtPrice: (cents: number) => string;
 }) {
   return (
     <div className="rounded-lg border bg-card p-3">
@@ -416,7 +422,7 @@ function BookingCard({
           </Badge>
           {booking.service_price_cents && (
             <div className="mt-1 text-sm font-medium">
-              {formatCurrency(booking.service_price_cents, locale)}
+              {fmtPrice(booking.service_price_cents)}
             </div>
           )}
         </div>

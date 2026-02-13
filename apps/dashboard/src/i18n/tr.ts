@@ -347,7 +347,7 @@ export const tr: TranslationNamespaces = {
     categoryMassage: "Masaj",
     categoryOther: "Diğer",
     durationLabel: "Süre (dakika)",
-    priceLabel: "Fiyat (NOK)",
+    priceLabel: "Fiyat",
     sortOrderLabel: "Sıralama düzeni",
     loading: "Hizmetler yükleniyor…",
     emptyTitle: "Henüz hizmet eklenmedi",

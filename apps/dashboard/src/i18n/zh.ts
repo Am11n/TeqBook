@@ -328,7 +328,7 @@ export const zh: TranslationNamespaces = {
     categoryMassage: "按摩",
     categoryOther: "其他",
     durationLabel: "时长（分钟）",
-    priceLabel: "价格（NOK）",
+    priceLabel: "价格",
     sortOrderLabel: "排序顺序",
     loading: "正在加载服务…",
     emptyTitle: "尚未添加任何服务",

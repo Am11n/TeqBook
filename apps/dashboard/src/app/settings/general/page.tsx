@@ -16,6 +16,8 @@ import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { useRouter } from "next/navigation";
 import { logError } from "@/lib/services/logger";
 import { getCommonTimezones } from "@/lib/utils/timezone";
+import { CURRENCIES, getCurrencyGroups } from "@/lib/utils/currencies";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
@@ -34,6 +36,7 @@ export default function GeneralSettingsPage() {
   const [userPreferredLanguage, setUserPreferredLanguage] = useState<string>("en");
   const [userRole, setUserRole] = useState<string>("owner");
   const [timezone, setTimezone] = useState<string>("UTC");
+  const [currency, setCurrency] = useState<string>("NOK");
 
   const appLocale =
     locale === "nb"
@@ -76,6 +79,7 @@ export default function GeneralSettingsPage() {
       setSupportedLanguages(salon.supported_languages || ["en", "nb"]);
       setDefaultLanguage(salon.default_language || salon.preferred_language || "en");
       setTimezone(salon.timezone || "UTC");
+      setCurrency(salon.currency || "NOK");
     }
     if (profile) {
       setUserPreferredLanguage(profile.preferred_language || salon?.preferred_language || "en");
@@ -119,6 +123,7 @@ export default function GeneralSettingsPage() {
         supported_languages: supportedLanguages.length > 0 ? supportedLanguages : null,
         default_language: defaultLanguage || null,
         timezone: timezone || "UTC",
+        currency: currency || "NOK",
       }, salon.plan);
 
       if (updateError) {
@@ -223,6 +228,32 @@ export default function GeneralSettingsPage() {
             <option value="massage">Massage</option>
             <option value="other">Other</option>
           </select>
+        </Field>
+
+        <Field
+          label="Currency"
+          htmlFor="currency"
+          description="Prices across your salon will be displayed in this currency."
+        >
+          <select
+            id="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {getCurrencyGroups().map((group) => (
+              <optgroup key={group} label={group}>
+                {CURRENCIES.filter((c) => c.group === group).map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code} — {c.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Preview: {formatPrice(125000, appLocale, currency)}
+          </p>
         </Field>
 
         <Field

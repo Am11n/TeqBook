@@ -346,7 +346,7 @@ export const ur: TranslationNamespaces = {
     categoryMassage: "مساج",
     categoryOther: "دیگر",
     durationLabel: "مدت (منٹ)",
-    priceLabel: "قیمت (NOK)",
+    priceLabel: "قیمت",
     sortOrderLabel: "ترتیب",
     loading: "سروسز لوڈ ہو رہی ہیں…",
     emptyTitle: "ابھی تک کوئی سروس رجسٹر نہیں",

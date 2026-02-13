@@ -2,7 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils/reports/reports-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface BookingsPerServiceChartProps {
   loading: boolean;
@@ -18,6 +21,11 @@ export function BookingsPerServiceChart({
   loading,
   bookingsPerService,
 }: BookingsPerServiceChartProps) {
+  const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Bookings per Service</h3>
@@ -44,7 +52,7 @@ export function BookingsPerServiceChart({
                   />
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Revenue: {formatCurrency(service.revenue_cents)}
+                  Revenue: {fmtPrice(service.revenue_cents)}
                 </div>
               </div>
             );

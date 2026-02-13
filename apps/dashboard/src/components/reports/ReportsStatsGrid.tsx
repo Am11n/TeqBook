@@ -3,7 +3,11 @@
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, DollarSign, TrendingUp, Clock } from "lucide-react";
-import { formatCurrency, formatDuration } from "@/lib/utils/reports/reports-utils";
+import { formatDuration } from "@/lib/utils/reports/reports-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
+import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface ReportsStatsGridProps {
   loading: boolean;
@@ -22,6 +26,11 @@ export function ReportsStatsGrid({
   averageBookingDuration,
   revenueByMonth,
 }: ReportsStatsGridProps) {
+  const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {/* Total Bookings */}
@@ -72,7 +81,7 @@ export function ReportsStatsGrid({
               <Skeleton className="h-8 w-32 mt-2" />
             ) : (
               <>
-                <p className="text-3xl font-bold mt-2">{formatCurrency(totalRevenue)}</p>
+                <p className="text-3xl font-bold mt-2">{fmtPrice(totalRevenue)}</p>
                 {/* Sparkline chart */}
                 {revenueByMonth.length > 0 && (
                   <div className="h-8 w-full mt-2 flex items-end gap-0.5">
@@ -87,7 +96,7 @@ export function ReportsStatsGrid({
                           key={index}
                           className="flex-1 bg-green-500/20 rounded-t transition-all duration-300 hover:bg-green-500/40"
                           style={{ height: `${Math.max(height, 10)}%` }}
-                          title={formatCurrency(data.revenue_cents)}
+                          title={fmtPrice(data.revenue_cents)}
                         />
                       );
                     })}

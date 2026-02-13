@@ -241,6 +241,7 @@ export type Salon = {
   supported_languages?: string[] | null;
   default_language?: string | null;
   timezone?: string | null; // IANA timezone identifier (e.g., "Europe/Oslo")
+  currency?: string | null; // ISO 4217 currency code (e.g. "NOK", "USD", "EUR")
   theme?: {
     primary?: string;
     secondary?: string;

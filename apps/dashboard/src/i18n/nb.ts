@@ -400,7 +400,7 @@ export const nb: TranslationNamespaces = {
     categoryMassage: "Massasje",
     categoryOther: "Annet",
     durationLabel: "Varighet (minutter)",
-    priceLabel: "Pris (NOK)",
+    priceLabel: "Pris",
     sortOrderLabel: "Sorteringsrekkefølge",
     loading: "Laster tjenester…",
     emptyTitle: "Ingen tjenester registrert ennå",

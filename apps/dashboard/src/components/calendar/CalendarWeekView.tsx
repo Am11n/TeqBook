@@ -4,8 +4,11 @@ import { useMemo } from "react";
 import { formatTimeRange, getWeekDates } from "@/lib/utils/calendar/calendar-utils";
 import { getBookingClasses } from "@/lib/ui/calendar-theme";
 import { getTodayLocal } from "@/lib/utils/date-utils";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 interface CalendarWeekViewProps {
   selectedDate: string;
@@ -31,14 +34,18 @@ export function CalendarWeekView({
   onBookingClick,
 }: CalendarWeekViewProps) {
   const { salon } = useCurrentSalon();
+  const { locale: localeCtx } = useLocale();
+  const appLocale = normalizeLocale(localeCtx);
+  const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const weekDates = getWeekDates(selectedDate);
   const todayStr = getTodayLocal();
   const isToday = (date: string) => date === todayStr;
 
   // Build per-day stats
   const dayStats = useMemo(() => {
-    const stats: Record<string, { count: number; revenue: number; cancelled: number }> = {};
+    const stats: Record<string, { count: number; revenueCents: number; cancelled: number }> = {};
     for (const date of weekDates) {
       const dayBookings: CalendarBooking[] = [];
       for (const empBookings of Object.values(bookingsForDayByEmployee)) {
@@ -51,7 +58,7 @@ export function CalendarWeekView({
       const active = dayBookings.filter((b) => b.status !== "cancelled");
       stats[date] = {
         count: active.length,
-        revenue: active.reduce((sum, b) => sum + (b.services?.price_cents ?? 0), 0) / 100,
+        revenueCents: active.reduce((sum, b) => sum + (b.services?.price_cents ?? 0), 0),
         cancelled: dayBookings.filter((b) => b.status === "cancelled").length,
       };
     }
@@ -62,7 +69,7 @@ export function CalendarWeekView({
     <div className="mt-3 hidden overflow-x-auto md:block">
       <div className="grid min-w-full grid-cols-7 gap-2">
         {weekDates.map((date) => {
-          const stats = dayStats[date] || { count: 0, revenue: 0, cancelled: 0 };
+          const stats = dayStats[date] || { count: 0, revenueCents: 0, cancelled: 0 };
 
           // Collect all bookings for this day
           const dayBookings: CalendarBooking[] = [];
@@ -107,7 +114,7 @@ export function CalendarWeekView({
               {/* Capacity indicators */}
               {stats.count > 0 && (
                 <div className="mt-1 flex items-center gap-1.5 text-[9px] text-muted-foreground">
-                  <span>{stats.revenue > 0 ? `${stats.revenue.toFixed(0)} kr` : ""}</span>
+                  <span>{stats.revenueCents > 0 ? fmtPrice(stats.revenueCents) : ""}</span>
                   {stats.cancelled > 0 && (
                     <span className="text-red-500">{stats.cancelled} cancelled</span>
                   )}

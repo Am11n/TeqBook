@@ -22,6 +22,7 @@ import { ChangeEmployeeModal } from "@/components/calendar/ChangeEmployeeModal";
 import { CommandPalette } from "@/components/calendar/CommandPalette";
 import { WorkListView } from "@/components/calendar/WorkListView";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 import { getHoursInTimezone, getMinutesInTimezone } from "@/lib/utils/timezone";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CalendarBooking, Booking, AvailableSlotBatch, ScheduleSegment } from "@/lib/types";
@@ -88,6 +89,8 @@ export default function CalendarPage() {
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].calendar;
   const { error: salonError, salon } = useCurrentSalon();
+  const salonCurrency = salon?.currency ?? "NOK";
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
   const {
     employees,
@@ -296,7 +299,7 @@ export default function CalendarPage() {
             </div>
             <div className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1 text-xs">
               <span className="font-medium">
-                {allBookingsFlat.reduce((sum, b) => sum + (b.services?.price_cents ?? 0), 0) / 100} kr
+                {fmtPrice(allBookingsFlat.reduce((sum, b) => sum + (b.services?.price_cents ?? 0), 0))}
               </span>
               <span className="text-muted-foreground">revenue</span>
             </div>

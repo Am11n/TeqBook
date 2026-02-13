@@ -7,6 +7,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getBookingBadgeClasses } from "@/lib/ui/calendar-theme";
+import { formatPrice } from "@/lib/utils/services/services-utils";
 
 interface WorkListViewProps {
   bookings: CalendarBooking[];
@@ -16,8 +17,10 @@ interface WorkListViewProps {
 export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
   // Sort: problem bookings first (unpaid, unconfirmed, conflict), then by start time
   const sorted = useMemo(() => {
@@ -97,7 +100,7 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
             </div>
             <div className="text-muted-foreground">
               {booking.services?.price_cents != null
-                ? `${(booking.services.price_cents / 100).toFixed(0)} kr`
+                ? fmtPrice(booking.services.price_cents)
                 : "—"}
               {problems.includes("unpaid") && (
                 <span className="ml-1 h-1.5 w-1.5 rounded-full bg-yellow-500 inline-block" />

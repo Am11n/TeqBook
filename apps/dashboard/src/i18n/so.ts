@@ -348,7 +348,7 @@ export const so: TranslationNamespaces = {
     categoryMassage: "Massage",
     categoryOther: "Other",
     durationLabel: "Wakhti (daqiiqado)",
-    priceLabel: "Qiime (NOK)",
+    priceLabel: "Qiime",
     sortOrderLabel: "Sort order",
     loading: "Waxaa socda soo dejinta adeegyada…",
     emptyTitle: "Adeegyo weli lama darin",

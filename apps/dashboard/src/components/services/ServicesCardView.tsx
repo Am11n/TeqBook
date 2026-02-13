@@ -13,6 +13,7 @@ interface ServicesCardViewProps {
   onToggleActive: (serviceId: string, currentStatus: boolean) => void;
   onDelete: (serviceId: string) => void;
   onRowClick: (service: Service) => void;
+  currency: string;
   translations: {
     active: string;
     inactive: string;
@@ -35,6 +36,7 @@ export function ServicesCardView({
   onToggleActive,
   onDelete,
   onRowClick,
+  currency,
   translations: t,
 }: ServicesCardViewProps) {
   const categoryLabels = {
@@ -45,7 +47,7 @@ export function ServicesCardView({
     categoryMassage: t.categoryMassage,
     categoryOther: t.categoryOther,
   };
-  const formatPrice = (cents: number) => _formatPrice(cents, t.locale);
+  const formatPrice = (cents: number) => _formatPrice(cents, t.locale, currency);
   const getCategoryLabel = (cat: string | null | undefined) =>
     _getCategoryLabel(cat, categoryLabels);
 

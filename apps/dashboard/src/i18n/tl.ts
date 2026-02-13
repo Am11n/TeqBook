@@ -348,7 +348,7 @@ export const tl: TranslationNamespaces = {
     categoryMassage: "Massage",
     categoryOther: "Iba pa",
     durationLabel: "Tagal (minuto)",
-    priceLabel: "Presyo (NOK)",
+    priceLabel: "Presyo",
     sortOrderLabel: "Pagkakasunod-sunod",
     loading: "Ikinakarga ang mga serbisyo…",
     emptyTitle: "Wala pang nadadagdag na serbisyo",
