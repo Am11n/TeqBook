@@ -89,13 +89,18 @@ export function statusLabel(
 }
 
 /**
- * Check if booking has employee available at that time
+ * Check if booking has employee available at that time.
+ * If no shifts are configured at all (e.g. Starter plan without SHIFTS feature),
+ * we assume all employees are available and skip the check.
  */
 export function hasEmployeeAvailable(
   booking: Booking,
   employees: Array<{ id: string; full_name: string }>,
   shifts: Shift[]
 ): boolean {
+  // If no shifts configured at all, skip availability check (e.g. Starter plan)
+  if (shifts.length === 0) return true;
+
   if (!booking.employees || !booking.start_time) return true; // Assume available if no employee assigned
 
   // Get employee ID from booking - employees is { full_name: string | null } | null
@@ -115,7 +120,7 @@ export function hasEmployeeAvailable(
     (s) => s.employee_id === employee.id && s.weekday === weekday
   );
 
-  if (employeeShifts.length === 0) return false; // No shifts = not available
+  if (employeeShifts.length === 0) return false; // No shifts for this day = not available
 
   // Check if booking time falls within any shift
   return employeeShifts.some((shift) => {
