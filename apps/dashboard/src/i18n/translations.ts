@@ -324,6 +324,66 @@ export type EmployeesMessages = {
   save: string;
   saving: string;
   updateError: string;
+  // New: KPI / stats
+  statsTotal?: string;
+  statsActive?: string;
+  statsInactive?: string;
+  statsMissingSetup?: string;
+  // New: Setup health
+  colSetup?: string;
+  completeSetup?: string;
+  missingServices?: string;
+  missingShifts?: string;
+  notBookable?: string;
+  canBeBooked?: string;
+  addContact?: string;
+  // New: Filters
+  searchPlaceholder?: string;
+  filterActive?: string;
+  filterInactive?: string;
+  filterMissingServices?: string;
+  filterMissingShifts?: string;
+  // New: Bulk assign
+  assignServices?: string;
+  assignServicesDescription?: string;
+  selectAllVisible?: string;
+  selectAllInCategory?: string;
+  saveChanges?: string;
+  // New: Detail dialog
+  detailTitle?: string;
+  detailServices?: string;
+  detailRole?: string;
+  detailContact?: string;
+  detailStatus?: string;
+  // New: Roles in Norwegian
+  roleOwner?: string;
+  roleManager?: string;
+  roleStaff?: string;
+  // New: Capacity
+  capacityTitle?: string;
+  capacityMessage?: string;
+  deactivateToFree?: string;
+  upgradePlan?: string;
+  // New: Quick fix
+  bookingBlocked?: string;
+  fixNow?: string;
+  // Detail dialog extra
+  detailDescription?: string;
+  editDescription2?: string;
+  noServices?: string;
+  shiftsRegistered?: string;
+  noShifts?: string;
+  close?: string;
+  selectRole?: string;
+  preferredLang?: string;
+  // Employee empty state
+  emptyActionDescription?: string;
+  // Confirm delete
+  confirmDelete?: string;
+  // Setup shifts link
+  setupShifts?: string;
+  // Staff count
+  staffCount?: string;
 };
 
 export type ServicesMessages = {
@@ -362,6 +422,70 @@ export type ServicesMessages = {
   dialogTitle: string;
   dialogDescription: string;
   cancel: string;
+  // New: KPI / stats
+  statsTotal?: string;
+  statsActive?: string;
+  statsCategories?: string;
+  statsWithoutEmployees?: string;
+  // New: Table enrichment
+  colEmployees?: string;
+  colBuffer?: string;
+  noEmployeesAssigned?: string;
+  // New: Filters
+  searchPlaceholder?: string;
+  filterActive?: string;
+  filterInactive?: string;
+  groupByCategory?: string;
+  // New: Templates
+  addFromTemplate?: string;
+  templateDialogTitle?: string;
+  templateDialogDescription?: string;
+  useSuggestedPrices?: string;
+  suggestedPrice?: string;
+  createSelected?: string;
+  // New: Bulk actions
+  bulkAdjustPrice?: string;
+  bulkRoundPrice?: string;
+  bulkChangeCategory?: string;
+  bulkActivate?: string;
+  bulkDeactivate?: string;
+  previewChanges?: string;
+  before?: string;
+  after?: string;
+  applyChanges?: string;
+  // New: Detail dialog
+  detailTitle?: string;
+  save?: string;
+  saving?: string;
+  edit?: string;
+  // New: Sort order
+  moveUp?: string;
+  moveDown?: string;
+  // New: Prep/cleanup
+  prepMinutesLabel?: string;
+  cleanupMinutesLabel?: string;
+  // Detail dialog
+  detailDescription?: string;
+  editDescription?: string;
+  close?: string;
+  // Bulk price dialog
+  bulkDialogTitle?: string;
+  bulkDialogAppliesTo?: string;
+  bulkAdjustWithPercent?: string;
+  bulkRoundOff?: string;
+  percentLabel?: string;
+  roundToNearest?: string;
+  // Templates extra
+  templateLeaveEmptyHint?: string;
+  creating?: string;
+  // Staff label
+  staffCount?: string;
+  staffUnit?: string;
+  // Prep/cleanup badges
+  prepBadge?: string;
+  afterBadge?: string;
+  // Confirm
+  confirmDelete?: string;
 };
 
 export type CustomersMessages = {
@@ -400,6 +524,63 @@ export type CustomersMessages = {
   dialogTitle: string;
   dialogDescription: string;
   cancel: string;
+  // New: KPI / stats
+  statsTotal?: string;
+  statsWithConsent?: string;
+  statsWithoutConsent?: string;
+  statsWithoutContact?: string;
+  // New: Filters
+  searchPlaceholder?: string;
+  filterWithConsent?: string;
+  filterWithoutConsent?: string;
+  filterWithContact?: string;
+  filterWithoutContact?: string;
+  // New: GDPR
+  consentOk?: string;
+  consentMissing?: string;
+  requestConsent?: string;
+  comingSoon?: string;
+  // New: Detail dialog
+  detailTitle?: string;
+  detailBookingHistory?: string;
+  detailNoHistory?: string;
+  sendMessage?: string;
+  copyPhone?: string;
+  copyEmail?: string;
+  copied?: string;
+  edit?: string;
+  save?: string;
+  // New: Import
+  importCustomers?: string;
+  importDialogTitle?: string;
+  importDialogDescription?: string;
+  importUpload?: string;
+  importPreview?: string;
+  importConfirm?: string;
+  importWillCreate?: string;
+  importWillSkip?: string;
+  importWillUpdate?: string;
+  importError?: string;
+  importUpdateExisting?: string;
+  importProgress?: string;
+  importDone?: string;
+  importSelectFile?: string;
+  importDragDrop?: string;
+  importCreated?: string;
+  importSkipped?: string;
+  importUpdated?: string;
+  importErrors?: string;
+  // Detail dialog extra
+  detailDescription?: string;
+  editDescription?: string;
+  close?: string;
+  noNotes?: string;
+  gdprConsentLabel?: string;
+  bookingHistory?: string;
+  noBookings?: string;
+  sendMessageCopyPhone?: string;
+  // Confirm
+  confirmDelete?: string;
 };
 
 export type BookingsMessages = {

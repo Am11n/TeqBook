@@ -152,6 +152,51 @@ export async function findCustomerByEmailOrPhone(
 }
 
 /**
+ * Update an existing customer
+ */
+export async function updateCustomer(
+  salonId: string,
+  customerId: string,
+  input: Partial<Omit<CreateCustomerInput, "salon_id">>
+): Promise<{ data: Customer | null; error: string | null }> {
+  try {
+    const updates: Record<string, unknown> = {};
+    if (input.full_name !== undefined)
+      updates.full_name = input.full_name.trim();
+    if (input.email !== undefined)
+      updates.email = input.email?.trim() || null;
+    if (input.phone !== undefined)
+      updates.phone = input.phone?.trim() || null;
+    if (input.notes !== undefined)
+      updates.notes = input.notes?.trim() || null;
+    if (input.gdpr_consent !== undefined)
+      updates.gdpr_consent = input.gdpr_consent;
+
+    const { data, error } = await supabase
+      .from("customers")
+      .update(updates)
+      .eq("id", customerId)
+      .eq("salon_id", salonId)
+      .select("id, full_name, email, phone, notes, gdpr_consent")
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        data: null,
+        error: error?.message ?? "Failed to update customer",
+      };
+    }
+
+    return { data: data as Customer, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Delete a customer
  */
 export async function deleteCustomer(

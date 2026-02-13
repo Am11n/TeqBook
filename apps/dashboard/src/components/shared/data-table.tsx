@@ -143,6 +143,8 @@ type DataTableProps<T> = {
   headerContent?: ReactNode;
   /** Content rendered on the right side of the toolbar, next to Views/Columns buttons */
   toolbarEndContent?: ReactNode;
+  /** Table density: compact = smaller rows, comfortable = default */
+  density?: "compact" | "comfortable";
   /** Additional CSS classes */
   className?: string;
 };
@@ -230,6 +232,7 @@ export function DataTable<T>({
   loading = false,
   emptyMessage = "No data found",
   headerContent,
+  density = "comfortable",
   toolbarEndContent,
   className,
 }: DataTableProps<T>) {
@@ -705,7 +708,7 @@ export function DataTable<T>({
                       data-state={isSelected ? "selected" : undefined}
                       className={cn(
                         onRowClick && "cursor-pointer",
-                        "h-12"
+                        density === "compact" ? "h-9" : "h-12",
                       )}
                       onClick={() => onRowClick?.(row)}
                     >

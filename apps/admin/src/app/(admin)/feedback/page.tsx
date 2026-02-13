@@ -507,6 +507,10 @@ function FeedbackDrawerContent({
     return atts as { path: string; name: string }[];
   })();
 
+  const descriptionText: string | null = entry.description as string | null;
+  const salonName: string = (meta?.salon_name as string) ?? entry.salon_id ?? "\u2014";
+  const assignedTo: string | null = entry.admin_owner_id;
+
   return (
     <div className="space-y-5">
       {/* Info grid */}
@@ -538,22 +542,22 @@ function FeedbackDrawerContent({
         </div>
         <div>
           <span className="text-muted-foreground">Salon:</span>{" "}
-          {(meta?.salon_name as string) ?? entry.salon_id ?? "—"}
+          {salonName}
         </div>
-        {entry.admin_owner_id && (
+        {assignedTo && (
           <div className="col-span-2">
             <span className="text-muted-foreground">Assigned to:</span>{" "}
-            <span className="text-xs font-mono">{entry.admin_owner_id.slice(0, 8)}...</span>
+            <span className="text-xs font-mono">{assignedTo.slice(0, 8)}...</span>
           </div>
         )}
       </div>
 
       {/* Description */}
-      {entry.description ? (
+      {descriptionText ? (
         <div>
           <p className="text-sm font-medium mb-1">Description</p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {entry.description}
+            {descriptionText}
           </p>
         </div>
       ) : null}
@@ -582,7 +586,7 @@ function FeedbackDrawerContent({
       )}
 
       {/* Metadata (collapsible) */}
-      {meta && (meta.page_url || meta.user_agent || meta.timezone) && (
+      {meta && !!(meta.page_url || meta.user_agent || meta.timezone) && (
         <details className="text-xs">
           <summary className="cursor-pointer text-muted-foreground font-medium">
             Client metadata

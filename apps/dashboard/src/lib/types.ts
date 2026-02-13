@@ -181,6 +181,9 @@ export type CreateServiceInput = {
   duration_minutes: number;
   price_cents: number;
   sort_order?: number;
+  is_active?: boolean;
+  prep_minutes?: number;
+  cleanup_minutes?: number;
 };
 
 export type UpdateServiceInput = {
@@ -190,6 +193,8 @@ export type UpdateServiceInput = {
   price_cents?: number;
   sort_order?: number;
   is_active?: boolean;
+  prep_minutes?: number;
+  cleanup_minutes?: number;
 };
 
 export type CreateBookingInput = {

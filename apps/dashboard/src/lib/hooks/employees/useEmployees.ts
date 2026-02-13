@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
   getEmployeesWithServicesMap,
   deleteEmployee,
 } from "@/lib/repositories/employees";
-import {
-  toggleEmployeeActive,
-} from "@/lib/services/employees-service";
+import { toggleEmployeeActive } from "@/lib/services/employees-service";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
-import type { Employee, Service } from "@/lib/types";
+import { getShiftsForCurrentSalon } from "@/lib/repositories/shifts";
+import { getEmployeeSetupIssues } from "@/lib/setup/health";
+import type { Employee, Service, Shift } from "@/lib/types";
 
 interface UseEmployeesOptions {
   translations: {
@@ -17,12 +17,22 @@ interface UseEmployeesOptions {
 }
 
 export function useEmployees({ translations }: UseEmployeesOptions) {
-  const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
+  const { salon, loading: salonLoading, error: salonError, isReady } =
+    useCurrentSalon();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [employeeServicesMap, setEmployeeServicesMap] = useState<Record<string, Service[]>>({});
+  const [employeeServicesMap, setEmployeeServicesMap] = useState<
+    Record<string, Service[]>
+  >({});
+  const [employeeShiftsMap, setEmployeeShiftsMap] = useState<
+    Record<string, Shift[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search & filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const loadEmployees = useCallback(async () => {
     setLoading(true);
@@ -37,13 +47,17 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
     const [
       { data: employeesData, error: employeesError },
       { data: servicesData, error: servicesError },
+      { data: shiftsData, error: shiftsError },
     ] = await Promise.all([
       getEmployeesWithServicesMap(salon.id),
       getActiveServicesForCurrentSalon(salon.id),
+      getShiftsForCurrentSalon(salon.id, { pageSize: 500 }),
     ]);
 
     if (employeesError || servicesError) {
-      setError(employeesError ?? servicesError ?? "Kunne ikke laste data");
+      setError(
+        employeesError ?? servicesError ?? "Kunne ikke laste data",
+      );
       setLoading(false);
       return;
     }
@@ -54,9 +68,21 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
       return;
     }
 
+    // Build shifts map per employee
+    const shiftsMap: Record<string, Shift[]> = {};
+    if (shiftsData) {
+      for (const shift of shiftsData) {
+        if (!shiftsMap[shift.employee_id]) {
+          shiftsMap[shift.employee_id] = [];
+        }
+        shiftsMap[shift.employee_id].push(shift);
+      }
+    }
+
     setEmployees(employeesData.employees);
     setServices(servicesData);
     setEmployeeServicesMap(employeesData.servicesMap);
+    setEmployeeShiftsMap(shiftsMap);
     setLoading(false);
   }, [salon?.id, translations.noSalon]);
 
@@ -76,30 +102,102 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
     loadEmployees();
   }, [isReady, salonLoading, salonError, translations.noSalon, loadEmployees]);
 
-  const handleToggleActive = async (employeeId: string, currentStatus: boolean) => {
+  // Filtered employees
+  const filteredEmployees = useMemo(() => {
+    let result = employees;
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (e) =>
+          e.full_name.toLowerCase().includes(q) ||
+          e.email?.toLowerCase().includes(q) ||
+          e.phone?.toLowerCase().includes(q),
+      );
+    }
+
+    // Filters
+    if (activeFilters.length > 0) {
+      result = result.filter((e) => {
+        for (const filter of activeFilters) {
+          if (filter === "active" && !e.is_active) return false;
+          if (filter === "inactive" && e.is_active) return false;
+          if (
+            filter === "missing_services" &&
+            (employeeServicesMap[e.id]?.length ?? 0) > 0
+          )
+            return false;
+          if (
+            filter === "missing_shifts" &&
+            (employeeShiftsMap[e.id]?.length ?? 0) > 0
+          )
+            return false;
+        }
+        return true;
+      });
+    }
+
+    return result;
+  }, [
+    employees,
+    searchQuery,
+    activeFilters,
+    employeeServicesMap,
+    employeeShiftsMap,
+  ]);
+
+  // Computed stats
+  const stats = useMemo(() => {
+    const total = employees.length;
+    const active = employees.filter((e) => e.is_active).length;
+    const inactive = total - active;
+    const missingSetup = employees.filter((e) => {
+      const issues = getEmployeeSetupIssues(e, {
+        services: employeeServicesMap[e.id] ?? [],
+        shifts: employeeShiftsMap[e.id] ?? [],
+      });
+      return issues.some(
+        (i) => i.key === "no_services" || i.key === "no_shifts",
+      );
+    }).length;
+    return { total, active, inactive, missingSetup };
+  }, [employees, employeeServicesMap, employeeShiftsMap]);
+
+  const handleToggleActive = async (
+    employeeId: string,
+    currentStatus: boolean,
+  ) => {
     if (!salon?.id) return;
+
+    // Optimistic update
+    setEmployees((prev) =>
+      prev.map((e) =>
+        e.id === employeeId ? { ...e, is_active: !currentStatus } : e,
+      ),
+    );
 
     const { error: toggleError, limitReached } = await toggleEmployeeActive(
       salon.id,
       employeeId,
       currentStatus,
-      salon.plan
+      salon.plan,
     );
 
     if (toggleError) {
+      // Revert optimistic update
+      setEmployees((prev) =>
+        prev.map((e) =>
+          e.id === employeeId ? { ...e, is_active: currentStatus } : e,
+        ),
+      );
       setError(toggleError);
-      if (limitReached) {
-        // TODO: Show upgrade modal
-        // For now, error message already contains upgrade info
-      }
       return;
     }
-
-    await loadEmployees();
   };
 
   const handleDelete = async (employeeId: string) => {
-    if (!confirm("Are you sure you want to delete this employee?")) return;
+    if (!confirm("Er du sikker på at du vil slette denne ansatte?")) return;
     if (!salon?.id) return;
 
     const { error: deleteError } = await deleteEmployee(salon.id, employeeId);
@@ -109,19 +207,27 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
       return;
     }
 
-    await loadEmployees();
+    // Optimistic remove
+    setEmployees((prev) => prev.filter((e) => e.id !== employeeId));
   };
 
   return {
     employees,
+    filteredEmployees,
     services,
     employeeServicesMap,
+    employeeShiftsMap,
     loading,
     error,
     setError,
     loadEmployees,
     handleToggleActive,
     handleDelete,
+    stats,
+    // Search & filter
+    searchQuery,
+    setSearchQuery,
+    activeFilters,
+    setActiveFilters,
   };
 }
-

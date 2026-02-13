@@ -124,6 +124,9 @@ export async function createService(
         duration_minutes: input.duration_minutes,
         price_cents: input.price_cents,
         sort_order: input.sort_order ?? 0,
+        ...(input.is_active !== undefined ? { is_active: input.is_active } : {}),
+        ...(input.prep_minutes !== undefined ? { prep_minutes: input.prep_minutes } : {}),
+        ...(input.cleanup_minutes !== undefined ? { cleanup_minutes: input.cleanup_minutes } : {}),
       })
       .select("id, name, category, duration_minutes, price_cents, sort_order, is_active")
       .maybeSingle();
@@ -161,13 +164,15 @@ export async function updateService(
     if (input.price_cents !== undefined) updateData.price_cents = input.price_cents;
     if (input.sort_order !== undefined) updateData.sort_order = input.sort_order;
     if (input.is_active !== undefined) updateData.is_active = input.is_active;
+    if (input.prep_minutes !== undefined) updateData.prep_minutes = input.prep_minutes;
+    if (input.cleanup_minutes !== undefined) updateData.cleanup_minutes = input.cleanup_minutes;
 
     const { data, error } = await supabase
       .from("services")
       .update(updateData)
       .eq("id", serviceId)
       .eq("salon_id", salonId)
-      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active")
+      .select("id, name, category, duration_minutes, price_cents, sort_order, is_active, prep_minutes, cleanup_minutes")
       .maybeSingle();
 
     if (error || !data) {
