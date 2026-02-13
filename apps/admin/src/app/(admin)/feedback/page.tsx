@@ -549,14 +549,14 @@ function FeedbackDrawerContent({
       </div>
 
       {/* Description */}
-      {entry.description && (
+      {entry.description ? (
         <div>
           <p className="text-sm font-medium mb-1">Description</p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {entry.description}
           </p>
         </div>
-      )}
+      ) : null}
 
       {/* Attachments */}
       {attachments && (
@@ -588,11 +588,11 @@ function FeedbackDrawerContent({
             Client metadata
           </summary>
           <div className="mt-1 space-y-0.5 text-muted-foreground font-mono bg-muted/50 rounded p-2">
-            {meta.page_url && <p>Route: {meta.page_url as string}</p>}
-            {meta.user_agent && <p>UA: {(meta.user_agent as string).slice(0, 100)}...</p>}
-            {meta.timezone && <p>TZ: {meta.timezone as string}</p>}
-            {meta.locale && <p>Locale: {meta.locale as string}</p>}
-            {meta.screen && <p>Screen: {meta.screen as string}</p>}
+            {meta.page_url ? <p>Route: {String(meta.page_url)}</p> : null}
+            {meta.user_agent ? <p>UA: {String(meta.user_agent).slice(0, 100)}...</p> : null}
+            {meta.timezone ? <p>TZ: {String(meta.timezone)}</p> : null}
+            {meta.locale ? <p>Locale: {String(meta.locale)}</p> : null}
+            {meta.screen ? <p>Screen: {String(meta.screen)}</p> : null}
           </div>
         </details>
       )}

@@ -303,7 +303,7 @@ export const nb: TranslationNamespaces = {
     loading: "Laster ansatte…",
     emptyTitle: "Ingen ansatte registrert ennå",
     emptyDescription:
-      "Når du legger til ansatte i skjemaet til venstre dukker de opp her. De brukes senere i kalenderen og bookinglogikken.",
+      "Bruk knappen ovenfor for å legge til ansatte. De dukker opp her og brukes i kalenderen og bookinglogikken.",
     tableTitle: "Dine ansatte",
     colName: "Navn",
     colRole: "Rolle",
@@ -316,6 +316,8 @@ export const nb: TranslationNamespaces = {
     delete: "Slett",
     edit: "Rediger",
     addButton: "Legg til ansatt",
+    dialogTitle: "Legg til ansatt",
+    dialogDescription: "Fyll inn informasjon om den nye ansatte.",
     editTitle: "Rediger ansatt",
     editDescription: "Oppdater ansattinformasjon og tjenester.",
     cancel: "Avbryt",
@@ -347,7 +349,7 @@ export const nb: TranslationNamespaces = {
     loading: "Laster tjenester…",
     emptyTitle: "Ingen tjenester registrert ennå",
     emptyDescription:
-      "Legg til behandlinger i skjemaet til venstre. De brukes for å beregne varighet og pris i booking-motoren.",
+      "Bruk knappen ovenfor for å legge til tjenester. De brukes for å beregne varighet og pris i booking-motoren.",
     tableTitle: "Dine tjenester",
     colName: "Navn",
     colCategory: "Kategori",
@@ -358,6 +360,9 @@ export const nb: TranslationNamespaces = {
     active: "Aktiv",
     inactive: "Inaktiv",
     delete: "Slett",
+    dialogTitle: "Ny tjeneste",
+    dialogDescription: "Fyll inn detaljer for tjenesten.",
+    cancel: "Avbryt",
   },
   customers: {
     title: "Kunder",
@@ -386,7 +391,7 @@ export const nb: TranslationNamespaces = {
     loading: "Laster kunder…",
     emptyTitle: "Ingen kunder registrert ennå",
     emptyDescription:
-      "Når du legger til kunder i skjemaet til venstre dukker de opp her. De kan knyttes til bookinger senere.",
+      "Bruk knappen ovenfor for å legge til kunder. De dukker opp her og kan knyttes til bookinger senere.",
     mobileConsentYes: "Samtykke lagret",
     mobileConsentNo: "Uten samtykke",
     delete: "Slett",
@@ -397,6 +402,9 @@ export const nb: TranslationNamespaces = {
     colActions: "Handlinger",
     consentYes: "Ja",
     consentNo: "Nei",
+    dialogTitle: "Legg til kunde",
+    dialogDescription: "Fyll inn kundeinformasjon.",
+    cancel: "Avbryt",
   },
   bookings: {
     title: "Bookinger",

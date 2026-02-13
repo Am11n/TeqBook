@@ -319,6 +319,8 @@ export const tl: TranslationNamespaces = {
     delete: "Tanggalin",
     edit: "I-edit",
     addButton: "Magdagdag ng empleyado",
+    dialogTitle: "Magdagdag ng empleyado",
+    dialogDescription: "Punan ang impormasyon ng bagong empleyado.",
     editTitle: "I-edit ang empleyado",
     editDescription: "I-update ang impormasyon at mga serbisyo ng empleyado.",
     cancel: "Kanselahin",
@@ -362,6 +364,9 @@ export const tl: TranslationNamespaces = {
     active: "Aktibo",
     inactive: "Hindi aktibo",
     delete: "Tanggalin",
+    dialogTitle: "Bagong serbisyo",
+    dialogDescription: "Punan ang detalye ng serbisyo.",
+    cancel: "Kanselahin",
   },
   
   customers: {
@@ -402,6 +407,9 @@ export const tl: TranslationNamespaces = {
     colActions: "Mga aksyon",
     consentYes: "Oo",
     consentNo: "Hindi",
+    dialogTitle: "Magdagdag ng customer",
+    dialogDescription: "Punan ang impormasyon ng customer.",
+    cancel: "Kanselahin",
   },
   
   bookings: {

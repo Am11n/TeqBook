@@ -319,6 +319,8 @@ export const vi: TranslationNamespaces = {
     delete: "Xóa",
     edit: "Chỉnh sửa",
     addButton: "Thêm nhân viên",
+    dialogTitle: "Thêm nhân viên",
+    dialogDescription: "Điền thông tin nhân viên mới.",
     editTitle: "Chỉnh sửa nhân viên",
     editDescription: "Cập nhật thông tin và dịch vụ của nhân viên.",
     cancel: "Hủy",
@@ -362,6 +364,9 @@ export const vi: TranslationNamespaces = {
     active: "Đang dùng",
     inactive: "Tạm dừng",
     delete: "Xóa",
+    dialogTitle: "Dịch vụ mới",
+    dialogDescription: "Điền thông tin dịch vụ.",
+    cancel: "Hủy",
   },
   
   customers: {
@@ -402,6 +407,9 @@ export const vi: TranslationNamespaces = {
     colActions: "Hành động",
     consentYes: "Có",
     consentNo: "Không",
+    dialogTitle: "Thêm khách hàng",
+    dialogDescription: "Điền thông tin khách hàng.",
+    cancel: "Hủy",
   },
   
   bookings: {

@@ -379,6 +379,8 @@ export const pl: TranslationNamespaces = {
     delete: "Usuń",
     edit: "Edytuj",
     addButton: "Dodaj pracownika",
+    dialogTitle: "Dodaj pracownika",
+    dialogDescription: "Wypełnij dane nowego pracownika.",
     editTitle: "Edytuj pracownika",
     editDescription: "Zaktualizuj informacje i usługi pracownika.",
     cancel: "Anuluj",
@@ -421,6 +423,9 @@ export const pl: TranslationNamespaces = {
     active: "Aktywna",
     inactive: "Nieaktywna",
     delete: "Usuń",
+    dialogTitle: "Nowa usługa",
+    dialogDescription: "Wypełnij szczegóły usługi.",
+    cancel: "Anuluj",
   },
   
   customers: {
@@ -461,6 +466,9 @@ export const pl: TranslationNamespaces = {
     colActions: "Akcje",
     consentYes: "Tak",
     consentNo: "Nie",
+    dialogTitle: "Dodaj klienta",
+    dialogDescription: "Wypełnij dane klienta.",
+    cancel: "Anuluj",
   },
   
   bookings: {

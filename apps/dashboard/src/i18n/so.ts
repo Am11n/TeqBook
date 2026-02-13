@@ -319,6 +319,8 @@ export const so: TranslationNamespaces = {
     delete: "Tirtir",
     edit: "Tafatir",
     addButton: "Ku dar shaqaale",
+    dialogTitle: "Ku dar shaqaale",
+    dialogDescription: "Buuxi macluumaadka shaqaalaha cusub.",
     editTitle: "Tafatir shaqaalaha",
     editDescription: "Cusboonaysii macluumaadka shaqaalaha iyo adeegyada.",
     cancel: "Ka noqo",
@@ -362,6 +364,9 @@ export const so: TranslationNamespaces = {
     active: "Firfircoon",
     inactive: "Aan firfircoonayn",
     delete: "Tirtir",
+    dialogTitle: "Adeeg cusub",
+    dialogDescription: "Buuxi faahfaahinta adeegga.",
+    cancel: "Ka noqo",
   },
   
   customers: {
@@ -402,6 +407,9 @@ export const so: TranslationNamespaces = {
     colActions: "Falal",
     consentYes: "Haa",
     consentNo: "Maya",
+    dialogTitle: "Ku dar macmiil",
+    dialogDescription: "Buuxi macluumaadka macmiilka.",
+    cancel: "Ka noqo",
   },
   
   bookings: {

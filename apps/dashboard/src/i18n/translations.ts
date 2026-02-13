@@ -316,6 +316,8 @@ export type EmployeesMessages = {
   delete: string;
   edit: string;
   addButton: string;
+  dialogTitle: string;
+  dialogDescription: string;
   editTitle: string;
   editDescription: string;
   cancel: string;
@@ -357,6 +359,9 @@ export type ServicesMessages = {
   active: string;
   inactive: string;
   delete: string;
+  dialogTitle: string;
+  dialogDescription: string;
+  cancel: string;
 };
 
 export type CustomersMessages = {
@@ -392,6 +397,9 @@ export type CustomersMessages = {
   colActions: string;
   consentYes: string;
   consentNo: string;
+  dialogTitle: string;
+  dialogDescription: string;
+  cancel: string;
 };
 
 export type BookingsMessages = {

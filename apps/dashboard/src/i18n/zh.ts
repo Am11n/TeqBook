@@ -300,6 +300,8 @@ export const zh: TranslationNamespaces = {
     delete: "删除",
     edit: "编辑",
     addButton: "添加员工",
+    dialogTitle: "添加员工",
+    dialogDescription: "填写新员工信息。",
     editTitle: "编辑员工",
     editDescription: "更新员工信息和服务。",
     cancel: "取消",
@@ -342,6 +344,9 @@ export const zh: TranslationNamespaces = {
     active: "启用",
     inactive: "停用",
     delete: "删除",
+    dialogTitle: "新服务",
+    dialogDescription: "填写服务详情。",
+    cancel: "取消",
   },
   customers: {
     title: "客户",
@@ -379,6 +384,9 @@ export const zh: TranslationNamespaces = {
     colActions: "操作",
     consentYes: "是",
     consentNo: "否",
+    dialogTitle: "添加客户",
+    dialogDescription: "填写客户信息。",
+    cancel: "取消",
   },
   bookings: {
     title: "预约",

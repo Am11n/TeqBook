@@ -313,6 +313,8 @@ export const hi: TranslationNamespaces = {
     delete: "हटाएँ",
     edit: "संपादित करें",
     addButton: "कर्मचारी जोड़ें",
+    dialogTitle: "कर्मचारी जोड़ें",
+    dialogDescription: "नए कर्मचारी की जानकारी भरें।",
     editTitle: "कर्मचारी संपादित करें",
     editDescription: "कर्मचारी जानकारी और सेवाएँ अपडेट करें।",
     cancel: "रद्द करें",
@@ -355,6 +357,9 @@ export const hi: TranslationNamespaces = {
     active: "सक्रिय",
     inactive: "निष्क्रिय",
     delete: "हटाएँ",
+    dialogTitle: "नई सेवा",
+    dialogDescription: "सेवा की जानकारी भरें।",
+    cancel: "रद्द करें",
   },
   customers: {
     title: "ग्राहक",
@@ -392,6 +397,9 @@ export const hi: TranslationNamespaces = {
     colNotes: "नोट्स",
     colGdpr: "GDPR",
     colActions: "कार्रवाई",
+    dialogTitle: "ग्राहक जोड़ें",
+    dialogDescription: "ग्राहक की जानकारी भरें।",
+    cancel: "रद्द करें",
   },
   bookings: {
     title: "बुकिंग्स",

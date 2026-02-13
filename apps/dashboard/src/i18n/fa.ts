@@ -304,6 +304,9 @@ export const fa: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیرفعال",
     delete: "حذف",
+    dialogTitle: "خدمت جدید",
+    dialogDescription: "جزئیات خدمت را وارد کنید.",
+    cancel: "لغو",
   },
   employees: {
     title: "کارکنان",
@@ -342,6 +345,8 @@ export const fa: TranslationNamespaces = {
     delete: "حذف",
     edit: "ویرایش",
     addButton: "افزودن کارمند",
+    dialogTitle: "افزودن کارمند",
+    dialogDescription: "اطلاعات کارمند جدید را وارد کنید.",
     editTitle: "ویرایش کارمند",
     editDescription: "اطلاعات و خدمات کارمند را به‌روزرسانی کنید.",
     cancel: "لغو",
@@ -384,6 +389,9 @@ export const fa: TranslationNamespaces = {
     colActions: "عملیات",
     consentYes: "بله",
     consentNo: "خیر",
+    dialogTitle: "افزودن مشتری",
+    dialogDescription: "اطلاعات مشتری را وارد کنید.",
+    cancel: "لغو",
   },
   bookings: {
     title: "نوبت‌ها",

@@ -318,6 +318,8 @@ export const tr: TranslationNamespaces = {
     delete: "Sil",
     edit: "Düzenle",
     addButton: "Çalışan ekle",
+    dialogTitle: "Çalışan ekle",
+    dialogDescription: "Yeni çalışan bilgilerini doldurun.",
     editTitle: "Çalışanı düzenle",
     editDescription: "Çalışan bilgilerini ve hizmetlerini güncelleyin.",
     cancel: "İptal",
@@ -361,6 +363,9 @@ export const tr: TranslationNamespaces = {
     active: "Aktif",
     inactive: "Pasif",
     delete: "Sil",
+    dialogTitle: "Yeni hizmet",
+    dialogDescription: "Hizmet detaylarını doldurun.",
+    cancel: "İptal",
   },
   
   customers: {
@@ -401,6 +406,9 @@ export const tr: TranslationNamespaces = {
     colActions: "İşlemler",
     consentYes: "Evet",
     consentNo: "Hayır",
+    dialogTitle: "Müşteri ekle",
+    dialogDescription: "Müşteri bilgilerini doldurun.",
+    cancel: "İptal",
   },
   
   bookings: {

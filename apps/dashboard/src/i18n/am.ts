@@ -311,6 +311,8 @@ export const am: TranslationNamespaces = {
     delete: "ሰርዝ",
     edit: "አርም",
     addButton: "ሰራተኛ ያክሉ",
+    dialogTitle: "ሰራተኛ ያክሉ",
+    dialogDescription: "የአዲሱ ሰራተኛ መረጃ ይሙሉ።",
     editTitle: "ሰራተኛ አርም",
     editDescription: "የሰራተኛ መረጃና አገልግሎቶችን ያዘምኑ።",
     cancel: "ይቅር",
@@ -351,6 +353,9 @@ export const am: TranslationNamespaces = {
     active: "ንቁ",
     inactive: "ዝቅተኛ",
     delete: "ሰርዝ",
+    dialogTitle: "አዲስ አገልግሎት",
+    dialogDescription: "የአገልግሎቱን ዝርዝር ይሙሉ።",
+    cancel: "ይቅር",
   },
   customers: {
     title: "ደንበኞች",
@@ -390,6 +395,9 @@ export const am: TranslationNamespaces = {
     colActions: "መድረካዎች",
     consentYes: "አዎ",
     consentNo: "አይ",
+    dialogTitle: "ደንበኛ ያክሉ",
+    dialogDescription: "የደንበኛ መረጃ ይሙሉ።",
+    cancel: "ይቅር",
   },
   bookings: {
     title: "ቀጠሮዎች",

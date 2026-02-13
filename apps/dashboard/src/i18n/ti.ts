@@ -317,6 +317,8 @@ export const ti: TranslationNamespaces = {
     delete: "ሰርዝ",
     edit: "ኣስተኻኽል",
     addButton: "ሰራሕተኛ ጨምር",
+    dialogTitle: "ሰራሕተኛ ጨምር",
+    dialogDescription: "ናይ ሓድሽ ሰራሕተኛ ሓበሬታ ምልኣ።",
     editTitle: "ሰራሕተኛ ኣስተኻኽል",
     editDescription: "ናይ ሰራሕተኛ ሓበሬታን ኣገልግሎታትን ኣዘምን።",
     cancel: "ይቕሬታ",
@@ -360,6 +362,9 @@ export const ti: TranslationNamespaces = {
     active: "ኣንቀሳቃሲ",
     inactive: "ዘይኣንቀሳቃሲ",
     delete: "ሰርዝ",
+    dialogTitle: "ሓድሽ ኣገልግሎት",
+    dialogDescription: "ናይ ኣገልግሎት ዝርዝር ምልኣ።",
+    cancel: "ይቕሬታ",
   },
   
   customers: {
@@ -400,6 +405,9 @@ export const ti: TranslationNamespaces = {
     colActions: "ተግባር",
     consentYes: "እወ",
     consentNo: "ኣይኮነን",
+    dialogTitle: "ደኣንነት ጨምር",
+    dialogDescription: "ናይ ደኣንነት ሓበሬታ ምልኣ።",
+    cancel: "ይቕሬታ",
   },
   
   bookings: {

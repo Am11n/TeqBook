@@ -303,7 +303,7 @@ export const en: TranslationNamespaces = {
     loading: "Loading staff…",
     emptyTitle: "No staff registered yet",
     emptyDescription:
-      "When you add staff in the form on the left, they will appear here and can be used in the calendar and booking logic.",
+      "Use the button above to add staff members. They will appear here and can be used in the calendar and booking logic.",
     tableTitle: "Your staff",
     colName: "Name",
     colRole: "Role",
@@ -316,6 +316,8 @@ export const en: TranslationNamespaces = {
     delete: "Delete",
     edit: "Edit",
     addButton: "Add staff",
+    dialogTitle: "Add staff member",
+    dialogDescription: "Fill in the details for the new staff member.",
     editTitle: "Edit staff member",
     editDescription: "Update staff information and services.",
     cancel: "Cancel",
@@ -347,7 +349,7 @@ export const en: TranslationNamespaces = {
     loading: "Loading services…",
     emptyTitle: "No services added yet",
     emptyDescription:
-      "Add services in the form on the left. They are used to calculate duration and price in the booking engine.",
+      "Use the button above to add services. They are used to calculate duration and price in the booking engine.",
     tableTitle: "Your services",
     colName: "Name",
     colCategory: "Category",
@@ -358,6 +360,9 @@ export const en: TranslationNamespaces = {
     active: "Active",
     inactive: "Inactive",
     delete: "Delete",
+    dialogTitle: "New service",
+    dialogDescription: "Define the service details.",
+    cancel: "Cancel",
   },
   customers: {
     title: "Customers",
@@ -386,7 +391,7 @@ export const en: TranslationNamespaces = {
     loading: "Loading customers…",
     emptyTitle: "No customers added yet",
     emptyDescription:
-      "When you add customers in the form on the left they will appear here. They can be linked to bookings later.",
+      "Use the button above to add customers. They will appear here and can be linked to bookings later.",
     mobileConsentYes: "Consent saved",
     mobileConsentNo: "No consent",
     delete: "Delete",
@@ -397,6 +402,9 @@ export const en: TranslationNamespaces = {
     colActions: "Actions",
     consentYes: "Yes",
     consentNo: "No",
+    dialogTitle: "Add customer",
+    dialogDescription: "Fill in the customer details.",
+    cancel: "Cancel",
   },
   bookings: {
     title: "Bookings",

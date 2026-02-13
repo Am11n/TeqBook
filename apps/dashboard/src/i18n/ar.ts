@@ -311,6 +311,8 @@ export const ar: TranslationNamespaces = {
     delete: "حذف",
     edit: "تعديل",
     addButton: "إضافة موظف",
+    dialogTitle: "إضافة موظف",
+    dialogDescription: "أدخل بيانات الموظف الجديد.",
     editTitle: "تعديل موظف",
     editDescription: "تحديث معلومات الموظف والخدمات.",
     cancel: "إلغاء",
@@ -353,6 +355,9 @@ export const ar: TranslationNamespaces = {
     active: "فعّالة",
     inactive: "غير فعّالة",
     delete: "حذف",
+    dialogTitle: "خدمة جديدة",
+    dialogDescription: "أدخل تفاصيل الخدمة.",
+    cancel: "إلغاء",
   },
   customers: {
     title: "العملاء",
@@ -392,6 +397,9 @@ export const ar: TranslationNamespaces = {
     colActions: "إجراءات",
     consentYes: "نعم",
     consentNo: "لا",
+    dialogTitle: "إضافة عميل",
+    dialogDescription: "أدخل بيانات العميل.",
+    cancel: "إلغاء",
   },
   bookings: {
     title: "الحجوزات",

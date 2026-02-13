@@ -1,60 +1,29 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { useEffect, useState } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { EmptyState } from "@/components/empty-state";
 import { TableToolbar } from "@/components/table-toolbar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useCurrentSalon } from "@/components/salon-provider";
 import {
   getCustomersForCurrentSalon,
-  createCustomer,
   deleteCustomer,
 } from "@/lib/repositories/customers";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { Field } from "@/components/form/Field";
 import type { Customer } from "@/lib/types";
 import { useFeatures } from "@/lib/hooks/use-features";
 import Link from "next/link";
 import { CustomersTable } from "@/components/customers/CustomersTable";
+import { CreateCustomerDialog } from "@/components/customers/CreateCustomerDialog";
 
 export default function CustomersPage() {
   const { locale } = useLocale();
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
+  const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].customers;
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const { hasFeature } = useFeatures();
@@ -62,18 +31,11 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [gdprConsent, setGdprConsent] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!isReady) {
       if (salonError) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(salonError);
       } else if (salonLoading) {
         setLoading(true);
@@ -107,39 +69,11 @@ export default function CustomersPage() {
     }
 
     loadCustomers();
-  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon, t.loadError]);
+  }, [isReady, salon?.id, salonLoading, salonError, t.noSalon]);
 
-  async function handleAddCustomer(e: FormEvent) {
-    e.preventDefault();
-    if (!salon?.id) return;
-    if (!fullName.trim()) return;
-
-    setSaving(true);
-    setError(null);
-
-    const { data, error: insertError } = await createCustomer({
-      salon_id: salon.id,
-        full_name: fullName.trim(),
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-        notes: notes.trim() || null,
-        gdpr_consent: gdprConsent,
-    });
-
-    if (insertError || !data) {
-      setError(insertError ?? t.addError);
-      setSaving(false);
-      return;
-    }
-
-    setCustomers((prev) => [data, ...prev]);
-    setFullName("");
-    setEmail("");
-    setPhone("");
-    setNotes("");
-    setGdprConsent(false);
-    setSaving(false);
-  }
+  const handleCustomerCreated = (customer: Customer) => {
+    setCustomers((prev) => [customer, ...prev]);
+  };
 
   async function handleDelete(id: string) {
     if (!salon?.id) return;
@@ -159,7 +93,15 @@ export default function CustomersPage() {
       <PageLayout
         title={t.title}
         description={t.description}
-        showCard={false}
+        actions={
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            {t.addButton}
+          </Button>
+        }
       >
         {error && (
           <ErrorMessage
@@ -169,93 +111,6 @@ export default function CustomersPage() {
             className="mb-4"
           />
         )}
-
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)]">
-        <form
-          onSubmit={handleAddCustomer}
-          className="space-y-6 rounded-xl border bg-card p-4 shadow-sm"
-        >
-          <h2 className="text-sm font-medium">{t.newCustomer}</h2>
-
-          <Field
-            label={t.nameLabel}
-            htmlFor="full_name"
-            required
-          >
-            <input
-              id="full_name"
-              type="text"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              placeholder={t.namePlaceholder}
-            />
-          </Field>
-
-          <div className="grid gap-6 sm:grid-cols-2">
-            <Field
-              label={t.emailLabel}
-              htmlFor="email"
-            >
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                placeholder={t.emailPlaceholder}
-              />
-            </Field>
-            <Field
-              label={t.phoneLabel}
-              htmlFor="phone"
-            >
-              <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                placeholder={t.phonePlaceholder}
-              />
-            </Field>
-          </div>
-
-          <Field
-            label={t.notesLabel}
-            htmlFor="notes"
-          >
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="resize-none text-sm"
-              placeholder={t.notesPlaceholder}
-            />
-          </Field>
-
-          <label className="flex items-start gap-2 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={gdprConsent}
-              onChange={(e) => setGdprConsent(e.target.checked)}
-              className="mt-[2px] h-3.5 w-3.5 rounded border bg-background"
-            />
-            <span>
-              {t.gdprLabel}
-            </span>
-          </label>
-
-          <Button
-            type="submit"
-            disabled={saving || !salon?.id}
-            className="h-9 w-full sm:w-auto"
-          >
-            {saving ? t.saving : t.addButton}
-          </Button>
-        </form>
 
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <TableToolbar title={t.tableTitle} />
@@ -279,7 +134,7 @@ export default function CustomersPage() {
                     key={customer.id}
                     className="rounded-lg border bg-card px-3 py-3 text-xs"
                   >
-                    <div className="flex items-start justify_between gap-2">
+                    <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-medium">
                           {customer.full_name}
@@ -347,10 +202,30 @@ export default function CustomersPage() {
             </>
           )}
         </div>
-      </div>
+
+        {/* Create Customer Dialog */}
+        <CreateCustomerDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onCustomerCreated={handleCustomerCreated}
+          translations={{
+            dialogTitle: t.dialogTitle,
+            dialogDescription: t.dialogDescription,
+            nameLabel: t.nameLabel,
+            namePlaceholder: t.namePlaceholder,
+            emailLabel: t.emailLabel,
+            emailPlaceholder: t.emailPlaceholder,
+            phoneLabel: t.phoneLabel,
+            phonePlaceholder: t.phonePlaceholder,
+            notesLabel: t.notesLabel,
+            notesPlaceholder: t.notesPlaceholder,
+            gdprLabel: t.gdprLabel,
+            cancel: t.cancel,
+            addButton: t.addButton,
+            saving: t.saving,
+          }}
+        />
       </PageLayout>
     </ErrorBoundary>
   );
 }
-
-

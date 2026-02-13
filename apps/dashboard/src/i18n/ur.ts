@@ -317,6 +317,8 @@ export const ur: TranslationNamespaces = {
     delete: "حذف کریں",
     edit: "ترمیم کریں",
     addButton: "ملازم شامل کریں",
+    dialogTitle: "ملازم شامل کریں",
+    dialogDescription: "نئے ملازم کی تفصیلات بھریں۔",
     editTitle: "ملازم میں ترمیم کریں",
     editDescription: "ملازم کی معلومات اور سروسز کو اپ ڈیٹ کریں۔",
     cancel: "منسوخ کریں",
@@ -360,6 +362,9 @@ export const ur: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیر فعال",
     delete: "حذف کریں",
+    dialogTitle: "نئی سروس",
+    dialogDescription: "سروس کی تفصیلات بھریں۔",
+    cancel: "منسوخ کریں",
   },
   
   customers: {
@@ -399,6 +404,9 @@ export const ur: TranslationNamespaces = {
     colActions: "ایکشنز",
     consentYes: "ہاں",
     consentNo: "نہیں",
+    dialogTitle: "کسٹمر شامل کریں",
+    dialogDescription: "کسٹمر کی تفصیلات بھریں۔",
+    cancel: "منسوخ کریں",
   },
   
   bookings: {

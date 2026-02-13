@@ -304,6 +304,9 @@ export const dar: TranslationNamespaces = {
     active: "فعال",
     inactive: "غیرفعال",
     delete: "حذف",
+    dialogTitle: "خدمت جدید",
+    dialogDescription: "جزئیات خدمت را وارد کنید.",
+    cancel: "لغو",
   },
   employees: {
     title: "کارمندان",
@@ -342,6 +345,8 @@ export const dar: TranslationNamespaces = {
     delete: "حذف",
     edit: "ویرایش",
     addButton: "اضافه کردن کارمند",
+    dialogTitle: "اضافه کردن کارمند",
+    dialogDescription: "معلومات کارمند جدید را وارد کنید.",
     editTitle: "ویرایش کارمند",
     editDescription: "معلومات و خدمات کارمند را به‌روز کنید.",
     cancel: "لغو",
@@ -384,6 +389,9 @@ export const dar: TranslationNamespaces = {
     colActions: "عملیات",
     consentYes: "بله",
     consentNo: "خیر",
+    dialogTitle: "اضافه کردن مشتری",
+    dialogDescription: "معلومات مشتری را وارد کنید.",
+    cancel: "لغو",
   },
   bookings: {
     title: "نوبت‌ها",
