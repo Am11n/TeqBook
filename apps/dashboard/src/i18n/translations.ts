@@ -796,6 +796,60 @@ export type SettingsMessages = {
   brandingTitle: string;
   brandingDescription: string;
   comingSoon: string;
+  // Tab-switch guard
+  unsavedChangesTitle?: string;
+  unsavedChangesDescription?: string;
+  discardAndSwitch?: string;
+  stayOnTab?: string;
+  // StickySaveBar shared
+  unsavedChanges?: string;
+  discard?: string;
+  savingLabel?: string;
+  savedLabel?: string;
+  lastSaved?: string;
+  couldNotSave?: string;
+  retry?: string;
+  // General tab -- sections
+  salonSectionTitle?: string;
+  salonSectionDescription?: string;
+  localizationTitle?: string;
+  localizationDescription?: string;
+  currencyLabel?: string;
+  currencyDescription?: string;
+  timezoneLabel?: string;
+  timezoneDescription?: string;
+  // General tab -- languages
+  bookingLanguagesTitle?: string;
+  bookingLanguagesDescription?: string;
+  searchLanguages?: string;
+  languagesUsed?: string;
+  upgradePlan?: string;
+  languageLimitReached?: string;
+  recommendedLanguages?: string;
+  moreLanguages?: string;
+  showMoreLanguages?: string;
+  // General tab -- profile
+  yourProfileTitle?: string;
+  dashboardLanguageLabel?: string;
+  dashboardLanguageHint?: string;
+  yourRoleLabel?: string;
+  // Notifications tab
+  customerNotificationsTitle?: string;
+  customerNotificationsDescription?: string;
+  internalNotificationsTitle?: string;
+  internalNotificationsDescription?: string;
+  bookingConfirmationLabel?: string;
+  bookingConfirmationDescription?: string;
+  bookingReminderLabel?: string;
+  bookingReminderDescription?: string;
+  cancellationNoticeLabel?: string;
+  cancellationNoticeDescription?: string;
+  newBookingLabel?: string;
+  newBookingDescription?: string;
+  bookingChangesLabel?: string;
+  bookingChangesDescription?: string;
+  bookingCancellationsLabel?: string;
+  bookingCancellationsDescription?: string;
 };
 
 export type AdminMessages = {

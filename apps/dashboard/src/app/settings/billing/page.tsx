@@ -13,6 +13,7 @@ import { AddonsCard } from "@/components/billing/AddonsCard";
 import { PlanSelectionDialog } from "@/components/billing/PlanSelectionDialog";
 import { PaymentFormDialog } from "@/components/billing/PaymentFormDialog";
 import { CancelSubscriptionDialog } from "@/components/billing/CancelSubscriptionDialog";
+import { ChevronDown } from "lucide-react";
 import type { PlanType } from "@/lib/types";
 
 export default function BillingSettingsPage() {
@@ -52,9 +53,7 @@ export default function BillingSettingsPage() {
 
   const handlePlanChange = async () => {
     if (!selectedPlan) return;
-
     const result = await handleChangePlan(selectedPlan);
-
     if (result?.success) {
       if (result.clientSecret) {
         setClientSecret(result.clientSecret);
@@ -70,7 +69,6 @@ export default function BillingSettingsPage() {
   const handlePaymentSuccess = async () => {
     setShowPaymentForm(false);
     setClientSecret(null);
-    // Refresh will be handled by the hook
   };
 
   const handleCancelConfirm = async () => {
@@ -93,8 +91,8 @@ export default function BillingSettingsPage() {
     return (
       <Card className="p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-muted rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-muted rounded w-1/2"></div>
+          <div className="h-6 bg-muted rounded w-1/4 mb-4" />
+          <div className="h-4 bg-muted rounded w-1/2" />
         </div>
       </Card>
     );
@@ -119,11 +117,24 @@ export default function BillingSettingsPage() {
 
       <AddonsCard addons={addonDisplay} />
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-2">Billing History</h3>
-        <p className="text-sm text-muted-foreground">
-          Invoice history will appear here when billing is fully implemented
-        </p>
+      {/* Billing History -- collapsed by default */}
+      <Card className="p-0 overflow-hidden">
+        <details className="group">
+          <summary className="flex items-center justify-between cursor-pointer px-6 py-4 hover:bg-muted/30 transition-colors">
+            <div>
+              <h3 className="text-lg font-semibold">Billing History</h3>
+              <p className="text-sm text-muted-foreground">
+                Invoice history and receipts
+              </p>
+            </div>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="px-6 pb-4 border-t">
+            <p className="text-sm text-muted-foreground pt-4">
+              Invoice history will appear here when billing is fully implemented.
+            </p>
+          </div>
+        </details>
       </Card>
 
       <PlanSelectionDialog

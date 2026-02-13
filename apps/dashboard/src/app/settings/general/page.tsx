@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Field } from "@/components/form/Field";
-import { LimitWarning, LimitIndicator } from "@/components/limit-warning";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
@@ -18,478 +16,505 @@ import { logError } from "@/lib/services/logger";
 import { getCommonTimezones } from "@/lib/utils/timezone";
 import { CURRENCIES, getCurrencyGroups } from "@/lib/utils/currencies";
 import { formatPrice } from "@/lib/utils/services/services-utils";
+import { Search } from "lucide-react";
+
+// Shared settings components
+import { SettingsGrid } from "@/components/settings/SettingsGrid";
+import { SettingsSection } from "@/components/settings/SettingsSection";
+import { FormRow } from "@/components/settings/FormRow";
+import { StickySaveBar } from "@/components/settings/StickySaveBar";
+import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
+import { useSettingsForm } from "@/lib/hooks/useSettingsForm";
+import { useTabGuard } from "../layout";
+
+// ─── Language data ───────────────────────────────────
+
+const ALL_LANGUAGES = [
+  { code: "nb", label: "Norsk", flag: "\u{1F1F3}\u{1F1F4}" },
+  { code: "en", label: "English", flag: "\u{1F1EC}\u{1F1E7}" },
+  { code: "ar", label: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629", flag: "\u{1F1F8}\u{1F1E6}" },
+  { code: "so", label: "Soomaali", flag: "\u{1F1F8}\u{1F1F4}" },
+  { code: "tr", label: "T\u00FCrk\u00E7e", flag: "\u{1F1F9}\u{1F1F7}" },
+  { code: "ti", label: "\u1275\u130D\u122D\u129B", flag: "\u{1F1EA}\u{1F1F7}" },
+  { code: "am", label: "\u12A0\u121B\u122D\u129B", flag: "\u{1F1EA}\u{1F1F9}" },
+  { code: "pl", label: "Polski", flag: "\u{1F1F5}\u{1F1F1}" },
+  { code: "vi", label: "Ti\u1EBFng Vi\u1EC7t", flag: "\u{1F1FB}\u{1F1F3}" },
+  { code: "zh", label: "\u4E2D\u6587", flag: "\u{1F1E8}\u{1F1F3}" },
+  { code: "tl", label: "Tagalog", flag: "\u{1F1F5}\u{1F1ED}" },
+  { code: "fa", label: "\u0641\u0627\u0631\u0633\u06CC", flag: "\u{1F1EE}\u{1F1F7}" },
+  { code: "dar", label: "\u062F\u0631\u06CC (Dari)", flag: "\u{1F1E6}\u{1F1EB}" },
+  { code: "ur", label: "\u0627\u0631\u062F\u0648", flag: "\u{1F1F5}\u{1F1F0}" },
+  { code: "hi", label: "\u0939\u093F\u0928\u094D\u0926\u0940", flag: "\u{1F1EE}\u{1F1F3}" },
+] as const;
+
+const RECOMMENDED_CODES = ["nb", "en", "ar", "so", "tr"];
+
+// ─── Form values type ────────────────────────────────
+
+type GeneralFormValues = {
+  salonName: string;
+  salonType: string;
+  whatsappNumber: string;
+  currency: string;
+  timezone: string;
+  supportedLanguages: string[];
+  defaultLanguage: string;
+  userPreferredLanguage: string;
+};
+
+// ─── Select class (reused) ───────────────────────────
+
+const selectClass =
+  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+
+// ─── Component ───────────────────────────────────────
 
 export default function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
   const { salon, profile, user, refreshSalon } = useCurrentSalon();
   const router = useRouter();
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [languageLimit, setLanguageLimit] = useState<number | null>(null);
-  
-  const [salonName, setSalonName] = useState("");
-  const [salonType, setSalonType] = useState("");
-  const [whatsappNumber, setWhatsappNumber] = useState("");
-  const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
-  const [defaultLanguage, setDefaultLanguage] = useState<string>("en");
-  const [userPreferredLanguage, setUserPreferredLanguage] = useState<string>("en");
-  const [userRole, setUserRole] = useState<string>("owner");
-  const [timezone, setTimezone] = useState<string>("UTC");
-  const [currency, setCurrency] = useState<string>("NOK");
-
-  const appLocale =
-    locale === "nb"
-      ? "nb"
-      : locale === "ar"
-        ? "ar"
-        : locale === "so"
-          ? "so"
-          : locale === "ti"
-            ? "ti"
-            : locale === "am"
-              ? "am"
-              : locale === "tr"
-                ? "tr"
-                : locale === "pl"
-                  ? "pl"
-                  : locale === "vi"
-                    ? "vi"
-                    : locale === "zh"
-                      ? "zh"
-                      : locale === "tl"
-                        ? "tl"
-                        : locale === "fa"
-                          ? "fa"
-                          : locale === "dar"
-                            ? "dar"
-                            : locale === "ur"
-                              ? "ur"
-                              : locale === "hi"
-                                ? "hi"
-                                : "en";
+  const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].settings;
+  const { registerDirtyState } = useTabGuard();
 
-  // Load current salon data
-  useEffect(() => {
-    if (salon) {
-      setSalonName(salon.name || "");
-      setSalonType(salon.salon_type || "");
-      setWhatsappNumber(salon.whatsapp_number || "");
-      setSupportedLanguages(salon.supported_languages || ["en", "nb"]);
-      setDefaultLanguage(salon.default_language || salon.preferred_language || "en");
-      setTimezone(salon.timezone || "UTC");
-      setCurrency(salon.currency || "NOK");
-    }
-    if (profile) {
-      setUserPreferredLanguage(profile.preferred_language || salon?.preferred_language || "en");
-      setUserRole(profile.role || "owner");
-    }
-  }, [salon, profile]);
+  // Language limit
+  const [languageLimit, setLanguageLimit] = useState<number | null>(null);
+
+  // Language search & show-more
+  const [langSearch, setLangSearch] = useState("");
+  const [showMoreLangs, setShowMoreLangs] = useState(false);
+
+  // User role (read-only display)
+  const userRole = profile?.role || "owner";
 
   // Load language limit
   useEffect(() => {
     async function loadLimit() {
       if (!salon?.id || !salon?.plan) return;
-      
       const { limit } = await getEffectiveLimit(salon.id, salon.plan, "languages");
       setLanguageLimit(limit);
     }
-    
     loadLimit();
   }, [salon?.id, salon?.plan]);
 
-  // Reset user preferred language if it's removed from supported languages
+  // Build initial values from salon/profile
+  const initialValues = useMemo<GeneralFormValues>(() => ({
+    salonName: salon?.name || "",
+    salonType: salon?.salon_type || "",
+    whatsappNumber: salon?.whatsapp_number || "",
+    currency: salon?.currency || "NOK",
+    timezone: salon?.timezone || "UTC",
+    supportedLanguages: salon?.supported_languages || ["en", "nb"],
+    defaultLanguage: salon?.default_language || salon?.preferred_language || "en",
+    userPreferredLanguage: profile?.preferred_language || salon?.preferred_language || "en",
+  }), [salon, profile]);
+
+  // Validation
+  const validate = useCallback((v: GeneralFormValues) => {
+    const errs: Record<string, string> = {};
+    if (!v.salonName.trim()) errs.salonName = "Salon name is required";
+    return errs;
+  }, []);
+
+  // Save handler
+  const handleSave = useCallback(async (v: GeneralFormValues) => {
+    if (!salon?.id) throw new Error("No salon");
+
+    const { error: updateError } = await updateSalon(salon.id, {
+      name: v.salonName,
+      salon_type: v.salonType || null,
+      whatsapp_number: v.whatsappNumber || null,
+      supported_languages: v.supportedLanguages.length > 0 ? v.supportedLanguages : null,
+      default_language: v.defaultLanguage || null,
+      timezone: v.timezone || "UTC",
+      currency: v.currency || "NOK",
+    }, salon.plan);
+
+    if (updateError) throw new Error(updateError);
+
+    // Update user preferred language if changed
+    if (user?.id && v.userPreferredLanguage !== profile?.preferred_language) {
+      const { error: profileError } = await updateProfile(user.id, {
+        preferred_language: v.userPreferredLanguage || null,
+      });
+      if (profileError) throw new Error(profileError);
+    }
+
+    await refreshSalon();
+
+    if (v.userPreferredLanguage && v.userPreferredLanguage !== locale) {
+      setLocale(v.userPreferredLanguage as AppLocale);
+    }
+  }, [salon, user, profile, locale, setLocale, refreshSalon]);
+
+  const form = useSettingsForm<GeneralFormValues>({
+    initialValues,
+    onSave: handleSave,
+    validate,
+  });
+
+  // Register dirty state with tab guard
   useEffect(() => {
-    if (supportedLanguages.length > 0 && !supportedLanguages.includes(userPreferredLanguage)) {
-      // Set to first supported language or default language
-      setUserPreferredLanguage(defaultLanguage || supportedLanguages[0] || "en");
+    registerDirtyState("general", form.isDirty);
+  }, [form.isDirty, registerDirtyState]);
+
+  // Reset default language if removed from supported
+  useEffect(() => {
+    const supported = form.values.supportedLanguages;
+    if (supported.length > 0 && !supported.includes(form.values.defaultLanguage)) {
+      form.setValue("defaultLanguage", supported[0] || "en");
     }
-  }, [supportedLanguages, userPreferredLanguage, defaultLanguage]);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!salon?.id) return;
-
-    setSaving(true);
-    setError(null);
-    setSaved(false);
-
-    try {
-      const { error: updateError, limitReached } = await updateSalon(salon.id, {
-        name: salonName,
-        salon_type: salonType || null,
-        whatsapp_number: whatsappNumber || null,
-        supported_languages: supportedLanguages.length > 0 ? supportedLanguages : null,
-        default_language: defaultLanguage || null,
-        timezone: timezone || "UTC",
-        currency: currency || "NOK",
-      }, salon.plan);
-
-      if (updateError) {
-        setError(updateError);
-        if (limitReached) {
-          // TODO: Show upgrade modal
-          // For now, error message already contains upgrade info
-        }
-        setSaving(false);
-        return;
-      }
-
-      // Update user profile preferred_language if changed
-      if (user?.id && userPreferredLanguage !== profile?.preferred_language) {
-        logError("Updating user preferred language", { 
-          userId: user.id, 
-          from: profile?.preferred_language, 
-          to: userPreferredLanguage 
-        });
-        
-        const { error: profileError } = await updateProfile(user.id, {
-          preferred_language: userPreferredLanguage || null,
-        });
-
-        if (profileError) {
-          // Log detailed error for debugging
-          logError("Failed to update user preferred language", { 
-            profileError, 
-            userId: user.id,
-            attemptedLanguage: userPreferredLanguage
-          });
-          setError(profileError);
-          setSaving(false);
-          return;
-        }
-
-      }
-
-      setSaved(true);
-      // Refresh salon data - this will also update locale from the new profile.preferred_language
-      await refreshSalon();
-      
-      // Ensure locale is set to the user's choice (in case refreshSalon didn't pick it up immediately)
-      if (userPreferredLanguage && userPreferredLanguage !== locale) {
-        setLocale(userPreferredLanguage as AppLocale);
-      }
-      
-      setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      logError("Error saving settings", err);
-      setError(t.error);
-    } finally {
-      setSaving(false);
+    if (supported.length > 0 && !supported.includes(form.values.userPreferredLanguage)) {
+      form.setValue("userPreferredLanguage", form.values.defaultLanguage || supported[0] || "en");
     }
-  }
+  }, [form.values.supportedLanguages]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Language list filtering ───────────────────────
+
+  const recommended = ALL_LANGUAGES.filter((l) => RECOMMENDED_CODES.includes(l.code));
+  const others = ALL_LANGUAGES.filter((l) => !RECOMMENDED_CODES.includes(l.code));
+
+  const filterLangs = (langs: readonly { code: string; label: string; flag: string }[]) => {
+    if (!langSearch.trim()) return langs;
+    const q = langSearch.toLowerCase();
+    return langs.filter(
+      (l) => l.label.toLowerCase().includes(q) || l.code.toLowerCase().includes(q),
+    );
+  };
+
+  const filteredRecommended = filterLangs(recommended);
+  const filteredOthers = filterLangs(others);
+
+  const toggleLanguage = (code: string, checked: boolean) => {
+    const current = form.values.supportedLanguages;
+    if (checked) {
+      form.setValue("supportedLanguages", [...current, code]);
+    } else {
+      const next = current.filter((c) => c !== code);
+      form.setValue("supportedLanguages", next);
+      if (form.values.defaultLanguage === code) {
+        form.setValue("defaultLanguage", next[0] || "en");
+      }
+    }
+  };
+
+  const isLangDisabled = (code: string) => {
+    if (languageLimit === null) return false;
+    return (
+      form.values.supportedLanguages.length >= languageLimit &&
+      !form.values.supportedLanguages.includes(code)
+    );
+  };
+
+  // ─── Render ────────────────────────────────────────
 
   if (!salon) {
     return (
       <ErrorBoundary>
-      <Card className="p-6">
-        <p className="text-sm text-muted-foreground">
-          No salon found. Please complete onboarding first.
-        </p>
-      </Card>
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-sm text-muted-foreground">
+            No salon found. Please complete onboarding first.
+          </p>
+        </div>
       </ErrorBoundary>
     );
   }
 
+  const langLabelFn = (code: string) => {
+    const lang = ALL_LANGUAGES.find((l) => l.code === code);
+    return lang ? `${lang.flag} ${lang.label}` : code;
+  };
+
   return (
     <ErrorBoundary>
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-6" data-testid="settings-form">
-        <Field
-          label={t.salonNameLabel}
-          htmlFor="salonName"
-          required
-          data-testid="field-salon-name"
-        >
-          <Input
-            id="salonName"
-            value={salonName}
-            onChange={(e) => setSalonName(e.target.value)}
-            required
-            className="max-w-md"
-          />
-        </Field>
+      <SettingsGrid
+        aside={
+          <div className="space-y-6">
+            {/* ─── Booking Languages ──────────────── */}
+            <SettingsSection
+              title={t.bookingLanguagesTitle ?? "Booking Languages"}
+              description={t.bookingLanguagesDescription ?? "Languages customers can use when booking."}
+              titleRight={
+                languageLimit !== null ? (
+                  <Badge variant="outline" className="text-xs tabular-nums">
+                    {form.values.supportedLanguages.length}/{languageLimit}
+                  </Badge>
+                ) : null
+              }
+            >
+              {/* Search */}
+              <div className="relative mb-3">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder={t.searchLanguages ?? "Search languages..."}
+                  value={langSearch}
+                  onChange={(e) => setLangSearch(e.target.value)}
+                  className="pl-8 h-8 text-xs"
+                />
+              </div>
 
-        <Field
-          label={t.salonTypeLabel}
-          htmlFor="salonType"
-          data-testid="field-salon-type"
-        >
-          <select
-            id="salonType"
-            value={salonType}
-            onChange={(e) => setSalonType(e.target.value)}
-            className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="">Select type...</option>
-            <option value="barber">Barber</option>
-            <option value="nails">Nails</option>
-            <option value="massage">Massage</option>
-            <option value="other">Other</option>
-          </select>
-        </Field>
+              {/* Limit bar */}
+              {languageLimit !== null && (
+                <SettingsLimitBar
+                  label={t.languagesUsed ?? "Languages used"}
+                  current={form.values.supportedLanguages.length}
+                  limit={languageLimit}
+                  onAction={() => router.push("/settings/billing")}
+                  actionLabel={t.upgradePlan ?? "Upgrade plan"}
+                />
+              )}
 
-        <Field
-          label="Currency"
-          htmlFor="currency"
-          description="Prices across your salon will be displayed in this currency."
-        >
-          <select
-            id="currency"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              {/* Limit reached text */}
+              {languageLimit !== null &&
+                form.values.supportedLanguages.length >= languageLimit && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t.languageLimitReached ?? "Language limit reached. Upgrade to add more."}
+                  </p>
+                )}
+
+              {/* Recommended */}
+              {filteredRecommended.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                    {t.recommendedLanguages ?? "Recommended"}
+                  </p>
+                  <div className="space-y-1">
+                    {filteredRecommended.map((lang) => (
+                      <label
+                        key={lang.code}
+                        className="flex items-center gap-2 py-0.5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={form.values.supportedLanguages.includes(lang.code)}
+                          disabled={isLangDisabled(lang.code)}
+                          onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
+                          className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                        />
+                        <span className="text-sm">
+                          {lang.flag} {lang.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* More languages */}
+              {(showMoreLangs || langSearch.trim()) && filteredOthers.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                    {t.moreLanguages ?? "More languages"}
+                  </p>
+                  <div className="space-y-1">
+                    {filteredOthers.map((lang) => (
+                      <label
+                        key={lang.code}
+                        className="flex items-center gap-2 py-0.5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={form.values.supportedLanguages.includes(lang.code)}
+                          disabled={isLangDisabled(lang.code)}
+                          onChange={(e) => toggleLanguage(lang.code, e.target.checked)}
+                          className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                        />
+                        <span className="text-sm">
+                          {lang.flag} {lang.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!showMoreLangs && !langSearch.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setShowMoreLangs(true)}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  {t.showMoreLanguages ?? `Show ${others.length} more languages`}
+                </button>
+              )}
+
+              {/* Default Language */}
+              <div className="mt-4 pt-3 border-t">
+                <FormRow label={t.defaultLanguageLabel} htmlFor="defaultLanguage">
+                  <select
+                    id="defaultLanguage"
+                    value={form.values.defaultLanguage}
+                    onChange={(e) => form.setValue("defaultLanguage", e.target.value)}
+                    className={selectClass}
+                  >
+                    {(form.values.supportedLanguages.length > 0
+                      ? form.values.supportedLanguages
+                      : ["en"]
+                    ).map((code) => (
+                      <option key={code} value={code}>
+                        {langLabelFn(code)}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
+              </div>
+            </SettingsSection>
+
+            {/* ─── Your Profile ───────────────────── */}
+            <SettingsSection
+              title={t.yourProfileTitle ?? "Your Profile"}
+              layout="rows"
+            >
+              <FormRow
+                label={t.dashboardLanguageLabel ?? "Dashboard language"}
+                htmlFor="userPreferredLanguage"
+                description={t.dashboardLanguageHint ?? "Language used in your dashboard. Can differ from the booking language."}
+              >
+                <select
+                  id="userPreferredLanguage"
+                  value={form.values.userPreferredLanguage}
+                  onChange={(e) => form.setValue("userPreferredLanguage", e.target.value)}
+                  className={selectClass}
+                >
+                  {(form.values.supportedLanguages.length > 0
+                    ? form.values.supportedLanguages
+                    : ["en"]
+                  ).map((code) => (
+                    <option key={code} value={code}>
+                      {langLabelFn(code)}
+                    </option>
+                  ))}
+                </select>
+              </FormRow>
+
+              <FormRow label={t.yourRoleLabel ?? "Your Role"}>
+                <Badge variant="outline" className="capitalize">
+                  {userRole}
+                </Badge>
+              </FormRow>
+            </SettingsSection>
+          </div>
+        }
+      >
+        {/* ─── Left column: Salon + Localization ───── */}
+        <div className="space-y-6">
+          {/* Salon section */}
+          <SettingsSection
+            title={t.salonSectionTitle ?? "Salon"}
+            description={t.salonSectionDescription ?? "Basic information about your salon."}
+            layout="rows"
           >
-            {getCurrencyGroups().map((group) => (
-              <optgroup key={group} label={group}>
-                {CURRENCIES.filter((c) => c.group === group).map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code} — {c.name}
+            <FormRow
+              label={t.salonNameLabel}
+              htmlFor="salonName"
+              required
+            >
+              <Input
+                id="salonName"
+                value={form.values.salonName}
+                onChange={(e) => form.setValue("salonName", e.target.value)}
+                required
+              />
+              {form.errors.salonName && (
+                <p className="text-xs text-destructive mt-1">{form.errors.salonName}</p>
+              )}
+            </FormRow>
+
+            <FormRow label={t.salonTypeLabel} htmlFor="salonType">
+              <select
+                id="salonType"
+                value={form.values.salonType}
+                onChange={(e) => form.setValue("salonType", e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Select type...</option>
+                <option value="barber">Barber</option>
+                <option value="nails">Nails</option>
+                <option value="massage">Massage</option>
+                <option value="other">Other</option>
+              </select>
+            </FormRow>
+
+            <FormRow
+              label={t.whatsappNumberLabel}
+              htmlFor="whatsappNumber"
+              description={t.whatsappNumberHint}
+            >
+              <Input
+                id="whatsappNumber"
+                type="tel"
+                value={form.values.whatsappNumber}
+                onChange={(e) => form.setValue("whatsappNumber", e.target.value)}
+                placeholder={t.whatsappNumberPlaceholder}
+              />
+            </FormRow>
+          </SettingsSection>
+
+          {/* Localization section */}
+          <SettingsSection
+            title={t.localizationTitle ?? "Localization"}
+            description={t.localizationDescription ?? "Currency and timezone for your salon."}
+            layout="rows"
+          >
+            <FormRow
+              label={t.currencyLabel ?? "Currency"}
+              htmlFor="currency"
+              description={t.currencyDescription ?? "Prices across your salon will be displayed in this currency."}
+            >
+              <select
+                id="currency"
+                value={form.values.currency}
+                onChange={(e) => form.setValue("currency", e.target.value)}
+                className={selectClass}
+              >
+                {getCurrencyGroups().map((group) => (
+                  <optgroup key={group} label={group}>
+                    {CURRENCIES.filter((c) => c.group === group).map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.code} — {c.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Preview: {formatPrice(125000, appLocale, form.values.currency)}
+              </p>
+            </FormRow>
+
+            <FormRow
+              label={t.timezoneLabel ?? "Salon Timezone"}
+              htmlFor="timezone"
+              description={t.timezoneDescription ?? "All times in your salon (bookings, calendar, emails) use this timezone."}
+            >
+              <select
+                id="timezone"
+                value={form.values.timezone}
+                onChange={(e) => form.setValue("timezone", e.target.value)}
+                className={selectClass}
+              >
+                {getCommonTimezones().map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label}
                   </option>
                 ))}
-              </optgroup>
-            ))}
-          </select>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            Preview: {formatPrice(125000, appLocale, currency)}
-          </p>
-        </Field>
-
-        <Field
-          label={t.whatsappNumberLabel}
-          htmlFor="whatsappNumber"
-          description={t.whatsappNumberHint}
-        >
-          <Input
-            id="whatsappNumber"
-            type="tel"
-            value={whatsappNumber}
-            onChange={(e) => setWhatsappNumber(e.target.value)}
-            placeholder={t.whatsappNumberPlaceholder}
-            className="max-w-md"
-          />
-        </Field>
-
-        <Field
-          label={t.supportedLanguagesLabel}
-          description={t.supportedLanguagesHint}
-        >
-          <div className="max-w-md space-y-4">
-            {/* Language Limit Warning */}
-            {languageLimit !== null && (
-              <LimitWarning
-                currentCount={supportedLanguages.length}
-                limit={languageLimit}
-                limitType="languages"
-                onUpgrade={() => router.push("/settings/billing")}
-              />
-            )}
-
-            {/* Language Limit Indicator */}
-            {languageLimit !== null && (
-              <LimitIndicator
-                currentCount={supportedLanguages.length}
-                limit={languageLimit}
-                limitType="languages"
-              />
-            )}
-
-            <div className="space-y-2">
-            {(["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"] as const).map((lang) => {
-              const langLabels: Record<typeof lang, string> = {
-                nb: "🇳🇴 Norsk",
-                en: "🇬🇧 English",
-                ar: "🇸🇦 العربية",
-                so: "🇸🇴 Soomaali",
-                ti: "🇪🇷 ትግርኛ",
-                am: "🇪🇹 አማርኛ",
-                tr: "🇹🇷 Türkçe",
-                pl: "🇵🇱 Polski",
-                vi: "🇻🇳 Tiếng Việt",
-                tl: "🇵🇭 Tagalog",
-                zh: "🇨🇳 中文",
-                fa: "🇮🇷 فارسی",
-                dar: "🇦🇫 دری (Dari)",
-                ur: "🇵🇰 اردو",
-                hi: "🇮🇳 हिन्दी",
-              };
-              return (
-                <label key={lang} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={supportedLanguages.includes(lang)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSupportedLanguages([...supportedLanguages, lang]);
-                      } else {
-                        setSupportedLanguages(supportedLanguages.filter((l) => l !== lang));
-                        // If unchecking default language, set to first remaining language or 'en'
-                        if (defaultLanguage === lang) {
-                          const remaining = supportedLanguages.filter((l) => l !== lang);
-                          setDefaultLanguage(remaining.length > 0 ? remaining[0] : "en");
-                        }
-                      }
-                    }}
-                    className="h-4 w-4 rounded border-input"
-                  />
-                  <span className="text-sm">{langLabels[lang]}</span>
-                </label>
-              );
-            })}
-            </div>
-          </div>
-        </Field>
-
-        <Field
-          label={t.defaultLanguageLabel}
-          htmlFor="defaultLanguage"
-          description={t.defaultLanguageHint}
-        >
-          <select
-            id="defaultLanguage"
-            value={defaultLanguage}
-            onChange={(e) => setDefaultLanguage(e.target.value)}
-            className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {supportedLanguages.length === 0 ? (
-              <option value="en">🇬🇧 English</option>
-            ) : (
-              supportedLanguages.map((lang) => {
-                const langLabels: Record<string, string> = {
-                  nb: "🇳🇴 Norsk",
-                  en: "🇬🇧 English",
-                  ar: "🇸🇦 العربية",
-                  so: "🇸🇴 Soomaali",
-                  ti: "🇪🇷 ትግርኛ",
-                  am: "🇪🇹 አማርኛ",
-                  tr: "🇹🇷 Türkçe",
-                  pl: "🇵🇱 Polski",
-                  vi: "🇻🇳 Tiếng Việt",
-                  tl: "🇵🇭 Tagalog",
-                  zh: "🇨🇳 中文",
-                  fa: "🇮🇷 فارسی",
-                  dar: "🇦🇫 دری (Dari)",
-                  ur: "🇵🇰 اردو",
-                  hi: "🇮🇳 हिन्दी",
-                };
-                return (
-                  <option key={lang} value={lang}>
-                    {langLabels[lang] || lang}
-                  </option>
-                );
-              })
-            )}
-          </select>
-        </Field>
-
-        {/* User Profile Section */}
-        <div className="space-y-6 border-t pt-6">
-          <h3 className="text-base font-semibold">Din profil</h3>
-          
-          <Field
-            label={t.userPreferredLanguageLabel}
-            htmlFor="userPreferredLanguage"
-            description={t.userPreferredLanguageHint}
-          >
-            <select
-              id="userPreferredLanguage"
-              value={userPreferredLanguage}
-              onChange={(e) => setUserPreferredLanguage(e.target.value)}
-              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {(supportedLanguages.length > 0 ? supportedLanguages : ["en"]).map((lang) => {
-                const langLabels: Record<string, string> = {
-                  nb: "🇳🇴 Norsk",
-                  en: "🇬🇧 English",
-                  ar: "🇸🇦 العربية",
-                  so: "🇸🇴 Soomaali",
-                  ti: "🇪🇷 ትግርኛ",
-                  am: "🇪🇹 አማርኛ",
-                  tr: "🇹🇷 Türkçe",
-                  pl: "🇵🇱 Polski",
-                  vi: "🇻🇳 Tiếng Việt",
-                  tl: "🇵🇭 Tagalog",
-                  zh: "🇨🇳 中文",
-                  fa: "🇮🇷 فارسی",
-                  dar: "🇦🇫 دری (Dari)",
-                  ur: "🇵🇰 اردو",
-                  hi: "🇮🇳 हिन्दी",
-                };
-                return (
-                  <option key={lang} value={lang}>
-                    {langLabels[lang] || lang}
-                  </option>
-                );
-              })}
-            </select>
-          </Field>
+              </select>
+            </FormRow>
+          </SettingsSection>
         </div>
+      </SettingsGrid>
 
-        {/* Timezone Section */}
-        <div className="space-y-6 border-t pt-6">
-          <h3 className="text-base font-semibold">Timezone Settings</h3>
-          
-          <Field
-            label="Salon Timezone"
-            htmlFor="timezone"
-            description="All times displayed in your salon (bookings, calendar, emails) will use this timezone."
-          >
-            <select
-              id="timezone"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {getCommonTimezones().map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-
-        {/* User Role Section */}
-        <div className="space-y-6 border-t pt-6">
-          <h3 className="text-base font-semibold">Your Profile</h3>
-          
-          <Field
-            label="Your Role"
-            htmlFor="userRole"
-            description="Your role determines what features you can access in the dashboard."
-          >
-            <select
-              id="userRole"
-              value={userRole}
-              onChange={(e) => setUserRole(e.target.value)}
-              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="owner">Owner</option>
-              <option value="manager">Manager</option>
-              <option value="staff">Staff</option>
-            </select>
-          </Field>
-        </div>
-
-        {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-
-        {saved && (
-          <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-            {t.saved}
-          </div>
-        )}
-
-        <Button type="submit" disabled={saving} className="w-full max-w-md">
-          {saving ? t.saving : t.saveButton}
-        </Button>
-      </form>
-    </Card>
+      {/* Sticky save bar */}
+      <StickySaveBar
+        isDirty={form.isDirty}
+        isValid={form.isValid}
+        saving={form.saving}
+        saveError={form.saveError}
+        lastSavedAt={form.lastSavedAt}
+        onSave={form.save}
+        onDiscard={form.discard}
+        onRetry={form.retrySave}
+      />
     </ErrorBoundary>
   );
 }
-
