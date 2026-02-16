@@ -186,7 +186,7 @@ export default function PersonallistePage() {
   useEffect(() => {
     if (!salon?.id) return;
     getEmployeesForCurrentSalon(salon.id).then(({ data }) => {
-      setEmployees(data ?? []);
+      setEmployees((data ?? []).filter((e) => e.is_active));
     });
   }, [salon?.id]);
 

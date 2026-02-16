@@ -98,7 +98,11 @@ export function QuickCreatePanel({
         getEmployeesForCurrentSalon(salon!.id),
         getActiveServicesForCurrentSalon(salon!.id),
       ]);
-      setEmployees((empResult.data ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
+      setEmployees(
+        (empResult.data ?? [])
+          .filter((e) => e.is_active)
+          .map((e) => ({ id: e.id, full_name: e.full_name })),
+      );
       setServices((svcResult.data ?? []) as Service[]);
       setLoading(false);
     }

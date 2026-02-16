@@ -43,7 +43,9 @@ export function useShifts({ translations }: UseShiftsOptions) {
     }
 
     setEmployees(
-      (employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name }))
+      (employeesData ?? [])
+        .filter((e) => e.is_active)
+        .map((e) => ({ id: e.id, full_name: e.full_name })),
     );
     setShifts(shiftsData ?? []);
     setLoading(false);

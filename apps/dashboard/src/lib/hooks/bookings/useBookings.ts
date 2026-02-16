@@ -130,7 +130,11 @@ export function useBookings({ translations }: UseBookingsOptions) {
         })
       );
       setBookings(bookingsWithProducts);
-      setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
+      setEmployees(
+        (employeesData ?? [])
+          .filter((e) => e.is_active)
+          .map((e) => ({ id: e.id, full_name: e.full_name })),
+      );
       setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
       // Only set products if INVENTORY feature is available
       if (mounted && hasFeature("INVENTORY")) {
