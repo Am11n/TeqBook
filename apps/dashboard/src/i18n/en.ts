@@ -354,7 +354,7 @@ export const en: TranslationNamespaces = {
     roleStaff: "Staff",
     capacityTitle: "Staff capacity",
     capacityMessage: "You have reached the staff limit.",
-    deactivateToFree: "Deactivate a staff member to free up a slot",
+    deactivateToFree: "Remove a staff member to free up a slot",
     upgradePlan: "Upgrade plan",
     bookingBlocked: "Booking is not working",
     fixNow: "Fix now",

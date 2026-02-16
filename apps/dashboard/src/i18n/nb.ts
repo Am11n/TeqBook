@@ -361,7 +361,7 @@ export const nb: TranslationNamespaces = {
     // Capacity
     capacityTitle: "Kapasitet for ansatte",
     capacityMessage: "Du har nådd grensen for antall ansatte.",
-    deactivateToFree: "Deaktiver en ansatt for å frigjøre plass",
+    deactivateToFree: "Fjern en ansatt for å frigjøre plass",
     upgradePlan: "Oppgrader plan",
     // Quick fix
     bookingBlocked: "Booking virker ikke",

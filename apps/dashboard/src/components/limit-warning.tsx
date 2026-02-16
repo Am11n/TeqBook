@@ -47,12 +47,12 @@ export function CapacityBanner({
     upgradeButton: translations?.upgradeButton ?? "Upgrade plan",
     deactivateButton:
       translations?.deactivateButton ??
-      `Deactivate one to free up space`,
+      `Remove one to free up space`,
     blockedTitle:
       translations?.blockedTitle ?? `Limit reached for ${entityLabel}`,
     blockedMessage:
       translations?.blockedMessage ??
-      `You are using ${current} of ${limit} ${entityLabel}. You cannot add more, but you can deactivate one to free up space.`,
+      `You are using ${current} of ${limit} ${entityLabel}. You cannot add more, but you can remove one to free up space.`,
   };
 
   // At limit: neutral blue/gray banner -- NOT red

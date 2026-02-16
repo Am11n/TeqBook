@@ -172,9 +172,9 @@ export default function EmployeesPage() {
           entityLabel={t.staffCount ?? "staff"}
           onUpgrade={handleUpgrade}
           onDeactivate={() => {
-            // Open detail dialog for first active employee to deactivate
-            const activeEmp = employees.find((e) => e.is_active);
-            if (activeEmp) detailDialog.openEdit(activeEmp.id);
+            // Open detail dialog to let user pick which employee to remove
+            const emp = employees[0];
+            if (emp) detailDialog.onRowClick(emp);
           }}
         />
 
