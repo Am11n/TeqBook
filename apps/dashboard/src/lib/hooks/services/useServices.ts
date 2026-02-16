@@ -41,8 +41,10 @@ export function useServices({ translations }: UseServicesOptions) {
       getServicesForCurrentSalon(salon.id),
       supabase
         .from("employee_services")
-        .select("service_id")
-        .eq("salon_id", salon.id),
+        .select("service_id, employees!inner(is_active, deleted_at)")
+        .eq("salon_id", salon.id)
+        .eq("employees.is_active", true)
+        .is("employees.deleted_at", null),
     ]);
 
     if (servicesError) {
@@ -51,7 +53,7 @@ export function useServices({ translations }: UseServicesOptions) {
       return;
     }
 
-    // Build per-service employee count
+    // Build per-service active employee count (excludes inactive & deleted staff)
     const countMap: Record<string, number> = {};
     if (empSvcData) {
       for (const row of empSvcData) {
