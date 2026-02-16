@@ -50,6 +50,7 @@ export type Employee = {
   role: EmployeeRole | string | null; // Can be enum or text for backward compatibility
   preferred_language: string | null;
   is_active: boolean;
+  deleted_at?: string | null;
 };
 
 export type Service = {

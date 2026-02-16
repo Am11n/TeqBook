@@ -13,6 +13,7 @@ import type { Employee, Service, Shift } from "@/lib/types";
 interface UseEmployeesOptions {
   translations: {
     noSalon: string;
+    confirmDelete?: string;
   };
 }
 
@@ -197,7 +198,8 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
   };
 
   const handleDelete = async (employeeId: string) => {
-    if (!confirm("Er du sikker på at du vil slette denne ansatte?")) return;
+    const msg = translations.confirmDelete || "Are you sure you want to remove this employee?";
+    if (!confirm(msg)) return;
     if (!salon?.id) return;
 
     const { error: deleteError } = await deleteEmployee(salon.id, employeeId);

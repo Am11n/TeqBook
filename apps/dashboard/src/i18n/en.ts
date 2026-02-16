@@ -367,7 +367,7 @@ export const en: TranslationNamespaces = {
     selectRole: "Select role...",
     preferredLang: "Preferred language",
     emptyActionDescription: "Add your first staff member to start receiving bookings. Staff appear in the calendar and can be assigned services.",
-    confirmDelete: "Are you sure you want to delete?",
+    confirmDelete: "Are you sure you want to remove this employee? They will be archived and hidden from lists, but booking history will be preserved.",
     setupShifts: "Set up shifts",
     staffCount: "staff",
   },

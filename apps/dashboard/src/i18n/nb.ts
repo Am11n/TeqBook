@@ -376,7 +376,7 @@ export const nb: TranslationNamespaces = {
     selectRole: "Velg rolle...",
     preferredLang: "Foretrukket språk",
     emptyActionDescription: "Legg til din første ansatt for å begynne å ta imot bookinger. Ansatte dukker opp i kalenderen og kan tildeles tjenester.",
-    confirmDelete: "Er du sikker på at du vil slette?",
+    confirmDelete: "Er du sikker på at du vil fjerne denne ansatte? De vil bli arkivert og skjult fra lister, men bookinghistorikken bevares.",
     setupShifts: "Sett opp arbeidstider",
     staffCount: "ansatte",
   },

@@ -55,7 +55,7 @@ export default function EmployeesPage() {
     activeFilters,
     setActiveFilters,
   } = useEmployees({
-    translations: { noSalon: t.noSalon },
+    translations: { noSalon: t.noSalon, confirmDelete: t.confirmDelete },
   });
 
   const planLimits = usePlanLimits({ employees: employees.length });

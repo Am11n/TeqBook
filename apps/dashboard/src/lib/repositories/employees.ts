@@ -27,8 +27,9 @@ export async function getEmployeesForCurrentSalon(
 
     const query = supabase
       .from("employees")
-      .select("id, full_name, email, phone, role, preferred_language, is_active", { count: "exact" })
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at", { count: "exact" })
       .eq("salon_id", salonId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .range(from, to);
 
@@ -62,9 +63,10 @@ export async function getEmployeeWithServices(
       await Promise.all([
         supabase
           .from("employees")
-          .select("id, full_name, email, phone, role, preferred_language, is_active")
+          .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at")
           .eq("id", employeeId)
           .eq("salon_id", salonId)
+          .is("deleted_at", null)
           .maybeSingle(),
         supabase
           .from("employee_services")
@@ -129,8 +131,9 @@ export async function getEmployeesWithServicesMap(
     ] = await Promise.all([
       supabase
         .from("employees")
-        .select("id, full_name, email, phone, role, preferred_language, is_active", { count: "exact" })
+        .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at", { count: "exact" })
         .eq("salon_id", salonId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .range(from, to),
       supabase
@@ -193,7 +196,7 @@ export async function createEmployee(
         role: input.role?.trim() || null,
         preferred_language: input.preferred_language || "nb",
       })
-      .select("id, full_name, email, phone, role, preferred_language, is_active")
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at")
       .maybeSingle();
 
     if (insertError || !employeeData) {
@@ -256,7 +259,7 @@ export async function updateEmployee(
       .update(updateData)
       .eq("id", employeeId)
       .eq("salon_id", salonId)
-      .select("id, full_name, email, phone, role, preferred_language, is_active")
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at")
       .maybeSingle();
 
     if (error || !data) {
@@ -306,7 +309,8 @@ export async function updateEmployee(
 }
 
 /**
- * Delete an employee
+ * Soft-delete an employee (sets deleted_at instead of removing the row).
+ * This preserves booking history that references the employee.
  */
 export async function deleteEmployee(
   salonId: string,
@@ -315,9 +319,10 @@ export async function deleteEmployee(
   try {
     const { error } = await supabase
       .from("employees")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq("id", employeeId)
-      .eq("salon_id", salonId);
+      .eq("salon_id", salonId)
+      .is("deleted_at", null);
 
     if (error) {
       return { error: error.message };
