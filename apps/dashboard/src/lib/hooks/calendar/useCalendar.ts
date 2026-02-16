@@ -47,7 +47,11 @@ export function useCalendar({ translations }: UseCalendarOptions) {
         return;
       }
 
-      setEmployees((employeesData ?? []).map((e) => ({ id: e.id, full_name: e.full_name })));
+      setEmployees(
+        (employeesData ?? [])
+          .filter((e) => e.is_active)
+          .map((e) => ({ id: e.id, full_name: e.full_name })),
+      );
     }
 
     loadEmployees();
