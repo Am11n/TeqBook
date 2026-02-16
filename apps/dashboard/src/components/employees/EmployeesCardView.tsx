@@ -10,6 +10,7 @@ interface EmployeesCardViewProps {
   employees: Employee[];
   employeeServicesMap: Record<string, Service[]>;
   employeeShiftsMap: Record<string, Shift[]>;
+  hasShiftsFeature?: boolean;
   onToggleActive: (employeeId: string, currentStatus: boolean) => void;
   onDelete: (employeeId: string) => void;
   onRowClick: (employee: Employee) => void;
@@ -25,6 +26,7 @@ export function EmployeesCardView({
   employees,
   employeeServicesMap,
   employeeShiftsMap,
+  hasShiftsFeature,
   onToggleActive,
   onDelete,
   onRowClick,
@@ -36,10 +38,12 @@ export function EmployeesCardView({
         const issues = getEmployeeSetupIssues(employee, {
           services: employeeServicesMap[employee.id] ?? [],
           shifts: employeeShiftsMap[employee.id] ?? [],
+          hasShiftsFeature,
         });
         const bookable = isEmployeeBookable(employee, {
           services: employeeServicesMap[employee.id] ?? [],
           shifts: employeeShiftsMap[employee.id] ?? [],
+          hasShiftsFeature,
         });
 
         return (

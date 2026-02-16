@@ -24,6 +24,7 @@ import { EmployeesCardView } from "@/components/employees/EmployeesCardView";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
 import { AssignServicesDialog } from "@/components/employees/AssignServicesDialog";
 import { useRouter } from "next/navigation";
+import { useFeatures } from "@/lib/hooks/use-features";
 import { Users, UserCheck, UserX, AlertTriangle } from "lucide-react";
 import type { Employee } from "@/lib/types";
 
@@ -36,6 +37,8 @@ export default function EmployeesPage() {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
   const detailDialog = useEntityDialogState<Employee>();
+  const { hasFeature } = useFeatures();
+  const hasShiftsFeature = hasFeature("SHIFTS");
 
   const {
     employees,
@@ -56,6 +59,7 @@ export default function EmployeesPage() {
     setActiveFilters,
   } = useEmployees({
     translations: { noSalon: t.noSalon, confirmDelete: t.confirmDelete },
+    hasShiftsFeature,
   });
 
   const planLimits = usePlanLimits({ employees: employees.length });
@@ -69,6 +73,7 @@ export default function EmployeesPage() {
     services,
     employeeServicesMap,
     employeeShiftsMap,
+    hasShiftsFeature,
   });
 
   const filterChips = [
@@ -82,10 +87,14 @@ export default function EmployeesPage() {
       id: "missing_services",
       label: t.filterMissingServices ?? "Missing services",
     },
-    {
-      id: "missing_shifts",
-      label: t.filterMissingShifts ?? "Missing shifts",
-    },
+    ...(hasShiftsFeature
+      ? [
+          {
+            id: "missing_shifts",
+            label: t.filterMissingShifts ?? "Missing shifts",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -240,6 +249,7 @@ export default function EmployeesPage() {
                 employees={filteredEmployees}
                 employeeServicesMap={employeeServicesMap}
                 employeeShiftsMap={employeeShiftsMap}
+                hasShiftsFeature={hasShiftsFeature}
                 onToggleActive={handleToggleActive}
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
@@ -254,6 +264,7 @@ export default function EmployeesPage() {
                 employees={filteredEmployees}
                 employeeServicesMap={employeeServicesMap}
                 employeeShiftsMap={employeeShiftsMap}
+                hasShiftsFeature={hasShiftsFeature}
                 onToggleActive={handleToggleActive}
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
@@ -318,6 +329,7 @@ export default function EmployeesPage() {
           services={services}
           employeeServicesMap={employeeServicesMap}
           employeeShiftsMap={employeeShiftsMap}
+          hasShiftsFeature={hasShiftsFeature}
           onToggleActive={handleToggleActive}
           onEmployeeUpdated={loadEmployees}
           translations={{

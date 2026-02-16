@@ -45,10 +45,11 @@ function l(labels: HealthLabels | undefined, key: keyof typeof defaultLabels): s
 
 export function getEmployeeSetupIssues(
   employee: Employee,
-  ctx: { services: Service[]; shifts: Shift[] },
+  ctx: { services: Service[]; shifts: Shift[]; hasShiftsFeature?: boolean },
   labels?: HealthLabels,
 ): Issue[] {
   const issues: Issue[] = [];
+  const shiftsRequired = ctx.hasShiftsFeature !== false;
 
   if (!employee.is_active) {
     issues.push({
@@ -66,7 +67,7 @@ export function getEmployeeSetupIssues(
     });
   }
 
-  if (ctx.shifts.length === 0) {
+  if (shiftsRequired && ctx.shifts.length === 0) {
     issues.push({
       key: "no_shifts",
       label: l(labels, "noShifts"),
@@ -82,9 +83,10 @@ export function getEmployeeSetupIssues(
     });
   }
 
-  // Bookable = active + has services + has shifts
-  const isBookable =
-    employee.is_active && ctx.services.length > 0 && ctx.shifts.length > 0;
+  // Bookable = active + has services (+ has shifts only when the feature exists)
+  const hasServices = ctx.services.length > 0;
+  const hasShifts = !shiftsRequired || ctx.shifts.length > 0;
+  const isBookable = employee.is_active && hasServices && hasShifts;
   if (!isBookable && employee.is_active) {
     issues.push({
       key: "not_bookable",
@@ -98,13 +100,17 @@ export function getEmployeeSetupIssues(
 
 /**
  * Check if an employee can receive bookings.
+ * When hasShiftsFeature is false (e.g. Starter plan), shifts are not required.
  */
 export function isEmployeeBookable(
   employee: Employee,
-  ctx: { services: Service[]; shifts: Shift[] },
+  ctx: { services: Service[]; shifts: Shift[]; hasShiftsFeature?: boolean },
 ): boolean {
+  const shiftsRequired = ctx.hasShiftsFeature !== false;
   return (
-    employee.is_active && ctx.services.length > 0 && ctx.shifts.length > 0
+    employee.is_active &&
+    ctx.services.length > 0 &&
+    (!shiftsRequired || ctx.shifts.length > 0)
   );
 }
 
@@ -174,10 +180,12 @@ export function getBookingBlockers(
     services: Service[];
     employeeServicesMap: Record<string, Service[]>;
     employeeShiftsMap: Record<string, Shift[]>;
+    hasShiftsFeature?: boolean;
   },
   labels?: HealthLabels,
 ): Issue[] {
   const issues: Issue[] = [];
+  const shiftsRequired = ctx.hasShiftsFeature !== false;
 
   const activeEmployees = ctx.employees.filter((e) => e.is_active);
 
@@ -211,16 +219,18 @@ export function getBookingBlockers(
     });
   }
 
-  const employeesWithShifts = activeEmployees.filter(
-    (e) => (ctx.employeeShiftsMap[e.id]?.length ?? 0) > 0,
-  );
+  if (shiftsRequired) {
+    const employeesWithShifts = activeEmployees.filter(
+      (e) => (ctx.employeeShiftsMap[e.id]?.length ?? 0) > 0,
+    );
 
-  if (employeesWithShifts.length === 0) {
-    issues.push({
-      key: "no_employees_with_shifts",
-      label: l(labels, "noEmployeesWithShifts"),
-      severity: "error",
-    });
+    if (employeesWithShifts.length === 0) {
+      issues.push({
+        key: "no_employees_with_shifts",
+        label: l(labels, "noEmployeesWithShifts"),
+        severity: "error",
+      });
+    }
   }
 
   return issues;

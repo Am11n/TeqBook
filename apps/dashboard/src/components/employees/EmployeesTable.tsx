@@ -11,6 +11,7 @@ interface EmployeesTableProps {
   employees: Employee[];
   employeeServicesMap: Record<string, Service[]>;
   employeeShiftsMap: Record<string, Shift[]>;
+  hasShiftsFeature?: boolean;
   onToggleActive: (employeeId: string, currentStatus: boolean) => void;
   onDelete: (employeeId: string) => void;
   onRowClick: (employee: Employee) => void;
@@ -37,6 +38,7 @@ export function EmployeesTable({
   employees,
   employeeServicesMap,
   employeeShiftsMap,
+  hasShiftsFeature,
   onToggleActive,
   onDelete,
   onRowClick,
@@ -100,6 +102,7 @@ export function EmployeesTable({
         const issues = getEmployeeSetupIssues(employee, {
           services: employeeServicesMap[employee.id] ?? [],
           shifts: employeeShiftsMap[employee.id] ?? [],
+          hasShiftsFeature,
         });
         return <SetupBadge issues={issues} limit={2} />;
       },
@@ -112,6 +115,7 @@ export function EmployeesTable({
         const bookable = isEmployeeBookable(employee, {
           services: employeeServicesMap[employee.id] ?? [],
           shifts: employeeShiftsMap[employee.id] ?? [],
+          hasShiftsFeature,
         });
         return bookable ? (
           <span title={translations.canBeBooked}>

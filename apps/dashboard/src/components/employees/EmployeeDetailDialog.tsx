@@ -64,6 +64,7 @@ interface EmployeeDetailDialogProps {
   services: Service[];
   employeeServicesMap: Record<string, Service[]>;
   employeeShiftsMap: Record<string, Shift[]>;
+  hasShiftsFeature?: boolean;
   onToggleActive: (employeeId: string, currentStatus: boolean) => void;
   onEmployeeUpdated: () => Promise<void>;
   translations: EmployeeDetailDialogTranslations;
@@ -80,6 +81,7 @@ export function EmployeeDetailDialog({
   services,
   employeeServicesMap,
   employeeShiftsMap,
+  hasShiftsFeature,
   onToggleActive,
   onEmployeeUpdated,
   translations: t,
@@ -119,10 +121,12 @@ export function EmployeeDetailDialog({
   const issues = getEmployeeSetupIssues(employee, {
     services: empServices,
     shifts: empShifts,
+    hasShiftsFeature,
   });
   const bookable = isEmployeeBookable(employee, {
     services: empServices,
     shifts: empShifts,
+    hasShiftsFeature,
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -231,16 +235,18 @@ export function EmployeeDetailDialog({
               )}
             </div>
 
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t.shiftsLabel}</p>
-              {empShifts.length > 0 ? (
-                <p className="text-sm">
-                  {empShifts.length} {t.shiftsRegistered}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">{t.noShifts}</p>
-              )}
-            </div>
+            {hasShiftsFeature !== false && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t.shiftsLabel}</p>
+                {empShifts.length > 0 ? (
+                  <p className="text-sm">
+                    {empShifts.length} {t.shiftsRegistered}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t.noShifts}</p>
+                )}
+              </div>
+            )}
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>

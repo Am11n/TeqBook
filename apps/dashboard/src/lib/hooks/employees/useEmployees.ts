@@ -15,9 +15,10 @@ interface UseEmployeesOptions {
     noSalon: string;
     confirmDelete?: string;
   };
+  hasShiftsFeature?: boolean;
 }
 
-export function useEmployees({ translations }: UseEmployeesOptions) {
+export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOptions) {
   const { salon, loading: salonLoading, error: salonError, isReady } =
     useCurrentSalon();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -157,13 +158,14 @@ export function useEmployees({ translations }: UseEmployeesOptions) {
       const issues = getEmployeeSetupIssues(e, {
         services: employeeServicesMap[e.id] ?? [],
         shifts: employeeShiftsMap[e.id] ?? [],
+        hasShiftsFeature,
       });
       return issues.some(
         (i) => i.key === "no_services" || i.key === "no_shifts",
       );
     }).length;
     return { total, active, inactive, missingSetup };
-  }, [employees, employeeServicesMap, employeeShiftsMap]);
+  }, [employees, employeeServicesMap, employeeShiftsMap, hasShiftsFeature]);
 
   const handleToggleActive = async (
     employeeId: string,
