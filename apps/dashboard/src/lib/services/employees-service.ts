@@ -13,7 +13,7 @@ import {
   deleteEmployee as deleteEmployeeRepo,
 } from "@/lib/repositories/employees";
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
-import { canAddEmployee } from "./plan-limits-service";
+import { canAddEmployee, getEffectiveLimit } from "./plan-limits-service";
 import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
 
 /**
@@ -154,27 +154,33 @@ export async function updateEmployee(
   }
 
   // Check plan limits if reactivating an inactive employee
-  // This prevents bypassing limits by deactivating and reactivating employees
+  // Only count currently ACTIVE employees against the limit, since reactivating
+  // an existing employee doesn't increase the total headcount.
   if (input.is_active === true && salonPlan !== undefined) {
     // Get current employee to check if it's being reactivated
     const { data: employeeData } = await getEmployeeWithServices(salonId, employeeId);
     const currentEmployee = employeeData?.employee;
     
-    // If employee was inactive and is being reactivated, check limit
+    // If employee was inactive and is being reactivated, check active count vs limit
     if (currentEmployee && currentEmployee.is_active === false) {
-      const { canAdd, currentCount, limit, error: limitError } = await canAddEmployee(
-        salonId,
-        salonPlan
-      );
+      const { data: allEmployees, error: listError } = await getEmployeesForCurrentSalon(salonId);
+
+      if (listError) {
+        return { data: null, error: listError };
+      }
+
+      const activeCount = allEmployees?.filter((e) => e.is_active).length ?? 0;
+
+      const { limit, error: limitError } = await getEffectiveLimit(salonId, salonPlan, "employees");
 
       if (limitError) {
         return { data: null, error: limitError };
       }
 
-      if (!canAdd && limit !== null) {
+      if (limit !== null && activeCount >= limit) {
         return {
           data: null,
-          error: `Employee limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more staff seats.`,
+          error: `Active employee limit reached. Current: ${activeCount}/${limit}. Please upgrade your plan or deactivate another employee first.`,
           limitReached: true,
         };
       }
