@@ -850,6 +850,8 @@ export type SettingsMessages = {
   bookingChangesDescription?: string;
   bookingCancellationsLabel?: string;
   bookingCancellationsDescription?: string;
+  sendTestTo?: string;
+  testEmailPlaceholder?: string;
   // General tab -- new fields
   businessAddressLabel?: string;
   businessAddressPlaceholder?: string;

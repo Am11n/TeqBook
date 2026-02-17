@@ -100,6 +100,10 @@ export default function NotificationsPage() {
   const [sendingTest, setSendingTest] = useState(false);
   const [testSentMessage, setTestSentMessage] = useState<string | null>(null);
 
+  // Test email recipient
+  const [showTestInput, setShowTestInput] = useState<"customer" | "internal" | null>(null);
+  const [testEmailTarget, setTestEmailTarget] = useState(user?.email ?? "");
+
   // Build initial values from profile preferences
   const initialValues = useMemo<NotificationForm>(() => {
     const prefs = (profile as Record<string, unknown>)?.notification_preferences as Record<string, unknown> | null;
@@ -136,13 +140,14 @@ export default function NotificationsPage() {
   }, [form.isDirty, registerDirtyState]);
 
   // Send test email (placeholder)
-  const handleSendTest = async (group: "customer" | "internal") => {
+  const handleSendTest = async (group: "customer" | "internal", recipientEmail: string) => {
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) return;
     setSendingTest(true);
     try {
       // Placeholder: In production, call an API endpoint
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const email = user?.email || "your email";
-      setTestSentMessage(`Test sent to ${email}`);
+      setTestSentMessage(`Test sent to ${recipientEmail}`);
+      setShowTestInput(null);
       setTimeout(() => setTestSentMessage(null), 3000);
     } catch (err) {
       logError(err instanceof Error ? err.message : "Failed to send test");
@@ -246,20 +251,61 @@ export default function NotificationsPage() {
         title={t.customerNotificationsTitle ?? "Customer Notifications"}
         description={t.customerNotificationsDescription ?? "Emails sent to your customers when bookings are created, changed, or cancelled."}
         titleRight={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-            onClick={() => handleSendTest("customer")}
-            disabled={sendingTest}
-          >
-            {sendingTest ? (
-              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-            ) : (
+          showTestInput === "customer" ? (
+            <form
+              className="flex items-center gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendTest("customer", testEmailTarget);
+              }}
+            >
+              <input
+                type="email"
+                value={testEmailTarget}
+                onChange={(e) => setTestEmailTarget(e.target.value)}
+                placeholder={t.testEmailPlaceholder ?? "Enter email address"}
+                className="h-8 w-48 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                autoFocus
+                required
+              />
+              <Button
+                type="submit"
+                variant="default"
+                size="sm"
+                className="text-xs h-8"
+                disabled={sendingTest}
+              >
+                {sendingTest ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => setShowTestInput(null)}
+              >
+                ✕
+              </Button>
+            </form>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setTestEmailTarget(user?.email ?? "");
+                setShowTestInput("customer");
+              }}
+              disabled={sendingTest}
+            >
               <Send className="h-3.5 w-3.5 mr-1" />
-            )}
-            Send test
-          </Button>
+              {t.sendTestTo ?? "Send test"}
+            </Button>
+          )
         }
       >
         <NotificationItem
@@ -288,20 +334,61 @@ export default function NotificationsPage() {
         title={t.internalNotificationsTitle ?? "Your Notifications"}
         description={t.internalNotificationsDescription ?? "Emails sent to you when bookings are created, changed, or cancelled."}
         titleRight={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-            onClick={() => handleSendTest("internal")}
-            disabled={sendingTest}
-          >
-            {sendingTest ? (
-              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-            ) : (
+          showTestInput === "internal" ? (
+            <form
+              className="flex items-center gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendTest("internal", testEmailTarget);
+              }}
+            >
+              <input
+                type="email"
+                value={testEmailTarget}
+                onChange={(e) => setTestEmailTarget(e.target.value)}
+                placeholder={t.testEmailPlaceholder ?? "Enter email address"}
+                className="h-8 w-48 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                autoFocus
+                required
+              />
+              <Button
+                type="submit"
+                variant="default"
+                size="sm"
+                className="text-xs h-8"
+                disabled={sendingTest}
+              >
+                {sendingTest ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => setShowTestInput(null)}
+              >
+                ✕
+              </Button>
+            </form>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setTestEmailTarget(user?.email ?? "");
+                setShowTestInput("internal");
+              }}
+              disabled={sendingTest}
+            >
               <Send className="h-3.5 w-3.5 mr-1" />
-            )}
-            Send test
-          </Button>
+              {t.sendTestTo ?? "Send test"}
+            </Button>
+          )
         }
       >
         <NotificationItem

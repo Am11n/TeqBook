@@ -850,6 +850,8 @@ export const nb: TranslationNamespaces = {
     bookingChangesDescription: "Motta e-post når en booking endres.",
     bookingCancellationsLabel: "Bookingavlysninger",
     bookingCancellationsDescription: "Motta e-post når en kunde avlyser.",
+    sendTestTo: "Send test",
+    testEmailPlaceholder: "Skriv inn e-postadresse",
     // General tab -- new fields
     businessAddressLabel: "Forretningsadresse",
     businessAddressPlaceholder: "Gate, By, Postnummer",

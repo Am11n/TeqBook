@@ -826,6 +826,8 @@ export const en: TranslationNamespaces = {
     bookingChangesDescription: "Receive an email when a booking is modified.",
     bookingCancellationsLabel: "Booking cancellations",
     bookingCancellationsDescription: "Receive an email when a customer cancels.",
+    sendTestTo: "Send test",
+    testEmailPlaceholder: "Enter email address",
     // General tab -- new fields
     businessAddressLabel: "Business address",
     businessAddressPlaceholder: "Street, City, Postal code",
