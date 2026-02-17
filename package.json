@@ -16,7 +16,7 @@
     "build:public": "npm run build --workspace=@teqbook/public",
     "build:dashboard": "npm run build --workspace=@teqbook/dashboard",
     "build:admin": "npm run build --workspace=@teqbook/admin",
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "pnpm --parallel run dev",
     "dev:public": "npm run dev --workspace=@teqbook/public",
     "dev:dashboard": "npm run dev --workspace=@teqbook/dashboard",
     "dev:admin": "npm run dev --workspace=@teqbook/admin",
