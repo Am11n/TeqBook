@@ -20,6 +20,7 @@ import { localISOStringToUTC } from "@/lib/utils/timezone";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import type { Booking, Service } from "@/lib/types";
 
 interface QuickCreatePanelProps {
@@ -234,12 +235,17 @@ export function QuickCreatePanel({
             {/* Service */}
             <div>
               <label className="text-xs font-medium text-muted-foreground">Service</label>
-              <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} required className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2">
-                <option value="">Select service...</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min, {fmtPrice(s.price_cents)})</option>
-                ))}
-              </select>
+              <DialogSelect
+                value={serviceId}
+                onChange={setServiceId}
+                required
+                placeholder="Select service..."
+                className="mt-1"
+                options={services.map((s) => ({
+                  value: s.id,
+                  label: `${s.name} (${s.duration_minutes}min, ${fmtPrice(s.price_cents)})`,
+                }))}
+              />
               {selectedService && (selectedService.prep_minutes > 0 || selectedService.cleanup_minutes > 0) && (
                 <p className="mt-1 text-[10px] text-amber-600">
                   {selectedService.prep_minutes > 0 && `${selectedService.prep_minutes}min prep`}
@@ -252,12 +258,17 @@ export function QuickCreatePanel({
             {/* Employee */}
             <div>
               <label className="text-xs font-medium text-muted-foreground">Employee</label>
-              <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2">
-                <option value="">Select employee...</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                ))}
-              </select>
+              <DialogSelect
+                value={employeeId}
+                onChange={setEmployeeId}
+                required
+                placeholder="Select employee..."
+                className="mt-1"
+                options={employees.map((emp) => ({
+                  value: emp.id,
+                  label: emp.full_name,
+                }))}
+              />
             </div>
 
             {/* Date + Time */}

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { useCreateShift } from "@/lib/hooks/shifts/useCreateShift";
 import { getWeekdays } from "@/lib/utils/shifts/shifts-utils";
 import type { Shift } from "@/lib/types";
@@ -106,34 +107,20 @@ export function CreateShiftForm({
           className="space-y-4"
         >
           <Field label={translations.employeeLabel} htmlFor="employee">
-            <select
-              id="employee"
+            <DialogSelect
               value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              <option value="">{translations.employeePlaceholder}</option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.full_name}
-                </option>
-              ))}
-            </select>
+              onChange={setEmployeeId}
+              placeholder={translations.employeePlaceholder}
+              options={employees.map((employee) => ({ value: employee.id, label: employee.full_name }))}
+            />
           </Field>
 
           <Field label={translations.weekdayLabel} htmlFor="weekday">
-            <select
-              id="weekday"
-              value={weekday}
-              onChange={(e) => setWeekday(Number(e.target.value))}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              {weekdays.map((w) => (
-                <option key={w.value} value={w.value}>
-                  {w.label}
-                </option>
-              ))}
-            </select>
+            <DialogSelect
+              value={String(weekday)}
+              onChange={(v) => setWeekday(Number(v))}
+              options={weekdays.map((w) => ({ value: String(w.value), label: w.label }))}
+            />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">

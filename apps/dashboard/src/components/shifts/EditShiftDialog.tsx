@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { getWeekdays } from "@/lib/utils/shifts/shifts-utils";
 
 interface EditShiftDialogProps {
@@ -75,37 +76,23 @@ export function EditShiftDialog({
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-6">
           <Field label={translations.employeeLabel} htmlFor="edit_employee" required>
-            <select
-              id="edit_employee"
+            <DialogSelect
               value={editEmployeeId}
-              onChange={(e) => setEditEmployeeId(e.target.value)}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              onChange={setEditEmployeeId}
               required
-            >
-              <option value="">{translations.employeePlaceholder}</option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.full_name}
-                </option>
-              ))}
-            </select>
+              placeholder={translations.employeePlaceholder}
+              options={employees.map((employee) => ({ value: employee.id, label: employee.full_name }))}
+            />
           </Field>
 
           <div className="grid gap-6 md:grid-cols-3">
             <Field label={translations.weekdayLabel} htmlFor="edit_weekday" required>
-              <select
-                id="edit_weekday"
-                value={editWeekday}
-                onChange={(e) => setEditWeekday(Number(e.target.value))}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              <DialogSelect
+                value={String(editWeekday)}
+                onChange={(v) => setEditWeekday(Number(v))}
                 required
-              >
-                {weekdays.map((w) => (
-                  <option key={w.value} value={w.value}>
-                    {w.label}
-                  </option>
-                ))}
-              </select>
+                options={weekdays.map((w) => ({ value: String(w.value), label: w.label }))}
+              />
             </Field>
             <Field label={translations.startLabel} htmlFor="edit_start_time" required>
               <input

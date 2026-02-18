@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { formatPrice as _formatPrice } from "@/lib/utils/services/services-utils";
 import type { Service } from "@/lib/types";
 
@@ -165,15 +166,16 @@ export function BulkPriceDialog({
           {action === "round" && (
             <div className="flex items-center gap-2">
               <Label className="text-sm">{t.roundToNearest}</Label>
-              <select
-                className="h-8 rounded-md border bg-background px-2 text-sm"
+              <DialogSelect
                 value={roundTo}
-                onChange={(e) => setRoundTo(e.target.value)}
-              >
-                <option value="10">10</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
+                onChange={setRoundTo}
+                className="w-24"
+                options={[
+                  { value: "10", label: "10" },
+                  { value: "50", label: "50" },
+                  { value: "100", label: "100" },
+                ]}
+              />
             </div>
           )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { PageLayout } from "@/components/layout/page-layout";
+import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -257,7 +258,11 @@ export default function CalendarPage() {
 
   return (
     <ErrorBoundary>
-      <PageLayout title={t.title} description={t.description}>
+      <PageLayout title={t.title} description={t.description} showCard={false} showHeader={false}>
+        <div className="hidden md:block">
+          <PageHeader title={t.title} description={t.description} />
+        </div>
+
         {salonError && (
           <ErrorMessage message={salonError} variant="destructive" className="mb-4" />
         )}

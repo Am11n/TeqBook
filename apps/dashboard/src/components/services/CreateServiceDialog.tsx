@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { useCreateService } from "@/lib/hooks/services/useCreateService";
 
 interface CreateServiceDialogProps {
@@ -85,19 +86,18 @@ export function CreateServiceDialog({
           </Field>
 
           <Field label={translations.categoryLabel} htmlFor="create_service_category">
-            <select
-              id="create_service_category"
+            <DialogSelect
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              <option value="">{translations.categoryOther}</option>
-              <option value="cut">{translations.categoryCut}</option>
-              <option value="beard">{translations.categoryBeard}</option>
-              <option value="color">{translations.categoryColor}</option>
-              <option value="nails">{translations.categoryNails}</option>
-              <option value="massage">{translations.categoryMassage}</option>
-            </select>
+              onChange={setCategory}
+              placeholder={translations.categoryOther}
+              options={[
+                { value: "cut", label: translations.categoryCut },
+                { value: "beard", label: translations.categoryBeard },
+                { value: "color", label: translations.categoryColor },
+                { value: "nails", label: translations.categoryNails },
+                { value: "massage", label: translations.categoryMassage },
+              ]}
+            />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">

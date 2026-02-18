@@ -15,6 +15,7 @@ import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { findFirstAvailableSlots } from "@/lib/repositories/schedule-segments";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import type { AvailableSlotBatch, Service } from "@/lib/types";
 
 interface FindFirstAvailableProps {
@@ -111,12 +112,17 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground">Service</label>
-            <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2" disabled={loadingServices}>
-              <option value="">Select service...</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min)</option>
-              ))}
-            </select>
+            <DialogSelect
+              value={serviceId}
+              onChange={setServiceId}
+              disabled={loadingServices}
+              placeholder="Select service..."
+              className="mt-1"
+              options={services.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.duration_minutes}min)`,
+              }))}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

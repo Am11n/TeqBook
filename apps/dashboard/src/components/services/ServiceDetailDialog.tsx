@@ -18,6 +18,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { updateService } from "@/lib/repositories/services";
 import { formatPrice as _formatPrice, getCategoryLabel as _getCategoryLabel } from "@/lib/utils/services/services-utils";
 import { Edit } from "lucide-react";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
 import type { Service } from "@/lib/types";
 
@@ -248,19 +249,18 @@ export function ServiceDetailDialog({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t.categoryLabel} htmlFor="svc_category">
-                <select
-                  id="svc_category"
+                <DialogSelect
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                >
-                  <option value="cut">{t.categoryCut}</option>
-                  <option value="beard">{t.categoryBeard}</option>
-                  <option value="color">{t.categoryColor}</option>
-                  <option value="nails">{t.categoryNails}</option>
-                  <option value="massage">{t.categoryMassage}</option>
-                  <option value="other">{t.categoryOther}</option>
-                </select>
+                  onChange={setCategory}
+                  options={[
+                    { value: "cut", label: t.categoryCut },
+                    { value: "beard", label: t.categoryBeard },
+                    { value: "color", label: t.categoryColor },
+                    { value: "nails", label: t.categoryNails },
+                    { value: "massage", label: t.categoryMassage },
+                    { value: "other", label: t.categoryOther },
+                  ]}
+                />
               </Field>
               <Field label={t.durationLabel} htmlFor="svc_duration">
                 <input

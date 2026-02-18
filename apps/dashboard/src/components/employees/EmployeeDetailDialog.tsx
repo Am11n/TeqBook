@@ -17,6 +17,7 @@ import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { updateEmployee } from "@/lib/repositories/employees";
 import { Check, X, Edit } from "lucide-react";
+import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
 import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
 import type { Employee, Service, Shift } from "@/lib/types";
 
@@ -294,64 +295,48 @@ export function EmployeeDetailDialog({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t.roleLabel} htmlFor="detail_role">
-                <select
-                  id="detail_role"
+                <DialogSelect
                   value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                >
-                  <option value="">{t.selectRole}</option>
-                  <option value="owner">{t.roleOwner}</option>
-                  <option value="manager">{t.roleManager}</option>
-                  <option value="staff">{t.roleStaff}</option>
-                </select>
+                  onChange={setRole}
+                  placeholder={t.selectRole}
+                  options={[
+                    { value: "owner", label: t.roleOwner },
+                    { value: "manager", label: t.roleManager },
+                    { value: "staff", label: t.roleStaff },
+                  ]}
+                />
               </Field>
               <Field label={t.preferredLang} htmlFor="detail_lang">
-                <select
-                  id="detail_lang"
+                <DialogSelect
                   value={preferredLanguage}
-                  onChange={(e) => setPreferredLanguage(e.target.value)}
-                  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                >
-                  <option value="nb">Norsk</option>
-                  <option value="en">English</option>
-                  <option value="ar">العربية</option>
-                  <option value="so">Soomaali</option>
-                  <option value="ti">ትግርኛ</option>
-                  <option value="am">አማርኛ</option>
-                  <option value="tr">Turkce</option>
-                  <option value="pl">Polski</option>
-                  <option value="vi">Tieng Viet</option>
-                  <option value="tl">Tagalog</option>
-                  <option value="zh">中文</option>
-                  <option value="fa">فارسی</option>
-                  <option value="dar">دری</option>
-                  <option value="ur">اردو</option>
-                  <option value="hi">हिन्दी</option>
-                </select>
+                  onChange={setPreferredLanguage}
+                  options={[
+                    { value: "nb", label: "Norsk" },
+                    { value: "en", label: "English" },
+                    { value: "ar", label: "العربية" },
+                    { value: "so", label: "Soomaali" },
+                    { value: "ti", label: "ትግርኛ" },
+                    { value: "am", label: "አማርኛ" },
+                    { value: "tr", label: "Turkce" },
+                    { value: "pl", label: "Polski" },
+                    { value: "vi", label: "Tieng Viet" },
+                    { value: "tl", label: "Tagalog" },
+                    { value: "zh", label: "中文" },
+                    { value: "fa", label: "فارسی" },
+                    { value: "dar", label: "دری" },
+                    { value: "ur", label: "اردو" },
+                    { value: "hi", label: "हिन्दी" },
+                  ]}
+                />
               </Field>
             </div>
 
             <Field label={t.servicesLabel} htmlFor="detail_services">
-              <select
-                id="detail_services"
-                multiple
+              <DialogMultiSelect
                 value={selectedServices}
-                onChange={(e) => {
-                  const values = Array.from(
-                    e.target.selectedOptions,
-                    (opt) => opt.value,
-                  );
-                  setSelectedServices(values);
-                }}
-                className="h-32 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                {services.map((svc) => (
-                  <option key={svc.id} value={svc.id}>
-                    {svc.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedServices}
+                options={services.map((svc) => ({ value: svc.id, label: svc.name }))}
+              />
             </Field>
 
             {error && (

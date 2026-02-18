@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { createPersonallisteEntry } from "@/lib/services/personalliste-service";
 import type { Employee } from "@/lib/types";
 
@@ -115,20 +116,13 @@ export function RegisterPersonallisteDialog({
             </Field>
             <div className="space-y-2">
               <Label htmlFor="reg-employee">{t.colEmployee}</Label>
-              <select
-                id="reg-employee"
+              <DialogSelect
                 value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
+                onChange={setEmployeeId}
                 required
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                <option value="">{t.employeePlaceholder}</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.full_name}
-                  </option>
-                ))}
-              </select>
+                placeholder={t.employeePlaceholder}
+                options={employees.map((emp) => ({ value: emp.id, label: emp.full_name }))}
+              />
             </div>
             <Field label={t.colCheckIn} htmlFor="reg-checkIn">
               <Input

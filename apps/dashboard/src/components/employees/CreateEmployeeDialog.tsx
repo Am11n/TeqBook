@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
+import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
 import { useCreateEmployee } from "@/lib/hooks/employees/useCreateEmployee";
 import type { Service } from "@/lib/types";
 
@@ -114,65 +115,52 @@ export function CreateEmployeeDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={translations.roleLabel} htmlFor="create_role">
-              <select
-                id="create_role"
+              <DialogSelect
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                <option value="">{translations.rolePlaceholder}</option>
-                <option value="owner">Owner</option>
-                <option value="manager">Manager</option>
-                <option value="staff">Staff</option>
-              </select>
+                onChange={setRole}
+                placeholder={translations.rolePlaceholder}
+                options={[
+                  { value: "owner", label: "Owner" },
+                  { value: "manager", label: "Manager" },
+                  { value: "staff", label: "Staff" },
+                ]}
+              />
             </Field>
             <Field label={translations.preferredLanguageLabel} htmlFor="create_preferred_language">
-              <select
-                id="create_preferred_language"
+              <DialogSelect
                 value={preferredLanguage}
-                onChange={(e) => setPreferredLanguage(e.target.value)}
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                <option value="nb">Norsk</option>
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-                <option value="so">Soomaali</option>
-                <option value="ti">ትግርኛ</option>
-                <option value="am">አማርኛ</option>
-                <option value="tr">Türkçe</option>
-                <option value="pl">Polski</option>
-                <option value="vi">Tiếng Việt</option>
-                <option value="tl">Tagalog</option>
-                <option value="zh">中文</option>
-                <option value="fa">فارسی</option>
-                <option value="dar">دری</option>
-                <option value="ur">اردو</option>
-                <option value="hi">हिन्दी</option>
-              </select>
+                onChange={setPreferredLanguage}
+                options={[
+                  { value: "nb", label: "Norsk" },
+                  { value: "en", label: "English" },
+                  { value: "ar", label: "العربية" },
+                  { value: "so", label: "Soomaali" },
+                  { value: "ti", label: "ትግርኛ" },
+                  { value: "am", label: "አማርኛ" },
+                  { value: "tr", label: "Türkçe" },
+                  { value: "pl", label: "Polski" },
+                  { value: "vi", label: "Tiếng Việt" },
+                  { value: "tl", label: "Tagalog" },
+                  { value: "zh", label: "中文" },
+                  { value: "fa", label: "فارسی" },
+                  { value: "dar", label: "دری" },
+                  { value: "ur", label: "اردو" },
+                  { value: "hi", label: "हिन्दी" },
+                ]}
+              />
             </Field>
           </div>
 
           <Field
             label={translations.servicesLabel}
             htmlFor="create_services"
-            description={`${translations.servicesPlaceholder} (Hold Ctrl/Cmd for å velge flere)`}
+            description={translations.servicesPlaceholder}
           >
-            <select
-              id="create_services"
-              multiple
+            <DialogMultiSelect
               value={selectedServices}
-              onChange={(e) => {
-                const values = Array.from(e.target.selectedOptions, (option) => option.value);
-                setSelectedServices(values);
-              }}
-              className="h-24 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedServices}
+              options={services.map((service) => ({ value: service.id, label: service.name }))}
+            />
           </Field>
 
           {error && (

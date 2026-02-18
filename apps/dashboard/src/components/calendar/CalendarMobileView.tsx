@@ -366,13 +366,13 @@ export function CalendarMobileView({
 
               {showOverflow && (
                 <div
-                  className="absolute right-0 top-10 z-50 w-44 rounded-lg border bg-popover py-1 shadow-lg"
+                  className="absolute right-0 top-9 z-50 w-40 rounded-md border bg-popover py-1 shadow-md"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {!isToday && (
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent active:bg-accent"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent active:bg-accent"
                       onClick={() => {
                         onGoToToday?.();
                         setShowOverflow(false);
@@ -385,7 +385,7 @@ export function CalendarMobileView({
                   {onFindAvailable && (
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent active:bg-accent"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent active:bg-accent"
                       onClick={() => {
                         onFindAvailable();
                         setShowOverflow(false);
@@ -398,7 +398,7 @@ export function CalendarMobileView({
                   {onSwitchToWeek && (
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent active:bg-accent"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent active:bg-accent"
                       onClick={() => {
                         onSwitchToWeek();
                         setShowOverflow(false);
@@ -467,7 +467,7 @@ export function CalendarMobileView({
               return (
                 <div
                   key={idx}
-                  className={`relative flex border-b ${isHourMark ? "border-border/50" : "border-border/20"} ${segBg}`}
+                  className={`relative flex border-b ${isHourMark ? "border-border/60 bg-muted/5" : "border-border/15"} ${segBg}`}
                   style={{ minHeight: `${SLOT_HEIGHT}px` }}
                   onClick={() => {
                     if (slotBookings.length === 0) handleSlotClick(idx);
@@ -476,7 +476,7 @@ export function CalendarMobileView({
                   {/* Time label */}
                   <div className="w-12 shrink-0 pt-0.5 pr-2 text-right">
                     {isHourMark && (
-                      <span className="text-[11px] font-medium text-muted-foreground">
+                      <span className="text-xs font-semibold text-foreground">
                         {slot.time}
                       </span>
                     )}
@@ -486,17 +486,21 @@ export function CalendarMobileView({
                   <div className="flex-1 min-w-0">
                     {slotBookings.length > 0 ? (
                       <div className="flex flex-col gap-1 py-0.5 pr-2">
-                        {slotBookings.map((booking) => (
-                          <MobileBookingCard
-                            key={booking.id}
-                            booking={booking}
-                            height={getBookingHeight(booking)}
-                            showEmployee={filterEmployeeId === "all"}
-                            formatTime={formatBookingTime}
-                            onClick={onBookingClick}
-                            translations={translations}
-                          />
-                        ))}
+                        {slotBookings.map((booking) => {
+                          const empIdx = employees.findIndex((e) => e.id === booking.employees?.id);
+                          return (
+                            <MobileBookingCard
+                              key={booking.id}
+                              booking={booking}
+                              height={getBookingHeight(booking)}
+                              showEmployee={filterEmployeeId === "all"}
+                              employeeIndex={empIdx >= 0 ? empIdx : undefined}
+                              formatTime={formatBookingTime}
+                              onClick={onBookingClick}
+                              translations={translations}
+                            />
+                          );
+                        })}
                       </div>
                     ) : null}
                   </div>
@@ -510,10 +514,10 @@ export function CalendarMobileView({
                 className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
                 style={{ top: `${nowSlotOffset}px` }}
               >
-                <span className="ml-1 rounded bg-foreground/80 px-1 py-px text-[9px] font-medium text-background">
+                <span className="ml-1 rounded bg-primary px-1.5 py-px text-[10px] font-semibold text-primary-foreground">
                   Nå
                 </span>
-                <div className="h-px flex-1 bg-foreground/30" />
+                <div className="h-[2px] flex-1 bg-primary/50" />
               </div>
             )}
           </div>
@@ -563,6 +567,7 @@ interface MobileBookingCardProps {
   booking: CalendarBooking;
   height: number;
   showEmployee: boolean;
+  employeeIndex?: number;
   formatTime: (iso: string) => string;
   onClick?: (booking: CalendarBooking) => void;
   translations: {
@@ -575,11 +580,13 @@ function MobileBookingCard({
   booking,
   height,
   showEmployee,
+  employeeIndex,
   formatTime,
   onClick,
   translations,
 }: MobileBookingCardProps) {
   const classes = getBookingClasses(booking.status);
+  const empAccent = employeeIndex != null ? getEmployeeAccentByIndex(employeeIndex) : null;
 
   return (
     <button
@@ -588,32 +595,47 @@ function MobileBookingCard({
         e.stopPropagation();
         onClick?.(booking);
       }}
-      className={`w-full text-left overflow-hidden rounded-lg px-2.5 py-1.5 ${classes.card}`}
-      style={{ minHeight: `${Math.max(height, 36)}px` }}
+      className={`w-full text-left overflow-hidden rounded-lg px-3 py-2 active:scale-[0.98] transition-transform ${classes.card}`}
+      style={{ minHeight: `${Math.max(height, 40)}px` }}
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className={`text-[11px] font-medium tabular-nums ${classes.subtitle}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className={`text-xs font-semibold tabular-nums ${classes.subtitle}`}>
           {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
         </span>
         {booking.status && (
-          <span className={`text-[9px] font-medium uppercase tracking-wide ${classes.subtitle}`}>
-            {booking.status}
+          <span className="flex items-center gap-1">
+            <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor(booking.status)}`} />
+            <span className={`text-[10px] capitalize ${classes.subtitle}`}>
+              {booking.status}
+            </span>
           </span>
         )}
       </div>
-      <p className={`text-sm font-semibold leading-tight truncate ${classes.title}`}>
+      <p className={`text-sm font-semibold leading-tight truncate mt-0.5 ${classes.title}`}>
         {booking.customers?.full_name ?? translations.unknownCustomer}
       </p>
       <p className={`text-xs leading-tight truncate ${classes.subtitle}`}>
         {booking.services?.name ?? translations.unknownService}
       </p>
       {showEmployee && booking.employees?.full_name && (
-        <p className={`text-[11px] leading-tight truncate ${classes.subtitle}`}>
+        <p className={`text-[11px] leading-tight truncate flex items-center gap-1 ${classes.subtitle}`}>
+          {empAccent && <span className={`inline-block h-1.5 w-1.5 rounded-full shrink-0 ${empAccent.dot}`} />}
           {booking.employees.full_name}
         </p>
       )}
     </button>
   );
+}
+
+function statusDotColor(status: string): string {
+  switch (status) {
+    case "confirmed": return "bg-blue-500";
+    case "pending": return "bg-amber-500";
+    case "completed": return "bg-emerald-500";
+    case "cancelled": return "bg-red-400";
+    case "no-show": return "bg-orange-500";
+    default: return "bg-zinc-400";
+  }
 }
 
 // ─────────────────────────────────────────────────────────
