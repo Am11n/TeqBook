@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
 import type { AppLocale } from "@/i18n/translations";
 
@@ -69,17 +70,16 @@ export function OnboardingStep1({
       </Field>
 
       <Field label={translations.salonTypeLabel} htmlFor="salonType">
-        <select
-          id="salonType"
+        <DialogSelect
           value={salonType}
-          onChange={(e) => setSalonType(e.target.value as SalonType)}
-          className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
-        >
-          <option value="barber">{translations.salonTypeBarber}</option>
-          <option value="nails">{translations.salonTypeNails}</option>
-          <option value="massage">{translations.salonTypeMassage}</option>
-          <option value="other">{translations.salonTypeOther}</option>
-        </select>
+          onChange={(v) => setSalonType(v as SalonType)}
+          options={[
+            { value: "barber", label: translations.salonTypeBarber },
+            { value: "nails", label: translations.salonTypeNails },
+            { value: "massage", label: translations.salonTypeMassage },
+            { value: "other", label: translations.salonTypeOther },
+          ]}
+        />
       </Field>
 
       <Field label={translations.paymentMethodLabel}>
@@ -89,32 +89,31 @@ export function OnboardingStep1({
       </Field>
 
       <Field label={translations.preferredLanguageLabel} htmlFor="preferredLanguage">
-        <select
-          id="preferredLanguage"
+        <DialogSelect
           value={preferredLanguage}
-          onChange={(e) => {
-            const newLang = e.target.value as AppLocale;
+          onChange={(v) => {
+            const newLang = v as AppLocale;
             setPreferredLanguage(newLang);
             onLocaleChange(newLang);
           }}
-          className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
-        >
-          <option value="nb">🇳🇴 Norsk</option>
-          <option value="en">🇬🇧 English</option>
-          <option value="ar">🇸🇦 العربية</option>
-          <option value="so">🇸🇴 Soomaali</option>
-          <option value="ti">🇪🇷 ትግርኛ</option>
-          <option value="am">🇪🇹 አማርኛ</option>
-          <option value="tr">🇹🇷 Türkçe</option>
-          <option value="pl">🇵🇱 Polski</option>
-          <option value="vi">🇻🇳 Tiếng Việt</option>
-          <option value="tl">🇵🇭 Tagalog</option>
-          <option value="zh">🇨🇳 中文</option>
-          <option value="fa">🇮🇷 فارسی</option>
-          <option value="dar">🇦🇫 دری (Dari)</option>
-          <option value="ur">🇵🇰 اردو</option>
-          <option value="hi">🇮🇳 हिन्दी</option>
-        </select>
+          options={[
+            { value: "nb", label: "Norsk" },
+            { value: "en", label: "English" },
+            { value: "ar", label: "العربية" },
+            { value: "so", label: "Soomaali" },
+            { value: "ti", label: "ትግርኛ" },
+            { value: "am", label: "አማርኛ" },
+            { value: "tr", label: "Türkçe" },
+            { value: "pl", label: "Polski" },
+            { value: "vi", label: "Tiếng Việt" },
+            { value: "tl", label: "Tagalog" },
+            { value: "zh", label: "中文" },
+            { value: "fa", label: "فارسی" },
+            { value: "dar", label: "دری (Dari)" },
+            { value: "ur", label: "اردو" },
+            { value: "hi", label: "हिन्दी" },
+          ]}
+        />
       </Field>
 
       <Field

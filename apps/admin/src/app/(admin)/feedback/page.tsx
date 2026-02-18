@@ -10,6 +10,7 @@ import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/d
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
@@ -682,20 +683,18 @@ function FeedbackDrawerContent({
           <Label htmlFor="changelog-link" className="text-xs">
             Link to Changelog entry
           </Label>
-          <select
-            id="changelog-link"
+          <DialogSelect
             value={entry.changelog_entry_id ?? ""}
-            onChange={(e) => handleLinkChangelog(e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-          >
-            <option value="">None</option>
-            {changelogEntries.map((ce) => (
-              <option key={ce.id} value={ce.id}>
-                {ce.version ? `[${ce.version}] ` : ""}
-                {ce.title}
-              </option>
-            ))}
-          </select>
+            onChange={handleLinkChangelog}
+            placeholder="None"
+            options={[
+              { value: "", label: "None" },
+              ...changelogEntries.map((ce) => ({
+                value: ce.id,
+                label: `${ce.version ? `[${ce.version}] ` : ""}${ce.title}`,
+              })),
+            ]}
+          />
         </div>
       )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Plus, Search, List, Command, Rows3, Rows4 } from "lucide-react";
 import { changeDate } from "@/lib/utils/calendar/calendar-utils";
 import type { CalendarDensity } from "@/lib/ui/calendar-theme";
@@ -166,18 +167,14 @@ export function CalendarControls({
         </div>
 
         {/* Employee filter */}
-        <select
+        <DialogSelect
           value={filterEmployeeId}
-          onChange={(e) => setFilterEmployeeId(e.target.value)}
-          className="h-8 rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2"
-        >
-          <option value="all">{translations.filterEmployeeAll}</option>
-          {employees.map((emp) => (
-            <option key={emp.id} value={emp.id}>
-              {emp.full_name}
-            </option>
-          ))}
-        </select>
+          onChange={setFilterEmployeeId}
+          options={[
+            { value: "all", label: translations.filterEmployeeAll },
+            ...employees.map((emp) => ({ value: emp.id, label: emp.full_name })),
+          ]}
+        />
 
         {/* Date navigation */}
         <div className="flex items-center gap-1">

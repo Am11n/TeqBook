@@ -2,6 +2,7 @@
 
 import { FormEvent } from "react";
 import { Field } from "@/components/form/Field";
+import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
 import { useCreateEmployee } from "@/lib/hooks/employees/useCreateEmployee";
 import type { Service } from "@/lib/types";
 
@@ -91,41 +92,40 @@ export function CreateEmployeeForm({
 
       <div className="grid gap-6 md:grid-cols-2">
         <Field label={translations.roleLabel} htmlFor="role">
-          <select
-            id="role"
+          <DialogSelect
             value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-          >
-            <option value="">{translations.rolePlaceholder}</option>
-            <option value="owner">Owner</option>
-            <option value="manager">Manager</option>
-            <option value="staff">Staff</option>
-          </select>
+            onChange={setRole}
+            placeholder={translations.rolePlaceholder}
+            options={[
+              { value: "", label: translations.rolePlaceholder },
+              { value: "owner", label: "Owner" },
+              { value: "manager", label: "Manager" },
+              { value: "staff", label: "Staff" },
+            ]}
+          />
         </Field>
         <Field label={translations.preferredLanguageLabel} htmlFor="preferred_language">
-          <select
-            id="preferred_language"
+          <DialogSelect
             value={preferredLanguage}
-            onChange={(e) => setPreferredLanguage(e.target.value)}
-            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-          >
-            <option value="nb">🇳🇴 Norsk</option>
-            <option value="en">🇬🇧 English</option>
-            <option value="ar">🇸🇦 العربية</option>
-            <option value="so">🇸🇴 Soomaali</option>
-            <option value="ti">🇪🇷 ትግርኛ</option>
-            <option value="am">🇪🇹 አማርኛ</option>
-            <option value="tr">🇹🇷 Türkçe</option>
-            <option value="pl">🇵🇱 Polski</option>
-            <option value="vi">🇻🇳 Tiếng Việt</option>
-            <option value="tl">🇵🇭 Tagalog</option>
-            <option value="zh">🇨🇳 中文</option>
-            <option value="fa">🇮🇷 فارسی</option>
-            <option value="dar">🇦🇫 دری</option>
-            <option value="ur">🇵🇰 اردو</option>
-            <option value="hi">🇮🇳 हिन्दी</option>
-          </select>
+            onChange={setPreferredLanguage}
+            options={[
+              { value: "nb", label: "Norsk" },
+              { value: "en", label: "English" },
+              { value: "ar", label: "العربية" },
+              { value: "so", label: "Soomaali" },
+              { value: "ti", label: "ትግርኛ" },
+              { value: "am", label: "አማርኛ" },
+              { value: "tr", label: "Türkçe" },
+              { value: "pl", label: "Polski" },
+              { value: "vi", label: "Tiếng Việt" },
+              { value: "tl", label: "Tagalog" },
+              { value: "zh", label: "中文" },
+              { value: "fa", label: "فارسی" },
+              { value: "dar", label: "دری" },
+              { value: "ur", label: "اردو" },
+              { value: "hi", label: "हिन्दी" },
+            ]}
+          />
         </Field>
       </div>
 
@@ -134,22 +134,11 @@ export function CreateEmployeeForm({
         htmlFor="services"
         description={`${translations.servicesPlaceholder} (Hold Ctrl/Cmd for å velge flere)`}
       >
-        <select
-          id="services"
-          multiple
+        <DialogMultiSelect
           value={selectedServices}
-          onChange={(e) => {
-            const values = Array.from(e.target.selectedOptions, (option) => option.value);
-            setSelectedServices(values);
-          }}
-          className="h-24 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-        >
-          {services.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedServices}
+          options={services.map((service) => ({ value: service.id, label: service.name }))}
+        />
       </Field>
 
       {error && (

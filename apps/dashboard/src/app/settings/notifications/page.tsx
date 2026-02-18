@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import {
   Dialog,
   DialogContent,
@@ -220,15 +221,15 @@ export default function NotificationsPage() {
             >
               <div className="flex items-center gap-2">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <select
+                <DialogSelect
                   value={form.values.reminderTiming}
-                  onChange={(e) => form.setValue("reminderTiming", e.target.value)}
-                  className="h-8 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
-                >
-                  <option value="24h">24 hours before</option>
-                  <option value="2h">2 hours before</option>
-                  <option value="both">Both (24h + 2h)</option>
-                </select>
+                  onChange={(v) => form.setValue("reminderTiming", v)}
+                  options={[
+                    { value: "24h", label: "24 hours before" },
+                    { value: "2h", label: "2 hours before" },
+                    { value: "both", label: "Both (24h + 2h)" },
+                  ]}
+                />
               </div>
             </div>
           )}

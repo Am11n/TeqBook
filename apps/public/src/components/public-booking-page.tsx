@@ -8,6 +8,7 @@ import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
 import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { useLocale } from "@/components/locale-provider";
@@ -379,43 +380,36 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             )}
             {/* Språkvelger for offentlige kunder */}
             {salon.supported_languages && salon.supported_languages.length > 0 && (
-              <select
+              <DialogSelect
                 value={locale}
-                onChange={(e) => {
-                  const newLocale = e.target.value as AppLocale;
+                onChange={(v) => {
+                  const newLocale = v as AppLocale;
                   setLocale(newLocale);
-                  // Save to localStorage for this salon
                   if (typeof window !== 'undefined' && salon.id) {
                     localStorage.setItem(`booking-locale-${salon.id}`, newLocale);
                   }
                 }}
-                className="h-8 rounded-full border bg-background px-2 text-[11px] outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                {salon.supported_languages.map((lang) => {
+                options={salon.supported_languages.map((lang) => {
                   const langLabels: Record<AppLocale, string> = {
-                    nb: "🇳🇴 Norsk",
-                    en: "🇬🇧 English",
-                    ar: "🇸🇦 العربية",
-                    so: "🇸🇴 Soomaali",
-                    ti: "🇪🇷 ትግርኛ",
-                    am: "🇪🇹 አማርኛ",
-                    tr: "🇹🇷 Türkçe",
-                    pl: "🇵🇱 Polski",
-                    vi: "🇻🇳 Tiếng Việt",
-                    tl: "🇵🇭 Tagalog",
-                    zh: "🇨🇳 中文",
-                    fa: "🇮🇷 فارسی",
-                    dar: "🇦🇫 دری (Dari)",
-                    ur: "🇵🇰 اردو",
-                    hi: "🇮🇳 हिन्दी",
+                    nb: "Norsk",
+                    en: "English",
+                    ar: "العربية",
+                    so: "Soomaali",
+                    ti: "ትግርኛ",
+                    am: "አማርኛ",
+                    tr: "Türkçe",
+                    pl: "Polski",
+                    vi: "Tiếng Việt",
+                    tl: "Tagalog",
+                    zh: "中文",
+                    fa: "فارسی",
+                    dar: "دری (Dari)",
+                    ur: "اردو",
+                    hi: "हिन्दी",
                   };
-                  return (
-                    <option key={lang} value={lang}>
-                      {langLabels[lang as AppLocale] || lang}
-                    </option>
-                  );
+                  return { value: lang, label: langLabels[lang as AppLocale] || lang };
                 })}
-              </select>
+              />
             )}
           </div>
         </div>
@@ -438,40 +432,32 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               <label className="font-medium" htmlFor="service">
                 {t.serviceLabel}
               </label>
-              <select
-                id="service"
+              <DialogSelect
                 value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+                onChange={setServiceId}
                 required
-              >
-                <option value="">{t.servicePlaceholder}</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                placeholder={t.servicePlaceholder}
+                options={[
+                  { value: "", label: t.servicePlaceholder },
+                  ...services.map((s) => ({ value: s.id, label: s.name })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2 text-sm">
               <label className="font-medium" htmlFor="employee">
                 {t.employeeLabel}
               </label>
-              <select
-                id="employee"
+              <DialogSelect
                 value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+                onChange={setEmployeeId}
                 required
-              >
-                <option value="">{t.employeePlaceholder}</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.full_name}
-                  </option>
-                ))}
-              </select>
+                placeholder={t.employeePlaceholder}
+                options={[
+                  { value: "", label: t.employeePlaceholder },
+                  ...employees.map((emp) => ({ value: emp.id, label: emp.full_name })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2 text-sm">
@@ -510,24 +496,16 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             <label className="font-medium" htmlFor="slot">
               {t.step2Label}
             </label>
-            <select
-              id="slot"
+            <DialogSelect
               value={selectedSlot}
-              onChange={(e) => setSelectedSlot(e.target.value)}
-              className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+              onChange={setSelectedSlot}
               required
-            >
-              <option value="">
-                {slots.length === 0
-                  ? t.noSlotsYet
-                  : t.selectSlotPlaceholder}
-              </option>
-              {slots.map((slot) => (
-                <option key={slot.start} value={slot.start}>
-                  {slot.label}
-                </option>
-              ))}
-            </select>
+              placeholder={slots.length === 0 ? t.noSlotsYet : t.selectSlotPlaceholder}
+              options={[
+                { value: "", label: slots.length === 0 ? t.noSlotsYet : t.selectSlotPlaceholder },
+                ...slots.map((slot) => ({ value: slot.start, label: slot.label })),
+              ]}
+            />
           </div>
         </section>
 

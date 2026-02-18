@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
@@ -863,21 +864,17 @@ function LanguageSelector({
     : (supportedLanguages[0] || "en");
 
   return (
-    <select
+    <DialogSelect
       value={currentLocale}
-      onChange={(e) => {
-        const newLocale = e.target.value as AppLocale;
+      onChange={(v) => {
+        const newLocale = v as AppLocale;
         setLocale(newLocale);
       }}
-      className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"
-      style={{ backgroundImage: 'none' }}
-    >
-      {supportedLanguages.map((lang: string) => (
-        <option key={lang} value={lang}>
-          {languageMap[lang as AppLocale] || lang}
-        </option>
-      ))}
-    </select>
+      options={supportedLanguages.map((lang: string) => ({
+        value: lang,
+        label: languageMap[lang as AppLocale] || lang,
+      }))}
+    />
   );
 }
 

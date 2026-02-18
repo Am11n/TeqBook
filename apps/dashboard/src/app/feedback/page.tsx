@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import {
@@ -586,18 +587,11 @@ function NewFeedbackDialog({
           {/* Type - native select per cursorrules */}
           <div className="space-y-2">
             <Label htmlFor="feedback-type">Type</Label>
-            <select
-              id="feedback-type"
+            <DialogSelect
               value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              {FEEDBACK_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+              onChange={setType}
+              options={FEEDBACK_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            />
           </div>
 
           {/* Title */}

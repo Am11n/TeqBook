@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import type { Locale } from "./landing-copy";
 
 interface LandingMobileMenuProps {
@@ -81,30 +82,30 @@ export function LandingMobileMenu({
             <label className="mb-2 block text-xs font-medium text-slate-600">
               {locale === "nb" ? "Språk" : "Language"}
             </label>
-            <select
+            <DialogSelect
               value={locale}
-              onChange={(e) => {
-                setLocale(e.target.value as Locale);
+              onChange={(v) => {
+                setLocale(v as Locale);
                 onClose();
               }}
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-            >
-              <option value="nb">🇳🇴 Norsk</option>
-              <option value="en">🇬🇧 English</option>
-              <option value="ar">🇸🇦 العربية</option>
-              <option value="so">🇸🇴 Soomaali</option>
-              <option value="ti">🇪🇷 ትግርኛ</option>
-              <option value="am">🇪🇹 አማርኛ</option>
-              <option value="tr">🇹🇷 Türkçe</option>
-              <option value="pl">🇵🇱 Polski</option>
-              <option value="vi">🇻🇳 Tiếng Việt</option>
-              <option value="tl">🇵🇭 Tagalog</option>
-              <option value="zh">🇨🇳 中文</option>
-              <option value="fa">🇮🇷 فارسی</option>
-              <option value="dar">🇦🇫 دری</option>
-              <option value="ur">🇵🇰 اردو</option>
-              <option value="hi">🇮🇳 हिन्दी</option>
-            </select>
+              options={[
+                { value: "nb", label: "Norsk" },
+                { value: "en", label: "English" },
+                { value: "ar", label: "العربية" },
+                { value: "so", label: "Soomaali" },
+                { value: "ti", label: "ትግርኛ" },
+                { value: "am", label: "አማርኛ" },
+                { value: "tr", label: "Türkçe" },
+                { value: "pl", label: "Polski" },
+                { value: "vi", label: "Tiếng Việt" },
+                { value: "tl", label: "Tagalog" },
+                { value: "zh", label: "中文" },
+                { value: "fa", label: "فارسی" },
+                { value: "dar", label: "دری" },
+                { value: "ur", label: "اردو" },
+                { value: "hi", label: "हिन्दी" },
+              ]}
+            />
           </div>
 
           {/* Buttons */}

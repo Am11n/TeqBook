@@ -2,6 +2,7 @@
 
 import { FormEvent } from "react";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCreateService } from "@/lib/hooks/services/useCreateService";
 
@@ -61,19 +62,18 @@ export function CreateServiceForm({
       </Field>
 
       <Field label={translations.categoryLabel} htmlFor="category">
-        <select
-          id="category"
+        <DialogSelect
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-        >
-          <option value="">{translations.categoryOther}</option>
-          <option value="cut">{translations.categoryCut}</option>
-          <option value="beard">{translations.categoryBeard}</option>
-          <option value="color">{translations.categoryColor}</option>
-          <option value="nails">{translations.categoryNails}</option>
-          <option value="massage">{translations.categoryMassage}</option>
-        </select>
+          onChange={setCategory}
+          options={[
+            { value: "", label: translations.categoryOther },
+            { value: "cut", label: translations.categoryCut },
+            { value: "beard", label: translations.categoryBeard },
+            { value: "color", label: translations.categoryColor },
+            { value: "nails", label: translations.categoryNails },
+            { value: "massage", label: translations.categoryMassage },
+          ]}
+        />
       </Field>
 
       <div className="grid gap-6 md:grid-cols-2">

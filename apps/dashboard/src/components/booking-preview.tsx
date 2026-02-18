@@ -6,6 +6,7 @@ import { getActiveServicesForPublicBooking } from "@/lib/services/services-servi
 import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
@@ -217,42 +218,36 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
             )}
             {/* Language Selector */}
             {salon.supported_languages && salon.supported_languages.length > 0 && (
-              <select
+              <DialogSelect
                 value={locale}
-                onChange={(e) => {
-                  const newLocale = e.target.value as AppLocale;
+                onChange={(v) => {
+                  const newLocale = v as AppLocale;
                   setLocale(newLocale);
                   if (typeof window !== 'undefined' && salon.id) {
                     localStorage.setItem(`booking-locale-${salon.id}`, newLocale);
                   }
                 }}
-                className="h-8 rounded-full border bg-background px-2 text-[11px] outline-none ring-ring/0 transition focus-visible:ring-2"
-              >
-                {salon.supported_languages.map((lang) => {
+                options={salon.supported_languages.map((lang) => {
                   const langLabels: Record<AppLocale, string> = {
-                    nb: "🇳🇴 Norsk",
-                    en: "🇬🇧 English",
-                    ar: "🇸🇦 العربية",
-                    so: "🇸🇴 Soomaali",
-                    ti: "🇪🇷 ትግርኛ",
-                    am: "🇪🇹 አማርኛ",
-                    tr: "🇹🇷 Türkçe",
-                    pl: "🇵🇱 Polski",
-                    vi: "🇻🇳 Tiếng Việt",
-                    tl: "🇵🇭 Tagalog",
-                    zh: "🇨🇳 中文",
-                    fa: "🇮🇷 فارسی",
-                    dar: "🇦🇫 دری (Dari)",
-                    ur: "🇵🇰 اردو",
-                    hi: "🇮🇳 हिन्दी",
+                    nb: "Norsk",
+                    en: "English",
+                    ar: "العربية",
+                    so: "Soomaali",
+                    ti: "ትግርኛ",
+                    am: "አማርኛ",
+                    tr: "Türkçe",
+                    pl: "Polski",
+                    vi: "Tiếng Việt",
+                    tl: "Tagalog",
+                    zh: "中文",
+                    fa: "فارسی",
+                    dar: "دری (Dari)",
+                    ur: "اردو",
+                    hi: "हिन्दी",
                   };
-                  return (
-                    <option key={lang} value={lang}>
-                      {langLabels[lang as AppLocale] || lang}
-                    </option>
-                  );
+                  return { value: lang, label: langLabels[lang as AppLocale] || lang };
                 })}
-              </select>
+              />
             )}
           </div>
         </div>
@@ -275,40 +270,32 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
               <label className="font-medium" htmlFor="preview-service">
                 {t.serviceLabel}
               </label>
-              <select
-                id="preview-service"
+              <DialogSelect
                 value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+                onChange={setServiceId}
                 required
-              >
-                <option value="">{t.servicePlaceholder}</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                placeholder={t.servicePlaceholder}
+                options={[
+                  { value: "", label: t.servicePlaceholder },
+                  ...services.map((s) => ({ value: s.id, label: s.name })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2 text-sm">
               <label className="font-medium" htmlFor="preview-employee">
                 {t.employeeLabel}
               </label>
-              <select
-                id="preview-employee"
+              <DialogSelect
                 value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+                onChange={setEmployeeId}
                 required
-              >
-                <option value="">{t.employeePlaceholder}</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.full_name}
-                  </option>
-                ))}
-              </select>
+                placeholder={t.employeePlaceholder}
+                options={[
+                  { value: "", label: t.employeePlaceholder },
+                  ...employees.map((e) => ({ value: e.id, label: e.full_name })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2 text-sm">
@@ -347,15 +334,13 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
             <label className="font-medium" htmlFor="preview-slot">
               {t.step2Label}
             </label>
-            <select
-              id="preview-slot"
-              className="h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+            <DialogSelect
+              value=""
+              onChange={() => {}}
               disabled
-            >
-              <option value="">
-                {t.noSlotsYet}
-              </option>
-            </select>
+              placeholder={t.noSlotsYet}
+              options={[]}
+            />
           </div>
         </section>
 

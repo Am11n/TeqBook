@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -371,19 +372,14 @@ export default function GeneralSettingsPage() {
             {/* Default Language */}
             <div className="mt-4 pt-3 border-t">
               <FormRow label={t.defaultLanguageLabel} htmlFor="defaultLanguage">
-                <select
-                  id="defaultLanguage"
+                <DialogSelect
                   value={form.values.defaultLanguage}
-                  onChange={(e) => form.setValue("defaultLanguage", e.target.value)}
-                  className={selectClass}
-                >
-                  {(form.values.supportedLanguages.length > 0
+                  onChange={(v) => form.setValue("defaultLanguage", v)}
+                  options={(form.values.supportedLanguages.length > 0
                     ? form.values.supportedLanguages
                     : ["en"]
-                  ).map((code) => (
-                    <option key={code} value={code}>{langLabelFn(code)}</option>
-                  ))}
-                </select>
+                  ).map((code) => ({ value: code, label: langLabelFn(code) }))}
+                />
               </FormRow>
             </div>
           </SettingsSection>
@@ -399,19 +395,14 @@ export default function GeneralSettingsPage() {
               label={t.dashboardLanguageLabel ?? "Dashboard language"}
               htmlFor="userPreferredLanguage"
             >
-              <select
-                id="userPreferredLanguage"
+              <DialogSelect
                 value={form.values.userPreferredLanguage}
-                onChange={(e) => form.setValue("userPreferredLanguage", e.target.value)}
-                className={selectClass}
-              >
-                {(form.values.supportedLanguages.length > 0
+                onChange={(v) => form.setValue("userPreferredLanguage", v)}
+                options={(form.values.supportedLanguages.length > 0
                   ? form.values.supportedLanguages
                   : ["en"]
-                ).map((code) => (
-                  <option key={code} value={code}>{langLabelFn(code)}</option>
-                ))}
-              </select>
+                ).map((code) => ({ value: code, label: langLabelFn(code) }))}
+              />
             </FormRow>
 
             <FormRow label={t.yourRoleLabel ?? "Role"}>
@@ -445,18 +436,17 @@ export default function GeneralSettingsPage() {
             </FormRow>
 
             <FormRow label={t.salonTypeLabel} htmlFor="salonType">
-              <select
-                id="salonType"
+              <DialogSelect
                 value={form.values.salonType}
-                onChange={(e) => form.setValue("salonType", e.target.value)}
-                className={selectClass}
-              >
-                <option value="">Select type...</option>
-                <option value="barber">Barber</option>
-                <option value="nails">Nails</option>
-                <option value="massage">Massage</option>
-                <option value="other">Other</option>
-              </select>
+                onChange={(v) => form.setValue("salonType", v)}
+                placeholder="Select type..."
+                options={[
+                  { value: "barber", label: "Barber" },
+                  { value: "nails", label: "Nails" },
+                  { value: "massage", label: "Massage" },
+                  { value: "other", label: "Other" },
+                ]}
+              />
             </FormRow>
 
             <FormRow label={t.businessAddressLabel ?? "Business address"} htmlFor="businessAddress">
@@ -510,36 +500,22 @@ export default function GeneralSettingsPage() {
             layout="rows"
           >
             <FormRow label={t.currencyLabel ?? "Currency"} htmlFor="currency">
-              <select
-                id="currency"
+              <DialogSelect
                 value={form.values.currency}
-                onChange={(e) => form.setValue("currency", e.target.value)}
-                className={selectClass}
-              >
-                {getCurrencyGroups().map((group) => (
-                  <optgroup key={group} label={group}>
-                    {CURRENCIES.filter((c) => c.group === group).map((c) => (
-                      <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+                onChange={(v) => form.setValue("currency", v)}
+                options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} — ${c.name}` }))}
+              />
               <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                 Preview: {formatPrice(125000, appLocale, form.values.currency)}
               </p>
             </FormRow>
 
             <FormRow label={t.timezoneLabel ?? "Timezone"} htmlFor="timezone">
-              <select
-                id="timezone"
+              <DialogSelect
                 value={form.values.timezone}
-                onChange={(e) => form.setValue("timezone", e.target.value)}
-                className={selectClass}
-              >
-                {getCommonTimezones().map((tz) => (
-                  <option key={tz.value} value={tz.value}>{tz.label}</option>
-                ))}
-              </select>
+                onChange={(v) => form.setValue("timezone", v)}
+                options={getCommonTimezones().map((tz) => ({ value: tz.value, label: tz.label }))}
+              />
             </FormRow>
           </SettingsSection>
 

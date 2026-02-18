@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import {
@@ -457,18 +458,11 @@ function NewCaseDialog({
           {/* Category - native select per cursorrules */}
           <div className="space-y-2">
             <Label htmlFor="case-category">Category</Label>
-            <select
-              id="case-category"
+            <DialogSelect
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              onChange={setCategory}
+              options={CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+            />
           </div>
 
           {/* Subject */}

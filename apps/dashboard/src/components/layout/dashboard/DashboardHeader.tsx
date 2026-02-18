@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { NotificationCenter } from "@/components/notification-center";
 import { useLocale } from "@/components/locale-provider";
 import { updateSalonSettings } from "@/lib/services/salons-service";
@@ -182,28 +183,23 @@ function LanguageSelector({
 
   return (
     <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
-      <select
+      <DialogSelect
         value={currentLocale}
-        onChange={async (e) => {
-          const newLocale = e.target.value as AppLocale;
+        onChange={async (v) => {
+          const newLocale = v as AppLocale;
           setLocale(newLocale);
 
-          // Update salon's preferred_language via service
           if (salon?.id) {
             await updateSalonSettings(salon.id, {
               preferred_language: newLocale,
             });
           }
         }}
-        className="h-full w-full cursor-pointer border-none bg-transparent text-base outline-none focus:ring-0 appearance-none text-center"
-        style={{ backgroundImage: "none" }}
-      >
-        {supportedLanguages.map((lang) => (
-          <option key={lang} value={lang}>
-            {languageMap[lang as AppLocale] || lang}
-          </option>
-        ))}
-      </select>
+        options={supportedLanguages.map((lang) => ({
+          value: lang,
+          label: languageMap[lang as AppLocale] || lang,
+        }))}
+      />
     </div>
   );
 }

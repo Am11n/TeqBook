@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Filter, X } from "lucide-react";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { hasActiveFilters, setDateRangeFilter } from "@/lib/utils/reports/reports-utils";
 import type { ReportsFilters as ReportsFiltersType } from "@/lib/services/reports-service";
 import type { Employee, Service } from "@/lib/types";
@@ -110,68 +111,45 @@ export function ReportsFilters({
 
           {/* Status */}
           <Field label="Status" htmlFor="status">
-            <select
-              id="status"
+            <DialogSelect
               value={filters.status || ""}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  status: e.target.value || null,
-                })
-              }
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-            >
-              <option value="">All</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="no-show">No Show</option>
-            </select>
+              onChange={(v) => setFilters({ ...filters, status: v || null })}
+              placeholder="All"
+              options={[
+                { value: "", label: "All" },
+                { value: "pending", label: "Pending" },
+                { value: "confirmed", label: "Confirmed" },
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+                { value: "no-show", label: "No Show" },
+              ]}
+            />
           </Field>
 
           {/* Service */}
           <Field label="Service" htmlFor="service">
-            <select
-              id="service"
+            <DialogSelect
               value={filters.serviceId || ""}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  serviceId: e.target.value || null,
-                })
-              }
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-            >
-              <option value="">All Services</option>
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setFilters({ ...filters, serviceId: v || null })}
+              placeholder="All Services"
+              options={[
+                { value: "", label: "All Services" },
+                ...services.map((service) => ({ value: service.id, label: service.name })),
+              ]}
+            />
           </Field>
 
           {/* Employee */}
           <Field label="Employee" htmlFor="employee">
-            <select
-              id="employee"
+            <DialogSelect
               value={filters.employeeId || ""}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  employeeId: e.target.value || null,
-                })
-              }
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-            >
-              <option value="">All Employees</option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.full_name}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setFilters({ ...filters, employeeId: v || null })}
+              placeholder="All Employees"
+              options={[
+                { value: "", label: "All Employees" },
+                ...employees.map((employee) => ({ value: employee.id, label: employee.full_name })),
+              ]}
+            />
           </Field>
         </div>
       )}

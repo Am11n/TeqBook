@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Field } from "@/components/form/Field";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { Upload, X, Eye } from "lucide-react";
 import type { BrandingPreset } from "@/lib/utils/branding/branding-utils";
 
@@ -144,19 +145,19 @@ export function BrandingForm({
           </Field>
 
           <Field label="Font Family" htmlFor="fontFamily">
-            <select
-              id="fontFamily"
+            <DialogSelect
               value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-              className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="Inter">Inter</option>
-              <option value="Roboto">Roboto</option>
-              <option value="Open Sans">Open Sans</option>
-              <option value="Lato">Lato</option>
-              <option value="Montserrat">Montserrat</option>
-              <option value="Poppins">Poppins</option>
-            </select>
+              onChange={setFontFamily}
+              className="max-w-md"
+              options={[
+                { value: "Inter", label: "Inter" },
+                { value: "Roboto", label: "Roboto" },
+                { value: "Open Sans", label: "Open Sans" },
+                { value: "Lato", label: "Lato" },
+                { value: "Montserrat", label: "Montserrat" },
+                { value: "Poppins", label: "Poppins" },
+              ]}
+            />
             <p className="text-xs text-muted-foreground mt-1">Font family for the booking page</p>
           </Field>
 
