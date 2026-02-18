@@ -31,6 +31,7 @@ import {
   CalendarX,
   UserPlus,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────
@@ -99,6 +100,7 @@ export default function NotificationsPage() {
   const [previewKey, setPreviewKey] = useState<string | null>(null);
   const [sendingTest, setSendingTest] = useState(false);
   const [testSentMessage, setTestSentMessage] = useState<string | null>(null);
+  const [testErrorMessage, setTestErrorMessage] = useState<string | null>(null);
 
   // Test email recipient
   const [showTestInput, setShowTestInput] = useState<"customer" | "internal" | null>(null);
@@ -139,18 +141,30 @@ export default function NotificationsPage() {
     registerDirtyState("notifications", form.isDirty);
   }, [form.isDirty, registerDirtyState]);
 
-  // Send test email (placeholder)
   const handleSendTest = async (group: "customer" | "internal", recipientEmail: string) => {
     if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) return;
+    if (!salon?.id) return;
     setSendingTest(true);
+    setTestErrorMessage(null);
     try {
-      // Placeholder: In production, call an API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch("/api/settings/send-test-notification", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientEmail, group, salonId: salon.id }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `Failed (${res.status})`);
+      }
       setTestSentMessage(`Test sent to ${recipientEmail}`);
       setShowTestInput(null);
-      setTimeout(() => setTestSentMessage(null), 3000);
+      setTimeout(() => setTestSentMessage(null), 4000);
     } catch (err) {
-      logError(err instanceof Error ? err.message : "Failed to send test");
+      const msg = err instanceof Error ? err.message : "Failed to send test email";
+      logError(msg);
+      setTestErrorMessage(msg);
+      setTimeout(() => setTestErrorMessage(null), 5000);
     } finally {
       setSendingTest(false);
     }
@@ -243,6 +257,14 @@ export default function NotificationsPage() {
         <div className="fixed top-4 right-4 z-50 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2">
           <Check className="h-4 w-4 text-green-600" />
           <span className="text-sm text-green-700 dark:text-green-300">{testSentMessage}</span>
+        </div>
+      )}
+
+      {/* Test error toast */}
+      {testErrorMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-700 dark:text-red-300">{testErrorMessage}</span>
         </div>
       )}
 
