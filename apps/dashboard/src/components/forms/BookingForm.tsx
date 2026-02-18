@@ -3,6 +3,7 @@
 import { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DialogSelect } from "@/components/ui/dialog-select";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Product } from "@/lib/repositories/products";
@@ -126,26 +127,16 @@ export function BookingForm({
               <CheckCircle2 className="h-4 w-4 text-green-500" />
             )}
           </div>
-          <select
-            id="employee"
+          <DialogSelect
             value={employeeId}
-            onChange={(e) => {
-              setEmployeeId(e.target.value);
-              validateField("employeeId", e.target.value);
+            onChange={(v) => {
+              setEmployeeId(v);
+              validateField("employeeId", v);
             }}
-            onBlur={() => validateField("employeeId", employeeId)}
-            className={`h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2 ${
-              fieldErrors.employeeId ? "border-red-500" : fieldValid.employeeId ? "border-green-500" : ""
-            }`}
             required
-          >
-            <option value="">{translations.employeePlaceholder}</option>
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.full_name}
-              </option>
-            ))}
-          </select>
+            placeholder={translations.employeePlaceholder}
+            options={employees.map((e) => ({ value: e.id, label: e.full_name }))}
+          />
           {fieldErrors.employeeId && (
             <p className="text-xs text-red-500">{fieldErrors.employeeId}</p>
           )}
@@ -160,26 +151,16 @@ export function BookingForm({
               <CheckCircle2 className="h-4 w-4 text-green-500" />
             )}
           </div>
-          <select
-            id="service"
+          <DialogSelect
             value={serviceId}
-            onChange={(e) => {
-              setServiceId(e.target.value);
-              validateField("serviceId", e.target.value);
+            onChange={(v) => {
+              setServiceId(v);
+              validateField("serviceId", v);
             }}
-            onBlur={() => validateField("serviceId", serviceId)}
-            className={`h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2 ${
-              fieldErrors.serviceId ? "border-red-500" : fieldValid.serviceId ? "border-green-500" : ""
-            }`}
             required
-          >
-            <option value="">{translations.servicePlaceholder}</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            placeholder={translations.servicePlaceholder}
+            options={services.map((s) => ({ value: s.id, label: s.name }))}
+          />
           {fieldErrors.serviceId && (
             <p className="text-xs text-red-500">{fieldErrors.serviceId}</p>
           )}
@@ -208,30 +189,20 @@ export function BookingForm({
               {translations.loadingSlots}
             </div>
           ) : (
-            <select
-              id="slot"
+            <DialogSelect
               value={selectedSlot}
-              onChange={(e) => {
-                setSelectedSlot(e.target.value);
-                validateField("selectedSlot", e.target.value);
+              onChange={(v) => {
+                setSelectedSlot(v);
+                validateField("selectedSlot", v);
               }}
-              onBlur={() => validateField("selectedSlot", selectedSlot)}
-              className={`h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2 ${
-                fieldErrors.selectedSlot ? "border-red-500" : fieldValid.selectedSlot ? "border-green-500" : ""
-              }`}
               required
-            >
-              <option value="">
-                {slots.length === 0
+              placeholder={
+                slots.length === 0
                   ? translations.noSlotsYet
-                  : translations.selectSlotPlaceholder}
-              </option>
-              {slots.map((slot) => (
-                <option key={slot.start} value={slot.start}>
-                  {slot.label}
-                </option>
-              ))}
-            </select>
+                  : translations.selectSlotPlaceholder
+              }
+              options={slots.map((slot) => ({ value: slot.start, label: slot.label }))}
+            />
           )}
           {fieldErrors.selectedSlot && (
             <p className="text-xs text-red-500">{fieldErrors.selectedSlot}</p>
