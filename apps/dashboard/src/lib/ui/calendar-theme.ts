@@ -7,7 +7,7 @@
 
 // ─── Types ─────────────────────────────────────────────
 
-export type CalendarDensity = "compact" | "comfortable";
+export type CalendarDensity = "compact" | "comfortable" | "mobile";
 
 export type BookingClasses = {
   /** Card wrapper: border-l accent + bg + shadow + rounded */
@@ -208,6 +208,12 @@ const DENSITY_MAP: Record<CalendarDensity, DensityConfig> = {
     fontSize: "text-sm",
     padding: "px-2 py-1",
     minCardHeight: 40,
+  },
+  mobile: {
+    slotHeight: 28,
+    fontSize: "text-xs",
+    padding: "px-2 py-1.5",
+    minCardHeight: 24,
   },
 };
 

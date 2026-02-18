@@ -24,6 +24,8 @@ import { WorkListView } from "@/components/calendar/WorkListView";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import { getHoursInTimezone, getMinutesInTimezone } from "@/lib/utils/timezone";
+import { Plus } from "lucide-react";
+import { getTodayLocal } from "@/lib/utils/date-utils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { CalendarBooking, Booking, AvailableSlotBatch, ScheduleSegment } from "@/lib/types";
 
@@ -114,7 +116,7 @@ export default function CalendarPage() {
     },
   });
 
-  // Schedule segments for DayView rendering
+  // Schedule segments for DayView + MobileView rendering
   const {
     segments,
     loading: segmentsLoading,
@@ -123,7 +125,7 @@ export default function CalendarPage() {
   } = useScheduleSegments({
     date: selectedDate,
     employeeIds: filterEmployeeId && filterEmployeeId !== "all" ? [filterEmployeeId] : null,
-    enabled: viewMode === "day" || viewMode === "list",
+    enabled: viewMode === "day" || viewMode === "list" || viewMode === "week",
   });
 
   const gridRange = useMemo(() => getGridRange(), [getGridRange]);
@@ -290,9 +292,9 @@ export default function CalendarPage() {
           onCommandPalette={() => setShowCommandPalette(true)}
         />
 
-        {/* Daily key figures */}
+        {/* Daily key figures (desktop only) */}
         {viewMode === "day" && allBookingsFlat.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="mt-3 hidden flex-wrap gap-3 md:flex">
             <div className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1 text-xs">
               <span className="font-medium">{allBookingsFlat.length}</span>
               <span className="text-muted-foreground">bookings</span>
@@ -322,63 +324,83 @@ export default function CalendarPage() {
           </div>
         )}
 
-        <div className="mt-4 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+        {/* ─── Mobile calendar ─────────────────────── */}
+        <div className="mt-2 md:hidden">
+          {displayEmployees.length === 0 && !loading && !segmentsLoading ? (
+            <EmptyState title={t.noEmployeesTitle} description={t.noEmployeesDescription} />
+          ) : (
+            <CalendarMobileView
+              employees={employees}
+              bookingsForDayByEmployee={enrichedBookingsByEmployee}
+              segments={segments}
+              gridRange={gridRange}
+              timezone={salon?.timezone || "UTC"}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              filterEmployeeId={filterEmployeeId}
+              setFilterEmployeeId={setFilterEmployeeId}
+              loading={loading || segmentsLoading}
+              onBookingClick={handleBookingClick}
+              onSlotClick={handleSlotClick}
+              onFindAvailable={() => setShowFindAvailable(true)}
+              onGoToToday={() => setSelectedDate(getTodayLocal())}
+              onSwitchToWeek={() => setViewMode("week")}
+              translations={{
+                unknownService: t.unknownService,
+                unknownCustomer: t.unknownCustomer,
+                filterEmployeeAll: t.filterEmployeeAll,
+              }}
+            />
+          )}
+        </div>
+
+        {/* ─── Desktop calendar ────────────────────── */}
+        <div className="mt-4 hidden rounded-xl border bg-card p-3 shadow-sm sm:p-4 md:block">
           {loading || segmentsLoading ? (
             <p className="text-sm text-muted-foreground">{t.loading}</p>
           ) : displayEmployees.length === 0 ? (
             <EmptyState title={t.noEmployeesTitle} description={t.noEmployeesDescription} />
           ) : (
             <>
-              <CalendarMobileView
-                employees={displayEmployees}
-                bookingsForDayByEmployee={enrichedBookingsByEmployee}
-                translations={{
-                  unknownService: t.unknownService,
-                  unknownCustomer: t.unknownCustomer,
-                }}
-              />
-
-              <div className="hidden sm:block">
-                {viewMode === "day" ? (
-                  <DayView
-                    selectedDate={selectedDate}
-                    employees={displayEmployees}
-                    bookingsForDayByEmployee={enrichedBookingsByEmployee}
-                    segments={segments}
-                    gridRange={gridRange}
-                    timezone={salon?.timezone || "UTC"}
-                    density={density}
-                    selectedBookingId={selectedBooking?.id}
-                    onBookingClick={handleBookingClick}
-                    onSlotClick={handleSlotClick}
-                    onBlockTimeClick={handleBlockTimeClick}
-                    translations={{
-                      unknownService: t.unknownService,
-                      unknownCustomer: t.unknownCustomer,
-                    }}
-                  />
-                ) : viewMode === "list" ? (
-                  <WorkListView
-                    bookings={allBookingsFlat}
-                    onBookingClick={handleBookingClick}
-                  />
-                ) : (
-                  <CalendarWeekView
-                    selectedDate={selectedDate}
-                    employees={displayEmployees}
-                    bookingsForDayByEmployee={enrichedBookingsByEmployee}
-                    locale={appLocale}
-                    onBookingClick={handleBookingClick}
-                    onDayClick={(date) => {
-                      setSelectedDate(date);
-                      setViewMode("day");
-                    }}
-                    translations={{
-                      unknownService: t.unknownService,
-                    }}
-                  />
-                )}
-              </div>
+              {viewMode === "day" ? (
+                <DayView
+                  selectedDate={selectedDate}
+                  employees={displayEmployees}
+                  bookingsForDayByEmployee={enrichedBookingsByEmployee}
+                  segments={segments}
+                  gridRange={gridRange}
+                  timezone={salon?.timezone || "UTC"}
+                  density={density}
+                  selectedBookingId={selectedBooking?.id}
+                  onBookingClick={handleBookingClick}
+                  onSlotClick={handleSlotClick}
+                  onBlockTimeClick={handleBlockTimeClick}
+                  translations={{
+                    unknownService: t.unknownService,
+                    unknownCustomer: t.unknownCustomer,
+                  }}
+                />
+              ) : viewMode === "list" ? (
+                <WorkListView
+                  bookings={allBookingsFlat}
+                  onBookingClick={handleBookingClick}
+                />
+              ) : (
+                <CalendarWeekView
+                  selectedDate={selectedDate}
+                  employees={displayEmployees}
+                  bookingsForDayByEmployee={enrichedBookingsByEmployee}
+                  locale={appLocale}
+                  onBookingClick={handleBookingClick}
+                  onDayClick={(date) => {
+                    setSelectedDate(date);
+                    setViewMode("day");
+                  }}
+                  translations={{
+                    unknownService: t.unknownService,
+                  }}
+                />
+              )}
 
               {/* Operational empty state for day/list view with no bookings */}
               {!hasBookingsForDay && (viewMode === "day" || viewMode === "list") && (
@@ -387,6 +409,19 @@ export default function CalendarPage() {
             </>
           )}
         </div>
+
+        {/* ─── Mobile FAB (+) ────────────────────────── */}
+        <button
+          type="button"
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95 md:hidden"
+          style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
+          onClick={() => {
+            setQuickCreatePrefill({ date: selectedDate });
+            setShowQuickCreate(true);
+          }}
+        >
+          <Plus className="h-6 w-6" />
+        </button>
 
         {/* ─── Dialogs ─────────────────────────────── */}
 
