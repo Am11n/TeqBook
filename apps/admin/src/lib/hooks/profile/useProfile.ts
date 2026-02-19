@@ -1,18 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { getCurrentUser } from "@/lib/services/auth-service";
+import { getCurrentUser, getActiveSessionsCount } from "@/lib/services/auth-service";
 import { getProfileForUser, updateProfile } from "@/lib/services/profiles-service";
 import { uploadAvatar, deleteAvatar } from "@/lib/services/storage-service";
+import { getMFAFactors } from "@/lib/services/two-factor-service";
+import { getAuditLogsForUser } from "@/lib/services/audit-log-service";
+import type { AuditLog } from "@/lib/repositories/audit-log";
+
+export type MFAFactor = { id: string; type: string; friendlyName: string };
 
 export function useProfile() {
   const { user, isReady, refreshSalon } = useCurrentSalon();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Profile state (critical path) ---
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null);
   const [profile, setProfile] = useState<{
     role?: string | null;
     first_name?: string | null;
@@ -28,6 +35,18 @@ export function useProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
+  // --- Security state (non-critical, loaded in parallel) ---
+  const [securityLoading, setSecurityLoading] = useState(true);
+  const [securityError, setSecurityError] = useState<string | null>(null);
+  const [mfaFactors, setMfaFactors] = useState<MFAFactor[] | null>(null);
+  const [sessionsCount, setSessionsCount] = useState<number | null>(null);
+
+  // --- Activity state (non-critical, loaded in parallel) ---
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState<string | null>(null);
+  const [recentActivity, setRecentActivity] = useState<AuditLog[] | null>(null);
+
+  // --- Load profile (critical path) then security+activity in parallel ---
   useEffect(() => {
     async function loadProfile() {
       if (!isReady) return;
@@ -36,13 +55,14 @@ export function useProfile() {
       setError(null);
 
       try {
-        // Get current user email
         const { data: currentUser } = await getCurrentUser();
         if (currentUser?.email) {
           setUserEmail(currentUser.email);
         }
+        if (currentUser?.created_at) {
+          setAccountCreatedAt(currentUser.created_at);
+        }
 
-        // Get profile if user exists
         if (user?.id) {
           const { data: profileData, error: profileError } = await getProfileForUser(user.id);
           if (profileError) {
@@ -60,12 +80,102 @@ export function useProfile() {
       } finally {
         setLoading(false);
       }
+
+      // After profile loads, fire security + activity in parallel (non-blocking)
+      if (user?.id) {
+        loadSecondaryData(user.id);
+      }
     }
 
     loadProfile();
-  }, [user?.id, isReady]);
+  }, [user?.id, isReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track dirty state
+  async function loadSecondaryData(userId: string) {
+    setSecurityLoading(true);
+    setActivityLoading(true);
+
+    const [securityResult, activityResult] = await Promise.allSettled([
+      loadSecurityData(),
+      loadActivityData(userId),
+    ]);
+
+    if (securityResult.status === "rejected") {
+      setSecurityError("Could not load security data");
+    }
+    setSecurityLoading(false);
+
+    if (activityResult.status === "rejected") {
+      setActivityError("Could not load activity data");
+    }
+    setActivityLoading(false);
+  }
+
+  async function loadSecurityData() {
+    try {
+      const [mfaResult, sessionsResult] = await Promise.allSettled([
+        getMFAFactors(),
+        getActiveSessionsCount(),
+      ]);
+
+      // MFA: empty array or error -> treat as "disabled" (no factors), not an error
+      if (mfaResult.status === "fulfilled") {
+        const { data, error: mfaErr } = mfaResult.value;
+        if (mfaErr || !data) {
+          setMfaFactors([]);
+        } else {
+          setMfaFactors(data);
+        }
+      } else {
+        setMfaFactors([]);
+      }
+
+      if (sessionsResult.status === "fulfilled") {
+        const { data, error: sessErr } = sessionsResult.value;
+        if (sessErr) {
+          setSessionsCount(null);
+        } else {
+          setSessionsCount(data);
+        }
+      } else {
+        setSessionsCount(null);
+      }
+    } catch {
+      setSecurityError("Could not load security data");
+      setMfaFactors([]);
+      setSessionsCount(null);
+    }
+  }
+
+  async function loadActivityData(userId: string) {
+    try {
+      const { data, error: actErr } = await getAuditLogsForUser(userId, { limit: 5 });
+      if (actErr || !data) {
+        setActivityError(actErr || "Could not load activity");
+        setRecentActivity([]);
+      } else {
+        setRecentActivity(data);
+        setActivityError(null);
+      }
+    } catch {
+      setActivityError("Could not load activity data");
+      setRecentActivity([]);
+    }
+  }
+
+  const refreshSecurityData = useCallback(async () => {
+    setSecurityLoading(true);
+    await loadSecurityData();
+    setSecurityLoading(false);
+  }, []);
+
+  const refreshActivityData = useCallback(async () => {
+    if (!user?.id) return;
+    setActivityLoading(true);
+    await loadActivityData(user.id);
+    setActivityLoading(false);
+  }, [user?.id]);
+
+  // --- Dirty tracking ---
   useEffect(() => {
     if (!profile) return;
     const hasChanges =
@@ -75,11 +185,11 @@ export function useProfile() {
     setIsDirty(hasChanges);
   }, [firstName, lastName, avatarUrl, profile]);
 
+  // --- Profile actions ---
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError("File size must be less than 2MB");
       return;
@@ -147,7 +257,6 @@ export function useProfile() {
         return;
       }
 
-      // Reload profile
       const { data: profileData } = await getProfileForUser(user.id);
       if (profileData) {
         setProfile(profileData);
@@ -174,12 +283,14 @@ export function useProfile() {
   }
 
   return {
+    // Profile (critical)
     loading,
     saving,
     error,
     success,
     userId: user?.id ?? null,
     userEmail,
+    accountCreatedAt,
     profile,
     firstName,
     setFirstName,
@@ -195,6 +306,18 @@ export function useProfile() {
     handleCancel,
     setError,
     setSuccess,
+
+    // Security (non-critical)
+    securityLoading,
+    securityError,
+    mfaFactors,
+    sessionsCount,
+    refreshSecurityData,
+
+    // Activity (non-critical)
+    activityLoading,
+    activityError,
+    recentActivity,
+    refreshActivityData,
   };
 }
-
