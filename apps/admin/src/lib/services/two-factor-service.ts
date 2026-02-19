@@ -127,9 +127,8 @@ export async function challengeTOTP(
 }
 
 /**
- * Verify TOTP code during login challenge
- * Note: Supabase TypeScript types may require both factorId and challengeId,
- * but verification works with just challengeId and code at runtime
+ * Verify TOTP code against a challenge.
+ * Requires factorId, challengeId (from mfa.challenge), and the user-entered code.
  */
 export async function verifyTOTPChallenge(
   factorId: string,
