@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { DialogSelect } from "@/components/ui/dialog-select";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
@@ -309,10 +308,8 @@ function AdminShellContent({ children }: AdminShellProps) {
 
         {/* Right: Language, Profile */}
         <div className="flex items-center gap-2 pr-6">
-          {/* Language selector (Desktop) */}
-          <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
-            <LanguageSelector locale={locale} salon={salon} setLocale={setLocale} />
-          </div>
+          {/* Language selector */}
+          <LanguageSelector locale={locale} salon={salon} setLocale={setLocale} />
 
           {/* User avatar with dropdown */}
           <div suppressHydrationWarning>
@@ -823,7 +820,6 @@ type NavLinkProps = {
   className?: string;
 };
 
-// Language selector component for admin shell
 function LanguageSelector({
   locale,
   salon,
@@ -833,7 +829,6 @@ function LanguageSelector({
   salon: { supported_languages?: string[] | null } | null;
   setLocale: (locale: AppLocale) => void;
 }) {
-  // Map of all available languages with their flags
   const languageMap: Record<AppLocale, string> = {
     nb: "🇳🇴",
     en: "🇬🇧",
@@ -852,29 +847,89 @@ function LanguageSelector({
     hi: "🇮🇳",
   };
 
-  // Get supported languages from salon, fallback to default if not set
-  // For super admins, show all languages
-  const supportedLanguages = salon?.supported_languages && salon.supported_languages.length > 0
-    ? salon.supported_languages
-    : ["en", "nb"]; // Default fallback
+  const supportedLanguages =
+    salon?.supported_languages && salon.supported_languages.length > 0
+      ? salon.supported_languages
+      : ["en", "nb"];
 
-  // Ensure current locale is in supported languages, otherwise use first supported language
   const currentLocale = supportedLanguages.includes(locale as AppLocale)
-    ? locale
-    : (supportedLanguages[0] || "en");
+    ? (locale as AppLocale)
+    : ((supportedLanguages[0] || "en") as AppLocale);
+
+  function handleChange(lang: string) {
+    setLocale(lang as AppLocale);
+  }
 
   return (
-    <DialogSelect
-      value={currentLocale}
-      onChange={(v) => {
-        const newLocale = v as AppLocale;
-        setLocale(newLocale);
-      }}
-      options={supportedLanguages.map((lang: string) => ({
-        value: lang,
-        label: languageMap[lang as AppLocale] || lang,
-      }))}
-    />
+    <>
+      {/* Mobile: flag-only button */}
+      <div className="sm:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg outline-none transition-all hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+              aria-label="Language"
+            >
+              <span className="text-base leading-none">
+                {languageMap[currentLocale] || "🌐"}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-36">
+            {supportedLanguages.map((lang: string) => {
+              const localeValue = lang as AppLocale;
+              return (
+                <DropdownMenuItem
+                  key={lang}
+                  onClick={() => handleChange(lang)}
+                  className="cursor-pointer"
+                >
+                  <span className="mr-2">{languageMap[localeValue] || lang}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {localeValue.toUpperCase()}
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Desktop: flag-only button */}
+      <div className="hidden h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg transition-all hover:scale-105 hover:bg-muted/60 sm:flex">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              aria-label="Language"
+            >
+              <span className="text-base leading-none">
+                {languageMap[currentLocale] || "🌐"}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-36">
+            {supportedLanguages.map((lang: string) => {
+              const localeValue = lang as AppLocale;
+              return (
+                <DropdownMenuItem
+                  key={lang}
+                  onClick={() => handleChange(lang)}
+                  className="cursor-pointer"
+                >
+                  <span className="mr-2">{languageMap[localeValue] || lang}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {localeValue.toUpperCase()}
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </>
   );
 }
 
