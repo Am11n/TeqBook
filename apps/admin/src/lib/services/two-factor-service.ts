@@ -132,13 +132,13 @@ export async function challengeTOTP(
  * but verification works with just challengeId and code at runtime
  */
 export async function verifyTOTPChallenge(
+  factorId: string,
   challengeId: string,
   code: string
 ): Promise<{ data: boolean | null; error: string | null }> {
   try {
-    // JUSTIFIED TYPE ASSERTION: Supabase MFA verify types don't match runtime behavior.
-    // challengeId-only verification works at runtime.
-    const { data, error } = await (supabase.auth.mfa.verify as unknown as (params: { challengeId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
+    const { data, error } = await supabase.auth.mfa.verify({
+      factorId,
       challengeId,
       code,
     });

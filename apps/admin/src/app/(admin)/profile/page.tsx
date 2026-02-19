@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/lib/hooks/profile/useProfile";
 import { updatePassword, signOutOtherSessions } from "@/lib/services/auth-service";
-import { generateTOTPSecret, verifyTOTPEnrollment, unenrollTOTP } from "@/lib/services/two-factor-service";
+import { generateTOTPSecret, challengeTOTP, verifyTOTPChallenge, unenrollTOTP } from "@/lib/services/two-factor-service";
 import type { MFAFactor } from "@/lib/hooks/profile/useProfile";
 import {
   User,
@@ -318,11 +318,20 @@ function TwoFactorSection({
     setVerifying(true);
     setInlineError(null);
 
-    const { error } = await verifyTOTPEnrollment(factorId, verifyCode);
+    // Step 1: create a challenge for this factor
+    const { data: challengeData, error: challengeError } = await challengeTOTP(factorId);
+    if (challengeError || !challengeData) {
+      setInlineError(challengeError || "Failed to create verification challenge");
+      setVerifying(false);
+      return;
+    }
+
+    // Step 2: verify the code against the challenge (requires both factorId and challengeId)
+    const { error: verifyError } = await verifyTOTPChallenge(factorId, challengeData.challengeId, verifyCode);
     setVerifying(false);
 
-    if (error) {
-      setInlineError(error);
+    if (verifyError) {
+      setInlineError(verifyError);
       return;
     }
 
