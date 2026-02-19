@@ -516,9 +516,10 @@ function SignOutAllSection({
           size="sm"
           className="w-full justify-start text-destructive hover:text-destructive"
           onClick={() => setConfirming(true)}
+          disabled={sessionsCount !== null && sessionsCount <= 1}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out all devices
+          Sign out all other devices
         </Button>
       )}
 
