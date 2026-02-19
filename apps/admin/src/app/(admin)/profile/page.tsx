@@ -525,7 +525,7 @@ function SignOutAllSection({
       {confirming && (
         <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
           <p className="text-xs text-destructive">
-            This will sign out all sessions including your current one. You will need to log in again.
+            This will sign out all other sessions. Your current session stays active.
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="destructive" onClick={handleSignOut} disabled={loading}>

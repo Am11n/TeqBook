@@ -356,13 +356,10 @@ export async function getActiveSessionsCount(): Promise<{
 }
 
 /**
- * Sign out all other sessions
- * Note: Supabase doesn't provide a direct API for this,
- * so we sign out and the user will need to sign in again
+ * Sign out all other sessions while keeping the current one active.
  */
 export async function signOutOtherSessions(): Promise<{ error: string | null }> {
   try {
-    // Get current session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
@@ -373,15 +370,14 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
       return { error: "No active session" };
     }
 
-    // Sign out (this will invalidate all sessions)
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "others" });
 
     if (error) {
       logError("Failed to sign out other sessions", error);
       return { error: error.message };
     }
 
-    logSecurity("Signed out all sessions", { userId: session.user.id });
+    logSecurity("Signed out all other sessions", { userId: session.user.id });
     return { error: null };
   } catch (err) {
     logError("Exception signing out other sessions", err);
