@@ -2,19 +2,45 @@
 // Notifications Repository
 // =====================================================
 // Database operations for in-app notifications
+// Supports cursor pagination, category filtering, and severity
 
 import { supabase } from "@/lib/supabase-client";
 import type {
   InAppNotification,
+  InAppNotificationCategory,
   CreateInAppNotificationInput,
   GetNotificationsOptions,
+  NotificationPage,
+  NotificationSeverity,
+  NotificationSource,
+  NotificationEntity,
 } from "@/lib/types/notifications";
 
 // =====================================================
-// Types
+// Cursor helpers
 // =====================================================
 
-export interface NotificationRow {
+function encodeCursor(createdAt: string, id: string): string {
+  return btoa(JSON.stringify({ c: createdAt, i: id }));
+}
+
+function decodeCursor(cursor: string): { createdAt: string; id: string } | null {
+  try {
+    const parsed = JSON.parse(atob(cursor));
+    if (parsed && typeof parsed.c === "string" && typeof parsed.i === "string") {
+      return { createdAt: parsed.c, id: parsed.i };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// =====================================================
+// Row mapping
+// =====================================================
+
+interface NotificationRow {
   id: string;
   user_id: string;
   salon_id: string | null;
@@ -27,23 +53,48 @@ export interface NotificationRow {
   created_at: string;
 }
 
+function mapRowToNotification(row: NotificationRow): InAppNotification {
+  const meta = row.metadata || {};
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    salon_id: row.salon_id,
+    type: row.type as InAppNotificationCategory,
+    severity: (meta._severity as NotificationSeverity) || "info",
+    source: (meta._source as NotificationSource) ?? null,
+    entity: (meta._entity as NotificationEntity) ?? null,
+    title: row.title,
+    body: row.body,
+    read: row.read,
+    metadata: row.metadata,
+    action_url: row.action_url,
+    created_at: row.created_at,
+  };
+}
+
 // =====================================================
 // Repository Functions
 // =====================================================
 
 /**
- * Create a new notification
+ * Create a new notification.
+ * Stores severity/source/entity inside metadata._severity/_source/_entity
+ * to avoid requiring DB schema changes now.
  */
 export async function createNotification(
   input: CreateInAppNotificationInput
 ): Promise<{ data: InAppNotification | null; error: string | null }> {
   try {
-    console.log("[Notifications Repo] Creating notification:", {
-      user_id: input.user_id,
-      salon_id: input.salon_id,
-      type: input.type,
-      title: input.title,
-    });
+    const metadata: Record<string, unknown> = { ...(input.metadata || {}) };
+    if (input.severity && input.severity !== "info") {
+      metadata._severity = input.severity;
+    }
+    if (input.source) {
+      metadata._source = input.source;
+    }
+    if (input.entity) {
+      metadata._entity = input.entity;
+    }
 
     const { data, error } = await supabase
       .from("notifications")
@@ -53,7 +104,7 @@ export async function createNotification(
         type: input.type,
         title: input.title,
         body: input.body,
-        metadata: input.metadata || null,
+        metadata: Object.keys(metadata).length > 0 ? metadata : null,
         action_url: input.action_url || null,
         read: false,
       })
@@ -61,23 +112,14 @@ export async function createNotification(
       .single();
 
     if (error) {
-      console.error("[Notifications Repo] Insert error:", {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      });
       return { data: null, error: error.message };
     }
-
-    console.log("[Notifications Repo] Notification created:", data?.id);
 
     return {
       data: mapRowToNotification(data as NotificationRow),
       error: null,
     };
   } catch (error) {
-    console.error("[Notifications Repo] Exception:", error);
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -86,85 +128,87 @@ export async function createNotification(
 }
 
 /**
- * Get notifications for a user with pagination
+ * Get notifications for a user with cursor-based pagination.
+ * Sort: (created_at DESC, id DESC). Cursor = base64({ c: created_at, i: id }).
  */
 export async function getNotificationsForUser(
   userId: string,
   options: GetNotificationsOptions = {}
-): Promise<{ data: InAppNotification[]; error: string | null }> {
+): Promise<{ data: NotificationPage; error: string | null }> {
   try {
-    const { limit = 20, offset = 0, unreadOnly = false } = options;
-    
-
-    console.log("[Notifications Repo] Getting notifications for user:", userId, options);
+    const { limit = 20, cursor, category, unreadOnly = false } = options;
 
     let query = supabase
       .from("notifications")
       .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order("id", { ascending: false })
+      .limit(limit + 1);
+
+    if (category) {
+      query = query.eq("type", category);
+    }
 
     if (unreadOnly) {
       query = query.eq("read", false);
     }
 
+    if (cursor) {
+      const decoded = decodeCursor(cursor);
+      if (decoded) {
+        query = query.or(
+          `created_at.lt.${decoded.createdAt},and(created_at.eq.${decoded.createdAt},id.lt.${decoded.id})`
+        );
+      }
+    }
+
     const { data, error } = await query;
 
-    console.log("[Notifications Repo] Query result:", { 
-      dataLength: data?.length, 
-      error: error?.message,
-      errorCode: error?.code,
-      errorDetails: error?.details,
-    });
-
     if (error) {
-      return { data: [], error: error.message };
+      return { data: { items: [], nextCursor: null, hasMore: false }, error: error.message };
+    }
+
+    const rows = (data || []) as NotificationRow[];
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit).map(mapRowToNotification);
+
+    let nextCursor: string | null = null;
+    if (hasMore && items.length > 0) {
+      const last = items[items.length - 1];
+      nextCursor = encodeCursor(last.created_at, last.id);
     }
 
     return {
-      data: (data as NotificationRow[]).map(mapRowToNotification),
+      data: { items, nextCursor, hasMore },
       error: null,
     };
   } catch (error) {
-    console.error("[Notifications Repo] Exception:", error);
     return {
-      data: [],
+      data: { items: [], nextCursor: null, hasMore: false },
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
 /**
- * Get unread notification count for a user
+ * Get unread notification count for a user.
  */
 export async function getUnreadCount(
   userId: string
 ): Promise<{ data: number; error: string | null }> {
   try {
-    
-
-    // Use the database function for efficiency
-    const { data, error } = await supabase.rpc("get_unread_notification_count", {
-      p_user_id: userId,
-    });
+    const { count, error } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("read", false);
 
     if (error) {
-      // Fallback to count query if function doesn't exist
-      const { count, error: countError } = await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("read", false);
-
-      if (countError) {
-        return { data: 0, error: countError.message };
-      }
-
-      return { data: count || 0, error: null };
+      return { data: 0, error: error.message };
     }
 
-    return { data: data || 0, error: null };
+    return { data: count || 0, error: null };
   } catch (error) {
     return {
       data: 0,
@@ -174,20 +218,51 @@ export async function getUnreadCount(
 }
 
 /**
- * Mark a single notification as read
+ * Get unread counts grouped by notification category (type column).
+ * Returns { security: 3, support: 1, ... }.
+ */
+export async function getUnreadCountByCategory(
+  userId: string
+): Promise<{ data: Record<string, number>; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("type")
+      .eq("user_id", userId)
+      .eq("read", false);
+
+    if (error) {
+      return { data: {}, error: error.message };
+    }
+
+    const counts: Record<string, number> = {};
+    for (const row of data || []) {
+      const cat = row.type as string;
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
+
+    return { data: counts, error: null };
+  } catch (error) {
+    return {
+      data: {},
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Mark a single notification as read (idempotent).
  */
 export async function markAsRead(
   notificationId: string,
   userId: string
 ): Promise<{ error: string | null }> {
   try {
-    
-
     const { error } = await supabase
       .from("notifications")
       .update({ read: true })
       .eq("id", notificationId)
-      .eq("user_id", userId); // RLS ensures user can only update own notifications
+      .eq("user_id", userId);
 
     if (error) {
       return { error: error.message };
@@ -202,35 +277,31 @@ export async function markAsRead(
 }
 
 /**
- * Mark all notifications as read for a user
+ * Mark all unread notifications as read for a user.
+ * Optionally scoped to a specific category.
  */
 export async function markAllAsRead(
-  userId: string
+  userId: string,
+  category?: InAppNotificationCategory
 ): Promise<{ data: number; error: string | null }> {
   try {
-    
+    let query = supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", userId)
+      .eq("read", false);
 
-    // Use the database function
-    const { data, error } = await supabase.rpc("mark_all_notifications_read", {
-      p_user_id: userId,
-    });
-
-    if (error) {
-      // Fallback to direct update if function doesn't exist
-      const { error: updateError } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", userId)
-        .eq("read", false);
-
-      if (updateError) {
-        return { data: 0, error: updateError.message };
-      }
-
-      return { data: -1, error: null }; // -1 indicates we don't know the count
+    if (category) {
+      query = query.eq("type", category);
     }
 
-    return { data: data || 0, error: null };
+    const { error, count } = await query.select("id", { count: "exact", head: false });
+
+    if (error) {
+      return { data: 0, error: error.message };
+    }
+
+    return { data: count || 0, error: null };
   } catch (error) {
     return {
       data: 0,
@@ -240,20 +311,18 @@ export async function markAllAsRead(
 }
 
 /**
- * Delete a notification
+ * Delete a notification.
  */
 export async function deleteNotification(
   notificationId: string,
   userId: string
 ): Promise<{ error: string | null }> {
   try {
-    
-
     const { error } = await supabase
       .from("notifications")
       .delete()
       .eq("id", notificationId)
-      .eq("user_id", userId); // RLS ensures user can only delete own notifications
+      .eq("user_id", userId);
 
     if (error) {
       return { error: error.message };
@@ -265,59 +334,4 @@ export async function deleteNotification(
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
-}
-
-/**
- * Get a single notification by ID
- */
-export async function getNotificationById(
-  notificationId: string,
-  userId: string
-): Promise<{ data: InAppNotification | null; error: string | null }> {
-  try {
-    
-
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
-      .eq("id", notificationId)
-      .eq("user_id", userId)
-      .single();
-
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    return {
-      data: mapRowToNotification(data as NotificationRow),
-      error: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-}
-
-// =====================================================
-// Helper Functions
-// =====================================================
-
-/**
- * Map database row to InAppNotification type
- */
-function mapRowToNotification(row: NotificationRow): InAppNotification {
-  return {
-    id: row.id,
-    user_id: row.user_id,
-    salon_id: row.salon_id,
-    type: row.type as InAppNotification["type"],
-    title: row.title,
-    body: row.body,
-    read: row.read,
-    metadata: row.metadata,
-    action_url: row.action_url,
-    created_at: row.created_at,
-  };
 }

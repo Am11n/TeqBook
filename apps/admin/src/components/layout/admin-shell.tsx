@@ -56,6 +56,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AdminCommandPalette } from "@/components/admin-command-palette";
+import { NotificationCenter } from "@/components/notification-center";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -306,10 +307,13 @@ function AdminShellContent({ children }: AdminShellProps) {
           </button>
         </div>
 
-        {/* Right: Language, Profile */}
+        {/* Right: Notifications, Language, Profile */}
         <div className="flex items-center gap-2 pr-6">
           {/* Language selector */}
           <LanguageSelector locale={locale} salon={salon} setLocale={setLocale} />
+
+          {/* Notification bell */}
+          <NotificationCenter />
 
           {/* User avatar with dropdown */}
           <div suppressHydrationWarning>

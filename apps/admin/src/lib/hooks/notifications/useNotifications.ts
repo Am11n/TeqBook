@@ -1,51 +1,91 @@
 // =====================================================
 // useNotifications Hook
 // =====================================================
-// React hook for managing in-app notifications
-// Fetches directly from Supabase on client-side
+// Cursor-paginated, realtime-aware notification hook
+// with optimistic mark-read and per-category unread counts.
 
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase-client";
-import type { InAppNotification, InAppNotificationType } from "@/lib/types/notifications";
+import type {
+  InAppNotification,
+  InAppNotificationCategory,
+  NotificationSeverity,
+  NotificationSource,
+  NotificationEntity,
+  GetNotificationsOptions,
+} from "@/lib/types/notifications";
 
 // =====================================================
 // Types
 // =====================================================
 
 interface UseNotificationsOptions {
-  /** Enable polling for new notifications */
   enablePolling?: boolean;
-  /** Polling interval in milliseconds (default: 60000 = 1 minute) */
   pollingInterval?: number;
-  /** Number of notifications to fetch per page */
   pageSize?: number;
+  category?: InAppNotificationCategory;
+  unreadOnly?: boolean;
 }
 
 interface UseNotificationsReturn {
-  /** List of notifications */
   notifications: InAppNotification[];
-  /** Unread notification count */
-  unreadCount: number;
-  /** Whether notifications are loading */
+  totalUnreadCount: number;
+  unreadByCategory: Record<string, number>;
   isLoading: boolean;
-  /** Error message if any */
   error: string | null;
-  /** Mark a single notification as read */
-  markAsRead: (notificationId: string) => Promise<void>;
-  /** Mark all notifications as read */
-  markAllAsRead: () => Promise<void>;
-  /** Refresh notifications */
-  refresh: () => Promise<void>;
-  /** Load more notifications (pagination) */
-  loadMore: () => Promise<void>;
-  /** Whether there are more notifications to load */
   hasMore: boolean;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: (category?: InAppNotificationCategory) => Promise<void>;
+  refresh: () => Promise<void>;
+  loadMore: () => Promise<void>;
 }
 
 // =====================================================
-// Hook Implementation
+// Row -> InAppNotification mapper
+// =====================================================
+
+function mapRow(row: Record<string, unknown>): InAppNotification {
+  const meta = (row.metadata as Record<string, unknown>) || {};
+  return {
+    id: row.id as string,
+    user_id: row.user_id as string,
+    salon_id: (row.salon_id as string) ?? null,
+    type: (row.type as InAppNotificationCategory) || "info",
+    severity: (meta._severity as NotificationSeverity) || "info",
+    source: (meta._source as NotificationSource) ?? null,
+    entity: (meta._entity as NotificationEntity) ?? null,
+    title: row.title as string,
+    body: row.body as string,
+    read: row.read as boolean,
+    metadata: meta,
+    action_url: (row.action_url as string) ?? null,
+    created_at: row.created_at as string,
+  };
+}
+
+// =====================================================
+// Cursor helpers
+// =====================================================
+
+function encodeCursor(createdAt: string, id: string): string {
+  return btoa(JSON.stringify({ c: createdAt, i: id }));
+}
+
+function decodeCursor(cursor: string): { createdAt: string; id: string } | null {
+  try {
+    const p = JSON.parse(atob(cursor));
+    return p && typeof p.c === "string" && typeof p.i === "string"
+      ? { createdAt: p.c, id: p.i }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+// =====================================================
+// Hook
 // =====================================================
 
 export function useNotifications(
@@ -53,150 +93,182 @@ export function useNotifications(
 ): UseNotificationsReturn {
   const {
     enablePolling = true,
-    pollingInterval = 60000, // 1 minute
+    pollingInterval = 60_000,
     pageSize = 20,
+    category,
+    unreadOnly = false,
   } = options;
 
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [unreadByCategory, setUnreadByCategory] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const realtimeRetryRef = useRef(0);
   const realtimeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
 
-  // Get current user on mount
+  // Track locally-read ids so realtime/polling never reverts them
+  const localReadIds = useRef(new Set<string>());
+
+  // ---------------------------------------------------
+  // Auth: get userId
+  // ---------------------------------------------------
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
+      setUserId(user?.id ?? null);
     };
     getUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user?.id || null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUserId(session?.user?.id ?? null);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => { subscription.unsubscribe(); };
   }, []);
 
-  // Fetch notifications from Supabase
-  const fetchNotifications = useCallback(
-    async (reset: boolean = false) => {
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
+  // ---------------------------------------------------
+  // Fetch page (cursor-based)
+  // ---------------------------------------------------
+  const fetchPage = useCallback(
+    async (reset: boolean) => {
+      if (!userId) { setIsLoading(false); return; }
 
       try {
-        const currentOffset = reset ? 0 : offset;
+        const cursor = reset ? null : nextCursor;
+        const limit = pageSize;
 
-        const { data, error: fetchError } = await supabase
+        let query = supabase
           .from("notifications")
-          .select("*")
+          .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
-          .range(currentOffset, currentOffset + pageSize - 1);
+          .order("id", { ascending: false })
+          .limit(limit + 1);
 
-        if (fetchError) {
-          throw new Error(fetchError.message);
+        if (category) query = query.eq("type", category);
+        if (unreadOnly) query = query.eq("read", false);
+
+        if (cursor) {
+          const decoded = decodeCursor(cursor);
+          if (decoded) {
+            query = query.or(
+              `created_at.lt.${decoded.createdAt},and(created_at.eq.${decoded.createdAt},id.lt.${decoded.id})`
+            );
+          }
         }
 
-        const mappedNotifications: InAppNotification[] = (data || []).map((row) => ({
-          id: row.id,
-          user_id: row.user_id,
-          salon_id: row.salon_id,
-          type: row.type as InAppNotificationType,
-          title: row.title,
-          body: row.body,
-          read: row.read,
-          metadata: row.metadata,
-          action_url: row.action_url,
-          created_at: row.created_at,
-        }));
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw new Error(fetchError.message);
+
+        const rows = (data || []).map(mapRow);
+        const more = rows.length > limit;
+        const page = rows.slice(0, limit);
+
+        // Apply local-read overrides
+        const merged = page.map((n) =>
+          localReadIds.current.has(n.id) ? { ...n, read: true } : n
+        );
 
         if (reset) {
-          setNotifications(mappedNotifications);
-          setOffset(pageSize);
+          setNotifications(merged);
         } else {
-          setNotifications((prev) => [...prev, ...mappedNotifications]);
-          setOffset((prev) => prev + pageSize);
+          setNotifications((prev) => {
+            const existingIds = new Set(prev.map((n) => n.id));
+            const fresh = merged.filter((n) => !existingIds.has(n.id));
+            return [...prev, ...fresh];
+          });
         }
 
-        setHasMore(mappedNotifications.length === pageSize);
+        if (more && page.length > 0) {
+          const last = page[page.length - 1];
+          setNextCursor(encodeCursor(last.created_at, last.id));
+        } else {
+          setNextCursor(null);
+        }
+        setHasMore(more);
         setError(null);
       } catch (err) {
-        console.error("Error fetching notifications:", err);
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setIsLoading(false);
       }
     },
-    [userId, offset, pageSize]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userId, nextCursor, pageSize, category, unreadOnly]
   );
 
-  // Fetch unread count
-  const fetchUnreadCount = useCallback(async () => {
+  // ---------------------------------------------------
+  // Fetch unread counts (total + per category)
+  // ---------------------------------------------------
+  const fetchUnreadCounts = useCallback(async () => {
     if (!userId) return;
-
     try {
-      const { count, error: countError } = await supabase
+      const { data, error: e } = await supabase
         .from("notifications")
-        .select("*", { count: "exact", head: true })
+        .select("type")
         .eq("user_id", userId)
         .eq("read", false);
 
-      if (!countError) {
-        setUnreadCount(count || 0);
+      if (e) return;
+
+      const byCategory: Record<string, number> = {};
+      let total = 0;
+      for (const row of data || []) {
+        // Skip items we've already locally marked read
+        // (we don't have id here, so this is a best-effort count)
+        const cat = row.type as string;
+        byCategory[cat] = (byCategory[cat] || 0) + 1;
+        total++;
       }
+      setTotalUnreadCount(total);
+      setUnreadByCategory(byCategory);
     } catch {
-      // Silently fail for polling
+      // Silently fail – polling will retry
     }
   }, [userId]);
 
-  // Initial fetch when userId is available
+  // ---------------------------------------------------
+  // Initial load
+  // ---------------------------------------------------
   useEffect(() => {
     if (userId) {
-      fetchNotifications(true);
-      fetchUnreadCount();
+      setIsLoading(true);
+      fetchPage(true);
+      fetchUnreadCounts();
     }
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, category, unreadOnly]);
 
-  // Polling for unread count
+  // ---------------------------------------------------
+  // Polling (unread counts only – lightweight)
+  // ---------------------------------------------------
   useEffect(() => {
     if (!enablePolling || !userId) return;
 
     pollingRef.current = setInterval(() => {
-      fetchUnreadCount();
+      fetchUnreadCounts();
     }, pollingInterval);
 
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
+      if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [enablePolling, pollingInterval, userId, fetchUnreadCount]);
+  }, [enablePolling, pollingInterval, userId, fetchUnreadCounts]);
 
-  // Realtime subscription (with retry on CHANNEL_ERROR – can be intermittent due to network/Supabase)
-  const REALTIME_MAX_RETRIES = 3;
-  const REALTIME_RETRY_MS = 4000;
-
+  // ---------------------------------------------------
+  // Realtime subscription (with retry)
+  // ---------------------------------------------------
   useEffect(() => {
     if (!userId) return;
 
     const channel = supabase
-      .channel(`notifications:user:${userId}`, {
-        config: {
-          broadcast: { self: true },
-        },
-      })
+      .channel(`admin-notifications:${userId}`)
       .on(
         "postgres_changes",
         {
@@ -206,52 +278,40 @@ export function useNotifications(
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log("Realtime notification received:", payload);
-          const newRow = payload.new as any;
-          // Map to InAppNotification type
-          const newNotification: InAppNotification = {
-            id: newRow.id,
-            user_id: newRow.user_id,
-            salon_id: newRow.salon_id,
-            type: newRow.type as InAppNotificationType,
-            title: newRow.title,
-            body: newRow.body,
-            read: newRow.read,
-            metadata: newRow.metadata,
-            action_url: newRow.action_url,
-            created_at: newRow.created_at,
-          };
+          const incoming = mapRow(payload.new as Record<string, unknown>);
 
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+          // If we're filtering by category, only add matching items
+          if (category && incoming.type !== category) {
+            // Still update counts
+            fetchUnreadCounts();
+            return;
+          }
+          if (unreadOnly && incoming.read) return;
+
+          // Dedupe: don't add if already in list
+          setNotifications((prev) => {
+            if (prev.some((n) => n.id === incoming.id)) return prev;
+            return [incoming, ...prev];
+          });
+          setTotalUnreadCount((prev) => prev + 1);
+          setUnreadByCategory((prev) => ({
+            ...prev,
+            [incoming.type]: (prev[incoming.type] || 0) + 1,
+          }));
         }
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          realtimeRetryRef.current = 0; // reset retry count on success
-          console.log("Subscribed to notifications realtime channel");
+          realtimeRetryRef.current = 0;
         } else if (status === "CHANNEL_ERROR") {
-          // Intermittent: network, Supabase "mismatch" bug, or RLS. Polling still updates the list.
           const attempt = realtimeRetryRef.current + 1;
           realtimeRetryRef.current = attempt;
-          if (attempt <= REALTIME_MAX_RETRIES) {
-            console.warn(
-              `Realtime subscription error (attempt ${attempt}/${REALTIME_MAX_RETRIES}), retrying in ${REALTIME_RETRY_MS / 1000}s…`
-            );
+          if (attempt <= 3) {
             realtimeRetryTimeoutRef.current = setTimeout(
               () => setRealtimeRetryKey((k) => k + 1),
-              REALTIME_RETRY_MS
+              4000
             );
-          } else {
-            console.warn(
-              "Realtime subscription failed after retries; notifications will still update via polling."
-            );
-            // Do not set error state – polling keeps notifications working
           }
-        } else if (status === "TIMED_OUT") {
-          console.warn("Realtime subscription timed out");
-        } else if (status === "CLOSED") {
-          console.log("Realtime subscription closed");
         }
       });
 
@@ -262,12 +322,30 @@ export function useNotifications(
       }
       supabase.removeChannel(channel);
     };
-  }, [userId, realtimeRetryKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, category, unreadOnly, realtimeRetryKey]);
 
-  // Mark single notification as read
+  // ---------------------------------------------------
+  // Actions
+  // ---------------------------------------------------
+
   const markAsRead = useCallback(async (notificationId: string) => {
     if (!userId) return;
 
+    // Optimistic: mark locally immediately
+    localReadIds.current.add(notificationId);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId && !n.read ? { ...n, read: true } : n))
+    );
+    setTotalUnreadCount((prev) => Math.max(0, prev - 1));
+    setUnreadByCategory((prev) => {
+      const n = notifications.find((x) => x.id === notificationId);
+      if (!n || n.read) return prev;
+      const cat = n.type;
+      return { ...prev, [cat]: Math.max(0, (prev[cat] || 0) - 1) };
+    });
+
+    // Persist to server
     try {
       const { error: updateError } = await supabase
         .from("notifications")
@@ -276,64 +354,82 @@ export function useNotifications(
         .eq("user_id", userId);
 
       if (updateError) {
-        throw new Error(updateError.message);
+        // Revert optimistic update
+        localReadIds.current.delete(notificationId);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n))
+        );
+        await fetchUnreadCounts();
       }
-
-      // Update local state
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+    } catch {
+      localReadIds.current.delete(notificationId);
+      await fetchUnreadCounts();
     }
-  }, [userId]);
+  }, [userId, notifications, fetchUnreadCounts]);
 
-  // Mark all notifications as read
-  const markAllAsRead = useCallback(async () => {
+  const markAllAsRead = useCallback(async (cat?: InAppNotificationCategory) => {
     if (!userId) return;
 
+    // Optimistic: mark all matching as read locally
+    setNotifications((prev) =>
+      prev.map((n) => {
+        if (!n.read && (!cat || n.type === cat)) {
+          localReadIds.current.add(n.id);
+          return { ...n, read: true };
+        }
+        return n;
+      })
+    );
+    if (cat) {
+      setUnreadByCategory((prev) => ({ ...prev, [cat]: 0 }));
+      setTotalUnreadCount((prev) => Math.max(0, prev - (unreadByCategory[cat] || 0)));
+    } else {
+      setUnreadByCategory({});
+      setTotalUnreadCount(0);
+    }
+
     try {
-      const { error: updateError } = await supabase
+      let query = supabase
         .from("notifications")
         .update({ read: true })
         .eq("user_id", userId)
         .eq("read", false);
 
+      if (cat) query = query.eq("type", cat);
+
+      const { error: updateError } = await query;
+
       if (updateError) {
-        throw new Error(updateError.message);
+        await fetchUnreadCounts();
+        await fetchPage(true);
       }
-
-      // Update local state
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+    } catch {
+      await fetchUnreadCounts();
     }
-  }, [userId]);
+  }, [userId, unreadByCategory, fetchUnreadCounts, fetchPage]);
 
-  // Refresh notifications
   const refresh = useCallback(async () => {
     setIsLoading(true);
-    await fetchNotifications(true);
-    await fetchUnreadCount();
-  }, [fetchNotifications, fetchUnreadCount]);
+    setNextCursor(null);
+    await fetchPage(true);
+    await fetchUnreadCounts();
+  }, [fetchPage, fetchUnreadCounts]);
 
-  // Load more notifications
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading) return;
-    await fetchNotifications(false);
-  }, [hasMore, isLoading, fetchNotifications]);
+    await fetchPage(false);
+  }, [hasMore, isLoading, fetchPage]);
 
   return {
     notifications,
-    unreadCount,
+    totalUnreadCount,
+    unreadByCategory,
     isLoading,
     error,
+    hasMore,
     markAsRead,
     markAllAsRead,
     refresh,
     loadMore,
-    hasMore,
   };
 }
