@@ -11,6 +11,8 @@
 // Enums (matching Postgres enums)
 // =====================================================
 
+export type TimeFormat = "24h" | "12h";
+
 export type BookingStatus = 
   | "pending"
   | "confirmed"

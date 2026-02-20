@@ -3,7 +3,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { getAvailableSlots } from "@/lib/repositories/bookings";
 import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
-import { localISOStringToUTC, formatTimeInTimezone } from "@/lib/utils/timezone";
+import { formatTimeInTimezone } from "@/lib/utils/timezone";
 import type { Booking } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 import { useBookingValidation } from "./useBookingValidation";
@@ -60,16 +60,11 @@ export function useCreateBooking({
     const { data, error: rpcError } = await getAvailableSlots(salon.id, employeeId, serviceId, date);
     if (rpcError) { setError(rpcError); setLoadingSlots(false); return; }
 
+    const salonTz = salon?.timezone || "UTC";
     const mapped = (data ?? []).map((slot) => {
-      const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
-      const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
-      if (startMatch && endMatch) {
-        return { start: slot.slot_start, end: slot.slot_end, label: `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}` };
-      }
-      const start = new Date(slot.slot_start);
-      const end = new Date(slot.slot_end);
-      const label = `${start.getHours().toString().padStart(2, "0")}:${start.getMinutes().toString().padStart(2, "0")} – ${end.getHours().toString().padStart(2, "0")}:${end.getMinutes().toString().padStart(2, "0")}`;
-      return { start: slot.slot_start, end: slot.slot_end, label };
+      const startLabel = formatTimeInTimezone(slot.slot_start, salonTz);
+      const endLabel = formatTimeInTimezone(slot.slot_end, salonTz);
+      return { start: slot.slot_start, end: slot.slot_end, label: `${startLabel} – ${endLabel}` };
     });
 
     setSlots(mapped);
@@ -94,14 +89,7 @@ export function useCreateBooking({
     const slot = slots.find((s) => s.start === selectedSlot);
     if (!slot) { setError(translations.invalidSlot); setSavingBooking(false); return; }
 
-    const salonTimezone = salon?.timezone || "UTC";
-    let startTimeUTC = slot.start;
-    if (salonTimezone !== "UTC") {
-      try {
-        const timeMatch = slot.start.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
-        if (timeMatch) startTimeUTC = localISOStringToUTC(timeMatch[1], salonTimezone);
-      } catch { startTimeUTC = slot.start; }
-    }
+    const startTimeUTC = new Date(slot.start).toISOString();
 
     const { data: bookingData, error: rpcError } = await createBooking({
       salon_id: salon.id, employee_id: employeeId, service_id: serviceId,
