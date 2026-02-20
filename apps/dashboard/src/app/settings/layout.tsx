@@ -85,6 +85,10 @@ export default function SettingsLayout({
   // Determine active tab based on pathname
   const activeTab = pathname.includes("/opening-hours")
     ? "opening-hours"
+    : pathname.includes("/no-show-policy")
+    ? "no-show-policy"
+    : pathname.includes("/import")
+    ? "import"
     : pathname.includes("/notifications")
     ? "notifications"
     : pathname.includes("/billing")
@@ -98,6 +102,8 @@ export default function SettingsLayout({
   const tabRoutes: Record<string, string> = {
     general: "/settings/general",
     "opening-hours": "/settings/opening-hours",
+    "no-show-policy": "/settings/no-show-policy",
+    import: "/settings/import",
     notifications: "/settings/notifications",
     billing: "/settings/billing",
     security: "/settings/security",
@@ -145,11 +151,11 @@ export default function SettingsLayout({
         <div className="mt-6 tabular-nums">
           {mounted ? (
             <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-              <TabsList className={`grid w-full max-w-3xl ${
-                featuresMounted && hasFeature("BRANDING") ? "grid-cols-6" : "grid-cols-5"
-              }`}>
+              <TabsList className="flex w-full max-w-5xl flex-wrap gap-0.5">
                 <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
                 <TabsTrigger value="opening-hours">{t.openingHoursTab}</TabsTrigger>
+                <TabsTrigger value="no-show-policy">No-show</TabsTrigger>
+                <TabsTrigger value="import">Import</TabsTrigger>
                 <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
                 <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>

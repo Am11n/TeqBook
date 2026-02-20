@@ -15,6 +15,7 @@ import {
   FileCheck,
   Headset,
   MessageSquare,
+  ShoppingBag,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
 import {
@@ -63,6 +64,7 @@ export function useDashboardMenuItems({
     () => [
       { href: "/calendar", label: texts.calendar, icon: Calendar },
       { href: "/bookings", label: texts.bookings, icon: BookOpen },
+      { href: "/waitlist", label: "Waitlist", icon: Clock },
     ],
     [texts.calendar, texts.bookings]
   );
@@ -95,6 +97,12 @@ export function useDashboardMenuItems({
         items.push({ href: "/reports", label: texts.reports, icon: TrendingUp });
       }
     }
+
+    if (!items.some((i) => i.href === "/reports")) {
+      items.push({ href: "/reports", label: texts.reports, icon: TrendingUp });
+    }
+
+    items.push({ href: "/sales/gift-cards", label: "Salg", icon: ShoppingBag });
 
     return items;
   }, [

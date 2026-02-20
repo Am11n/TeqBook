@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { FeatureGate } from "@/components/feature-gate";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -82,14 +79,7 @@ export default function ExportPage() {
   };
 
   return (
-    <FeatureGate feature="EXPORTS">
-    <DashboardShell>
-      <PageHeader
-        title="Export Data"
-        description="Export your salon data to CSV files for accounting and analysis"
-      />
-
-      {/* Toast Message */}
+    <>
       {message && (
         <div
           className={`mb-4 rounded-lg border p-4 ${
@@ -199,8 +189,7 @@ export default function ExportPage() {
           </div>
         </Card>
       </div>
-    </DashboardShell>
-    </FeatureGate>
+    </>
   );
 }
 

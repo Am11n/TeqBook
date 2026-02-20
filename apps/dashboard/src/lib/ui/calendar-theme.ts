@@ -100,7 +100,14 @@ const BOOKING_DEFAULT: BookingClasses = {
   subtitle: "text-zinc-500/70 dark:text-zinc-400/70",
 };
 
-export function getBookingClasses(status: string | null | undefined): BookingClasses {
+export const IMPORTED_BOOKING: BookingClasses = {
+  card: `border-l-[3px] border-l-gray-300 bg-gray-100 dark:bg-gray-800/50 opacity-60 ${BOOKING_BASE}`,
+  title: "text-gray-500 dark:text-gray-400",
+  subtitle: "text-gray-400/70 dark:text-gray-500/70",
+};
+
+export function getBookingClasses(status: string | null | undefined, isImported?: boolean): BookingClasses {
+  if (isImported) return IMPORTED_BOOKING;
   if (!status) return BOOKING_DEFAULT;
   return BOOKING_MAP[status] ?? BOOKING_DEFAULT;
 }

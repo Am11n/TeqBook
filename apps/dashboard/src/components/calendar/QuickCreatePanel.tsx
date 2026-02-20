@@ -29,6 +29,10 @@ interface QuickCreatePanelProps {
   prefillEmployeeId?: string;
   prefillTime?: string;
   prefillDate?: string;
+  prefillServiceId?: string;
+  prefillCustomerName?: string;
+  prefillCustomerPhone?: string;
+  prefillCustomerEmail?: string;
   onBookingCreated: (booking: Booking) => void;
 }
 
@@ -45,6 +49,10 @@ export function QuickCreatePanel({
   prefillEmployeeId,
   prefillTime,
   prefillDate,
+  prefillServiceId,
+  prefillCustomerName,
+  prefillCustomerPhone,
+  prefillCustomerEmail,
   onBookingCreated,
 }: QuickCreatePanelProps) {
   const { salon } = useCurrentSalon();
@@ -80,16 +88,25 @@ export function QuickCreatePanel({
       setEmployeeId(prefillEmployeeId || "");
       setDate(prefillDate || new Date().toISOString().slice(0, 10));
       setTime(prefillTime || "");
-      setCustomerQuery("");
-      setSelectedCustomer(null);
-      setCustomerName("");
-      setCustomerPhone("");
-      setCustomerEmail("");
-      setServiceId("");
+      setServiceId(prefillServiceId || "");
+      if (prefillCustomerName) {
+        setCustomerQuery(prefillCustomerName);
+        setCustomerName(prefillCustomerName);
+        setCustomerPhone(prefillCustomerPhone || "");
+        setCustomerEmail(prefillCustomerEmail || "");
+        setIsNewCustomer(false);
+        setSelectedCustomer(null);
+      } else {
+        setCustomerQuery("");
+        setSelectedCustomer(null);
+        setCustomerName("");
+        setCustomerPhone("");
+        setCustomerEmail("");
+        setIsNewCustomer(false);
+      }
       setError(null);
-      setIsNewCustomer(false);
     }
-  }, [open, prefillEmployeeId, prefillDate, prefillTime]);
+  }, [open, prefillEmployeeId, prefillDate, prefillTime, prefillServiceId, prefillCustomerName, prefillCustomerPhone, prefillCustomerEmail]);
 
   // Load employees and services
   useEffect(() => {

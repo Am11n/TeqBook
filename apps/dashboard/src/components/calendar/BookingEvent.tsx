@@ -73,7 +73,7 @@ export function BookingEvent({
   const height = style?.height ? parseInt(String(style.height)) : 40;
   const isCompact = height < 50;
   const problems = booking._problems || [];
-  const classes = getBookingClasses(booking.status);
+  const classes = getBookingClasses(booking.status, booking.is_imported);
 
   // Separate layout styles (position/size for DayView grid) from visual styles
   const { position, top: styleTop, left: styleLeft, width: styleWidth, zIndex: styleZIndex, height: styleHeight, ...visualStyle } = (style || {}) as React.CSSProperties & Record<string, unknown>;

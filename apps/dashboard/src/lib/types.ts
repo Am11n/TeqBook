@@ -93,11 +93,13 @@ export type CalendarBooking = {
   id: string;
   start_time: string;
   end_time: string;
-  status: BookingStatus | string; // Can be enum or text for backward compatibility
+  status: BookingStatus | string;
   is_walk_in: boolean;
   customer_id: string | null;
+  service_id: string | null;
+  is_imported?: boolean;
   notes: string | null;
-  customers: { full_name: string | null; phone?: string | null } | null;
+  customers: { full_name: string | null; phone?: string | null; email?: string | null } | null;
   employees: { id: string; full_name: string | null } | null;
   services: {
     name: string | null;

@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { FeatureGate } from "@/components/feature-gate";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -35,21 +32,15 @@ export default function ReportsPage() {
 
   if (!isReady) {
     return (
-      <DashboardShell>
-        <PageHeader title="Reports" description="Analytics and insights" />
-        <div className="space-y-6">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </DashboardShell>
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
   return (
-    <FeatureGate feature="ADVANCED_REPORTS">
-    <DashboardShell>
-      <PageHeader title="Reports & Analytics" description="View insights and performance metrics" />
-
+    <>
       {error && (
         <Card className="p-4 border-destructive bg-destructive/10">
           <p className="text-sm text-destructive">{error}</p>
@@ -74,7 +65,6 @@ export default function ReportsPage() {
         revenueByMonth={revenueByMonth}
       />
 
-      {/* Charts */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RevenueChart loading={loading} revenueByMonth={revenueByMonth} />
         <BookingsPerServiceChart loading={loading} bookingsPerService={bookingsPerService} />
@@ -86,7 +76,6 @@ export default function ReportsPage() {
         totalBookings={totalBookings}
         averageBookingDuration={averageBookingDuration}
       />
-    </DashboardShell>
-    </FeatureGate>
+    </>
   );
 }

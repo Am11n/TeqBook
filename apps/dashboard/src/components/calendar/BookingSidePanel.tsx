@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Phone, Clock, User, CreditCard, MessageSquare, ChevronRight, Check, XCircle, AlertTriangle, RotateCcw, UserPlus, Send } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Phone, Clock, User, CreditCard, MessageSquare, ChevronRight, Check, XCircle, AlertTriangle, RotateCcw, UserPlus, Send, CalendarPlus, ShieldAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
+import { getNoShowInfo } from "@/lib/services/noshow-policy-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 
@@ -25,6 +26,7 @@ interface BookingSidePanelProps {
   onBookingUpdated: () => void;
   onReschedule?: (booking: CalendarBooking) => void;
   onChangeEmployee?: (booking: CalendarBooking) => void;
+  onRebook?: (booking: CalendarBooking) => void;
 }
 
 export function BookingSidePanel({
@@ -34,6 +36,7 @@ export function BookingSidePanel({
   onBookingUpdated,
   onReschedule,
   onChangeEmployee,
+  onRebook,
 }: BookingSidePanelProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
@@ -45,6 +48,20 @@ export function BookingSidePanel({
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+  const [noShowCount, setNoShowCount] = useState(0);
+  const [customerBlocked, setCustomerBlocked] = useState(false);
+
+  useEffect(() => {
+    if (!booking?.customer_id || !salon?.id) {
+      setNoShowCount(0);
+      setCustomerBlocked(false);
+      return;
+    }
+    getNoShowInfo(salon.id, booking.customer_id).then(({ data }) => {
+      setNoShowCount(data?.no_show_count ?? 0);
+      setCustomerBlocked(data?.is_blocked ?? false);
+    });
+  }, [booking?.customer_id, salon?.id]);
 
   if (!booking) return null;
 
@@ -132,6 +149,18 @@ export function BookingSidePanel({
               <p className="text-xs text-amber-600 flex items-center gap-1.5 mt-1">
                 <AlertTriangle className="h-3 w-3" />
                 No phone number
+              </p>
+            )}
+            {customerBlocked && (
+              <p className="text-xs text-red-600 flex items-center gap-1.5 mt-1.5">
+                <ShieldAlert className="h-3 w-3" />
+                Blocked (no-show)
+              </p>
+            )}
+            {!customerBlocked && noShowCount > 0 && (
+              <p className="text-xs text-orange-600 flex items-center gap-1.5 mt-1.5">
+                <AlertTriangle className="h-3 w-3" />
+                {noShowCount} no-show{noShowCount !== 1 ? "s" : ""}
               </p>
             )}
           </div>
@@ -280,6 +309,26 @@ export function BookingSidePanel({
               </Button>
             </div>
           </div>
+
+          {/* Section: Rebook (shown for completed bookings) */}
+          {booking.status === "completed" && onRebook && (
+            <div className="border-b px-4 py-3">
+              <Button
+                size="sm"
+                className="w-full gap-1.5"
+                onClick={() => {
+                  onRebook(booking);
+                  onOpenChange(false);
+                }}
+              >
+                <CalendarPlus className="h-3.5 w-3.5" />
+                Book next appointment
+              </Button>
+              <p className="mt-1.5 text-[10px] text-muted-foreground text-center">
+                Same customer, service & employee — pick new date
+              </p>
+            </div>
+          )}
 
           {/* Problem badges summary */}
           {problems.length > 0 && (

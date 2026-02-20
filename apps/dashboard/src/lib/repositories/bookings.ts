@@ -59,7 +59,7 @@ export async function getBookingsForCalendar(
     let query = supabase
       .from("bookings")
       .select(
-        "id, start_time, end_time, status, is_walk_in, customer_id, notes, customers(full_name, phone), employees(id, full_name), services(name, price_cents, duration_minutes, prep_minutes, cleanup_minutes)",
+        "id, start_time, end_time, status, is_walk_in, customer_id, service_id, is_imported, notes, customers(full_name, phone, email), employees(id, full_name), services(name, price_cents, duration_minutes, prep_minutes, cleanup_minutes)",
         { count: "exact" }
       )
       .eq("salon_id", salonId);

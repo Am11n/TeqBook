@@ -15,13 +15,12 @@ import {
 } from "@/lib/repositories/bookings";
 import type { Booking, CalendarBooking, CreateBookingInput } from "@/lib/types";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
-// Dynamic import to avoid bundling Node.js modules on client
-// import { sendBookingConfirmation } from "@/lib/services/email-service";
 import { scheduleReminders, cancelReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getCustomerById } from "@/lib/repositories/customers";
 import { logBookingEvent } from "@/lib/services/audit-trail-service";
 import { getCurrentUser } from "@/lib/services/auth-service";
+import { handleNoShow } from "@/lib/services/noshow-policy-service";
 
 /**
  * Get bookings for current salon with business logic
@@ -384,6 +383,35 @@ export async function updateBookingStatus(
           auditError: auditError instanceof Error ? auditError.message : "Unknown error",
         });
       });
+
+      // Handle no-show strike if status changed to no-show
+      if (status === "no-show") {
+        try {
+          const { supabase } = await import("@/lib/supabase-client");
+          const { data: bookingRow } = await supabase
+            .from("bookings")
+            .select("customer_id")
+            .eq("id", bookingId)
+            .eq("salon_id", salonId)
+            .single();
+
+          if (bookingRow?.customer_id) {
+            const noShowResult = await handleNoShow(salonId, bookingRow.customer_id);
+            if (noShowResult.blocked) {
+              logInfo("Customer auto-blocked after no-show", {
+                ...logContext,
+                customerId: bookingRow.customer_id,
+                noShowCount: noShowResult.newCount,
+              });
+            }
+          }
+        } catch (noShowError) {
+          logWarn("Failed to process no-show strike", {
+            ...logContext,
+            error: noShowError instanceof Error ? noShowError.message : "Unknown",
+          });
+        }
+      }
     }
 
     return result;
@@ -610,6 +638,32 @@ export async function cancelBooking(
     if (!result.error && reason) {
       // We need to update notes separately - for now, we'll just update status
       // In a full implementation, we might want to add a cancellation_reason field
+    }
+
+    // Check waitlist for matching entries to auto-fill the cancelled slot
+    if (!result.error) {
+      try {
+        const { supabase } = await import("@/lib/supabase-client");
+        const { data: bookingRow } = await supabase
+          .from("bookings")
+          .select("service_id, employee_id, start_time")
+          .eq("id", bookingId)
+          .eq("salon_id", salonId)
+          .single();
+
+        if (bookingRow?.service_id) {
+          const bookingDate = bookingRow.start_time
+            ? new Date(bookingRow.start_time).toISOString().slice(0, 10)
+            : null;
+
+          if (bookingDate) {
+            const { handleCancellation } = await import("@/lib/services/waitlist-service");
+            handleCancellation(salonId, bookingRow.service_id, bookingDate, bookingRow.employee_id).catch(() => {});
+          }
+        }
+      } catch {
+        // Waitlist check is best-effort, don't fail the cancellation
+      }
     }
 
     return result;

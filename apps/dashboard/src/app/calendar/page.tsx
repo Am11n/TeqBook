@@ -140,6 +140,12 @@ export default function CalendarPage() {
     date?: string;
   }>({});
   const [showFindAvailable, setShowFindAvailable] = useState(false);
+  const [rebookPrefill, setRebookPrefill] = useState<{
+    serviceId?: string;
+    customerName?: string;
+    customerPhone?: string;
+    customerEmail?: string;
+  }>({});
   const [rescheduleBooking, setRescheduleBooking] = useState<CalendarBooking | null>(null);
   const [changeEmployeeBooking, setChangeEmployeeBooking] = useState<CalendarBooking | null>(null);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -234,6 +240,26 @@ export default function CalendarPage() {
 
   const handleChangeEmployee = useCallback((booking: CalendarBooking) => {
     setChangeEmployeeBooking(booking);
+  }, []);
+
+  const handleRebook = useCallback((booking: CalendarBooking) => {
+    const bookingDate = new Date(booking.start_time);
+    const suggestedDate = new Date(bookingDate);
+    suggestedDate.setDate(suggestedDate.getDate() + 28); // same weekday + 4 weeks
+    const suggestedDateStr = suggestedDate.toISOString().slice(0, 10);
+
+    setQuickCreatePrefill({
+      employeeId: booking.employees?.id,
+      date: suggestedDateStr,
+    });
+    setRebookPrefill({
+      serviceId: booking.service_id || undefined,
+      customerName: booking.customers?.full_name || undefined,
+      customerPhone: booking.customers?.phone || undefined,
+      customerEmail: booking.customers?.email || undefined,
+    });
+    setShowQuickCreate(true);
+    setSelectedBooking(null);
   }, []);
 
   const handleFindAvailableSlotSelected = useCallback((slot: AvailableSlotBatch) => {
@@ -437,14 +463,22 @@ export default function CalendarPage() {
           onBookingUpdated={handleBookingUpdated}
           onReschedule={handleReschedule}
           onChangeEmployee={handleChangeEmployee}
+          onRebook={handleRebook}
         />
 
         <QuickCreatePanel
           open={showQuickCreate}
-          onOpenChange={setShowQuickCreate}
+          onOpenChange={(open) => {
+            setShowQuickCreate(open);
+            if (!open) setRebookPrefill({});
+          }}
           prefillEmployeeId={quickCreatePrefill.employeeId}
           prefillTime={quickCreatePrefill.time}
           prefillDate={quickCreatePrefill.date || selectedDate}
+          prefillServiceId={rebookPrefill.serviceId}
+          prefillCustomerName={rebookPrefill.customerName}
+          prefillCustomerPhone={rebookPrefill.customerPhone}
+          prefillCustomerEmail={rebookPrefill.customerEmail}
           onBookingCreated={handleBookingCreated}
         />
 
