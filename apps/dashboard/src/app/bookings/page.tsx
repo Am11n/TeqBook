@@ -275,6 +275,7 @@ function BookingsContent() {
             bookings={sortedBookingsForSidebar}
             locale={appLocale}
             timezone={salon?.timezone ?? undefined}
+            hour12={salon?.time_format === "12h" ? true : undefined}
           />
         </div>
       </div>

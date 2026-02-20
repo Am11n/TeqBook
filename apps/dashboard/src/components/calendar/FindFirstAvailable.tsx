@@ -86,12 +86,13 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
   const formatSlotTime = (isoString: string) => {
     const tz = salon?.timezone || "UTC";
     const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
+    const h12 = salon?.time_format === "12h" ? true : undefined;
     try {
       return new Intl.DateTimeFormat(resolvedLocale, {
         hour: "numeric",
         minute: "2-digit",
         timeZone: tz,
-        ...(appLocale === "nb" ? { hour12: false } : {}),
+        ...(h12 !== undefined ? { hour12: h12 } : appLocale === "nb" ? { hour12: false } : {}),
       }).format(new Date(isoString));
     } catch {
       return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

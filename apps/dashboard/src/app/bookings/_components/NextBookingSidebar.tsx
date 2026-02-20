@@ -8,6 +8,7 @@ interface NextBookingSidebarProps {
   bookings: Booking[];
   locale: string;
   timezone?: string;
+  hour12?: boolean;
 }
 
 function getNextBooking(bookings: Booking[]): Booking | null {
@@ -44,13 +45,14 @@ function formatCountdown(ms: number, isNb: boolean, startIso: string): string {
   return isNb ? `om ${h} t ${m} min` : `in ${h}h ${m}m`;
 }
 
-function formatTimeStr(iso: string, locale: string, timezone?: string): string {
+function formatTimeStr(iso: string, locale: string, timezone?: string, hour12?: boolean): string {
   const date = new Date(iso);
   try {
     return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
       hour: "2-digit",
       minute: "2-digit",
       ...(timezone ? { timeZone: timezone } : {}),
+      ...(hour12 !== undefined ? { hour12 } : {}),
     });
   } catch {
     return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
@@ -60,7 +62,7 @@ function formatTimeStr(iso: string, locale: string, timezone?: string): string {
   }
 }
 
-export function NextBookingSidebar({ bookings, locale, timezone }: NextBookingSidebarProps) {
+export function NextBookingSidebar({ bookings, locale, timezone, hour12 }: NextBookingSidebarProps) {
   const [now, setNow] = useState(Date.now());
   const isNb = locale === "nb";
 
@@ -103,7 +105,7 @@ export function NextBookingSidebar({ bookings, locale, timezone }: NextBookingSi
 
         <div className="flex items-center gap-2 text-sm">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span>{formatTimeStr(next.start_time, locale, timezone)}</span>
+          <span>{formatTimeStr(next.start_time, locale, timezone, hour12)}</span>
         </div>
 
         <div className="flex items-center gap-2 text-sm">

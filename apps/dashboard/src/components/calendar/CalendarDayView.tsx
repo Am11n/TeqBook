@@ -23,6 +23,7 @@ export function CalendarDayView({
 }: CalendarDayViewProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
 
@@ -43,7 +44,7 @@ export function CalendarDayView({
                     className={`px-2 py-2 text-xs overflow-hidden ${bClasses.card}`}
                   >
                     <p className={`font-semibold ${bClasses.title}`}>{b.services?.name ?? translations.unknownService}</p>
-                    <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>{formatTimeRange(b, timezone, appLocale)}</p>
+                    <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>{formatTimeRange(b, timezone, appLocale, hour12)}</p>
                     <p className={`mt-0.5 text-[11px] ${bClasses.subtitle}`}>
                       {b.customers?.full_name ?? translations.unknownCustomer}
                     </p>
