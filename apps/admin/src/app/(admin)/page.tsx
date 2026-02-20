@@ -15,20 +15,7 @@ import { RecentActivity, type ActivityEvent } from "@/components/shared/recent-a
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { supabase } from "@/lib/supabase-client";
 import { logError } from "@/lib/services/logger";
-import {
-  Building2,
-  UserPlus,
-  CreditCard,
-  Pause,
-  Download,
-  Search,
-  TrendingUp,
-  Users,
-  Calendar,
-  AlertTriangle,
-  Inbox,
-  Activity,
-} from "lucide-react";
+import { Building2, UserPlus, CreditCard, Pause, Download, Search, TrendingUp, Users, Calendar, AlertTriangle, Inbox, Activity } from "lucide-react";
 
 type DashboardKpis = {
   active_salons: number;

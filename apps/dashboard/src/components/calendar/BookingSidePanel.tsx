@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, Clock, User, CreditCard, MessageSquare, ChevronRight, Check, XCircle, AlertTriangle, RotateCcw, UserPlus, Send, CalendarPlus, ShieldAlert } from "lucide-react";
+import { Phone, Clock, User, CreditCard, MessageSquare, AlertTriangle, UserPlus, CalendarPlus, ShieldAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,8 @@ import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-serv
 import { getNoShowInfo } from "@/lib/services/noshow-policy-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 import { formatPrice } from "@/lib/utils/services/services-utils";
+import { getStatusBadgeClass, formatDuration, PROBLEM_BADGES } from "./booking-panel-helpers";
+import { BookingQuickActions } from "./BookingQuickActions";
 
 interface BookingSidePanelProps {
   booking: CalendarBooking | null;
@@ -46,7 +48,6 @@ export function BookingSidePanel({
   const appLocale = normalizeLocale(locale);
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [updating, setUpdating] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [noShowCount, setNoShowCount] = useState(0);
@@ -95,7 +96,6 @@ export function BookingSidePanel({
     setUpdating(true);
     await updateBookingStatus(salon.id, booking.id, newStatus);
     setUpdating(false);
-    setConfirmCancel(false);
     onBookingUpdated();
   };
 
@@ -183,14 +183,8 @@ export function BookingSidePanel({
                 <CreditCard className="h-3 w-3 text-muted-foreground shrink-0" />
                 <span>
                   {booking.services?.name || "No service"}
-                  {booking.services?.duration_minutes && (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      ({booking.services.prep_minutes ? `${booking.services.prep_minutes}+` : ""}
-                      {booking.services.duration_minutes}
-                      {booking.services.cleanup_minutes ? `+${booking.services.cleanup_minutes}` : ""}
-                      min)
-                    </span>
+                  {booking.services && formatDuration(booking.services) && (
+                    <span className="text-muted-foreground"> ({formatDuration(booking.services)})</span>
                   )}
                 </span>
               </div>
@@ -213,74 +207,21 @@ export function BookingSidePanel({
                 <span className="text-muted-foreground text-[10px]">
                   {booking.is_walk_in ? "Walk-in" : "Online booking"}
                 </span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full capitalize ${
-                  booking.status === "confirmed" ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" :
-                  booking.status === "pending" ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" :
-                  booking.status === "completed" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" :
-                  booking.status === "cancelled" ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" :
-                  booking.status === "no-show" ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300" :
-                  "bg-gray-100 text-gray-700"
-                }`}>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full capitalize ${getStatusBadgeClass(booking.status)}`}>
                   {booking.status}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Fast status actions */}
           {isActive && (
-            <div className="border-b px-4 py-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Quick Actions
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {booking.status !== "confirmed" && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={updating} onClick={() => handleStatusChange("confirmed")}>
-                    <Check className="h-3 w-3" /> Confirm
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={updating} onClick={() => handleStatusChange("completed")}>
-                  <Check className="h-3 w-3 text-green-600" /> Done
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={updating} onClick={() => handleStatusChange("no-show")}>
-                  <AlertTriangle className="h-3 w-3 text-orange-500" /> No-show
-                </Button>
-                {!confirmCancel ? (
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-red-600 hover:text-red-700" disabled={updating} onClick={() => setConfirmCancel(true)}>
-                    <XCircle className="h-3 w-3" /> Cancel
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-red-600">Sure?</span>
-                    <Button size="sm" variant="destructive" className="h-7 text-xs" disabled={updating} onClick={() => handleStatusChange("cancelled")}>Yes</Button>
-                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setConfirmCancel(false)}>No</Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Section 4: Actions */}
-          {isActive && (
-            <div className="border-b px-4 py-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Actions
-              </h3>
-              <div className="space-y-1">
-                <button onClick={() => onReschedule?.(booking)} className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors">
-                  <span className="flex items-center gap-2"><RotateCcw className="h-3 w-3" /> Reschedule</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-                <button onClick={() => onChangeEmployee?.(booking)} className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors">
-                  <span className="flex items-center gap-2"><User className="h-3 w-3" /> Change employee</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-                <button className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors">
-                  <span className="flex items-center gap-2"><Send className="h-3 w-3" /> Send confirmation</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-              </div>
-            </div>
+            <BookingQuickActions
+              booking={booking}
+              updating={updating}
+              onStatusChange={handleStatusChange}
+              onReschedule={onReschedule}
+              onChangeEmployee={onChangeEmployee}
+            />
           )}
 
           {/* Section 5: Notes */}
@@ -336,10 +277,9 @@ export function BookingSidePanel({
             <div className="px-4 py-3">
               <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Issues</h3>
               <div className="flex flex-wrap gap-1.5">
-                {problems.includes("conflict") && <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Conflict detected</span>}
-                {problems.includes("unpaid") && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">Unpaid</span>}
-                {problems.includes("unconfirmed") && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Not confirmed</span>}
-                {problems.includes("missing_contact") && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Missing phone</span>}
+                {Object.entries(PROBLEM_BADGES).map(([key, { label, className }]) =>
+                  problems.includes(key as typeof problems[number]) ? <span key={key} className={`text-[10px] px-2 py-0.5 rounded-full ${className}`}>{label}</span> : null
+                )}
               </div>
             </div>
           )}

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { supabase } from "@/lib/supabase-client";
+import { uploadAttachments } from "./case-detail-helpers";
 import {
   Paperclip,
   Send,
@@ -70,20 +71,8 @@ export function CaseDetailView({
     setError(null);
 
     try {
-      const attachments: { path: string; name: string; size: number }[] = [];
-      for (const file of replyFiles) {
-        const ext = file.name.split(".").pop();
-        const path = `${salonId}/${supportCase.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: uploadErr } = await supabase.storage
-          .from("support-attachments")
-          .upload(path, file, { cacheControl: "3600", upsert: false });
-        if (uploadErr) {
-          setError(`Failed to upload ${file.name}: ${uploadErr.message}`);
-          setSending(false);
-          return;
-        }
-        attachments.push({ path, name: file.name, size: file.size });
-      }
+      const { attachments, error: uploadErr } = await uploadAttachments(replyFiles, salonId, supportCase.id);
+      if (uploadErr) { setError(uploadErr); setSending(false); return; }
 
       const { error: insertErr } = await supabase
         .from("support_case_messages")

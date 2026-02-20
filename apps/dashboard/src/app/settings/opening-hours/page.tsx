@@ -25,6 +25,11 @@ import { type DayForm, DEFAULT_DAYS, validateDay } from "./_components/types";
 import { DayRow } from "./_components/DayRow";
 import { ClosureEditor } from "./_components/ClosureEditor";
 import { CopyDayPopover, type CopyOptions } from "./_components/CopyDayPopover";
+import {
+  updateDayInState,
+  copyMondayToWeekdays as copyMondayHelper,
+  applyToAllOpenDays as applyAllHelper,
+} from "./_helpers/day-operations";
 
 export default function OpeningHoursPage() {
   const { locale } = useLocale();
@@ -106,66 +111,12 @@ export default function OpeningHoursPage() {
     loadData();
   }, [loadData]);
 
-  const updateDay = (index: number, patch: Partial<DayForm>) => {
-    setFormState((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], ...patch };
-      if (patch.isOpen === false) {
-        next[index].hasBreak = false;
-        next[index].breakStart = "";
-        next[index].breakEnd = "";
-        next[index].breakLabel = "";
-      }
-      return next;
-    });
-  };
-
-  const copyMondayToWeekdays = (opts: CopyOptions) => {
-    const monday = formState[0];
-    setFormState((prev) => {
-      const next = [...prev];
-      for (let i = 1; i <= 4; i++) {
-        if (opts.keepClosed && !next[i].isOpen) continue;
-        const patch: Partial<DayForm> = { day_of_week: i };
-        if (opts.overwriteTimes) {
-          patch.isOpen = monday.isOpen;
-          patch.openTime = monday.openTime;
-          patch.closeTime = monday.closeTime;
-        }
-        if (!opts.keepBreaks) {
-          patch.hasBreak = monday.hasBreak;
-          patch.breakStart = monday.breakStart;
-          patch.breakEnd = monday.breakEnd;
-          patch.breakLabel = monday.breakLabel;
-        }
-        next[i] = { ...next[i], ...patch };
-      }
-      return next;
-    });
-  };
-
-  const applyToAllOpenDays = (opts: CopyOptions) => {
-    const firstOpen = formState.find((d) => d.isOpen);
-    if (!firstOpen) return;
-    setFormState((prev) =>
-      prev.map((day) => {
-        if (!day.isOpen && opts.keepClosed) return day;
-        if (!day.isOpen) return day;
-        const patch: Partial<DayForm> = {};
-        if (opts.overwriteTimes) {
-          patch.openTime = firstOpen.openTime;
-          patch.closeTime = firstOpen.closeTime;
-        }
-        if (!opts.keepBreaks) {
-          patch.hasBreak = firstOpen.hasBreak;
-          patch.breakStart = firstOpen.breakStart;
-          patch.breakEnd = firstOpen.breakEnd;
-          patch.breakLabel = firstOpen.breakLabel;
-        }
-        return { ...day, ...patch };
-      })
-    );
-  };
+  const updateDay = (index: number, patch: Partial<DayForm>) =>
+    setFormState((prev) => updateDayInState(prev, index, patch));
+  const copyMondayToWeekdays = (opts: CopyOptions) =>
+    setFormState((prev) => copyMondayHelper(prev, opts));
+  const applyToAllOpenDays = (opts: CopyOptions) =>
+    setFormState((prev) => applyAllHelper(prev, opts));
 
   const handleSave = async () => {
     if (!salon?.id || hasErrors || !isDirty) return;

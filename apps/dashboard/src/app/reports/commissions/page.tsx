@@ -19,15 +19,8 @@ import {
   type EmployeeCommissionReport,
   type CommissionRule,
 } from "@/lib/services/commission-service";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
+import { CommissionRuleDialog } from "./_components/CommissionRuleDialog";
 
 export default function CommissionsPage() {
   const { salon } = useCurrentSalon();
@@ -49,13 +42,7 @@ export default function CommissionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Rule editing
   const [showRuleDialog, setShowRuleDialog] = useState(false);
-  const [ruleEmployeeId, setRuleEmployeeId] = useState<string>("");
-  const [ruleType, setRuleType] = useState<"percentage" | "fixed_per_booking">("percentage");
-  const [ruleRate, setRuleRate] = useState("");
-  const [ruleAppliesTo, setRuleAppliesTo] = useState<"services" | "products" | "both">("services");
-  const [savingRule, setSavingRule] = useState(false);
 
   const loadData = async () => {
     if (!salon?.id) return;
@@ -76,31 +63,18 @@ export default function CommissionsPage() {
     loadData();
   }, [salon?.id, startDate, endDate]);
 
-  const handleSaveRule = async () => {
-    if (!salon?.id) return;
-    setSavingRule(true);
-    const rate = parseFloat(ruleRate);
-    if (isNaN(rate)) {
-      setError("Invalid rate");
-      setSavingRule(false);
-      return;
-    }
-
+  const handleSaveRule = async (rule: {
+    employeeId: string; type: "percentage" | "fixed_per_booking";
+    rate: number; appliesTo: "services" | "products" | "both";
+  }) => {
+    if (!salon?.id) return { error: "No salon" };
     const { error } = await saveRule({
-      salonId: salon.id,
-      employeeId: ruleEmployeeId || null,
-      commissionType: ruleType,
-      rate,
-      appliesTo: ruleAppliesTo,
+      salonId: salon.id, employeeId: rule.employeeId || null,
+      commissionType: rule.type, rate: rule.rate, appliesTo: rule.appliesTo,
     });
-
-    setSavingRule(false);
-    if (error) {
-      setError(error);
-      return;
-    }
-    setShowRuleDialog(false);
+    if (error) { setError(error); return { error }; }
     await loadData();
+    return { error: null };
   };
 
   const handleDeleteRule = async (ruleId: string) => {
@@ -258,73 +232,10 @@ export default function CommissionsPage() {
           </div>
         )}
 
-        {/* Rule Dialog */}
-        <Dialog open={showRuleDialog} onOpenChange={setShowRuleDialog}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Commission Rule</DialogTitle>
-              <DialogDescription>Set commission rate for an employee or salon default.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium">Employee</label>
-                <select
-                  value={ruleEmployeeId}
-                  onChange={(e) => setRuleEmployeeId(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
-                >
-                  <option value="">Salon default (all employees)</option>
-                  {employees.map((e) => (
-                    <option key={e.id} value={e.id}>{e.full_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium">Type</label>
-                <select
-                  value={ruleType}
-                  onChange={(e) => setRuleType(e.target.value as "percentage" | "fixed_per_booking")}
-                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
-                >
-                  <option value="percentage">Percentage of revenue</option>
-                  <option value="fixed_per_booking">Fixed amount per booking</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium">
-                  {ruleType === "percentage" ? "Rate (decimal, e.g. 0.30 = 30%)" : `Amount per booking (${salonCurrency} in cents)`}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={ruleRate}
-                  onChange={(e) => setRuleRate(e.target.value)}
-                  placeholder={ruleType === "percentage" ? "0.30" : "5000"}
-                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium">Applies to</label>
-                <select
-                  value={ruleAppliesTo}
-                  onChange={(e) => setRuleAppliesTo(e.target.value as "services" | "products" | "both")}
-                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
-                >
-                  <option value="services">Services only</option>
-                  <option value="products">Products only</option>
-                  <option value="both">Both</option>
-                </select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowRuleDialog(false)}>Cancel</Button>
-              <Button onClick={handleSaveRule} disabled={savingRule || !ruleRate.trim()}>
-                {savingRule ? "Saving..." : "Save Rule"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <CommissionRuleDialog
+          open={showRuleDialog} onOpenChange={setShowRuleDialog}
+          employees={employees} currency={salonCurrency} onSave={handleSaveRule}
+        />
     </ErrorBoundary>
   );
 }

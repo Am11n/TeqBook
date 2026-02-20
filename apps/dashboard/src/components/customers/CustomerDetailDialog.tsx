@@ -21,26 +21,12 @@ import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
 import type { Customer } from "@/lib/types";
 
 export interface CustomerDetailDialogTranslations {
-  editTitle: string;
-  detailDescription: string;
-  editDescription: string;
-  emailLabel: string;
-  phoneLabel: string;
-  nameLabel: string;
-  notesLabel: string;
-  noNotes: string;
-  gdprConsentLabel: string;
-  consentOk: string;
-  consentMissing: string;
-  bookingHistory: string;
-  noBookings: string;
-  sendMessageCopyPhone: string;
-  copied: string;
-  close: string;
-  edit: string;
-  cancel: string;
-  save: string;
-  saving: string;
+  editTitle: string; detailDescription: string; editDescription: string;
+  emailLabel: string; phoneLabel: string; nameLabel: string;
+  notesLabel: string; noNotes: string; gdprConsentLabel: string;
+  consentOk: string; consentMissing: string; bookingHistory: string;
+  noBookings: string; sendMessageCopyPhone: string; copied: string;
+  close: string; edit: string; cancel: string; save: string; saving: string;
   gdprLabel: string;
 }
 

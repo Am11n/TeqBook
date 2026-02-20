@@ -13,98 +13,25 @@ import {
   markAllAsRead as markAllAsReadRepo,
   deleteNotification as deleteNotificationRepo,
 } from "@/lib/repositories/notifications";
-import {
-  ALL_NOTIFICATION_CATEGORIES,
-  NOTIFICATION_ENTITY_TYPES,
-} from "@/lib/types/notifications";
 import type {
   InAppNotification,
   InAppNotificationCategory,
   CreateInAppNotificationInput,
   GetNotificationsOptions,
   NotificationPage,
-  NotificationSeverity,
 } from "@/lib/types/notifications";
-
-// =====================================================
-// Constants
-// =====================================================
-
-const VALID_SEVERITIES: NotificationSeverity[] = ["info", "warning", "critical"];
-
-const UNSAFE_URL_PATTERNS = [
-  /^https?:/i,
-  /^\/\//,
-  /^javascript:/i,
-  /^data:/i,
-  /^vbscript:/i,
-  /^blob:/i,
-];
-
-// =====================================================
-// Validation
-// =====================================================
-
-export function isActionUrlSafe(url: string | null | undefined): boolean {
-  if (!url) return true;
-  if (!url.startsWith("/")) return false;
-  return !UNSAFE_URL_PATTERNS.some((p) => p.test(url));
-}
+import { ALL_NOTIFICATION_CATEGORIES } from "@/lib/types/notifications";
+import {
+  isSafeActionUrl as isActionUrlSafe,
+  validateNotificationInput as validateCreateInput,
+} from "./notification-validation";
+export { isActionUrlSafe };
 
 function sanitizeActionUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   if (!isActionUrlSafe(url)) return null;
   return url;
 }
-
-function validateCreateInput(input: CreateInAppNotificationInput): string | null {
-  if (!input.user_id) {
-    return "User ID is required";
-  }
-
-  if (!input.title || input.title.trim().length === 0) {
-    return "Title is required";
-  }
-
-  if (input.title.length > 200) {
-    return "Title must be 200 characters or less";
-  }
-
-  if (!input.body || input.body.trim().length === 0) {
-    return "Body is required";
-  }
-
-  if (input.body.length > 1000) {
-    return "Body must be 1000 characters or less";
-  }
-
-  if (!ALL_NOTIFICATION_CATEGORIES.includes(input.type)) {
-    return `Invalid notification category. Must be one of: ${ALL_NOTIFICATION_CATEGORIES.join(", ")}`;
-  }
-
-  if (input.severity && !VALID_SEVERITIES.includes(input.severity)) {
-    return `Invalid severity. Must be one of: ${VALID_SEVERITIES.join(", ")}`;
-  }
-
-  if (input.entity) {
-    if (!input.entity.type || !input.entity.id) {
-      return "Entity must have both type and id";
-    }
-    if (!NOTIFICATION_ENTITY_TYPES.includes(input.entity.type)) {
-      return `Invalid entity type. Must be one of: ${NOTIFICATION_ENTITY_TYPES.join(", ")}`;
-    }
-  }
-
-  if (input.action_url && !isActionUrlSafe(input.action_url)) {
-    return "action_url must be an internal path starting with /";
-  }
-
-  return null;
-}
-
-// =====================================================
-// Service Functions
-// =====================================================
 
 /**
  * Create a new in-app notification.

@@ -10,6 +10,7 @@ import * as featureFlagsService from "@/lib/services/feature-flags-service";
 import { logInfo, logWarn } from "@/lib/services/logger";
 import { formatCurrency as formatCurrencyShared } from "@teqbook/shared";
 import type { CustomerHistoryData, CustomerHistoryExportRow } from "./customer-booking-history-service";
+import { buildCsvRows, rowsToCsv, formatDate as _formatDate } from "./csv-helpers";
 
 /**
  * Check if salon has access to customer booking history feature
@@ -248,34 +249,8 @@ export async function exportCustomerHistoryToCSV(
       return { csvContent: null, filename: null, error: "No bookings to export" };
     }
 
-    // Transform to CSV format
-    const csvRows: CustomerHistoryExportRow[] = allBookings.map((booking) => {
-      const date = new Date(booking.start_time);
-      return {
-        "Booking Date": date.toLocaleDateString(),
-        "Time": date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        "Service": booking.service_name || "-",
-        "Employee": booking.employee_name || "-",
-        "Status": booking.status,
-        "Price": booking.service_price_cents 
-          ? `${(booking.service_price_cents / 100).toFixed(2)}`
-          : "-",
-        "Notes": booking.notes || "",
-      };
-    });
-
-    // Generate CSV
-    const headers = Object.keys(csvRows[0]) as (keyof CustomerHistoryExportRow)[];
-    const headerRow = headers.map((h) => `"${h}"`).join(",");
-    const dataRows = csvRows.map((row) =>
-      headers
-        .map((header) => {
-          const value = row[header];
-          return `"${String(value).replace(/"/g, '""')}"`;
-        })
-        .join(",")
-    );
-    const csvContent = [headerRow, ...dataRows].join("\n");
+    const csvRows = buildCsvRows(allBookings);
+    const csvContent = rowsToCsv(csvRows);
 
     // Generate filename
     const customerName = customer.full_name.replace(/[^a-zA-Z0-9]/g, "-");
@@ -298,14 +273,4 @@ export async function exportCustomerHistoryToCSV(
 }
 
 export { formatCurrencyShared as formatCurrency };
-
-/**
- * Format date for display
- */
-export function formatDate(dateString: string, locale = "nb-NO"): string {
-  return new Date(dateString).toLocaleDateString(locale, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+export { _formatDate as formatDate };

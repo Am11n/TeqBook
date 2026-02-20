@@ -1,7 +1,5 @@
 import { logError, logInfo, logWarn } from "@/lib/services/logger";
-import { shouldSendNotification, type EmailNotificationType } from "@/lib/services/notification-service";
 import { createInAppNotification } from "@/lib/services/in-app-notification-service";
-import { generateICS } from "@/lib/services/calendar-invite-service";
 import { renderNotificationTemplate } from "@/lib/templates/in-app/notification-templates";
 import type {
   SendNotificationInput,
@@ -11,6 +9,7 @@ import type {
   NotificationEventType,
 } from "@/lib/types/notifications";
 import { shouldSendToChannel } from "./unified-notification-service";
+import { sendEmailNotification } from "./email-channel";
 
 /**
  * Send a notification to all specified channels
@@ -103,163 +102,6 @@ export async function sendNotification(
   } catch (error) {
     logError("Failed to send notification", error, logContext);
     return result;
-  }
-}
-
-/**
- * Send email notification based on event type
- */
-async function sendEmailNotification(
-  eventType: NotificationEventType,
-  data: BookingNotificationData | ReminderNotificationData,
-  correlationId: string
-): Promise<{
-  channel: "email";
-  sent: boolean;
-  id?: string;
-  error?: string;
-  icsAttached?: boolean;
-}> {
-  const email = data.recipientEmail;
-  if (!email) {
-    return { channel: "email", sent: false, error: "No email address provided" };
-  }
-
-  try {
-    // Handle booking confirmation with ICS
-    if (eventType === "booking_confirmed") {
-      const bookingData = data as BookingNotificationData;
-      
-      // Generate ICS for calendar invite
-      const icsContent = generateICS({
-        uid: `booking-${bookingData.booking.id}@teqbook.com`,
-        summary: `${bookingData.booking.service?.name || "Appointment"} - ${bookingData.booking.salon?.name || "Salon"}`,
-        description: `Your appointment is confirmed.\n\nService: ${bookingData.booking.service?.name || "N/A"}\nWith: ${bookingData.booking.employee?.name || "Staff member"}`,
-        location: bookingData.booking.salon?.address || undefined,
-        startTime: new Date(bookingData.booking.start_time),
-        endTime: new Date(bookingData.booking.end_time),
-        organizerName: bookingData.booking.salon?.name || "TeqBook",
-        reminderMinutes: 60,
-      });
-
-      // Send confirmation email (ICS attachment is handled in email template/service)
-      // Dynamic import to avoid bundling Node.js modules on client
-      const { sendBookingConfirmation } = await import("@/lib/services/email-service");
-      const result = await sendBookingConfirmation({
-        booking: bookingData.booking,
-        recipientEmail: email,
-        language: bookingData.language,
-        salonId: bookingData.salonId,
-        userId: bookingData.recipientUserId || null,
-      });
-
-      if (result.error) {
-        return { channel: "email", sent: false, error: result.error };
-      }
-
-      return {
-        channel: "email",
-        sent: true,
-        id: result.data?.id,
-        icsAttached: !!icsContent, // ICS was generated
-      };
-    }
-
-    // Handle reminders
-    if (eventType === "booking_reminder_24h" || eventType === "booking_reminder_2h") {
-      const reminderData = data as ReminderNotificationData;
-      // Dynamic import to avoid bundling Node.js modules on client
-      const { sendBookingReminder } = await import("@/lib/services/email-service");
-      const result = await sendBookingReminder({
-        booking: reminderData.booking,
-        recipientEmail: email,
-        reminderType: reminderData.reminderType,
-        language: reminderData.language,
-        salonId: reminderData.salonId,
-        userId: reminderData.recipientUserId || null,
-      });
-
-      if (result.error) {
-        return { channel: "email", sent: false, error: result.error };
-      }
-
-      return { channel: "email", sent: true, id: result.data?.id };
-    }
-
-    // Handle cancellation
-    if (eventType === "booking_cancelled") {
-      const bookingData = data as BookingNotificationData;
-      // Import dynamically to avoid circular dependency
-      const { sendBookingCancellation } = await import("@/lib/services/email-service");
-      
-      // Get salon timezone if available
-      const timezone = bookingData.booking.salon?.timezone || "UTC";
-      
-      const result = await sendBookingCancellation({
-        booking: bookingData.booking,
-        recipientEmail: email,
-        language: bookingData.language,
-        salonId: bookingData.salonId,
-        userId: bookingData.recipientUserId || null,
-        timezone: timezone,
-        cancellationReason: bookingData.cancellationReason ?? undefined,
-      });
-
-      if (result.error) {
-        return { channel: "email", sent: false, error: result.error };
-      }
-
-      return { channel: "email", sent: true, id: result.data?.id };
-    }
-
-    // Handle booking change notification
-    if (eventType === "booking_changed") {
-      // Use confirmation template for changes (future: create dedicated template)
-      const bookingData = data as BookingNotificationData;
-      // Dynamic import to avoid bundling Node.js modules on client
-      const { sendBookingConfirmation: sendBookingConfirmationChanged } = await import("@/lib/services/email-service");
-      const result = await sendBookingConfirmationChanged({
-        booking: bookingData.booking,
-        recipientEmail: email,
-        language: bookingData.language,
-        salonId: bookingData.salonId,
-        userId: bookingData.recipientUserId || null,
-      });
-
-      if (result.error) {
-        return { channel: "email", sent: false, error: result.error };
-      }
-
-      return { channel: "email", sent: true, id: result.data?.id };
-    }
-
-    // Handle new booking notification (for salon owner)
-    if (eventType === "new_booking") {
-      const bookingData = data as BookingNotificationData;
-      // Dynamic import to avoid bundling Node.js modules on client
-      const { sendBookingConfirmation: sendBookingConfirmationNew } = await import("@/lib/services/email-service");
-      const result = await sendBookingConfirmationNew({
-        booking: bookingData.booking,
-        recipientEmail: email,
-        language: bookingData.language,
-        salonId: bookingData.salonId,
-        userId: bookingData.recipientUserId || null,
-      });
-
-      if (result.error) {
-        return { channel: "email", sent: false, error: result.error };
-      }
-
-      return { channel: "email", sent: true, id: result.data?.id };
-    }
-
-    return { channel: "email", sent: false, error: `Unknown event type: ${eventType}` };
-  } catch (error) {
-    return {
-      channel: "email",
-      sent: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
   }
 }
 

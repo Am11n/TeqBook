@@ -1,52 +1,10 @@
-// =====================================================
-// useNotifications Hook
-// =====================================================
-// React hook for managing in-app notifications
-// Fetches directly from Supabase on client-side
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase-client";
 import type { InAppNotification, InAppNotificationType } from "@/lib/types/notifications";
-
-// =====================================================
-// Types
-// =====================================================
-
-interface UseNotificationsOptions {
-  /** Enable polling for new notifications */
-  enablePolling?: boolean;
-  /** Polling interval in milliseconds (default: 60000 = 1 minute) */
-  pollingInterval?: number;
-  /** Number of notifications to fetch per page */
-  pageSize?: number;
-}
-
-interface UseNotificationsReturn {
-  /** List of notifications */
-  notifications: InAppNotification[];
-  /** Unread notification count */
-  unreadCount: number;
-  /** Whether notifications are loading */
-  isLoading: boolean;
-  /** Error message if any */
-  error: string | null;
-  /** Mark a single notification as read */
-  markAsRead: (notificationId: string) => Promise<void>;
-  /** Mark all notifications as read */
-  markAllAsRead: () => Promise<void>;
-  /** Refresh notifications */
-  refresh: () => Promise<void>;
-  /** Load more notifications (pagination) */
-  loadMore: () => Promise<void>;
-  /** Whether there are more notifications to load */
-  hasMore: boolean;
-}
-
-// =====================================================
-// Hook Implementation
-// =====================================================
+import type { UseNotificationsOptions, UseNotificationsReturn } from "./useNotifications-types";
+export type { UseNotificationsOptions, UseNotificationsReturn };
 
 export function useNotifications(
   options: UseNotificationsOptions = {}

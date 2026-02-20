@@ -23,6 +23,12 @@ import { ServiceTemplatesDialog } from "@/components/services/ServiceTemplatesDi
 import { BulkPriceDialog } from "@/components/services/BulkPriceDialog";
 import { Package, PackageCheck, Layers, UserX } from "lucide-react";
 import type { Service } from "@/lib/types";
+import {
+  buildCardViewTranslations,
+  buildTableTranslations,
+  buildCreateDialogTranslations,
+  buildDetailDialogTranslations,
+} from "./_helpers/translations";
 
 export default function ServicesPage() {
   const { locale } = useLocale();
@@ -200,20 +206,7 @@ export default function ServicesPage() {
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
                 currency={salonCurrency}
-                translations={{
-                  active: t.active,
-                  inactive: t.inactive,
-                  delete: t.delete,
-                  edit: t.edit ?? "Edit",
-                  categoryCut: t.categoryCut,
-                  categoryBeard: t.categoryBeard,
-                  categoryColor: t.categoryColor,
-                  categoryNails: t.categoryNails,
-                  categoryMassage: t.categoryMassage,
-                  categoryOther: t.categoryOther,
-                  staffUnit: t.staffUnit ?? "staff",
-                  locale: appLocale,
-                }}
+                translations={buildCardViewTranslations(t, appLocale)}
               />
               <ServicesTable
                 services={filteredServices}
@@ -224,30 +217,7 @@ export default function ServicesPage() {
                 onEditClick={(svc) => detailDialog.openEdit(svc.id)}
                 onReorder={handleReorder}
                 currency={salonCurrency}
-                translations={{
-                  colName: t.colName,
-                  colCategory: t.colCategory,
-                  colDuration: t.colDuration,
-                  colPrice: t.colPrice,
-                  colStatus: t.colStatus,
-                  colEmployees: t.colEmployees ?? "Staff",
-                  active: t.active,
-                  inactive: t.inactive,
-                  delete: t.delete,
-                  edit: t.edit ?? "Edit",
-                  moveUp: t.moveUp ?? "Move up",
-                  moveDown: t.moveDown ?? "Move down",
-                  categoryCut: t.categoryCut,
-                  categoryBeard: t.categoryBeard,
-                  categoryColor: t.categoryColor,
-                  categoryNails: t.categoryNails,
-                  categoryMassage: t.categoryMassage,
-                  categoryOther: t.categoryOther,
-                  staffUnit: t.staffUnit ?? "staff",
-                  prepBadge: t.prepBadge ?? "prep",
-                  afterBadge: t.afterBadge ?? "after",
-                  locale: appLocale,
-                }}
+                translations={buildTableTranslations(t, appLocale)}
               />
             </>
           )}
@@ -258,24 +228,7 @@ export default function ServicesPage() {
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           onServiceCreated={reloadServices}
-          translations={{
-            dialogTitle: t.dialogTitle,
-            dialogDescription: t.dialogDescription,
-            nameLabel: t.nameLabel,
-            namePlaceholder: t.namePlaceholder,
-            categoryLabel: t.categoryLabel,
-            categoryCut: t.categoryCut,
-            categoryBeard: t.categoryBeard,
-            categoryColor: t.categoryColor,
-            categoryNails: t.categoryNails,
-            categoryMassage: t.categoryMassage,
-            categoryOther: t.categoryOther,
-            durationLabel: t.durationLabel,
-            priceLabel: t.priceLabel,
-            sortOrderLabel: t.sortOrderLabel,
-            cancel: t.cancel,
-            newService: t.newService,
-          }}
+          translations={buildCreateDialogTranslations(t)}
         />
 
         {/* Service Detail Dialog */}
@@ -291,34 +244,7 @@ export default function ServicesPage() {
           services={services}
           serviceEmployeeCountMap={serviceEmployeeCountMap}
           onServiceUpdated={reloadServices}
-          translations={{
-            editTitle: t.detailTitle ?? "Edit service",
-            detailDescription: t.detailDescription ?? "Overview of service, staff and status.",
-            editDescription: t.editDescription ?? "Update service details.",
-            active: t.active,
-            inactive: t.inactive,
-            categoryLabel: t.categoryLabel,
-            categoryCut: t.categoryCut,
-            categoryBeard: t.categoryBeard,
-            categoryColor: t.categoryColor,
-            categoryNails: t.categoryNails,
-            categoryMassage: t.categoryMassage,
-            categoryOther: t.categoryOther,
-            durationLabel: t.durationLabel,
-            priceLabel: t.priceLabel,
-            staffUnit: t.staffUnit ?? "staff",
-            colEmployees: t.colEmployees ?? "Staff",
-            prepMinutesLabel: t.prepMinutesLabel ?? "Prep time (min)",
-            cleanupMinutesLabel: t.cleanupMinutesLabel ?? "Cleanup time (min)",
-            nameLabel: t.nameLabel,
-            sortOrderLabel: t.sortOrderLabel,
-            close: t.close ?? "Close",
-            edit: t.edit ?? "Edit",
-            cancel: t.cancel,
-            save: t.save ?? "Save",
-            saving: t.saving ?? "Saving...",
-            locale: appLocale,
-          }}
+          translations={buildDetailDialogTranslations(t, appLocale)}
           currency={salonCurrency}
         />
 

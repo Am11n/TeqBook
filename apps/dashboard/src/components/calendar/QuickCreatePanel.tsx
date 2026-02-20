@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, UserPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { searchCustomers } from "@/lib/repositories/search";
@@ -21,27 +14,8 @@ import { formatPrice } from "@/lib/utils/services/services-utils";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { DialogSelect } from "@/components/ui/dialog-select";
-import type { Booking, Service } from "@/lib/types";
-
-interface QuickCreatePanelProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  prefillEmployeeId?: string;
-  prefillTime?: string;
-  prefillDate?: string;
-  prefillServiceId?: string;
-  prefillCustomerName?: string;
-  prefillCustomerPhone?: string;
-  prefillCustomerEmail?: string;
-  onBookingCreated: (booking: Booking) => void;
-}
-
-type CustomerSuggestion = {
-  id: string;
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-};
+import type { Service } from "@/lib/types";
+import type { QuickCreatePanelProps, CustomerSuggestion } from "./quick-create-types";
 
 export function QuickCreatePanel({
   open,
