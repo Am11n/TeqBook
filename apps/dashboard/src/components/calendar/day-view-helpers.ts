@@ -1,4 +1,11 @@
 import type { CalendarBooking, ScheduleSegment } from "@/lib/types";
+
+export function getClosedLabel(reasonCode?: string): string {
+  if (reasonCode === "salon_closed") return "Closed";
+  if (reasonCode === "no_shifts") return "No shifts";
+  if (reasonCode === "no_opening_hours") return "No hours";
+  return "Closed";
+}
 import { getDensityConfig, type CalendarDensity } from "@/lib/ui/calendar-theme";
 import {
   getHoursInTimezone,

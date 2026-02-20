@@ -4,100 +4,14 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { searchSalonEntities } from "@/lib/services/search-service";
-import {
-  Search,
-  Calendar,
-  UserCircle,
-  Users,
-  Scissors,
-  Clock,
-  Settings,
-  BookOpen,
-  X,
-  ArrowRight,
-} from "lucide-react";
+import { Search, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-type SearchResult = {
-  id: string;
-  type: "booking" | "customer" | "employee" | "service" | "shift" | "navigation";
-  label: string;
-  metadata?: string;
-  href?: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
+import { type SearchResult, navigationItems, getIconForType } from "./command-palette-nav";
 
 type CommandPaletteProps = {
   open: boolean;
   onClose: () => void;
 };
-
-// Navigation shortcuts (static, defined outside component)
-const navigationItems: SearchResult[] = [
-  {
-    id: "nav-dashboard",
-    type: "navigation",
-    label: "Go to Dashboard",
-    href: "/",
-    icon: Settings,
-  },
-  {
-    id: "nav-calendar",
-    type: "navigation",
-    label: "Go to Calendar",
-    href: "/calendar",
-    icon: Calendar,
-  },
-  {
-    id: "nav-create-booking",
-    type: "navigation",
-    label: "New booking",
-    href: "/bookings?new=true",
-    icon: BookOpen,
-  },
-  {
-    id: "nav-create-customer",
-    type: "navigation",
-    label: "New customer",
-    href: "/customers?new=true",
-    icon: UserCircle,
-  },
-  {
-    id: "nav-employees",
-    type: "navigation",
-    label: "Manage employees",
-    href: "/employees",
-    icon: Users,
-  },
-  {
-    id: "nav-services",
-    type: "navigation",
-    label: "Manage services",
-    href: "/services",
-    icon: Scissors,
-  },
-  {
-    id: "nav-customers",
-    type: "navigation",
-    label: "Manage customers",
-    href: "/customers",
-    icon: UserCircle,
-  },
-  {
-    id: "nav-shifts",
-    type: "navigation",
-    label: "Manage shifts",
-    href: "/shifts",
-    icon: Clock,
-  },
-  {
-    id: "nav-settings",
-    type: "navigation",
-    label: "Settings",
-    href: "/settings/general",
-    icon: Settings,
-  },
-];
 
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const router = useRouter();
@@ -138,19 +52,9 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           return;
         }
 
-        // Map search results to SearchResult format with icons
         if (searchResults) {
           searchResults.forEach((result) => {
-            let icon: React.ComponentType<{ className?: string }> = Search;
-            if (result.type === "customer") icon = UserCircle;
-            else if (result.type === "employee") icon = Users;
-            else if (result.type === "service") icon = Scissors;
-            else if (result.type === "booking") icon = Calendar;
-
-            allResults.push({
-              ...result,
-              icon,
-            });
+            allResults.push({ ...result, icon: getIconForType(result.type) });
           });
         }
 

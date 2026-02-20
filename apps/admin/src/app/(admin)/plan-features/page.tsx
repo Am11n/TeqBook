@@ -26,6 +26,7 @@ import {
 } from "./_components/types";
 import { FeatureMatrixTable } from "./_components/FeatureMatrixTable";
 import { ConfirmOverlay } from "./_components/ConfirmOverlay";
+import { useMatrixActions, filterFeaturesByCategory } from "./_components/useMatrixActions";
 
 export default function PlanFeaturesPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
@@ -142,50 +143,7 @@ export default function PlanFeaturesPage() {
     }
   }, [isSuperAdmin, contextLoading, router, loadData]);
 
-  function toggleCell(featureId: string, plan: PlanType) {
-    setMatrix((prev) => {
-      const next = deepCloneMatrix(prev);
-      const cell = next[featureId][plan];
-      cell.enabled = !cell.enabled;
-      if (!cell.enabled) cell.limitValue = null;
-      return next;
-    });
-  }
-
-  function setLimitValue(featureId: string, plan: PlanType, value: number | null) {
-    setMatrix((prev) => {
-      const next = deepCloneMatrix(prev);
-      next[featureId][plan].limitValue = value;
-      return next;
-    });
-  }
-
-  function enableAll(plan: PlanType) {
-    setMatrix((prev) => {
-      const next = deepCloneMatrix(prev);
-      for (const fid of Object.keys(next)) next[fid][plan].enabled = true;
-      return next;
-    });
-  }
-
-  function disableAll(plan: PlanType) {
-    setMatrix((prev) => {
-      const next = deepCloneMatrix(prev);
-      for (const fid of Object.keys(next)) {
-        next[fid][plan].enabled = false;
-        next[fid][plan].limitValue = null;
-      }
-      return next;
-    });
-  }
-
-  function copyFrom(source: PlanType, target: PlanType) {
-    setMatrix((prev) => {
-      const next = deepCloneMatrix(prev);
-      for (const fid of Object.keys(next)) next[fid][target] = { ...next[fid][source] };
-      return next;
-    });
-  }
+  const { toggleCell, setLimitValue, enableAll, disableAll, copyFrom } = useMatrixActions(setMatrix);
 
   async function handleSave() {
     setSaving(true);
@@ -230,47 +188,10 @@ export default function PlanFeaturesPage() {
     }
   }
 
-  const featureByKey = useMemo(() => {
-    const m: Record<string, FeatureRow> = {};
-    for (const f of features) m[f.key] = f;
-    return m;
-  }, [features]);
-
-  const lowerSearch = search.toLowerCase();
-
-  const filteredCategories = useMemo(() => {
-    const result: { category: string; features: FeatureRow[] }[] = [];
-    const categorized = new Set<string>();
-
-    for (const [category, keys] of Object.entries(FEATURE_CATEGORIES)) {
-      const catFeatures: FeatureRow[] = [];
-      for (const key of keys) {
-        const f = featureByKey[key];
-        if (!f) continue;
-        categorized.add(f.id);
-        if (
-          lowerSearch === "" ||
-          f.name.toLowerCase().includes(lowerSearch) ||
-          f.key.toLowerCase().includes(lowerSearch) ||
-          (f.description ?? "").toLowerCase().includes(lowerSearch)
-        ) {
-          catFeatures.push(f);
-        }
-      }
-      if (catFeatures.length > 0) result.push({ category, features: catFeatures });
-    }
-
-    const uncategorized = features.filter(
-      (f) =>
-        !categorized.has(f.id) &&
-        (lowerSearch === "" ||
-          f.name.toLowerCase().includes(lowerSearch) ||
-          f.key.toLowerCase().includes(lowerSearch))
-    );
-    if (uncategorized.length > 0) result.push({ category: "Other", features: uncategorized });
-
-    return result;
-  }, [features, featureByKey, lowerSearch]);
+  const filteredCategories = useMemo(
+    () => filterFeaturesByCategory(features, search),
+    [features, search]
+  );
 
   if (contextLoading || !isSuperAdmin) return null;
 
