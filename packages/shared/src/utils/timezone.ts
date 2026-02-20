@@ -20,14 +20,21 @@ export function formatTimeInTimezone(
   utcIsoString: string,
   timezone: string,
   locale: string = "en-US",
-  options: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" }
+  options: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" },
+  hour12Override?: boolean
 ): string {
   try {
     const date = new Date(utcIsoString);
     const resolved = resolveLocale(locale);
+    const hour12 =
+      hour12Override !== undefined
+        ? hour12Override
+        : resolved.forceHour12 !== undefined && options.hour12 === undefined
+          ? resolved.forceHour12
+          : options.hour12;
     const mergedOptions: Intl.DateTimeFormatOptions = {
       ...options,
-      ...(resolved.forceHour12 !== undefined && options.hour12 === undefined ? { hour12: resolved.forceHour12 } : {}),
+      ...(hour12 !== undefined ? { hour12 } : {}),
       timeZone: timezone,
     };
     return new Intl.DateTimeFormat(resolved.locale, mergedOptions).format(date);
@@ -35,9 +42,15 @@ export function formatTimeInTimezone(
     console.warn(`Invalid timezone: ${timezone}, falling back to UTC`);
     const date = new Date(utcIsoString);
     const resolved = resolveLocale(locale);
+    const hour12 =
+      hour12Override !== undefined
+        ? hour12Override
+        : resolved.forceHour12 !== undefined && options.hour12 === undefined
+          ? resolved.forceHour12
+          : options.hour12;
     const mergedOptions: Intl.DateTimeFormatOptions = {
       ...options,
-      ...(resolved.forceHour12 !== undefined && options.hour12 === undefined ? { hour12: resolved.forceHour12 } : {}),
+      ...(hour12 !== undefined ? { hour12 } : {}),
       timeZone: "UTC",
     };
     return new Intl.DateTimeFormat(resolved.locale, mergedOptions).format(date);
@@ -65,11 +78,12 @@ export function formatDateInTimezone(
 export function formatDateTimeInTimezone(
   utcIsoString: string,
   timezone: string,
-  locale: string = "en-US"
+  locale: string = "en-US",
+  hour12Override?: boolean
 ): { date: string; time: string } {
   return {
     date: formatDateInTimezone(utcIsoString, timezone, locale, { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" }),
-    time: formatTimeInTimezone(utcIsoString, timezone, locale),
+    time: formatTimeInTimezone(utcIsoString, timezone, locale, undefined, hour12Override),
   };
 }
 

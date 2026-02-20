@@ -5,6 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import type { TimeFormat } from "@/lib/types/domain";
 
 export type SalonTheme = {
   primary?: string;
@@ -43,6 +44,7 @@ export type Salon = {
   org_number?: string | null;
   cancellation_hours?: number | null;
   default_buffer_minutes?: number | null;
+  time_format?: TimeFormat | null;
 };
 
 /**
@@ -54,7 +56,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -85,7 +87,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -167,6 +169,7 @@ export async function updateSalon(
     org_number?: string | null;
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
+    time_format?: string | null;
   }
 ): Promise<{ error: string | null }> {
   try {

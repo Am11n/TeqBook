@@ -4,6 +4,7 @@ export type GeneralFormValues = {
   whatsappNumber: string;
   currency: string;
   timezone: string;
+  timeFormat: string;
   supportedLanguages: string[];
   defaultLanguage: string;
   userPreferredLanguage: string;

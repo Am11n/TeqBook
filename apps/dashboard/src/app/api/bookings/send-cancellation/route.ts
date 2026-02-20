@@ -7,42 +7,15 @@ import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
-
-// UUID validation regex (same as send-notifications)
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { UUID_REGEX, type SendCancellationBody } from "../_shared/types";
+import { prepareBookingForNotification, notifySalonStaffCancellation } from "../_shared/notify-staff";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   
   try {
     const body = await request.json();
-    const {
-      bookingId,
-      customerEmail: bodyCustomerEmail,
-      salonId: bodySalonId,
-      language: bodyLanguage,
-      cancelledBy,
-      cancellationReason,
-      bookingData,
-    }: {
-      bookingId: string;
-      customerEmail?: string;
-      salonId?: string;
-      language?: string;
-      cancelledBy?: "customer" | "salon";
-      cancellationReason?: string | null;
-      bookingData?: {
-        id: string;
-        salon_id: string;
-        start_time: string;
-        end_time: string | null;
-        status: string;
-        is_walk_in: boolean;
-        customer_full_name: string;
-        service_name?: string;
-        employee_name?: string;
-      };
-    } = body;
+    const { bookingId, customerEmail: bodyCustomerEmail, salonId: bodySalonId, language: bodyLanguage, cancelledBy, cancellationReason, bookingData }: SendCancellationBody = body;
 
     logInfo("send-cancellation API route called (dashboard)", {
       bookingId,
@@ -224,26 +197,7 @@ export async function POST(request: NextRequest) {
     const salon = salonResult.data;
 
     // Prepare booking data for notification (using fetched booking data)
-    const bookingForNotification: Booking & {
-      customer_full_name: string;
-      service?: { name: string | null } | null;
-      employee?: { name: string | null } | null;
-      salon?: { name: string | null } | null;
-    } = {
-      id: booking.id,
-      start_time: booking.start_time,
-      end_time: booking.end_time,
-      status: booking.status,
-      is_walk_in: booking.is_walk_in,
-      notes: booking.notes,
-      customers: booking.customer_full_name ? { full_name: booking.customer_full_name } : null,
-      employees: booking.employee?.name ? { full_name: booking.employee.name } : null,
-      services: booking.service?.name ? { name: booking.service.name } : null,
-      customer_full_name: booking.customer_full_name,
-      service: booking.service,
-      employee: booking.employee,
-      salon: salon ? { name: salon.name, timezone: salon.timezone } : booking.salon,
-    };
+    const bookingForNotification = prepareBookingForNotification(booking, salon);
 
     const results = {
       customerEmail: null as { success: boolean; error?: string } | null,
@@ -295,64 +249,7 @@ export async function POST(request: NextRequest) {
       logInfo("No customer email for cancellation notification", { bookingId: booking.id });
     }
 
-    // Send in-app notification to salon staff about cancellation
-    // Using database function to bypass RLS issues
-    try {
-      const customerName = booking.customer_full_name || "Customer";
-      const serviceName = booking.service?.name || booking.services?.name || "Service";
-      const bookingTime = booking.start_time;
-
-      logInfo("Calling notify_salon_staff_booking_cancelled", {
-        bookingId: booking.id,
-        salonId,
-        customerName,
-        serviceName,
-        bookingTime,
-        cancelledBy,
-      });
-
-      const supabase = createClientForRouteHandler(request, response);
-      const { data: notifiedCount, error: notifyError } = await supabase.rpc(
-        "notify_salon_staff_booking_cancelled",
-        {
-          p_salon_id: salonId,
-          p_customer_name: customerName,
-          p_service_name: serviceName,
-          p_booking_time: bookingTime,
-          p_booking_id: booking.id,
-          p_timezone: salon?.timezone || "UTC",
-        }
-      );
-
-      if (notifyError) {
-        logWarn("Failed to notify salon staff about cancellation via RPC", {
-          bookingId: booking.id,
-          error: notifyError.message,
-        });
-        results.salonInApp = {
-          success: false,
-          error: notifyError.message,
-        };
-      } else {
-        logInfo("Salon staff notified about cancellation", {
-          bookingId: booking.id,
-          notifiedCount,
-        });
-        results.salonInApp = {
-          success: true,
-          sent: notifiedCount,
-        };
-      }
-    } catch (inAppError) {
-      logWarn("Failed to send cancellation in-app notifications", {
-        bookingId: booking.id,
-        inAppError: inAppError instanceof Error ? inAppError.message : "Unknown error",
-      });
-      results.salonInApp = {
-        success: false,
-        error: inAppError instanceof Error ? inAppError.message : "Unknown error",
-      };
-    }
+    results.salonInApp = await notifySalonStaffCancellation(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
 
     const jsonResponse = NextResponse.json(results);
     

@@ -89,6 +89,7 @@ export function CalendarMobileView({
     filterEmployeeId,
     locale,
     onSlotClick,
+    hour12Override: salon?.time_format === "12h" ? true : undefined,
   });
 
   // Autoscroll to "now" on mount

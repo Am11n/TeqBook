@@ -40,6 +40,7 @@ export function BookingSidePanel({
 }: BookingSidePanelProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
@@ -70,7 +71,7 @@ export function BookingSidePanel({
       return formatTimeInTimezone(isoString, timezone, appLocale, {
         hour: "numeric",
         minute: "2-digit",
-      });
+      }, hour12);
     } catch {
       return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }

@@ -33,6 +33,7 @@ export function CancelBookingDialog({
 }: CancelBookingDialogProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const [cancellationReason, setCancellationReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
 
@@ -74,8 +75,8 @@ export function CancelBookingDialog({
                 <strong>Date:</strong> {formatDate(booking.start_time, locale, timezone)}
               </p>
               <p>
-                <strong>Time:</strong> {formatTime(booking.start_time, locale, timezone)} -{" "}
-                {formatTime(booking.end_time, locale, timezone)}
+                <strong>Time:</strong> {formatTime(booking.start_time, locale, timezone, hour12)} -{" "}
+                {formatTime(booking.end_time, locale, timezone, hour12)}
               </p>
               <p>
                 <strong>Service:</strong> {booking.services?.name || "Unknown"}

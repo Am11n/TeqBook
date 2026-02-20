@@ -191,6 +191,7 @@ export type Salon = {
   default_language?: string | null;
   timezone?: string | null;
   currency?: string | null;
+  time_format?: "12h" | "24h" | null;
   theme?: {
     primary?: string;
     secondary?: string;

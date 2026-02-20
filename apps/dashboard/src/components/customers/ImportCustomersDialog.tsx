@@ -13,44 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Upload, FileText, CheckCircle } from "lucide-react";
+import {
+  type ImportRow, type ImportStep,
+  type ImportCustomersDialogTranslations,
+  defaultTranslations, parseCsv, mapColumns,
+} from "./import-types";
 
-type ImportRow = {
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-  notes: string | null;
-  gdpr_consent: boolean;
-  status: "create" | "skip" | "update" | "error";
-  reason?: string;
-};
-
-type ImportStep = "upload" | "preview" | "importing" | "done";
-
-export interface ImportCustomersDialogTranslations {
-  title: string;
-  description: string;
-  dragDrop: string;
-  selectFile: string;
-  willCreate: string;
-  errors: string;
-  updateExisting: string;
-  statusCol: string;
-  nameCol: string;
-  emailCol: string;
-  phoneCol: string;
-  creating: string;
-  errorBadge: string;
-  cancel: string;
-  import: string;
-  customers: string;
-  importing: string;
-  done: string;
-  created: string;
-  skipped: string;
-  updated: string;
-  close: string;
-  missingName: string;
-}
+export type { ImportCustomersDialogTranslations };
 
 interface ImportCustomersDialogProps {
   open: boolean;

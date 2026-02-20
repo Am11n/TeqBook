@@ -25,6 +25,7 @@ interface UseMobileCalendarDataParams {
   filterEmployeeId: string;
   locale: string;
   onSlotClick?: (employeeId: string, time: string) => void;
+  hour12Override?: boolean;
 }
 
 export function useMobileCalendarData({
@@ -38,6 +39,7 @@ export function useMobileCalendarData({
   filterEmployeeId,
   locale,
   onSlotClick,
+  hour12Override,
 }: UseMobileCalendarDataParams) {
   const appLocale = normalizeLocale(locale);
   const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
@@ -142,7 +144,7 @@ export function useMobileCalendarData({
   const formatBookingTime = useCallback(
     (iso: string) => {
       try {
-        return formatTimeInTimezone(iso, timezone, resolvedLocale, { hour: "numeric", minute: "2-digit" });
+        return formatTimeInTimezone(iso, timezone, resolvedLocale, { hour: "numeric", minute: "2-digit" }, hour12Override);
       } catch {
         const h = getHoursInTimezone(iso, timezone);
         const m = getMinutesInTimezone(iso, timezone);

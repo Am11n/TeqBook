@@ -52,6 +52,7 @@ export default function GeneralSettingsPage() {
     whatsappNumber: salon?.whatsapp_number || "",
     currency: salon?.currency || "NOK",
     timezone: salon?.timezone || "UTC",
+    timeFormat: salon?.time_format || "24h",
     supportedLanguages: salon?.supported_languages || ["en", "nb"],
     defaultLanguage: salon?.default_language || salon?.preferred_language || "en",
     userPreferredLanguage: profile?.preferred_language || salon?.preferred_language || "en",
@@ -80,6 +81,7 @@ export default function GeneralSettingsPage() {
       default_language: v.defaultLanguage || null,
       timezone: v.timezone || "UTC",
       currency: v.currency || "NOK",
+      time_format: v.timeFormat || "24h",
       business_address: v.businessAddress || null,
       org_number: v.orgNumber || null,
       cancellation_hours: v.cancellationHours,
@@ -231,6 +233,7 @@ export default function GeneralSettingsPage() {
           <RegionalSection
             currency={form.values.currency}
             timezone={form.values.timezone}
+            timeFormat={form.values.timeFormat}
             appLocale={appLocale}
             t={t as Record<string, string | undefined>}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}

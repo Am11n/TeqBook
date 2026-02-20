@@ -5,14 +5,15 @@ import { formatTimeInTimezone, formatDateInTimezone } from "@/lib/utils/timezone
  * Format time from ISO string to localized time string
  * Uses salon timezone if provided, otherwise falls back to browser timezone
  */
-export function formatTime(value: string, locale: string, timezone?: string | null): string {
+export function formatTime(value: string, locale: string, timezone?: string | null, hour12Override?: boolean): string {
   if (timezone) {
-    return formatTimeInTimezone(value, timezone, locale);
+    return formatTimeInTimezone(value, timezone, locale, { hour: "2-digit", minute: "2-digit" }, hour12Override);
   }
   const date = new Date(value);
   return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    ...(hour12Override !== undefined ? { hour12: hour12Override } : {}),
   });
 }
 

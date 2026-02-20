@@ -61,9 +61,10 @@ export function useCreateBooking({
     if (rpcError) { setError(rpcError); setLoadingSlots(false); return; }
 
     const salonTz = salon?.timezone || "UTC";
+    const hour12 = salon?.time_format === "12h";
     const mapped = (data ?? []).map((slot) => {
-      const startLabel = formatTimeInTimezone(slot.slot_start, salonTz);
-      const endLabel = formatTimeInTimezone(slot.slot_end, salonTz);
+      const startLabel = formatTimeInTimezone(slot.slot_start, salonTz, "en-US", { hour: "2-digit", minute: "2-digit" }, hour12);
+      const endLabel = formatTimeInTimezone(slot.slot_end, salonTz, "en-US", { hour: "2-digit", minute: "2-digit" }, hour12);
       return { start: slot.slot_start, end: slot.slot_end, label: `${startLabel} – ${endLabel}` };
     });
 

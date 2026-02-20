@@ -10,14 +10,21 @@ import { formatPrice } from "@/lib/utils/services/services-utils";
 interface RegionalSectionProps {
   currency: string;
   timezone: string;
+  timeFormat: string;
   appLocale: string;
   t: Record<string, string | undefined>;
   onChangeField: (field: string, value: string) => void;
 }
 
+const TIME_FORMAT_OPTIONS = [
+  { value: "24h", label: "24-timer (14:30)" },
+  { value: "12h", label: "12-timer AM/PM (2:30 PM)" },
+];
+
 export function RegionalSection({
   currency,
   timezone,
+  timeFormat,
   appLocale,
   t,
   onChangeField,
@@ -44,6 +51,14 @@ export function RegionalSection({
           value={timezone}
           onChange={(v) => onChangeField("timezone", v)}
           options={getCommonTimezones().map((tz) => ({ value: tz.value, label: tz.label }))}
+        />
+      </FormRow>
+
+      <FormRow label={t.timeFormatLabel ?? "Time format"} htmlFor="timeFormat">
+        <DialogSelect
+          value={timeFormat}
+          onChange={(v) => onChangeField("timeFormat", v)}
+          options={TIME_FORMAT_OPTIONS}
         />
       </FormRow>
     </SettingsSection>

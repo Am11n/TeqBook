@@ -38,17 +38,17 @@ export function formatDayHeading(dateString: string, locale: string, timezone?: 
  * Format time range for a booking
  * Uses salon timezone if provided, user locale for formatting.
  */
-export function formatTimeRange(booking: CalendarBooking, timezone?: string | null, locale?: string): string {
+export function formatTimeRange(booking: CalendarBooking, timezone?: string | null, locale?: string, hour12Override?: boolean): string {
   const displayLocale = locale || "en-US";
   if (timezone) {
     const startTime = formatTimeInTimezone(booking.start_time, timezone, displayLocale, {
       hour: "numeric",
       minute: "2-digit",
-    });
+    }, hour12Override);
     const endTime = formatTimeInTimezone(booking.end_time, timezone, displayLocale, {
       hour: "numeric",
       minute: "2-digit",
-    });
+    }, hour12Override);
     return `${startTime} - ${endTime}`;
   }
   const start = new Date(booking.start_time);

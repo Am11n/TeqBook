@@ -68,6 +68,7 @@ export function BookingsTable({
   const appLocale = normalizeLocale(localeCtx);
   const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
   const isNb = locale === "nb";
@@ -88,7 +89,7 @@ export function BookingsTable({
       header: translations.colTime,
       cell: (booking) => (
         <div className="text-xs text-muted-foreground">
-          {formatTime(booking.start_time, locale, timezone)} – {formatTime(booking.end_time, locale, timezone)}
+          {formatTime(booking.start_time, locale, timezone, hour12)} – {formatTime(booking.end_time, locale, timezone, hour12)}
         </div>
       ),
       getValue: (booking) => booking.start_time,
