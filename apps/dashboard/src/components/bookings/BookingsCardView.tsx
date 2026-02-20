@@ -42,6 +42,7 @@ export function BookingsCardView({
   const appLocale = normalizeLocale(localeCtx);
   const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   return (
     <div className="space-y-3 md:hidden">
@@ -79,8 +80,8 @@ export function BookingsCardView({
           </div>
           <div className="mt-2 text-[11px] text-muted-foreground">
             {formatDate(booking.start_time, locale, timezone)} •{" "}
-            {formatTime(booking.start_time, locale, timezone)} –{" "}
-            {formatTime(booking.end_time, locale, timezone)} •{" "}
+            {formatTime(booking.start_time, locale, timezone, hour12)} –{" "}
+            {formatTime(booking.end_time, locale, timezone, hour12)} •{" "}
             {booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline}
           </div>
           {booking.notes && (

@@ -3,14 +3,12 @@
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button"; import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input"; import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch"; import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { Plus, Download, Trash2, Search, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import { COLOR_TOKENS, SEMANTIC_BADGES } from "./_data/tokens";
 
 export default function DesignSystemPage() {
   const [switchOn, setSwitchOn] = useState(false);
@@ -27,20 +25,7 @@ export default function DesignSystemPage() {
             <strong className="ml-1">Primary is near-black with white foreground</strong> -- used for default buttons and badges.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {[
-              { name: "background", css: "bg-background", border: true },
-              { name: "foreground", css: "bg-foreground" },
-              { name: "primary", css: "bg-primary" },
-              { name: "primary-fg", css: "bg-primary-foreground", border: true },
-              { name: "secondary", css: "bg-secondary", border: true },
-              { name: "secondary-fg", css: "bg-secondary-foreground" },
-              { name: "muted", css: "bg-muted", border: true },
-              { name: "muted-fg", css: "bg-muted-foreground" },
-              { name: "accent", css: "bg-accent", border: true },
-              { name: "destructive", css: "bg-destructive" },
-              { name: "border", css: "bg-border", border: true },
-              { name: "card", css: "bg-card", border: true },
-            ].map((c) => (
+            {COLOR_TOKENS.map((c) => (
               <div key={c.name} className="flex flex-col items-center gap-1.5">
                 <div className={`h-12 w-full rounded-lg ${c.css} ${c.border ? "border" : ""}`} />
                 <span className="text-[10px] text-muted-foreground font-mono">--{c.name}</span>
@@ -54,12 +39,9 @@ export default function DesignSystemPage() {
           <h2 className="text-lg font-semibold mb-1">Semantic Colors (for status badges)</h2>
           <p className="text-sm text-muted-foreground mb-4">Use these Tailwind utility combos instead of Badge variant=&quot;default&quot;.</p>
           <div className="flex flex-wrap gap-3">
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium border-emerald-200 bg-emerald-50 text-emerald-700 border">Active / Success</span>
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium border-amber-200 bg-amber-50 text-amber-700 border">Warning / Pending</span>
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium border-red-200 bg-red-50 text-red-700 border">Error / Critical</span>
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium border-blue-200 bg-blue-50 text-blue-700 border">Info / In Progress</span>
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium border-purple-200 bg-purple-50 text-purple-700 border">Special / Admin</span>
-            <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-muted text-muted-foreground">Neutral / Inactive</span>
+            {SEMANTIC_BADGES.map((b) => (
+              <span key={b.label} className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${b.classes}`}>{b.label}</span>
+            ))}
           </div>
         </section>
 
@@ -311,7 +293,6 @@ export default function DesignSystemPage() {
             </CardContent>
           </Card>
         </section>
-
       </PageLayout>
     </AdminShell>
   );

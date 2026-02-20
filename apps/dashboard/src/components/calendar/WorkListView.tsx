@@ -33,6 +33,7 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
     });
   }, [bookings]);
 
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const formatTime = (iso: string) => {
     try {
       const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
@@ -40,7 +41,7 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
         hour: "numeric",
         minute: "2-digit",
         timeZone: timezone,
-        ...(appLocale === "nb" ? { hour12: false } : {}),
+        ...(hour12 !== undefined ? { hour12 } : appLocale === "nb" ? { hour12: false } : {}),
       }).format(new Date(iso));
     } catch {
       return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

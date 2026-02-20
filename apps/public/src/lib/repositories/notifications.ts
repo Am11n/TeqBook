@@ -9,27 +9,8 @@ import type {
   CreateInAppNotificationInput,
   GetNotificationsOptions,
 } from "@/lib/types/notifications";
-
-// =====================================================
-// Types
-// =====================================================
-
-export interface NotificationRow {
-  id: string;
-  user_id: string;
-  salon_id: string | null;
-  type: string;
-  title: string;
-  body: string;
-  read: boolean;
-  metadata: Record<string, unknown> | null;
-  action_url: string | null;
-  created_at: string;
-}
-
-// =====================================================
-// Repository Functions
-// =====================================================
+import { type NotificationRow, mapRowToNotification } from "./notifications-helpers";
+export type { NotificationRow };
 
 /**
  * Create a new notification
@@ -300,24 +281,3 @@ export async function getNotificationById(
   }
 }
 
-// =====================================================
-// Helper Functions
-// =====================================================
-
-/**
- * Map database row to InAppNotification type
- */
-function mapRowToNotification(row: NotificationRow): InAppNotification {
-  return {
-    id: row.id,
-    user_id: row.user_id,
-    salon_id: row.salon_id,
-    type: row.type as InAppNotification["type"],
-    title: row.title,
-    body: row.body,
-    read: row.read,
-    metadata: row.metadata,
-    action_url: row.action_url,
-    created_at: row.created_at,
-  };
-}

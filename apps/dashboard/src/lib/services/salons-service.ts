@@ -64,6 +64,7 @@ export async function updateSalonSettings(
     org_number?: string | null;
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
+    time_format?: string | null;
   },
   salonPlan?: PlanType | null
 ): Promise<{ error: string | null; limitReached?: boolean }> {
@@ -125,6 +126,7 @@ export async function updateSalon(
     org_number?: string | null;
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
+    time_format?: string | null;
   },
   salonPlan?: PlanType | null
 ): Promise<{ error: string | null; limitReached?: boolean }> {

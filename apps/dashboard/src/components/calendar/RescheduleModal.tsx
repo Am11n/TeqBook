@@ -110,6 +110,7 @@ export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: 
     } catch { /* fallback */ }
   };
 
+  const h12 = salon?.time_format === "12h" ? true : undefined;
   const formatSlotTime = (isoString: string) => {
     try {
       const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
@@ -117,7 +118,7 @@ export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: 
         hour: "numeric",
         minute: "2-digit",
         timeZone: timezone,
-        ...(appLocale === "nb" ? { hour12: false } : {}),
+        ...(h12 !== undefined ? { hour12: h12 } : appLocale === "nb" ? { hour12: false } : {}),
       }).format(new Date(isoString));
     } catch {
       return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

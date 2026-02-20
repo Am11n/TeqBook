@@ -5,14 +5,15 @@ import { formatTimeInTimezone, formatDateInTimezone } from "@/lib/utils/timezone
  * Format time from ISO string to localized time string
  * Uses salon timezone if provided, otherwise falls back to browser timezone
  */
-export function formatTime(value: string, locale: string, timezone?: string | null): string {
+export function formatTime(value: string, locale: string, timezone?: string | null, hour12Override?: boolean): string {
   if (timezone) {
-    return formatTimeInTimezone(value, timezone, locale);
+    return formatTimeInTimezone(value, timezone, locale, { hour: "2-digit", minute: "2-digit" }, hour12Override);
   }
   const date = new Date(value);
   return date.toLocaleTimeString(locale === "nb" ? "nb-NO" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    ...(hour12Override !== undefined ? { hour12: hour12Override } : {}),
   });
 }
 
@@ -86,6 +87,27 @@ export function statusLabel(
     default:
       return translations.statusScheduled;
   }
+}
+
+/**
+ * Row background color based on temporal status.
+ * Ongoing = green, starting within 1h = amber, cancelled = red, completed = grey.
+ * Uses non-hover colors; the hover state in TableRow uses hover:bg-muted/50 which layers on top.
+ */
+export function getBookingRowColor(booking: Booking): string {
+  const now = Date.now();
+  const start = new Date(booking.start_time).getTime();
+  const end = new Date(booking.end_time).getTime();
+  const status = booking.status;
+
+  if (status === "cancelled") return "!bg-red-50";
+  if (status === "completed") return "!bg-zinc-100";
+
+  const isActive = status === "confirmed" || status === "scheduled" || status === "pending";
+  if (isActive && start <= now && now < end) return "!bg-emerald-50";
+  if (isActive && start > now && start - now <= 60 * 60 * 1000) return "!bg-amber-50";
+
+  return "";
 }
 
 /**

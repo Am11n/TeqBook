@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { TabActionsProvider, TabToolbar } from "@/components/layout/tab-toolbar";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function HelpLayout({ children }: { children: React.ReactNode }) {
@@ -28,23 +29,27 @@ export default function HelpLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <DashboardShell>
-      <PageHeader title="Hjelp" description="Feedback and support" />
-      <div className="mt-6">
-        {mounted ? (
-          <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-            <TabsList>
-              <TabsTrigger value="feedback">Tilbakemelding</TabsTrigger>
-              <TabsTrigger value="support">Support</TabsTrigger>
-            </TabsList>
-            <TabsContent value={activeTab} className="mt-6">
-              {children}
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="mt-6">{children}</div>
-        )}
-      </div>
-    </DashboardShell>
+    <TabActionsProvider>
+      <DashboardShell>
+        <PageHeader title="Hjelp" description="Feedback and support" />
+        <div className="mt-4">
+          {mounted ? (
+            <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
+              <TabToolbar>
+                <TabsList>
+                  <TabsTrigger value="feedback">Tilbakemelding</TabsTrigger>
+                  <TabsTrigger value="support">Support</TabsTrigger>
+                </TabsList>
+              </TabToolbar>
+              <TabsContent value={activeTab} className="mt-3">
+                {children}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="mt-3">{children}</div>
+          )}
+        </div>
+      </DashboardShell>
+    </TabActionsProvider>
   );
 }

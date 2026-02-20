@@ -10,54 +10,7 @@ import { getBookingsForCalendar } from "@/lib/repositories/bookings";
 import type { ReportsFilters } from "./reports-service";
 import type { Booking, CalendarBooking } from "@/lib/types";
 import * as featureFlagsService from "@/lib/services/feature-flags-service";
-
-/**
- * Convert array of objects to CSV string
- */
-function arrayToCSV(data: Record<string, unknown>[]): string {
-  if (data.length === 0) return "";
-
-  // Get headers from first object
-  const headers = Object.keys(data[0]);
-
-  // Create CSV header row
-  const headerRow = headers.map((h) => `"${h}"`).join(",");
-
-  // Create CSV data rows
-  const dataRows = data.map((row) =>
-    headers
-      .map((header) => {
-        const value = row[header];
-        // Handle null/undefined
-        if (value === null || value === undefined) return "";
-        // Handle dates
-        if (value instanceof Date) return `"${value.toISOString()}"`;
-        // Handle objects (stringify)
-        if (typeof value === "object") return `"${JSON.stringify(value)}"`;
-        // Escape quotes and wrap in quotes
-        return `"${String(value).replace(/"/g, '""')}"`;
-      })
-      .join(",")
-  );
-
-  return [headerRow, ...dataRows].join("\n");
-}
-
-/**
- * Download CSV file
- */
-function downloadCSV(csvContent: string, filename: string): void {
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-
-  link.setAttribute("href", url);
-  link.setAttribute("download", filename);
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+import { arrayToCSV, downloadCSV } from "./csv-utils";
 
 /**
  * Export bookings to CSV

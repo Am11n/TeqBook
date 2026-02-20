@@ -11,6 +11,8 @@
 // Enums (matching Postgres enums)
 // =====================================================
 
+export type TimeFormat = "24h" | "12h";
+
 export type BookingStatus = 
   | "pending"
   | "confirmed"
@@ -179,6 +181,7 @@ export type Salon = {
   whatsapp_number?: string | null;
   supported_languages?: string[] | null;
   default_language?: string;
+  time_format?: TimeFormat | null;
 };
 
 export type Profile = {

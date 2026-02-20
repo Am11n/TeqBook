@@ -6,14 +6,13 @@ import { uploadAvatar, deleteAvatar } from "@/lib/services/storage-service";
 import { getMFAFactors } from "@/lib/services/two-factor-service";
 import { getAuditLogsForUser } from "@/lib/services/audit-log-service";
 import type { AuditLog } from "@/lib/repositories/audit-log";
-
-export type MFAFactor = { id: string; type: string; friendlyName: string };
+import type { MFAFactor } from "./useProfile-types";
+export type { MFAFactor };
 
 export function useProfile() {
   const { user, isReady, refreshSalon } = useCurrentSalon();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Profile state (critical path) ---
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,32 +20,22 @@ export function useProfile() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [accountCreatedAt, setAccountCreatedAt] = useState<string | null>(null);
   const [profile, setProfile] = useState<{
-    role?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    avatar_url?: string | null;
-    is_superadmin?: boolean;
+    role?: string | null; first_name?: string | null; last_name?: string | null;
+    avatar_url?: string | null; is_superadmin?: boolean;
   } | null>(null);
-
-  // Form state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-
-  // --- Security state (non-critical, loaded in parallel) ---
   const [securityLoading, setSecurityLoading] = useState(true);
   const [securityError, setSecurityError] = useState<string | null>(null);
   const [mfaFactors, setMfaFactors] = useState<MFAFactor[] | null>(null);
   const [sessionsCount, setSessionsCount] = useState<number | null>(null);
-
-  // --- Activity state (non-critical, loaded in parallel) ---
   const [activityLoading, setActivityLoading] = useState(true);
   const [activityError, setActivityError] = useState<string | null>(null);
   const [recentActivity, setRecentActivity] = useState<AuditLog[] | null>(null);
 
-  // --- Load profile (critical path) then security+activity in parallel ---
   useEffect(() => {
     async function loadProfile() {
       if (!isReady) return;
@@ -175,17 +164,15 @@ export function useProfile() {
     setActivityLoading(false);
   }, [user?.id]);
 
-  // --- Dirty tracking ---
   useEffect(() => {
     if (!profile) return;
-    const hasChanges =
+    setIsDirty(
       firstName !== (profile.first_name || "") ||
       lastName !== (profile.last_name || "") ||
-      avatarUrl !== (profile.avatar_url || null);
-    setIsDirty(hasChanges);
+      avatarUrl !== (profile.avatar_url || null)
+    );
   }, [firstName, lastName, avatarUrl, profile]);
 
-  // --- Profile actions ---
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
@@ -283,41 +270,11 @@ export function useProfile() {
   }
 
   return {
-    // Profile (critical)
-    loading,
-    saving,
-    error,
-    success,
-    userId: user?.id ?? null,
-    userEmail,
-    accountCreatedAt,
-    profile,
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    avatarUrl,
-    uploadingAvatar,
-    isDirty,
-    fileInputRef,
-    handleAvatarUpload,
-    handleRemoveAvatar,
-    handleSave,
-    handleCancel,
-    setError,
-    setSuccess,
-
-    // Security (non-critical)
-    securityLoading,
-    securityError,
-    mfaFactors,
-    sessionsCount,
-    refreshSecurityData,
-
-    // Activity (non-critical)
-    activityLoading,
-    activityError,
-    recentActivity,
-    refreshActivityData,
+    loading, saving, error, success, userId: user?.id ?? null, userEmail,
+    accountCreatedAt, profile, firstName, setFirstName, lastName, setLastName,
+    avatarUrl, uploadingAvatar, isDirty, fileInputRef, handleAvatarUpload,
+    handleRemoveAvatar, handleSave, handleCancel, setError, setSuccess,
+    securityLoading, securityError, mfaFactors, sessionsCount, refreshSecurityData,
+    activityLoading, activityError, recentActivity, refreshActivityData,
   };
 }

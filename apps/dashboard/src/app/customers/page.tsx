@@ -18,8 +18,8 @@ import { CreateCustomerDialog } from "@/components/customers/CreateCustomerDialo
 import { CustomersTable } from "@/components/customers/CustomersTable";
 import { CustomerDetailDialog } from "@/components/customers/CustomerDetailDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
-import { Users, ShieldCheck, ShieldX, PhoneOff } from "lucide-react";
 import type { Customer } from "@/lib/types";
+import { buildStatsItems, buildDetailDialogTranslations } from "./_helpers/translations";
 
 export default function CustomersPage() {
   const { locale } = useLocale();
@@ -107,34 +107,7 @@ export default function CustomersPage() {
 
         {/* KPI Header */}
         {!loading && customers.length > 0 && (
-          <StatsBar
-            className="mb-4"
-            items={[
-              {
-                label: t.statsTotal ?? "Total",
-                value: stats.total,
-                icon: <Users className="h-4 w-4" />,
-              },
-              {
-                label: t.statsWithConsent ?? "With consent",
-                value: stats.withConsent,
-                variant: "success",
-                icon: <ShieldCheck className="h-4 w-4" />,
-              },
-              {
-                label: t.statsWithoutConsent ?? "Without consent",
-                value: stats.withoutConsent,
-                variant: stats.withoutConsent > 0 ? "warning" : "default",
-                icon: <ShieldX className="h-4 w-4" />,
-              },
-              {
-                label: t.statsWithoutContact ?? "Without contact",
-                value: stats.withoutContact,
-                variant: stats.withoutContact > 0 ? "danger" : "default",
-                icon: <PhoneOff className="h-4 w-4" />,
-              },
-            ]}
-          />
+          <StatsBar className="mb-4" items={buildStatsItems(t, stats)} />
         )}
 
         {/* Table Card */}
@@ -279,29 +252,7 @@ export default function CustomersPage() {
           onSwitchToView={detailDialog.switchToView}
           customers={customers}
           onCustomerUpdated={loadCustomers}
-          translations={{
-            editTitle: t.detailTitle ?? "Edit customer",
-            detailDescription: t.detailDescription ?? "Overview of customer, contact info and consent.",
-            editDescription: t.editDescription ?? "Update customer information.",
-            emailLabel: t.emailLabel,
-            phoneLabel: t.phoneLabel,
-            nameLabel: t.nameLabel,
-            notesLabel: t.notesLabel,
-            noNotes: t.noNotes ?? "No notes",
-            gdprConsentLabel: t.gdprConsentLabel ?? "GDPR consent",
-            consentOk: t.consentOk ?? "Consent: OK",
-            consentMissing: t.consentMissing ?? "Consent: Missing",
-            bookingHistory: t.bookingHistory ?? "Booking history",
-            noBookings: t.noBookings ?? "No bookings yet",
-            sendMessageCopyPhone: t.sendMessageCopyPhone ?? "Send message (copy phone)",
-            copied: t.copied ?? "Copied!",
-            close: t.close ?? "Close",
-            edit: t.edit ?? "Edit",
-            cancel: t.cancel,
-            save: t.save ?? "Save",
-            saving: t.saving,
-            gdprLabel: t.gdprLabel,
-          }}
+          translations={{ ...buildDetailDialogTranslations(t), gdprLabel: t.gdprLabel }}
         />
 
         {/* Import Dialog */}

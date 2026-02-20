@@ -9,35 +9,16 @@ import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getBookingById } from "@/lib/repositories/bookings";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import { useLocale } from "@/components/locale-provider";
-// Translation available if needed: import { translations } from "@/i18n/translations";
-import { formatDateInTimezone, formatTimeInTimezone } from "@/lib/utils/timezone";
 import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide-react";
 import type { Booking } from "@/lib/types";
+import { type Salon, createDateFormatter, createTimeFormatter } from "./confirmation-types";
 
-type Salon = {
-  id: string;
-  name: string;
-  whatsapp_number?: string | null;
-  timezone?: string | null;
-  theme?: {
-    primary?: string;
-    font?: string;
-    logo_url?: string;
-  } | null;
-};
-
-type BookingConfirmationPageClientProps = {
-  salonSlug: string;
-};
-
-export default function BookingConfirmationPageClient({ salonSlug }: BookingConfirmationPageClientProps) {
+export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug: string }) {
   const { locale } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [slug] = useState<string>(salonSlug);
   const bookingId = searchParams.get("bookingId") || searchParams.get("id");
-
-  // Translation available if needed: const t = translations[locale].publicBooking;
   const [salon, setSalon] = useState<Salon | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,23 +107,9 @@ export default function BookingConfirmationPageClient({ salonSlug }: BookingConf
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const tz = salon?.timezone || "UTC";
-    return formatDateInTimezone(dateString, tz, locale, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString: string) => {
-    const tz = salon?.timezone || "UTC";
-    return formatTimeInTimezone(dateString, tz, locale, {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const tz = salon?.timezone || "UTC";
+  const formatDate = createDateFormatter(tz, locale);
+  const formatTime = createTimeFormatter(tz, locale);
 
   if (loading) {
     return (

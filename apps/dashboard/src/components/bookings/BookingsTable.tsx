@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import type { Booking, Shift } from "@/lib/types";
 import { formatDate, formatTime, statusColor, statusLabel, hasEmployeeAvailable } from "@/lib/utils/bookings/bookings-utils";
@@ -8,7 +9,13 @@ import { formatPrice } from "@/lib/utils/services/services-utils";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckCircle, CheckCheck, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -38,7 +45,9 @@ interface BookingsTableProps {
   };
   locale: string;
   onCancelBooking: (booking: Booking) => void;
-  /** Optional content rendered in the toolbar next to Views/Columns buttons */
+  onConfirmBooking?: (booking: Booking) => void;
+  onCompleteBooking?: (booking: Booking) => void;
+  getRowClassName?: (row: Booking) => string;
   filterContent?: React.ReactNode;
 }
 
@@ -49,6 +58,9 @@ export function BookingsTable({
   translations,
   locale,
   onCancelBooking,
+  onConfirmBooking,
+  onCompleteBooking,
+  getRowClassName,
   filterContent,
 }: BookingsTableProps) {
   const { salon } = useCurrentSalon();
@@ -56,7 +68,10 @@ export function BookingsTable({
   const appLocale = normalizeLocale(localeCtx);
   const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
+
+  const isNb = locale === "nb";
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -74,7 +89,7 @@ export function BookingsTable({
       header: translations.colTime,
       cell: (booking) => (
         <div className="text-xs text-muted-foreground">
-          {formatTime(booking.start_time, locale, timezone)} – {formatTime(booking.end_time, locale, timezone)}
+          {formatTime(booking.start_time, locale, timezone, hour12)} – {formatTime(booking.end_time, locale, timezone, hour12)}
         </div>
       ),
       getValue: (booking) => booking.start_time,
@@ -127,6 +142,65 @@ export function BookingsTable({
         </Badge>
       ),
       getValue: (booking) => booking.status,
+    },
+    {
+      id: "actions_inline",
+      header: "",
+      sortable: false,
+      hideable: false,
+      cell: (booking) => {
+        const s = booking.status;
+        if (s === "completed" || s === "cancelled") return null;
+        return (
+          <TooltipProvider delayDuration={200}>
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              {(s === "pending" || s === "scheduled") && onConfirmBooking && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                      onClick={() => onConfirmBooking(booking)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isNb ? "Bekreft" : "Confirm"}</TooltipContent>
+                </Tooltip>
+              )}
+              {s === "confirmed" && onCompleteBooking && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => onCompleteBooking(booking)}
+                    >
+                      <CheckCheck className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isNb ? "Fullfør" : "Complete"}</TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    onClick={() => onCancelBooking(booking)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{isNb ? "Avbryt" : "Cancel"}</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+        );
+      },
     },
     {
       id: "type",
@@ -184,6 +258,7 @@ export function BookingsTable({
         data={bookings}
         rowKey={(b) => b.id}
         getRowActions={getRowActions}
+        getRowClassName={getRowClassName}
         storageKey="dashboard-bookings"
         emptyMessage="No bookings available"
         toolbarEndContent={filterContent}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { TabActionsProvider, TabToolbar } from "@/components/layout/tab-toolbar";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -34,23 +35,27 @@ export default function BookingsLayout({ children }: { children: React.ReactNode
   };
 
   return (
-    <DashboardShell>
-      <PageHeader title={t.title} description={t.description} />
-      <div className="mt-6">
-        {mounted ? (
-          <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-            <TabsList>
-              <TabsTrigger value="bookings">{t.title}</TabsTrigger>
-              <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
-            </TabsList>
-            <TabsContent value={activeTab} className="mt-6">
-              {children}
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="mt-6">{children}</div>
-        )}
-      </div>
-    </DashboardShell>
+    <TabActionsProvider>
+      <DashboardShell>
+        <PageHeader title={t.title} description={t.description} />
+        <div className="mt-4">
+          {mounted ? (
+            <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
+              <TabToolbar>
+                <TabsList>
+                  <TabsTrigger value="bookings">{t.title}</TabsTrigger>
+                  <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
+                </TabsList>
+              </TabToolbar>
+              <TabsContent value={activeTab} className="mt-3">
+                {children}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="mt-3">{children}</div>
+          )}
+        </div>
+      </DashboardShell>
+    </TabActionsProvider>
   );
 }

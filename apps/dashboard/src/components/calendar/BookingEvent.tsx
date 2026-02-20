@@ -21,16 +21,16 @@ interface BookingEventProps {
   };
 }
 
-function formatTimeRange(booking: CalendarBooking, timezone: string, locale: string): string {
+function formatTimeRange(booking: CalendarBooking, timezone: string, locale: string, hour12Override?: boolean): string {
   try {
     const startTime = formatTimeInTimezone(booking.start_time, timezone, locale, {
       hour: "numeric",
       minute: "2-digit",
-    });
+    }, hour12Override);
     const endTime = formatTimeInTimezone(booking.end_time, timezone, locale, {
       hour: "numeric",
       minute: "2-digit",
-    });
+    }, hour12Override);
     return `${startTime} – ${endTime}`;
   } catch {
     const sH = getHoursInTimezone(booking.start_time, timezone);
@@ -50,6 +50,7 @@ export function BookingEvent({
 }: BookingEventProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
@@ -123,7 +124,7 @@ export function BookingEvent({
 
         {/* Time */}
         <p className={`text-[11px] leading-tight ${classes.subtitle}`}>
-          {formatTimeRange(booking, timezone, appLocale)}
+          {formatTimeRange(booking, timezone, appLocale, hour12)}
         </p>
 
         {/* Customer (only if not too compact) */}
@@ -169,7 +170,7 @@ export function BookingEvent({
             </p>
             <p>
               <span className="font-medium text-foreground">Time:</span>{" "}
-              {formatTimeRange(booking, timezone, appLocale)}
+              {formatTimeRange(booking, timezone, appLocale, hour12)}
             </p>
             {booking.services?.duration_minutes && (
               <p>

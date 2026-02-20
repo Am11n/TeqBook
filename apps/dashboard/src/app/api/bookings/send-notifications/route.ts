@@ -8,38 +8,15 @@ import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import type { Booking } from "@/lib/types";
-
-// UUID validation regex
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { UUID_REGEX, type SendNotificationsBody } from "../_shared/types";
+import { prepareBookingForNotification, notifySalonStaff } from "../_shared/notify-staff";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   
   try {
     const body = await request.json();
-    const {
-      bookingId,
-      customerEmail: bodyCustomerEmail,
-      salonId: bodySalonId,
-      language: bodyLanguage,
-      bookingData,
-    }: {
-      bookingId: string;
-      customerEmail?: string;
-      salonId?: string;
-      language?: string;
-      bookingData?: {
-        id: string;
-        salon_id: string;
-        start_time: string;
-        end_time: string | null;
-        status: string;
-        is_walk_in: boolean;
-        customer_full_name: string;
-        service_name?: string;
-        employee_name?: string;
-      };
-    } = body;
+    const { bookingId, customerEmail: bodyCustomerEmail, salonId: bodySalonId, language: bodyLanguage, bookingData }: SendNotificationsBody = body;
 
     // Log incoming request for debugging
     logInfo("send-notifications API route called (dashboard)", {
@@ -247,27 +224,7 @@ export async function POST(request: NextRequest) {
 
     const language = bodyLanguage || salon?.preferred_language || "en";
 
-    // Prepare booking data for notification
-    const bookingForNotification: Booking & {
-      customer_full_name: string;
-      service?: { name: string | null } | null;
-      employee?: { name: string | null } | null;
-      salon?: { name: string | null } | null;
-    } = {
-      id: booking.id,
-      start_time: booking.start_time,
-      end_time: booking.end_time,
-      status: booking.status,
-      is_walk_in: booking.is_walk_in,
-      notes: booking.notes,
-      customers: booking.customer_full_name ? { full_name: booking.customer_full_name } : null,
-      employees: booking.employee?.name ? { full_name: booking.employee.name } : null,
-      services: booking.service?.name ? { name: booking.service.name } : null,
-      customer_full_name: booking.customer_full_name,
-      service: booking.service,
-      employee: booking.employee,
-      salon: salon ? { name: salon.name } : booking.salon,
-    };
+    const bookingForNotification = prepareBookingForNotification(booking, salon);
 
     const results = {
       email: null as { success: boolean; error?: string } | null,
@@ -311,62 +268,7 @@ export async function POST(request: NextRequest) {
 
     results.reminders = reminderResult;
 
-    // Send in-app notification to salon staff about new booking (bell)
-    try {
-      const customerName = booking.customer_full_name || "Customer";
-      const serviceName = booking.service?.name || booking.services?.name || "Service";
-      const bookingTime = booking.start_time;
-
-      logInfo("Calling notify_salon_staff_new_booking (dashboard)", {
-        bookingId: booking.id,
-        salonId,
-        customerName,
-        serviceName,
-        bookingTime,
-      });
-
-      const supabaseForRpc = createClientForRouteHandler(request, response);
-      const { data: notifiedCount, error: notifyError } = await supabaseForRpc.rpc(
-        "notify_salon_staff_new_booking",
-        {
-          p_salon_id: salonId,
-          p_customer_name: customerName,
-          p_service_name: serviceName,
-          p_booking_time: bookingTime,
-          p_booking_id: booking.id,
-          p_timezone: salon?.timezone || "UTC",
-        }
-      );
-
-      if (notifyError) {
-        logWarn("Failed to notify salon staff via RPC (dashboard)", {
-          bookingId: booking.id,
-          error: notifyError.message,
-        });
-        results.inApp = {
-          success: false,
-          error: notifyError.message,
-        };
-      } else {
-        logInfo("Salon staff notified successfully (dashboard)", {
-          bookingId: booking.id,
-          notifiedCount,
-        });
-        results.inApp = {
-          success: true,
-          sent: notifiedCount,
-        };
-      }
-    } catch (inAppError) {
-      logWarn("Failed to send in-app notifications to salon staff (dashboard)", {
-        bookingId: booking.id,
-        inAppError: inAppError instanceof Error ? inAppError.message : "Unknown error",
-      });
-      results.inApp = {
-        success: false,
-        error: inAppError instanceof Error ? inAppError.message : "Unknown error",
-      };
-    }
+    results.inApp = await notifySalonStaff(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
 
     const jsonResponse = NextResponse.json(results);
     

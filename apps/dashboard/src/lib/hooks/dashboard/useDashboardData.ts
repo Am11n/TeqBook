@@ -3,34 +3,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { getCalendarBookings } from "@/lib/services/bookings-service";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getCustomersForSalon } from "@/lib/services/customers-service";
-
-type Booking = {
-  id: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  customers: { full_name: string | null } | null;
-  employees: { full_name: string | null } | null;
-  services: { name: string | null } | null;
-};
-
-type Employee = {
-  id: string;
-  full_name: string;
-  role: string | null;
-  is_active: boolean;
-};
-
-type PerformanceData = {
-  bookingsCount: number;
-  newCustomersCount: number;
-  returningCustomersCount: number;
-  topService: string | null;
-  mostBookedStaff: string | null;
-  chartData: { label: string; bookings: number }[];
-};
-
-type TimeRange = "daily" | "weekly" | "monthly";
+import type { DashboardBooking as Booking, DashboardEmployee as Employee, PerformanceData, TimeRange } from "./dashboard-types";
 
 export function useDashboardData(timeRange: TimeRange = "weekly") {
   const { salon, isReady, user, profile } = useCurrentSalon();

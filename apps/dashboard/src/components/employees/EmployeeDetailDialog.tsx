@@ -11,47 +11,25 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Field } from "@/components/form/Field";
 import { SetupBadge } from "@/components/setup-badge";
 import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { updateEmployee } from "@/lib/repositories/employees";
 import { Check, X, Edit } from "lucide-react";
-import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
 import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
 import type { Employee, Service, Shift } from "@/lib/types";
+import { EmployeeEditForm } from "./EmployeeEditForm";
 
 export interface EmployeeDetailDialogTranslations {
-  editTitle: string;
-  detailDescription: string;
-  editDescription: string;
-  active: string;
-  inactive: string;
-  canBeBooked: string;
-  notBookable: string;
-  detailRole: string;
-  detailContact: string;
-  noContact: string;
-  detailServices: string;
-  noServices: string;
-  shiftsLabel: string;
-  shiftsRegistered: string;
-  noShifts: string;
-  close: string;
-  edit: string;
-  cancel: string;
-  save: string;
-  saving: string;
-  nameLabel: string;
-  emailLabel: string;
-  phoneLabel: string;
-  roleLabel: string;
-  selectRole: string;
-  roleOwner: string;
-  roleManager: string;
-  roleStaff: string;
-  preferredLang: string;
-  servicesLabel: string;
+  editTitle: string; detailDescription: string; editDescription: string;
+  active: string; inactive: string; canBeBooked: string; notBookable: string;
+  detailRole: string; detailContact: string; noContact: string;
+  detailServices: string; noServices: string; shiftsLabel: string;
+  shiftsRegistered: string; noShifts: string; close: string; edit: string;
+  cancel: string; save: string; saving: string; nameLabel: string;
+  emailLabel: string; phoneLabel: string; roleLabel: string;
+  selectRole: string; roleOwner: string; roleManager: string;
+  roleStaff: string; preferredLang: string; servicesLabel: string;
 }
 
 interface EmployeeDetailDialogProps {
@@ -260,100 +238,17 @@ export function EmployeeDetailDialog({
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Field label={t.nameLabel} htmlFor="detail_full_name" required>
-              <input
-                id="detail_full_name"
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-              />
-            </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t.emailLabel} htmlFor="detail_email">
-                <input
-                  id="detail_email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                />
-              </Field>
-              <Field label={t.phoneLabel} htmlFor="detail_phone">
-                <input
-                  id="detail_phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
-                />
-              </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t.roleLabel} htmlFor="detail_role">
-                <DialogSelect
-                  value={role}
-                  onChange={setRole}
-                  placeholder={t.selectRole}
-                  options={[
-                    { value: "owner", label: t.roleOwner },
-                    { value: "manager", label: t.roleManager },
-                    { value: "staff", label: t.roleStaff },
-                  ]}
-                />
-              </Field>
-              <Field label={t.preferredLang} htmlFor="detail_lang">
-                <DialogSelect
-                  value={preferredLanguage}
-                  onChange={setPreferredLanguage}
-                  options={[
-                    { value: "nb", label: "Norsk" },
-                    { value: "en", label: "English" },
-                    { value: "ar", label: "العربية" },
-                    { value: "so", label: "Soomaali" },
-                    { value: "ti", label: "ትግርኛ" },
-                    { value: "am", label: "አማርኛ" },
-                    { value: "tr", label: "Turkce" },
-                    { value: "pl", label: "Polski" },
-                    { value: "vi", label: "Tieng Viet" },
-                    { value: "tl", label: "Tagalog" },
-                    { value: "zh", label: "中文" },
-                    { value: "fa", label: "فارسی" },
-                    { value: "dar", label: "دری" },
-                    { value: "ur", label: "اردو" },
-                    { value: "hi", label: "हिन्दी" },
-                  ]}
-                />
-              </Field>
-            </div>
-
-            <Field label={t.servicesLabel} htmlFor="detail_services">
-              <DialogMultiSelect
-                value={selectedServices}
-                onChange={setSelectedServices}
-                options={services.map((svc) => ({ value: svc.id, label: svc.name }))}
-              />
-            </Field>
-
-            {error && (
-              <p className="text-sm text-destructive" aria-live="polite">
-                {error}
-              </p>
-            )}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onSwitchToView}>
-                {t.cancel}
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? t.saving : t.save}
-              </Button>
-            </DialogFooter>
-          </form>
+          <EmployeeEditForm
+            fullName={fullName} setFullName={setFullName}
+            email={email} setEmail={setEmail}
+            phone={phone} setPhone={setPhone}
+            role={role} setRole={setRole}
+            preferredLanguage={preferredLanguage} setPreferredLanguage={setPreferredLanguage}
+            selectedServices={selectedServices} setSelectedServices={setSelectedServices}
+            services={services} saving={saving} error={error}
+            onSubmit={handleSubmit} onCancel={onSwitchToView}
+            translations={t}
+          />
         )}
       </DialogContent>
     </Dialog>

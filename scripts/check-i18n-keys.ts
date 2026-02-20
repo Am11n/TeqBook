@@ -1,15 +1,16 @@
-#!/usr/bin/env npx ts-node
-/**
- * check-i18n-keys.ts
- *
- * Verifies that all keys in the translations type exist in en.ts (source of truth).
- * Also checks nb.ts for untranslated keys (values identical to en.ts).
- *
- * Usage: npx ts-node scripts/check-i18n-keys.ts
- */
+// check-i18n-keys.ts
+//
+// Verifies en<->nb key parity for all three apps (dashboard, admin, public).
+// Also flags potentially untranslated nb values (identical to en).
+//
+// Usage: npx tsx scripts/check-i18n-keys.ts
 
-import { en } from "../apps/dashboard/src/i18n/en";
-import { nb } from "../apps/dashboard/src/i18n/nb";
+import { en as dashEn } from "../apps/dashboard/src/i18n/en";
+import { nb as dashNb } from "../apps/dashboard/src/i18n/nb";
+import { en as adminEn } from "../apps/admin/src/i18n/en";
+import { nb as adminNb } from "../apps/admin/src/i18n/nb";
+import { en as publicEn } from "../apps/public/src/i18n/en";
+import { nb as publicNb } from "../apps/public/src/i18n/nb";
 
 type NestedObj = Record<string, unknown>;
 
@@ -33,65 +34,76 @@ function getNestedValue(obj: NestedObj, path: string): unknown {
   }, obj);
 }
 
-const enKeys = getAllKeys(en as unknown as NestedObj);
-const nbKeys = getAllKeys(nb as unknown as NestedObj);
+const SKIP_SAME = [
+  "Placeholder", "placeholder", "planStarter", "planPro", "planBusiness",
+];
 
-let errors = 0;
-let warnings = 0;
+function checkApp(
+  name: string,
+  en: NestedObj,
+  nb: NestedObj
+): { errors: number; warnings: number; untranslated: number } {
+  const enKeys = getAllKeys(en);
+  const nbKeys = getAllKeys(nb);
+  let errors = 0;
+  let warnings = 0;
+  let untranslated = 0;
 
-// 1) Check that all en.ts keys exist in nb.ts
-console.log("\n--- Missing keys in nb.ts (present in en.ts) ---\n");
-for (const key of enKeys) {
-  const nbVal = getNestedValue(nb as unknown as NestedObj, key);
-  if (nbVal === undefined) {
-    console.log(`  MISSING: ${key}`);
-    errors++;
+  console.log(`\n====== ${name} ======`);
+
+  console.log(`\n--- Missing keys in nb.ts (present in en.ts) ---\n`);
+  for (const key of enKeys) {
+    if (getNestedValue(nb, key) === undefined) {
+      console.log(`  MISSING: ${key}`);
+      errors++;
+    }
   }
+
+  console.log(`\n--- Extra keys in nb.ts (not in en.ts) ---\n`);
+  for (const key of nbKeys) {
+    if (getNestedValue(en, key) === undefined) {
+      console.log(`  EXTRA: ${key}`);
+      warnings++;
+    }
+  }
+
+  console.log(`\n--- Possibly untranslated in nb.ts ---\n`);
+  for (const key of nbKeys) {
+    const enVal = getNestedValue(en, key);
+    const nbVal = getNestedValue(nb, key);
+    if (
+      typeof enVal === "string" &&
+      typeof nbVal === "string" &&
+      enVal === nbVal &&
+      !SKIP_SAME.some((s) => key.includes(s)) &&
+      enVal.length > 3
+    ) {
+      console.log(`  SAME: ${key} = "${nbVal}"`);
+      untranslated++;
+    }
+  }
+
+  console.log(`\n  ${name} summary: missing=${errors} extra=${warnings} untranslated=${untranslated}`);
+  return { errors, warnings, untranslated };
 }
 
-// 2) Check that all nb.ts keys exist in en.ts
-console.log("\n--- Extra keys in nb.ts (not in en.ts) ---\n");
-for (const key of nbKeys) {
-  const enVal = getNestedValue(en as unknown as NestedObj, key);
-  if (enVal === undefined) {
-    console.log(`  EXTRA: ${key}`);
-    warnings++;
-  }
+const apps: Array<{ name: string; en: NestedObj; nb: NestedObj }> = [
+  { name: "Dashboard", en: dashEn as unknown as NestedObj, nb: dashNb as unknown as NestedObj },
+  { name: "Admin", en: adminEn as unknown as NestedObj, nb: adminNb as unknown as NestedObj },
+  { name: "Public", en: publicEn as unknown as NestedObj, nb: publicNb as unknown as NestedObj },
+];
+
+let totalErrors = 0;
+for (const app of apps) {
+  const result = checkApp(app.name, app.en, app.nb);
+  totalErrors += result.errors;
 }
 
-// 3) Check for untranslated nb.ts values (identical to en.ts)
-console.log("\n--- Possibly untranslated in nb.ts (same as en.ts) ---\n");
-let untranslated = 0;
-for (const key of nbKeys) {
-  const enVal = getNestedValue(en as unknown as NestedObj, key);
-  const nbVal = getNestedValue(nb as unknown as NestedObj, key);
-  if (
-    typeof enVal === "string" &&
-    typeof nbVal === "string" &&
-    enVal === nbVal &&
-    // Skip keys that are commonly the same (names, codes, placeholders)
-    !key.includes("Placeholder") &&
-    !key.includes("placeholder") &&
-    !key.includes("planStarter") &&
-    !key.includes("planPro") &&
-    !key.includes("planBusiness") &&
-    enVal.length > 3
-  ) {
-    console.log(`  SAME: ${key} = "${nbVal}"`);
-    untranslated++;
-  }
-}
-
-console.log(`\n--- Summary ---`);
-console.log(`  Missing in nb.ts: ${errors}`);
-console.log(`  Extra in nb.ts: ${warnings}`);
-console.log(`  Possibly untranslated: ${untranslated}`);
-console.log("");
-
-if (errors > 0) {
-  console.log("FAIL: Missing keys found. Add them to nb.ts.\n");
+console.log(`\n====== Final ======`);
+if (totalErrors > 0) {
+  console.log(`FAIL: ${totalErrors} missing key(s) across all apps.\n`);
   process.exit(1);
 } else {
-  console.log("PASS: All en.ts keys exist in nb.ts.\n");
+  console.log(`PASS: All en.ts keys exist in nb.ts for all apps.\n`);
   process.exit(0);
 }

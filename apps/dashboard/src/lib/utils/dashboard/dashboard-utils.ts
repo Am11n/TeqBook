@@ -7,19 +7,21 @@ import { formatTimeInTimezone } from "@/lib/utils/timezone";
 export function formatTime(
   timeString: string,
   timezone?: string | null,
-  locale: string = "en"
+  locale: string = "en",
+  hour12Override?: boolean
 ): string {
   if (timezone) {
     return formatTimeInTimezone(timeString, timezone, locale, {
       hour: "2-digit",
       minute: "2-digit",
-    });
+    }, hour12Override);
   }
   const date = new Date(timeString);
-  return date.toLocaleTimeString(locale === "nb" || locale.startsWith("nb-") || locale === "no" || locale.startsWith("no-") ? "nb-NO" : "en-US", {
+  const isNb = locale === "nb" || locale.startsWith("nb-") || locale === "no" || locale.startsWith("no-");
+  return date.toLocaleTimeString(isNb ? "nb-NO" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
-    ...(locale === "nb" || locale.startsWith("nb-") || locale === "no" || locale.startsWith("no-") ? { hour12: false } : {}),
+    ...(hour12Override !== undefined ? { hour12: hour12Override } : isNb ? { hour12: false } : {}),
   });
 }
 

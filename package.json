@@ -40,6 +40,8 @@
     "setup:e2e:clean": "pnpm run create:e2e-users -- --cleanup",
     "migrate:local": "tsx scripts/migrate-local.ts",
     "reset:db": "tsx scripts/reset-db.ts",
+    "check:file-length": "tsx scripts/check-file-length.ts",
+    "check:file-length:ci": "tsx scripts/check-file-length.ts --ci",
     "format": "npm run format --workspaces --if-present"
   },
   "devDependencies": {

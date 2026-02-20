@@ -48,6 +48,7 @@ export default function ProductsPage() {
   const { products, loading, error, setProducts, setError } = useProducts();
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { saving, deletingId, handleSubmit, handleDelete } = useProductActions(
     products,
@@ -111,31 +112,35 @@ export default function ProductsPage() {
         </Card>
       )}
 
-      {loading ? (
-        <div className="space-y-4">
-          <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-          <div className="h-64 w-full animate-pulse rounded bg-muted" />
-        </div>
-      ) : products.length === 0 ? (
-        <EmptyState
-          title={t.noProducts}
-          description={t.createFirst}
-          action={
-            <Button onClick={openCreateModal} className="gap-2">
-              <Plus className="h-4 w-4" />
-              {t.create}
-            </Button>
-          }
-        />
-      ) : (
-        <ProductsTable
-          products={products}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
-          deletingId={deletingId}
-          translations={t}
-        />
-      )}
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        {loading ? (
+          <div className="space-y-4">
+            <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+            <div className="h-64 w-full animate-pulse rounded bg-muted" />
+          </div>
+        ) : products.length === 0 ? (
+          <EmptyState
+            title={t.noProducts}
+            description={t.createFirst}
+            primaryAction={
+              <Button onClick={openCreateModal} className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t.create}
+              </Button>
+            }
+          />
+        ) : (
+          <ProductsTable
+            products={products}
+            onEdit={openEditModal}
+            onDelete={handleDelete}
+            deletingId={deletingId}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            translations={t}
+          />
+        )}
+      </div>
 
       <ProductFormDialog
         isOpen={showModal}

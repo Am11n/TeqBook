@@ -38,6 +38,7 @@ export function CalendarWeekView({
   const appLocale = normalizeLocale(localeCtx);
   const salonCurrency = salon?.currency ?? "NOK";
   const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h" ? true : undefined;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const weekDates = getWeekDates(selectedDate);
   const todayStr = getTodayLocal();
@@ -138,7 +139,7 @@ export function CalendarWeekView({
                         {b.services?.name ?? translations.unknownService}
                       </p>
                       <p className={`text-[11px] ${bClasses.subtitle}`}>
-                        {formatTimeRange(b, timezone, locale)}
+                        {formatTimeRange(b, timezone, locale, hour12)}
                       </p>
                     </div>
                   );

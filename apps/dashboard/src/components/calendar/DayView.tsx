@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import type { CalendarBooking, ScheduleSegment } from "@/lib/types";
 import { BookingEvent } from "./BookingEvent";
 import { TimeBlockEvent } from "./TimeBlockEvent";
@@ -11,11 +11,8 @@ import {
   getDensityConfig,
   type CalendarDensity,
 } from "@/lib/ui/calendar-theme";
-import {
-  getHoursInTimezone,
-  getMinutesInTimezone,
-  getTodayInTimezone,
-} from "@/lib/utils/timezone";
+import { getHoursInTimezone, getTodayInTimezone } from "@/lib/utils/timezone";
+import { buildTimeSlots, getNowLinePosition, getBookingPosition, getSegmentPosition, getClosedLabel } from "./day-view-helpers";
 
 interface DayViewProps {
   selectedDate: string;
@@ -52,7 +49,6 @@ export function DayView({
   const densityConfig = getDensityConfig(density);
   const SLOT_HEIGHT = densityConfig.slotHeight;
 
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const nowLineRef = useRef<HTMLDivElement>(null);
   const [contextMenu, setContextMenu] = useState<{
@@ -63,99 +59,23 @@ export function DayView({
   } | null>(null);
 
   const { startHour, endHour } = gridRange;
-  const totalSlots = (endHour - startHour) * 2; // 30-min slots
-
-  const timeSlots = Array.from({ length: totalSlots }, (_, i) => {
-    const hours = startHour + Math.floor(i / 2);
-    const minutes = i % 2 === 0 ? 0 : 30;
-    return {
-      hours,
-      minutes,
-      time: `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`,
-    };
-  });
-
+  const totalSlots = (endHour - startHour) * 2;
+  const timeSlots = buildTimeSlots(startHour, endHour);
   const isToday = selectedDate === getTodayInTimezone(timezone);
 
-  // Update current time every minute
-  useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Scroll to current time on mount
   useEffect(() => {
     if (scrollContainerRef.current && isToday) {
       const nowIso = new Date().toISOString();
       const hours = getHoursInTimezone(nowIso, timezone);
       if (hours >= startHour && hours < endHour) {
-        const minutes = getMinutesInTimezone(nowIso, timezone);
-        const slotIndex = (hours - startHour) * 2 + Math.floor(minutes / 30);
-        scrollContainerRef.current.scrollTop = slotIndex * SLOT_HEIGHT - 100;
+        const pos = getNowLinePosition(selectedDate, timezone, startHour, endHour, SLOT_HEIGHT);
+        if (pos !== null) scrollContainerRef.current.scrollTop = pos - 100;
       }
     }
   }, [selectedDate, isToday, startHour, endHour, SLOT_HEIGHT, timezone]);
 
-  // Now line position (uses salon timezone)
-  const getNowLinePosition = () => {
-    if (!isToday) return null;
-    const nowIso = new Date().toISOString();
-    const hours = getHoursInTimezone(nowIso, timezone);
-    if (hours < startHour || hours >= endHour) return null;
-    const minutes = getMinutesInTimezone(nowIso, timezone);
-    const slotIndex = (hours - startHour) * 2 + Math.floor(minutes / 30);
-    return slotIndex * SLOT_HEIGHT + (minutes % 30) * (SLOT_HEIGHT / 30);
-  };
+  const nowLinePosition = getNowLinePosition(selectedDate, timezone, startHour, endHour, SLOT_HEIGHT);
 
-  const nowLinePosition = getNowLinePosition();
-
-  // Booking position calculation (timezone-aware)
-  const getBookingPosition = (booking: CalendarBooking) => {
-    const startH = getHoursInTimezone(booking.start_time, timezone);
-    const startM = getMinutesInTimezone(booking.start_time, timezone);
-    const endH = getHoursInTimezone(booking.end_time, timezone);
-    const endM = getMinutesInTimezone(booking.end_time, timezone);
-
-    const clampedStartH = Math.max(startH, startHour);
-    const clampedStartM = startH < startHour ? 0 : startM;
-    const clampedEndH = Math.min(endH, endHour);
-    const clampedEndM = endH > endHour ? 0 : endM;
-
-    const startSlot = (clampedStartH - startHour) * 2 + Math.floor(clampedStartM / 30);
-    const endSlot = (clampedEndH - startHour) * 2 + Math.floor(clampedEndM / 30);
-    const durationSlots = Math.max(endSlot - startSlot, 1);
-
-    const top =
-      startSlot * SLOT_HEIGHT + (clampedStartM % 30) * (SLOT_HEIGHT / 30);
-    const height =
-      durationSlots * SLOT_HEIGHT +
-      (clampedEndM % 30) * (SLOT_HEIGHT / 30) -
-      (clampedStartM % 30) * (SLOT_HEIGHT / 30);
-
-    return { top, height: Math.max(height, densityConfig.minCardHeight) };
-  };
-
-  // Segment position calculation (timezone-aware)
-  const getSegmentPosition = (segment: ScheduleSegment) => {
-    const rawStartH = getHoursInTimezone(segment.start_time, timezone);
-    const rawStartM = getMinutesInTimezone(segment.start_time, timezone);
-    const rawEndH = getHoursInTimezone(segment.end_time, timezone);
-    const rawEndM = getMinutesInTimezone(segment.end_time, timezone);
-
-    const startH = Math.max(rawStartH, startHour);
-    const startM = rawStartH < startHour ? 0 : rawStartM;
-    const endH = Math.min(rawEndH, endHour);
-    const endM = rawEndH >= endHour ? 0 : rawEndM;
-
-    const startPx =
-      ((startH - startHour) * 2 + startM / 30) * SLOT_HEIGHT;
-    const endPx =
-      ((endH - startHour) * 2 + endM / 30) * SLOT_HEIGHT;
-
-    return { top: startPx, height: Math.max(endPx - startPx, 2) };
-  };
-
-  // Handle click on empty slot
   const handleSlotClick = useCallback(
     (e: React.MouseEvent, employeeId: string) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -267,7 +187,7 @@ export function DayView({
                 {empSegments
                   .filter((s) => s.segment_type !== "booking")
                   .map((segment, i) => {
-                    const { top, height } = getSegmentPosition(segment);
+                    const { top, height } = getSegmentPosition(segment, timezone, startHour, endHour, SLOT_HEIGHT);
                     if (height <= 0) return null;
 
                     return (
@@ -290,13 +210,7 @@ export function DayView({
                         )}
                         {segment.segment_type === "closed" && height > 20 && (
                           <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-muted-foreground/50 pointer-events-none">
-                            {segment.metadata.reason_code === "salon_closed"
-                              ? "Closed"
-                              : segment.metadata.reason_code === "no_shifts"
-                                ? "No shifts"
-                                : segment.metadata.reason_code === "no_opening_hours"
-                                  ? "No hours"
-                                  : "Closed"}
+                            {getClosedLabel(segment.metadata.reason_code)}
                           </span>
                         )}
                       </div>
@@ -311,7 +225,7 @@ export function DayView({
                     return h < endHour && eh >= startHour;
                   })
                   .map((booking) => {
-                    const { top, height } = getBookingPosition(booking);
+                    const { top, height } = getBookingPosition(booking, timezone, startHour, endHour, SLOT_HEIGHT, density);
                     return (
                       <BookingEvent
                         key={booking.id}
