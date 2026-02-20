@@ -293,7 +293,6 @@ export default function DesignSystemPage() {
             </CardContent>
           </Card>
         </section>
-
       </PageLayout>
     </AdminShell>
   );

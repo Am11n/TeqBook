@@ -16,9 +16,11 @@
 | Critical components (Phase 2) | 4 | 1051 | 216 | — |
 | Service modularization (Phase 3) | 8 files across 3 apps | 884 | 263 | — |
 | Deduplication (Phase 4) | 3 identical files | 487 x 3 | 22 x 3 wrappers | ~1,000 lines |
+| Batch cleanup (Phase 5) | ~60 files across 3 apps | 435 | ≤300 | — |
 
-**Total new module files created**: 56  
+**Total new module files created**: ~90  
 **Total original monolith files replaced**: 12  
+**Final status**: **0 files over 300 lines** (CI-gated via `scripts/check-file-length.ts` with `BASELINE_VIOLATIONS = 0`)  
 
 ---
 
@@ -177,6 +179,76 @@ Same structure as admin. Uses dynamic import for `sendBookingConfirmation` (same
 **Package.json change**: Added `"./services/rate-limit"` export to `packages/shared/package.json`.
 
 **Lines eliminated**: 1,461 → 464 total (68% reduction).
+
+---
+
+## Phase 5: Batch Cleanup — All Remaining Files Under 300 Lines
+
+The final push brought every remaining code file (excluding i18n locale JSON, test fixtures, and landing-page copy) under 300 lines. ~60 files were refactored, creating ~30 new helper/component files. Organized by pattern:
+
+### Translation Extraction
+
+Verbose inline translation objects passed as component props were extracted into co-located `_helpers/translations.ts` files.
+
+| Page | Before → After | New helper file |
+|------|:--------------:|-----------------|
+| `dashboard/shifts/page.tsx` | 356 → 288 | `_helpers/translations.ts` |
+| `dashboard/services/page.tsx` | 344 → 270 | `_helpers/translations.ts` |
+| `dashboard/customers/page.tsx` | 316 → 270 | `_helpers/translations.ts` |
+| `dashboard/employees/page.tsx` | 337 → 289 | `_helpers/translations.ts` |
+
+### Component Extraction
+
+Large dialog/form JSX sections extracted into dedicated sub-components.
+
+| Parent component | Before → After | New component(s) |
+|-----------------|:--------------:|-------------------|
+| `EmployeeDetailDialog.tsx` | 361 → 256 | `EmployeeEditForm.tsx`, `language-options.ts` |
+| `ServiceDetailDialog.tsx` | 342 → 235 | `ServiceEditForm.tsx` |
+| `BookingSidePanel.tsx` | 350 → 290 | `BookingQuickActions.tsx`, `booking-panel-helpers.ts` |
+| `commissions/page.tsx` | 330 → 241 | `CommissionRuleDialog.tsx` |
+| `BookingForm.tsx` | 430 → 137 | Sub-components + hooks |
+| `booking-preview.tsx` | 422 → 138 | Sub-components (99 lines) |
+| `ShiftsListView.tsx` | 412 → 119 | Sub-components |
+| `CaseDetailView.tsx` | 307 → 270 | `case-detail-helpers.ts` |
+
+### Type & Helper Extraction
+
+Interfaces, type definitions, and utility functions moved to co-located helper files.
+
+| Source file | Before → After | New file(s) |
+|------------|:--------------:|-------------|
+| `useNotifications.ts` | 339 → 297 | `useNotifications-types.ts` |
+| `useDashboardData.ts` (dashboard + admin) | 320/318 → 290 | `dashboard-types.ts` (×2) |
+| `notifications.ts` repo (×3 apps) | 337/323 → 275/283 | `notifications-helpers.ts` (×3) |
+| `export-service.ts` (admin) | 338 → 291 | `csv-utils.ts` |
+| `customer-history/service-functions.ts` (×2) | 311 → 280 | `csv-helpers.ts` (×2) |
+| `useProfile.ts` (admin) | 323 → 270 | `useProfile-types.ts` |
+| `admin-command-palette.tsx` | 326 → 270 | `admin-command-palette-nav.ts` |
+| `QuickCreatePanel.tsx` | 325 → 300 | `quick-create-types.ts` |
+| `design-system/page.tsx` | 318 → 300 | `_data/tokens.ts` |
+
+### Service Splitting
+
+Long service functions extracted into focused sub-modules.
+
+| Source file | Before → After | New module |
+|------------|:--------------:|------------|
+| `core-send-functions.ts` | 334 → 176 | `email-channel.ts` |
+| `in-app-notification-service.ts` | 319 → 260 | `notification-validation.ts` |
+
+### Page Logic Extraction
+
+Complex computation and filtering logic extracted from page components into pure helper functions.
+
+| Page | Before → After | New helper |
+|------|:--------------:|------------|
+| `bookings/page.tsx` | 324 → 280 | `_types.ts`, `filter-bookings.ts` |
+| `opening-hours/page.tsx` | 320 → 270 | `day-operations.ts` |
+| `personalliste/page.tsx` | 331 → 295 | `_helpers/format.ts` |
+| `confirmation/page-client.tsx` | 332 → 299 | `confirmation-types.ts` |
+| `customers/[id]/history/page.tsx` | 435 → 171 | Sub-components + hooks |
+| `audit-trail/page.tsx` | 411 → 181 | Sub-components |
 
 ---
 
@@ -355,12 +427,11 @@ Where each public symbol lives after the refactoring. Use this when navigating t
 
 ---
 
-## What Remains (from the full plan)
+## Status: Complete
 
-The following phases from `full_codebase_cleanup_0f317af5.plan.md` have **not** been started:
+All source code files (TypeScript, TSX) are now under 300 lines. The CI gate in `scripts/check-file-length.ts` enforces this with `BASELINE_VIOLATIONS = 0` — any new file exceeding 300 lines will fail the build.
 
-- **Phase 1 remaining**: 15 page files (10 dashboard, 4 admin, 1 public) still over 300 lines
-- **Phase 2 remaining**: 11 components (data-table admin, dashboard shell, CalendarMobileView, public-booking-page, FeedbackDrawerContent, notification-center, BookingForm, booking-preview, ShiftsListView, ImportCustomersDialog, DayView, confirmation page-client)
-- **Phase 3 remaining**: 19 services (outlook-calendar, google-calendar, email, multi-salon, push-notification, template, unified-notification, employee-performance, forecasting, import, auth, clv, audit-trail, plus 5 borderline)
-- **Phase 4**: 7 repositories/hooks
-- **Phase 5**: Further deduplication (data-table, email, bookings repository)
+**Excluded from the 300-line rule** (by design):
+- `apps/*/src/i18n/locales/*.json` — locale translation files
+- `**/*.test.ts` / `**/*.spec.ts` — test files
+- `apps/public/src/lib/content/landing-copy.ts` — large static content array

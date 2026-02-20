@@ -9,9 +9,9 @@ import { join, relative } from "path";
 
 const MAX_LINES = 300;
 
-// Known violation count as of 2026-02-20 (before remaining cleanup phases).
-// Decrease this as you refactor files. Never increase it.
-const BASELINE_VIOLATIONS = 102;
+// All code files are now under 300 lines as of 2026-02-20.
+// This ratchet prevents new oversized files from being introduced.
+const BASELINE_VIOLATIONS = 0;
 
 const IGNORE_PATTERNS = [
   /\/i18n\//,

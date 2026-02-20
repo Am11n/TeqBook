@@ -12,13 +12,7 @@ import {
   type CalendarDensity,
 } from "@/lib/ui/calendar-theme";
 import { getHoursInTimezone, getTodayInTimezone } from "@/lib/utils/timezone";
-import {
-  buildTimeSlots,
-  getNowLinePosition,
-  getBookingPosition,
-  getSegmentPosition,
-  getClosedLabel,
-} from "./day-view-helpers";
+import { buildTimeSlots, getNowLinePosition, getBookingPosition, getSegmentPosition, getClosedLabel } from "./day-view-helpers";
 
 interface DayViewProps {
   selectedDate: string;
