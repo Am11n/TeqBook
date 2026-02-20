@@ -8,6 +8,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { useTabActions } from "@/components/layout/tab-toolbar";
 import { supabase } from "@/lib/supabase-client";
 import { Plus } from "lucide-react";
 import { type SupportCase, type FilterTab } from "./_components/types";
@@ -61,6 +62,13 @@ export default function SupportPage() {
   const openCount = cases.filter((c) => c.status === "open" || c.status === "in_progress").length;
   const waitingCount = cases.filter((c) => c.status === "waiting_on_salon").length;
 
+  useTabActions(
+    <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
+      <Plus className="h-4 w-4" />
+      New case
+    </Button>
+  );
+
   if (selectedCase) {
     return (
       <CaseDetailView
@@ -77,13 +85,6 @@ export default function SupportPage() {
 
   return (
     <>
-      <div className="flex items-center justify-end mb-4">
-        <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          New case
-        </Button>
-      </div>
-
       {error && (
         <ErrorMessage
           message={error}

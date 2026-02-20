@@ -1,92 +1,17 @@
-// =====================================================
-// useNotifications Hook
-// =====================================================
-// Cursor-paginated, realtime-aware notification hook
-// with optimistic mark-read and per-category unread counts.
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase-client";
-import type {
-  InAppNotification,
-  InAppNotificationCategory,
-  NotificationSeverity,
-  NotificationSource,
-  NotificationEntity,
-  GetNotificationsOptions,
-} from "@/lib/types/notifications";
+import type { InAppNotification, InAppNotificationCategory } from "@/lib/types/notifications";
+import {
+  type UseNotificationsOptions,
+  type UseNotificationsReturn,
+  mapRow,
+  encodeCursor,
+  decodeCursor,
+} from "./notification-helpers";
 
-// =====================================================
-// Types
-// =====================================================
-
-interface UseNotificationsOptions {
-  enablePolling?: boolean;
-  pollingInterval?: number;
-  pageSize?: number;
-  category?: InAppNotificationCategory;
-  unreadOnly?: boolean;
-}
-
-interface UseNotificationsReturn {
-  notifications: InAppNotification[];
-  totalUnreadCount: number;
-  unreadByCategory: Record<string, number>;
-  isLoading: boolean;
-  error: string | null;
-  hasMore: boolean;
-  markAsRead: (notificationId: string) => Promise<void>;
-  markAllAsRead: (category?: InAppNotificationCategory) => Promise<void>;
-  refresh: () => Promise<void>;
-  loadMore: () => Promise<void>;
-}
-
-// =====================================================
-// Row -> InAppNotification mapper
-// =====================================================
-
-function mapRow(row: Record<string, unknown>): InAppNotification {
-  const meta = (row.metadata as Record<string, unknown>) || {};
-  return {
-    id: row.id as string,
-    user_id: row.user_id as string,
-    salon_id: (row.salon_id as string) ?? null,
-    type: (row.type as InAppNotificationCategory) || "info",
-    severity: (meta._severity as NotificationSeverity) || "info",
-    source: (meta._source as NotificationSource) ?? null,
-    entity: (meta._entity as NotificationEntity) ?? null,
-    title: row.title as string,
-    body: row.body as string,
-    read: row.read as boolean,
-    metadata: meta,
-    action_url: (row.action_url as string) ?? null,
-    created_at: row.created_at as string,
-  };
-}
-
-// =====================================================
-// Cursor helpers
-// =====================================================
-
-function encodeCursor(createdAt: string, id: string): string {
-  return btoa(JSON.stringify({ c: createdAt, i: id }));
-}
-
-function decodeCursor(cursor: string): { createdAt: string; id: string } | null {
-  try {
-    const p = JSON.parse(atob(cursor));
-    return p && typeof p.c === "string" && typeof p.i === "string"
-      ? { createdAt: p.c, id: p.i }
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-// =====================================================
-// Hook
-// =====================================================
+export type { UseNotificationsOptions, UseNotificationsReturn };
 
 export function useNotifications(
   options: UseNotificationsOptions = {}
@@ -112,38 +37,26 @@ export function useNotifications(
   const realtimeRetryRef = useRef(0);
   const realtimeRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
-
-  // Track locally-read ids so realtime/polling never reverts them
   const localReadIds = useRef(new Set<string>());
 
-  // ---------------------------------------------------
-  // Auth: get userId
-  // ---------------------------------------------------
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id ?? null);
     };
     getUser();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUserId(session?.user?.id ?? null);
     });
-
     return () => { subscription.unsubscribe(); };
   }, []);
 
-  // ---------------------------------------------------
-  // Fetch page (cursor-based)
-  // ---------------------------------------------------
   const fetchPage = useCallback(
     async (reset: boolean) => {
       if (!userId) { setIsLoading(false); return; }
-
       try {
         const cursor = reset ? null : nextCursor;
         const limit = pageSize;
-
         let query = supabase
           .from("notifications")
           .select("id, user_id, salon_id, type, title, body, read, metadata, action_url, created_at")
@@ -154,7 +67,6 @@ export function useNotifications(
 
         if (category) query = query.eq("type", category);
         if (unreadOnly) query = query.eq("read", false);
-
         if (cursor) {
           const decoded = decodeCursor(cursor);
           if (decoded) {
@@ -170,8 +82,6 @@ export function useNotifications(
         const rows = (data || []).map(mapRow);
         const more = rows.length > limit;
         const page = rows.slice(0, limit);
-
-        // Apply local-read overrides
         const merged = page.map((n) =>
           localReadIds.current.has(n.id) ? { ...n, read: true } : n
         );
@@ -204,9 +114,6 @@ export function useNotifications(
     [userId, nextCursor, pageSize, category, unreadOnly]
   );
 
-  // ---------------------------------------------------
-  // Fetch unread counts (total + per category)
-  // ---------------------------------------------------
   const fetchUnreadCounts = useCallback(async () => {
     if (!userId) return;
     try {
@@ -215,14 +122,10 @@ export function useNotifications(
         .select("type")
         .eq("user_id", userId)
         .eq("read", false);
-
       if (e) return;
-
       const byCategory: Record<string, number> = {};
       let total = 0;
       for (const row of data || []) {
-        // Skip items we've already locally marked read
-        // (we don't have id here, so this is a best-effort count)
         const cat = row.type as string;
         byCategory[cat] = (byCategory[cat] || 0) + 1;
         total++;
@@ -234,9 +137,6 @@ export function useNotifications(
     }
   }, [userId]);
 
-  // ---------------------------------------------------
-  // Initial load
-  // ---------------------------------------------------
   useEffect(() => {
     if (userId) {
       setIsLoading(true);
@@ -246,119 +146,59 @@ export function useNotifications(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, category, unreadOnly]);
 
-  // ---------------------------------------------------
-  // Polling (unread counts only – lightweight)
-  // ---------------------------------------------------
   useEffect(() => {
     if (!enablePolling || !userId) return;
-
-    pollingRef.current = setInterval(() => {
-      fetchUnreadCounts();
-    }, pollingInterval);
-
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
+    pollingRef.current = setInterval(() => { fetchUnreadCounts(); }, pollingInterval);
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [enablePolling, pollingInterval, userId, fetchUnreadCounts]);
 
-  // ---------------------------------------------------
-  // Realtime subscription (with retry)
-  // ---------------------------------------------------
   useEffect(() => {
     if (!userId) return;
-
     const channel = supabase
       .channel(`admin-notifications:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const incoming = mapRow(payload.new as Record<string, unknown>);
-
-          // If we're filtering by category, only add matching items
-          if (category && incoming.type !== category) {
-            // Still update counts
-            fetchUnreadCounts();
-            return;
-          }
-          if (unreadOnly && incoming.read) return;
-
-          // Dedupe: don't add if already in list
-          setNotifications((prev) => {
-            if (prev.some((n) => n.id === incoming.id)) return prev;
-            return [incoming, ...prev];
-          });
-          setTotalUnreadCount((prev) => prev + 1);
-          setUnreadByCategory((prev) => ({
-            ...prev,
-            [incoming.type]: (prev[incoming.type] || 0) + 1,
-          }));
-        }
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, (payload) => {
+        const incoming = mapRow(payload.new as Record<string, unknown>);
+        if (category && incoming.type !== category) { fetchUnreadCounts(); return; }
+        if (unreadOnly && incoming.read) return;
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === incoming.id)) return prev;
+          return [incoming, ...prev];
+        });
+        setTotalUnreadCount((prev) => prev + 1);
+        setUnreadByCategory((prev) => ({ ...prev, [incoming.type]: (prev[incoming.type] || 0) + 1 }));
+      })
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          realtimeRetryRef.current = 0;
-        } else if (status === "CHANNEL_ERROR") {
+        if (status === "SUBSCRIBED") { realtimeRetryRef.current = 0; }
+        else if (status === "CHANNEL_ERROR") {
           const attempt = realtimeRetryRef.current + 1;
           realtimeRetryRef.current = attempt;
           if (attempt <= 3) {
-            realtimeRetryTimeoutRef.current = setTimeout(
-              () => setRealtimeRetryKey((k) => k + 1),
-              4000
-            );
+            realtimeRetryTimeoutRef.current = setTimeout(() => setRealtimeRetryKey((k) => k + 1), 4000);
           }
         }
       });
-
     return () => {
-      if (realtimeRetryTimeoutRef.current) {
-        clearTimeout(realtimeRetryTimeoutRef.current);
-        realtimeRetryTimeoutRef.current = null;
-      }
+      if (realtimeRetryTimeoutRef.current) { clearTimeout(realtimeRetryTimeoutRef.current); realtimeRetryTimeoutRef.current = null; }
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, category, unreadOnly, realtimeRetryKey]);
 
-  // ---------------------------------------------------
-  // Actions
-  // ---------------------------------------------------
-
   const markAsRead = useCallback(async (notificationId: string) => {
     if (!userId) return;
-
-    // Optimistic: mark locally immediately
     localReadIds.current.add(notificationId);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId && !n.read ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === notificationId && !n.read ? { ...n, read: true } : n)));
     setTotalUnreadCount((prev) => Math.max(0, prev - 1));
     setUnreadByCategory((prev) => {
       const n = notifications.find((x) => x.id === notificationId);
       if (!n || n.read) return prev;
-      const cat = n.type;
-      return { ...prev, [cat]: Math.max(0, (prev[cat] || 0) - 1) };
+      return { ...prev, [n.type]: Math.max(0, (prev[n.type] || 0) - 1) };
     });
-
-    // Persist to server
     try {
-      const { error: updateError } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", notificationId)
-        .eq("user_id", userId);
-
+      const { error: updateError } = await supabase.from("notifications").update({ read: true }).eq("id", notificationId).eq("user_id", userId);
       if (updateError) {
-        // Revert optimistic update
         localReadIds.current.delete(notificationId);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n))
-        );
+        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n)));
         await fetchUnreadCounts();
       }
     } catch {
@@ -369,17 +209,10 @@ export function useNotifications(
 
   const markAllAsRead = useCallback(async (cat?: InAppNotificationCategory) => {
     if (!userId) return;
-
-    // Optimistic: mark all matching as read locally
-    setNotifications((prev) =>
-      prev.map((n) => {
-        if (!n.read && (!cat || n.type === cat)) {
-          localReadIds.current.add(n.id);
-          return { ...n, read: true };
-        }
-        return n;
-      })
-    );
+    setNotifications((prev) => prev.map((n) => {
+      if (!n.read && (!cat || n.type === cat)) { localReadIds.current.add(n.id); return { ...n, read: true }; }
+      return n;
+    }));
     if (cat) {
       setUnreadByCategory((prev) => ({ ...prev, [cat]: 0 }));
       setTotalUnreadCount((prev) => Math.max(0, prev - (unreadByCategory[cat] || 0)));
@@ -387,25 +220,12 @@ export function useNotifications(
       setUnreadByCategory({});
       setTotalUnreadCount(0);
     }
-
     try {
-      let query = supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", userId)
-        .eq("read", false);
-
+      let query = supabase.from("notifications").update({ read: true }).eq("user_id", userId).eq("read", false);
       if (cat) query = query.eq("type", cat);
-
       const { error: updateError } = await query;
-
-      if (updateError) {
-        await fetchUnreadCounts();
-        await fetchPage(true);
-      }
-    } catch {
-      await fetchUnreadCounts();
-    }
+      if (updateError) { await fetchUnreadCounts(); await fetchPage(true); }
+    } catch { await fetchUnreadCounts(); }
   }, [userId, unreadByCategory, fetchUnreadCounts, fetchPage]);
 
   const refresh = useCallback(async () => {
@@ -420,16 +240,5 @@ export function useNotifications(
     await fetchPage(false);
   }, [hasMore, isLoading, fetchPage]);
 
-  return {
-    notifications,
-    totalUnreadCount,
-    unreadByCategory,
-    isLoading,
-    error,
-    hasMore,
-    markAsRead,
-    markAllAsRead,
-    refresh,
-    loadMore,
-  };
+  return { notifications, totalUnreadCount, unreadByCategory, isLoading, error, hasMore, markAsRead, markAllAsRead, refresh, loadMore };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
@@ -14,10 +14,22 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useBookings } from "@/lib/hooks/bookings/useBookings";
 import { BookingsTable } from "@/components/bookings/BookingsTable";
 import { BookingsCardView } from "@/components/bookings/BookingsCardView";
-import { cancelBooking } from "@/lib/services/bookings-service";
+import { cancelBooking, updateBookingStatus } from "@/lib/services/bookings-service";
 import type { Booking } from "@/lib/types";
+import { useTabActions } from "@/components/layout/tab-toolbar";
+import { getBookingRowColor } from "@/lib/utils/bookings/bookings-utils";
 import { EmployeeFilterPopover } from "./_components/EmployeeFilterPopover";
 import { BookingsDialogs } from "./_components/BookingsDialogs";
+import { NextBookingSidebar } from "./_components/NextBookingSidebar";
+
+type TimeFilter =
+  | "today"
+  | "tomorrow"
+  | "this_week"
+  | "next_2h"
+  | "needs_action"
+  | "cancelled"
+  | "history";
 
 function BookingsContent() {
   const { locale } = useLocale();
@@ -33,6 +45,9 @@ function BookingsContent() {
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("today");
+
+  const isNb = appLocale === "nb";
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -80,9 +95,87 @@ function BookingsContent() {
     setBookingToCancel(null);
   };
 
-  const filteredBookings = filterEmployeeId === "all"
-    ? bookings
-    : bookings.filter((b) => b.employee_id === filterEmployeeId);
+  const handleConfirmBooking = useCallback(async (booking: Booking) => {
+    if (!salon?.id) return;
+    await updateBookingStatus(salon.id, booking.id, "confirmed");
+    await loadBookings();
+  }, [salon?.id, loadBookings]);
+
+  const handleCompleteBooking = useCallback(async (booking: Booking) => {
+    if (!salon?.id) return;
+    await updateBookingStatus(salon.id, booking.id, "completed");
+    await loadBookings();
+  }, [salon?.id, loadBookings]);
+
+  useTabActions(
+    <Button
+      type="button"
+      size="sm"
+      onClick={() => setIsDialogOpen(true)}
+      disabled={employees.length === 0 || services.length === 0}
+    >
+      {t.newBookingButton}
+    </Button>
+  );
+
+  const filteredBookings = useMemo(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 86_400_000);
+    const tomorrowEnd = new Date(todayStart.getTime() + 2 * 86_400_000);
+
+    const dayOfWeek = now.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(todayStart.getTime() + mondayOffset * 86_400_000);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+
+    const twoHoursFromNow = now.getTime() + 2 * 60 * 60 * 1000;
+
+    let filtered = bookings.filter((b) => {
+      if (filterEmployeeId !== "all" && b.employee_id !== filterEmployeeId) return false;
+
+      const start = new Date(b.start_time).getTime();
+      const end = new Date(b.end_time).getTime();
+
+      switch (timeFilter) {
+        case "today":
+          return start >= todayStart.getTime() && start < todayEnd.getTime();
+        case "tomorrow":
+          return start >= todayEnd.getTime() && start < tomorrowEnd.getTime();
+        case "this_week":
+          return start >= weekStart.getTime() && start < weekEnd.getTime();
+        case "next_2h":
+          return start > now.getTime() && start <= twoHoursFromNow &&
+            b.status !== "completed" && b.status !== "cancelled";
+        case "needs_action":
+          return (b.status === "pending" || b.status === "no-show") && end >= now.getTime();
+        case "cancelled":
+          return b.status === "cancelled";
+        case "history":
+          return end < now.getTime() || b.status === "completed" || b.status === "cancelled";
+        default:
+          return true;
+      }
+    });
+
+    if (timeFilter === "history") {
+      filtered.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+    } else {
+      filtered.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+    }
+
+    return filtered;
+  }, [bookings, filterEmployeeId, timeFilter]);
+
+  const timeFilters: { key: TimeFilter; label: string }[] = [
+    { key: "next_2h", label: isNb ? "Neste 2 timer" : "Next 2 hours" },
+    { key: "today", label: isNb ? "I dag" : "Today" },
+    { key: "tomorrow", label: isNb ? "I morgen" : "Tomorrow" },
+    { key: "this_week", label: isNb ? "Denne uken" : "This week" },
+    { key: "needs_action", label: isNb ? "Trenger handling" : "Needs action" },
+    { key: "cancelled", label: isNb ? "Avbrutt" : "Cancelled" },
+    { key: "history", label: isNb ? "Historikk" : "History" },
+  ];
 
   const cardTranslations = {
     unknownService: t.unknownService, unknownEmployee: t.unknownEmployee,
@@ -92,69 +185,98 @@ function BookingsContent() {
     statusCancelled: t.statusCancelled, statusScheduled: t.statusScheduled,
   };
 
+  const sortedBookingsForSidebar = useMemo(() => {
+    const now = Date.now();
+    return [...bookings]
+      .filter((b) => {
+        const start = new Date(b.start_time).getTime();
+        const isActive = b.status === "confirmed" || b.status === "scheduled" || b.status === "pending";
+        return start > now && isActive;
+      })
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+  }, [bookings]);
+
   return (
     <ErrorBoundary>
-      <div className="flex items-center justify-end mb-4">
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={employees.length === 0 || services.length === 0}
-        >
-          {t.newBookingButton}
-        </Button>
-      </div>
-
       {error && (
         <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />
       )}
 
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
-        <TableToolbar title={t.listTitle} />
+      <div className="flex gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <TableToolbar title={t.listTitle} />
 
-        {loading ? (
-          <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-        ) : bookings.length === 0 ? (
-          <div className="mt-4">
-            <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
-          </div>
-        ) : (
-          <>
-            <BookingsCardView
-              bookings={filteredBookings}
-              employees={employees}
-              shifts={shifts}
-              translations={cardTranslations}
-              locale={appLocale}
-              onCancelBooking={handleCancelBooking}
-            />
-            <BookingsTable
-              bookings={filteredBookings}
-              employees={employees}
-              shifts={shifts}
-              translations={{
-                ...cardTranslations,
-                colDate: t.colDate, colTime: t.colTime, colService: t.colService,
-                colEmployee: t.colEmployee, colCustomer: t.colCustomer,
-                colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
-                cancelButton: t.cancelButton,
-              }}
-              locale={appLocale}
-              onCancelBooking={handleCancelBooking}
-              filterContent={
-                <EmployeeFilterPopover
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {timeFilters.map((f) => (
+                <Button
+                  key={f.key}
+                  size="sm"
+                  variant={timeFilter === f.key ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setTimeFilter(f.key)}
+                >
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+
+            {loading ? (
+              <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
+            ) : bookings.length === 0 ? (
+              <div className="mt-4">
+                <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
+              </div>
+            ) : (
+              <>
+                <BookingsCardView
+                  bookings={filteredBookings}
                   employees={employees}
-                  filterEmployeeId={filterEmployeeId}
-                  setFilterEmployeeId={setFilterEmployeeId}
-                  translations={{
-                    filterEmployeeAll: calT.filterEmployeeAll,
-                    filterEmployeeLabel: calT.filterEmployeeLabel,
-                  }}
+                  shifts={shifts}
+                  translations={cardTranslations}
+                  locale={appLocale}
+                  onCancelBooking={handleCancelBooking}
                 />
-              }
-            />
-          </>
-        )}
+                <BookingsTable
+                  bookings={filteredBookings}
+                  employees={employees}
+                  shifts={shifts}
+                  translations={{
+                    ...cardTranslations,
+                    colDate: t.colDate, colTime: t.colTime, colService: t.colService,
+                    colEmployee: t.colEmployee, colCustomer: t.colCustomer,
+                    colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
+                    cancelButton: t.cancelButton,
+                  }}
+                  locale={appLocale}
+                  onCancelBooking={handleCancelBooking}
+                  onConfirmBooking={handleConfirmBooking}
+                  onCompleteBooking={handleCompleteBooking}
+                  getRowClassName={getBookingRowColor}
+                  filterContent={
+                    <EmployeeFilterPopover
+                      employees={employees}
+                      filterEmployeeId={filterEmployeeId}
+                      setFilterEmployeeId={setFilterEmployeeId}
+                      translations={{
+                        filterEmployeeAll: calT.filterEmployeeAll,
+                        filterEmployeeLabel: calT.filterEmployeeLabel,
+                      }}
+                    />
+                  }
+                />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="hidden lg:block">
+          <NextBookingSidebar
+            bookings={sortedBookingsForSidebar}
+            locale={appLocale}
+            timezone={salon?.timezone ?? undefined}
+          />
+        </div>
       </div>
 
       {mounted && (

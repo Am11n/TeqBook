@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Download } from "lucide-react";
+import { useTabActions } from "@/components/layout/tab-toolbar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";
@@ -133,18 +134,20 @@ export default function CommissionsPage() {
     { bookings: 0, revenue: 0, commission: 0, net: 0 }
   );
 
+  useTabActions(
+    <>
+      <Button size="sm" variant="outline" onClick={() => setShowRuleDialog(true)}>
+        Manage Rules
+      </Button>
+      <Button size="sm" variant="outline" onClick={handleExportCSV} disabled={reports.length === 0}>
+        <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+      </Button>
+    </>
+  );
+
   return (
     <ErrorBoundary>
       {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
-
-      <div className="flex items-center justify-end gap-2 mb-4">
-        <Button size="sm" variant="outline" onClick={() => setShowRuleDialog(true)}>
-          Manage Rules
-        </Button>
-        <Button size="sm" variant="outline" onClick={handleExportCSV} disabled={reports.length === 0}>
-          <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
-        </Button>
-      </div>
 
         {/* Date range */}
         <div className="flex items-center gap-3 mb-4">

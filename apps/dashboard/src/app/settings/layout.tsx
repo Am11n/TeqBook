@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, createContext, useContext } f
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { TabActionsProvider, TabToolbar } from "@/components/layout/tab-toolbar";
 import {
   Dialog,
   DialogContent,
@@ -139,63 +140,67 @@ export default function SettingsLayout({
 
   return (
     <TabGuardContext.Provider value={{ registerDirtyState, isAnyDirty, reportLastSaved }}>
-      <DashboardShell>
-        <PageHeader
-          title={t.title}
-          description={
-            lastSavedAt
-              ? `${t.description} \u00B7 Last saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-              : t.description
-          }
-        />
-        <div className="mt-6 tabular-nums">
-          {mounted ? (
-            <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-              <TabsList className="flex w-full max-w-5xl flex-wrap gap-0.5">
-                <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
-                <TabsTrigger value="opening-hours">{t.openingHoursTab}</TabsTrigger>
-                <TabsTrigger value="no-show-policy">No-show</TabsTrigger>
-                <TabsTrigger value="import">Import</TabsTrigger>
-                <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
-                <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                {featuresMounted && hasFeature("BRANDING") && (
-                  <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
-                )}
-              </TabsList>
-              <TabsContent value={activeTab} className="mt-6">
+      <TabActionsProvider>
+        <DashboardShell>
+          <PageHeader
+            title={t.title}
+            description={
+              lastSavedAt
+                ? `${t.description} \u00B7 Last saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                : t.description
+            }
+          />
+          <div className="mt-4 tabular-nums">
+            {mounted ? (
+              <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
+                <TabToolbar>
+                  <TabsList className="flex w-full max-w-5xl flex-wrap gap-0.5">
+                    <TabsTrigger value="general">{t.generalTab}</TabsTrigger>
+                    <TabsTrigger value="opening-hours">{t.openingHoursTab}</TabsTrigger>
+                    <TabsTrigger value="no-show-policy">No-show</TabsTrigger>
+                    <TabsTrigger value="import">Import</TabsTrigger>
+                    <TabsTrigger value="notifications">{t.notificationsTab}</TabsTrigger>
+                    <TabsTrigger value="billing">{t.billingTab}</TabsTrigger>
+                    <TabsTrigger value="security">Security</TabsTrigger>
+                    {featuresMounted && hasFeature("BRANDING") && (
+                      <TabsTrigger value="branding">{t.brandingTab}</TabsTrigger>
+                    )}
+                  </TabsList>
+                </TabToolbar>
+                <TabsContent value={activeTab} className="mt-3">
+                  {children}
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="mt-3">
                 {children}
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <div className="mt-6">
-              {children}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        {/* Unsaved changes guard dialog */}
-        <Dialog open={showGuardDialog} onOpenChange={setShowGuardDialog}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>
-                {t.unsavedChangesTitle ?? "Unsaved changes"}
-              </DialogTitle>
-              <DialogDescription>
-                {t.unsavedChangesDescription ?? "You have unsaved changes that will be lost if you switch tabs."}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="ghost" onClick={handleGuardDiscard}>
-                {t.discardAndSwitch ?? "Discard and switch"}
-              </Button>
-              <Button onClick={handleGuardStay}>
-                {t.stayOnTab ?? "Stay"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </DashboardShell>
+          {/* Unsaved changes guard dialog */}
+          <Dialog open={showGuardDialog} onOpenChange={setShowGuardDialog}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>
+                  {t.unsavedChangesTitle ?? "Unsaved changes"}
+                </DialogTitle>
+                <DialogDescription>
+                  {t.unsavedChangesDescription ?? "You have unsaved changes that will be lost if you switch tabs."}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="ghost" onClick={handleGuardDiscard}>
+                  {t.discardAndSwitch ?? "Discard and switch"}
+                </Button>
+                <Button onClick={handleGuardStay}>
+                  {t.stayOnTab ?? "Stay"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </DashboardShell>
+      </TabActionsProvider>
     </TabGuardContext.Provider>
   );
 }

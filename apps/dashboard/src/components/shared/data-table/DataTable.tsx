@@ -26,6 +26,7 @@ export function DataTable<T>({
   bulkSelectable = false, onBulkSelectionChange, bulkActions,
   storageKey, loading = false, emptyMessage = "No data found",
   headerContent, toolbarEndContent, density = "comfortable", className,
+  getRowClassName,
 }: DataTableProps<T>) {
   const dt = useDataTable({
     columns, data, totalCount, rowKey, pageSize,
@@ -143,7 +144,11 @@ export function DataTable<T>({
                     <TableRow
                       key={key}
                       data-state={isSelected ? "selected" : undefined}
-                      className={cn(onRowClick && "cursor-pointer", density === "compact" ? "h-9" : "h-12")}
+                      className={cn(
+                        onRowClick && "cursor-pointer",
+                        density === "compact" ? "h-9" : "h-12",
+                        getRowClassName?.(row),
+                      )}
                       onClick={() => onRowClick?.(row)}
                     >
                       {bulkSelectable && (

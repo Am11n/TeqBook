@@ -65,4 +65,5 @@ export type DataTableProps<T> = {
   toolbarEndContent?: ReactNode;
   density?: "compact" | "comfortable";
   className?: string;
+  getRowClassName?: (row: T) => string;
 };

@@ -8,6 +8,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { useTabActions } from "@/components/layout/tab-toolbar";
 import { supabase } from "@/lib/supabase-client";
 import { Plus } from "lucide-react";
 import { type FeedbackEntry, type FilterTab } from "./_components/types";
@@ -66,6 +67,13 @@ export default function FeedbackPage() {
     setDialogOpen(true);
   }
 
+  useTabActions(
+    <Button size="sm" className="gap-1.5" onClick={() => openCreateDialog("feature_request")}>
+      <Plus className="h-4 w-4" />
+      Submit feedback
+    </Button>
+  );
+
   if (selectedEntry) {
     return (
       <FeedbackDetailView
@@ -82,13 +90,6 @@ export default function FeedbackPage() {
 
   return (
     <>
-      <div className="flex items-center justify-end mb-4">
-        <Button size="sm" className="gap-1.5" onClick={() => openCreateDialog("feature_request")}>
-          <Plus className="h-4 w-4" />
-          Submit feedback
-        </Button>
-      </div>
-
       {error && (
         <ErrorMessage
           message={error}

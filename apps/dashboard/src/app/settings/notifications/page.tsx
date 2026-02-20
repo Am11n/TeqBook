@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DialogSelect } from "@/components/ui/dialog-select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -21,74 +14,10 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 import { StickySaveBar } from "@/components/settings/StickySaveBar";
 import { useSettingsForm } from "@/lib/hooks/useSettingsForm";
 import { useTabGuard } from "../layout";
-import {
-  Bell,
-  Mail,
-  Eye,
-  Send,
-  Check,
-  Clock,
-  CalendarCheck,
-  CalendarX,
-  UserPlus,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
-
-// ─── Types ──────────────────────────────────────────
-
-type NotificationForm = {
-  // Customer notifications
-  bookingConfirmation: boolean;
-  bookingReminder: boolean;
-  reminderTiming: string; // "24h" | "2h" | "both"
-  cancellationNotice: boolean;
-  // Internal notifications
-  newBooking: boolean;
-  bookingChanges: boolean;
-  bookingCancellations: boolean;
-};
-
-const DEFAULT_VALUES: NotificationForm = {
-  bookingConfirmation: true,
-  bookingReminder: true,
-  reminderTiming: "24h",
-  cancellationNotice: true,
-  newBooking: true,
-  bookingChanges: true,
-  bookingCancellations: true,
-};
-
-// ─── Preview templates ──────────────────────────────
-
-const PREVIEW_TEMPLATES: Record<string, { subject: string; body: string }> = {
-  bookingConfirmation: {
-    subject: "Booking Confirmed",
-    body: `Hi {customer_name},\n\nYour booking at {salon_name} has been confirmed!\n\nDate: {date}\nTime: {time}\nService: {service_name}\n\nWe look forward to seeing you.\n\n— {salon_name}`,
-  },
-  bookingReminder: {
-    subject: "Booking Reminder",
-    body: `Hi {customer_name},\n\nJust a friendly reminder about your upcoming appointment at {salon_name}.\n\nDate: {date}\nTime: {time}\nService: {service_name}\n\nSee you soon!\n\n— {salon_name}`,
-  },
-  cancellationNotice: {
-    subject: "Booking Cancelled",
-    body: `Hi {customer_name},\n\nYour booking at {salon_name} has been cancelled.\n\nDate: {date}\nTime: {time}\n\nIf this was a mistake, feel free to book again.\n\n— {salon_name}`,
-  },
-  newBooking: {
-    subject: "New Booking Received",
-    body: `A new booking has been made:\n\nCustomer: {customer_name}\nDate: {date}\nTime: {time}\nService: {service_name}\n\nView it in your dashboard.`,
-  },
-  bookingChanges: {
-    subject: "Booking Modified",
-    body: `A booking has been modified:\n\nCustomer: {customer_name}\nNew date: {date}\nNew time: {time}\nService: {service_name}`,
-  },
-  bookingCancellations: {
-    subject: "Booking Cancelled",
-    body: `A booking has been cancelled:\n\nCustomer: {customer_name}\nDate: {date}\nTime: {time}\nService: {service_name}`,
-  },
-};
-
-// ─── Component ──────────────────────────────────────
+import { Bell, Mail, CalendarCheck, CalendarX, UserPlus, Check, AlertCircle } from "lucide-react";
+import { NotificationItem } from "./_components/NotificationItem";
+import { TestEmailInput } from "./_components/TestEmailInput";
+import { DEFAULT_VALUES, PREVIEW_TEMPLATES, type NotificationForm } from "./_components/constants";
 
 export default function NotificationsPage() {
   const { locale } = useLocale();
@@ -97,17 +26,13 @@ export default function NotificationsPage() {
   const t = translations[appLocale].settings;
   const { registerDirtyState } = useTabGuard();
 
-  // Preview dialog state
   const [previewKey, setPreviewKey] = useState<string | null>(null);
   const [sendingTest, setSendingTest] = useState(false);
   const [testSentMessage, setTestSentMessage] = useState<string | null>(null);
   const [testErrorMessage, setTestErrorMessage] = useState<string | null>(null);
-
-  // Test email recipient
   const [showTestInput, setShowTestInput] = useState<"customer" | "internal" | null>(null);
   const [testEmailTarget, setTestEmailTarget] = useState(user?.email ?? "");
 
-  // Build initial values from profile preferences
   const initialValues = useMemo<NotificationForm>(() => {
     const prefs = (profile as Record<string, unknown>)?.notification_preferences as Record<string, unknown> | null;
     if (!prefs) return DEFAULT_VALUES;
@@ -122,22 +47,14 @@ export default function NotificationsPage() {
     };
   }, [profile]);
 
-  // Save handler
   const handleSave = useCallback(async (values: NotificationForm) => {
     if (!user?.id) throw new Error("Not logged in");
-    const { error } = await supabase
-      .from("profiles")
-      .update({ notification_preferences: values })
-      .eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ notification_preferences: values }).eq("id", user.id);
     if (error) throw new Error(error.message);
   }, [user?.id]);
 
-  const form = useSettingsForm<NotificationForm>({
-    initialValues,
-    onSave: handleSave,
-  });
+  const form = useSettingsForm<NotificationForm>({ initialValues, onSave: handleSave });
 
-  // Register dirty state with tab guard
   useEffect(() => {
     registerDirtyState("notifications", form.isDirty);
   }, [form.isDirty, registerDirtyState]);
@@ -149,15 +66,12 @@ export default function NotificationsPage() {
     setTestErrorMessage(null);
     try {
       const res = await fetch("/api/settings/send-test-notification", {
-        method: "POST",
-        credentials: "include",
+        method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientEmail, group, salonId: salon.id }),
       });
       const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || `Failed (${res.status})`);
-      }
+      if (!res.ok || data.error) throw new Error(data.error || `Failed (${res.status})`);
       setTestSentMessage(`Test sent to ${recipientEmail}`);
       setShowTestInput(null);
       setTimeout(() => setTestSentMessage(null), 4000);
@@ -171,97 +85,18 @@ export default function NotificationsPage() {
     }
   };
 
-  // ─── Notification item renderer ───────────────────
-
-  const NotificationItem = ({
-    icon: Icon,
-    label,
-    description,
-    fieldKey,
-    showTiming,
-  }: {
-    icon: React.ElementType;
-    label: string;
-    description: string;
-    fieldKey: keyof NotificationForm;
-    showTiming?: boolean;
-  }) => {
-    const isChecked = form.values[fieldKey] as boolean;
-    return (
-      <div className="flex items-start gap-3 py-3 border-b last:border-b-0">
-        <label className="flex items-center pt-0.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isChecked}
-            onChange={(e) => form.setValue(fieldKey, e.target.checked as never)}
-            className="h-4 w-4 rounded border-input"
-          />
-        </label>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">{label}</span>
-            <Badge
-              variant={isChecked ? "default" : "secondary"}
-              className="text-[10px] px-1.5 py-0 h-4 leading-4"
-            >
-              {isChecked
-                ? (t.activeStatus ?? "Active")
-                : (t.disabledStatus ?? "Disabled")}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-
-          {/* Reminder timing dropdown -- smooth expand */}
-          {showTiming && (
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                isChecked ? "max-h-12 opacity-100 mt-2" : "max-h-0 opacity-0"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <DialogSelect
-                  value={form.values.reminderTiming}
-                  onChange={(v) => form.setValue("reminderTiming", v)}
-                  options={[
-                    { value: "24h", label: "24 hours before" },
-                    { value: "2h", label: "2 hours before" },
-                    { value: "both", label: "Both (24h + 2h)" },
-                  ]}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Preview link */}
-        <button
-          type="button"
-          onClick={() => setPreviewKey(fieldKey)}
-          className="text-xs text-primary hover:underline whitespace-nowrap flex items-center gap-1"
-        >
-          <Eye className="h-3 w-3" />
-          Preview
-        </button>
-      </div>
-    );
-  };
-
-  // ─── Render ─────────────────────────────────────────
-
+  const activeLabel = t.activeStatus ?? "Active";
+  const disabledLabel = t.disabledStatus ?? "Disabled";
   const previewTemplate = previewKey ? PREVIEW_TEMPLATES[previewKey] : null;
 
   return (
     <div className="space-y-6">
-      {/* Test sent toast */}
       {testSentMessage && (
         <div className="fixed top-4 right-4 z-50 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2">
           <Check className="h-4 w-4 text-green-600" />
           <span className="text-sm text-green-700 dark:text-green-300">{testSentMessage}</span>
         </div>
       )}
-
-      {/* Test error toast */}
       {testErrorMessage && (
         <div className="fixed top-4 right-4 z-50 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2">
           <AlertCircle className="h-4 w-4 text-red-600" />
@@ -269,200 +104,66 @@ export default function NotificationsPage() {
         </div>
       )}
 
-      {/* Customer Notifications */}
       <SettingsSection
         title={t.customerNotificationsTitle ?? "Customer Notifications"}
         description={t.customerNotificationsDescription ?? "Emails sent to your customers when bookings are created, changed, or cancelled."}
         titleRight={
-          showTestInput === "customer" ? (
-            <form
-              className="flex items-center gap-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendTest("customer", testEmailTarget);
-              }}
-            >
-              <input
-                type="email"
-                value={testEmailTarget}
-                onChange={(e) => setTestEmailTarget(e.target.value)}
-                placeholder={t.testEmailPlaceholder ?? "Enter email address"}
-                className="h-8 w-48 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
-                autoFocus
-                required
-              />
-              <Button
-                type="submit"
-                variant="default"
-                size="sm"
-                className="text-xs h-8"
-                disabled={sendingTest}
-              >
-                {sendingTest ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Send className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs h-8"
-                onClick={() => setShowTestInput(null)}
-              >
-                ✕
-              </Button>
-            </form>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              onClick={() => {
-                setTestEmailTarget(user?.email ?? "");
-                setShowTestInput("customer");
-              }}
-              disabled={sendingTest}
-            >
-              <Send className="h-3.5 w-3.5 mr-1" />
-              {t.sendTestTo ?? "Send test"}
-            </Button>
-          )
+          <TestEmailInput
+            show={showTestInput === "customer"}
+            testEmailTarget={testEmailTarget}
+            onEmailChange={setTestEmailTarget}
+            onSend={() => handleSendTest("customer", testEmailTarget)}
+            onCancel={() => setShowTestInput(null)}
+            onOpen={() => { setTestEmailTarget(user?.email ?? ""); setShowTestInput("customer"); }}
+            sending={sendingTest}
+            placeholder={t.testEmailPlaceholder ?? "Enter email address"}
+            buttonLabel={t.sendTestTo ?? "Send test"}
+          />
         }
       >
-        <NotificationItem
-          icon={CalendarCheck}
-          label={t.bookingConfirmationLabel ?? "Booking confirmation"}
-          description={t.bookingConfirmationDescription ?? "Sent immediately when a booking is created."}
-          fieldKey="bookingConfirmation"
-        />
-        <NotificationItem
-          icon={Bell}
-          label={t.bookingReminderLabel ?? "Booking reminder"}
-          description={t.bookingReminderDescription ?? "Sent before the appointment to reduce no-shows."}
-          fieldKey="bookingReminder"
-          showTiming
-        />
-        <NotificationItem
-          icon={CalendarX}
-          label={t.cancellationNoticeLabel ?? "Cancellation notice"}
-          description={t.cancellationNoticeDescription ?? "Sent when a booking is cancelled."}
-          fieldKey="cancellationNotice"
-        />
+        <NotificationItem icon={CalendarCheck} label={t.bookingConfirmationLabel ?? "Booking confirmation"} description={t.bookingConfirmationDescription ?? "Sent immediately when a booking is created."} fieldKey="bookingConfirmation" isChecked={form.values.bookingConfirmation as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={Bell} label={t.bookingReminderLabel ?? "Booking reminder"} description={t.bookingReminderDescription ?? "Sent before the appointment to reduce no-shows."} fieldKey="bookingReminder" showTiming isChecked={form.values.bookingReminder as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarX} label={t.cancellationNoticeLabel ?? "Cancellation notice"} description={t.cancellationNoticeDescription ?? "Sent when a booking is cancelled."} fieldKey="cancellationNotice" isChecked={form.values.cancellationNotice as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
       </SettingsSection>
 
-      {/* Internal Notifications */}
       <SettingsSection
         title={t.internalNotificationsTitle ?? "Your Notifications"}
         description={t.internalNotificationsDescription ?? "Emails sent to you when bookings are created, changed, or cancelled."}
         titleRight={
-          showTestInput === "internal" ? (
-            <form
-              className="flex items-center gap-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendTest("internal", testEmailTarget);
-              }}
-            >
-              <input
-                type="email"
-                value={testEmailTarget}
-                onChange={(e) => setTestEmailTarget(e.target.value)}
-                placeholder={t.testEmailPlaceholder ?? "Enter email address"}
-                className="h-8 w-48 rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
-                autoFocus
-                required
-              />
-              <Button
-                type="submit"
-                variant="default"
-                size="sm"
-                className="text-xs h-8"
-                disabled={sendingTest}
-              >
-                {sendingTest ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Send className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs h-8"
-                onClick={() => setShowTestInput(null)}
-              >
-                ✕
-              </Button>
-            </form>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              onClick={() => {
-                setTestEmailTarget(user?.email ?? "");
-                setShowTestInput("internal");
-              }}
-              disabled={sendingTest}
-            >
-              <Send className="h-3.5 w-3.5 mr-1" />
-              {t.sendTestTo ?? "Send test"}
-            </Button>
-          )
+          <TestEmailInput
+            show={showTestInput === "internal"}
+            testEmailTarget={testEmailTarget}
+            onEmailChange={setTestEmailTarget}
+            onSend={() => handleSendTest("internal", testEmailTarget)}
+            onCancel={() => setShowTestInput(null)}
+            onOpen={() => { setTestEmailTarget(user?.email ?? ""); setShowTestInput("internal"); }}
+            sending={sendingTest}
+            placeholder={t.testEmailPlaceholder ?? "Enter email address"}
+            buttonLabel={t.sendTestTo ?? "Send test"}
+          />
         }
       >
-        <NotificationItem
-          icon={UserPlus}
-          label={t.newBookingLabel ?? "New booking"}
-          description={t.newBookingDescription ?? "Receive an email when a customer books an appointment."}
-          fieldKey="newBooking"
-        />
-        <NotificationItem
-          icon={CalendarCheck}
-          label={t.bookingChangesLabel ?? "Booking changes"}
-          description={t.bookingChangesDescription ?? "Receive an email when a booking is modified."}
-          fieldKey="bookingChanges"
-        />
-        <NotificationItem
-          icon={CalendarX}
-          label={t.bookingCancellationsLabel ?? "Booking cancellations"}
-          description={t.bookingCancellationsDescription ?? "Receive an email when a customer cancels."}
-          fieldKey="bookingCancellations"
-        />
+        <NotificationItem icon={UserPlus} label={t.newBookingLabel ?? "New booking"} description={t.newBookingDescription ?? "Receive an email when a customer books an appointment."} fieldKey="newBooking" isChecked={form.values.newBooking as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarCheck} label={t.bookingChangesLabel ?? "Booking changes"} description={t.bookingChangesDescription ?? "Receive an email when a booking is modified."} fieldKey="bookingChanges" isChecked={form.values.bookingChanges as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarX} label={t.bookingCancellationsLabel ?? "Booking cancellations"} description={t.bookingCancellationsDescription ?? "Receive an email when a customer cancels."} fieldKey="bookingCancellations" isChecked={form.values.bookingCancellations as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
       </SettingsSection>
 
-      {/* Preview Dialog */}
       <Dialog open={!!previewKey} onOpenChange={(open) => !open && setPreviewKey(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Email Preview
-            </DialogTitle>
-            <DialogDescription>
-              This is a sample email. Variables like {"{customer_name}"} will be replaced with real data.
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />Email Preview</DialogTitle>
+            <DialogDescription>This is a sample email. Variables like {"{customer_name}"} will be replaced with real data.</DialogDescription>
           </DialogHeader>
           {previewTemplate && (
             <div className="mt-2 space-y-3">
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1">Subject</p>
-                <p className="text-sm font-medium border rounded-md px-3 py-2 bg-muted/30">
-                  {previewTemplate.subject}
-                </p>
+                <p className="text-sm font-medium border rounded-md px-3 py-2 bg-muted/30">{previewTemplate.subject}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1">Body</p>
                 <div className="text-sm border rounded-md px-3 py-2 bg-muted/30 whitespace-pre-wrap font-mono text-xs">
-                  {previewTemplate.body
-                    .replace("{customer_name}", "Jane Doe")
-                    .replace("{salon_name}", salon?.name || "Your Salon")
-                    .replace("{date}", "March 15, 2026")
-                    .replace("{time}", "10:30")
-                    .replace("{service_name}", "Haircut")}
+                  {previewTemplate.body.replace("{customer_name}", "Jane Doe").replace("{salon_name}", salon?.name || "Your Salon").replace("{date}", "March 15, 2026").replace("{time}", "10:30").replace("{service_name}", "Haircut")}
                 </div>
               </div>
             </div>
@@ -470,17 +171,7 @@ export default function NotificationsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sticky save bar */}
-      <StickySaveBar
-        isDirty={form.isDirty}
-        isValid={form.isValid}
-        saving={form.saving}
-        saveError={form.saveError}
-        lastSavedAt={form.lastSavedAt}
-        onSave={form.save}
-        onDiscard={form.discard}
-        onRetry={form.retrySave}
-      />
+      <StickySaveBar isDirty={form.isDirty} isValid={form.isValid} saving={form.saving} saveError={form.saveError} lastSavedAt={form.lastSavedAt} onSave={form.save} onDiscard={form.discard} onRetry={form.retrySave} />
     </div>
   );
 }

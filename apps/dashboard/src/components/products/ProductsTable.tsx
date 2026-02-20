@@ -13,6 +13,8 @@ interface ProductsTableProps {
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
   deletingId: string | null;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
   translations: {
     name: string;
     price: string;
@@ -30,6 +32,8 @@ export function ProductsTable({
   onEdit,
   onDelete,
   deletingId,
+  searchQuery,
+  onSearchChange,
   translations: t,
 }: ProductsTableProps) {
   const { salon } = useCurrentSalon();
@@ -111,6 +115,9 @@ export function ProductsTable({
       data={products}
       rowKey={(p) => p.id}
       getRowActions={getRowActions}
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
+      searchPlaceholder="Search products..."
       storageKey="dashboard-products"
       emptyMessage="No products available"
     />

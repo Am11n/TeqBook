@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { useTabActions } from "@/components/layout/tab-toolbar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";
@@ -120,15 +121,15 @@ export default function PackagesPage() {
     }
   };
 
+  useTabActions(
+    <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
+      <Plus className="h-3.5 w-3.5 mr-1" /> New Package
+    </Button>
+  );
+
   return (
     <ErrorBoundary>
       {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
-
-      <div className="flex items-center justify-end mb-4">
-        <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
-          <Plus className="h-3.5 w-3.5 mr-1" /> New Package
-        </Button>
-      </div>
 
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         {loading ? (
