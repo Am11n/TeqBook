@@ -29,6 +29,7 @@ const mockBooking: CalendarBooking = {
   status: "confirmed",
   is_walk_in: false,
   customer_id: "cust1",
+  service_id: "svc1",
   notes: null,
   customers: { full_name: "Test Customer" },
   employees: { id: "emp1", full_name: "John Doe" },

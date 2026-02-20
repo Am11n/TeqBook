@@ -10,20 +10,14 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { TableToolbar } from "@/components/table-toolbar";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Users, Check } from "lucide-react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useBookings } from "@/lib/hooks/bookings/useBookings";
 import { BookingsTable } from "@/components/bookings/BookingsTable";
 import { BookingsCardView } from "@/components/bookings/BookingsCardView";
-import { CreateBookingDialog } from "@/components/bookings/CreateBookingDialog";
-import { CancelBookingDialog } from "@/components/bookings/CancelBookingDialog";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import type { Booking } from "@/lib/types";
+import { EmployeeFilterPopover } from "./_components/EmployeeFilterPopover";
+import { BookingsDialogs } from "./_components/BookingsDialogs";
 
 function BookingsContent() {
   const { locale } = useLocale();
@@ -40,33 +34,30 @@ function BookingsContent() {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   const {
-    bookings,
-    employees,
-    services,
-    products,
-    shifts,
-    loading,
-    error,
-    hasInventory,
-    loadBookings,
-    addBooking,
-    setError,
+    bookings, employees, services, products, shifts,
+    loading, error, hasInventory, loadBookings, addBooking, setError,
   } = useBookings({
     translations: {
-      noSalon: t.noSalon,
-      loadError: t.loadError,
-      invalidSlot: t.invalidSlot,
-      createError: t.createError,
+      noSalon: t.noSalon, loadError: t.loadError,
+      invalidSlot: t.invalidSlot, createError: t.createError,
     },
   });
 
-  const handleBookingCreated = (booking: Booking) => {
-    addBooking(booking);
+  useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      setIsDialogOpen(true);
+      router.replace("/bookings", { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open && searchParams.get("new") === "true") {
+      router.replace("/bookings", { scroll: false });
+    }
   };
 
   const handleCancelBooking = (booking: Booking) => {
@@ -75,50 +66,30 @@ function BookingsContent() {
     setCancelError(null);
   };
 
-  // Check for "new" query parameter to open dialog
-  useEffect(() => {
-    const newParam = searchParams.get("new");
-    if (newParam === "true") {
-      setIsDialogOpen(true);
-      // Remove query parameter from URL
-      router.replace("/bookings", { scroll: false });
-    }
-  }, [searchParams, router]);
-
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsDialogOpen(open);
-    // Remove query parameter if closing
-    if (!open && searchParams.get("new") === "true") {
-      router.replace("/bookings", { scroll: false });
-    }
-  };
-
   const handleConfirmCancel = async (reason: string) => {
     if (!bookingToCancel || !salon?.id) return;
-
-    // Get customer email (Supabase may return customers as object or array)
     const c = Array.isArray(bookingToCancel.customers) ? bookingToCancel.customers[0] : bookingToCancel.customers;
     const customerEmail = (c as { email?: string | null } | null | undefined)?.email ?? undefined;
 
-    const { error: cancelError } = await cancelBooking(
-      salon.id,
-      bookingToCancel.id,
-      reason || null,
-      {
-        booking: bookingToCancel,
-        customerEmail,
-      }
-    );
-
-    if (cancelError) {
-      setCancelError(cancelError);
-      return;
-    }
-
-    // Reload bookings
+    const { error: err } = await cancelBooking(salon.id, bookingToCancel.id, reason || null, {
+      booking: bookingToCancel, customerEmail,
+    });
+    if (err) { setCancelError(err); return; }
     await loadBookings();
     setCancelDialogOpen(false);
     setBookingToCancel(null);
+  };
+
+  const filteredBookings = filterEmployeeId === "all"
+    ? bookings
+    : bookings.filter((b) => b.employee_id === filterEmployeeId);
+
+  const cardTranslations = {
+    unknownService: t.unknownService, unknownEmployee: t.unknownEmployee,
+    unknownCustomer: t.unknownCustomer, typeWalkIn: t.typeWalkIn, typeOnline: t.typeOnline,
+    statusPending: t.statusPending, statusConfirmed: t.statusConfirmed,
+    statusNoShow: t.statusNoShow, statusCompleted: t.statusCompleted,
+    statusCancelled: t.statusCancelled, statusScheduled: t.statusScheduled,
   };
 
   return (
@@ -135,163 +106,88 @@ function BookingsContent() {
       </div>
 
       {error && (
-          <ErrorMessage
-            message={error}
-            onDismiss={() => setError(null)}
-            variant="destructive"
-            className="mb-4"
-          />
-        )}
+        <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />
+      )}
 
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <TableToolbar title={t.listTitle} />
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <TableToolbar title={t.listTitle} />
 
-          {loading ? (
-            <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-          ) : bookings.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
-            </div>
-          ) : (
-            <>
-              <BookingsCardView
-                bookings={filterEmployeeId === "all" ? bookings : bookings.filter((b) => b.employee_id === filterEmployeeId)}
-                employees={employees}
-                shifts={shifts}
-                translations={{
-                  unknownService: t.unknownService,
-                  unknownEmployee: t.unknownEmployee,
-                  unknownCustomer: t.unknownCustomer,
-                  typeWalkIn: t.typeWalkIn,
-                  typeOnline: t.typeOnline,
-                  statusPending: t.statusPending,
-                  statusConfirmed: t.statusConfirmed,
-                  statusNoShow: t.statusNoShow,
-                  statusCompleted: t.statusCompleted,
-                  statusCancelled: t.statusCancelled,
-                  statusScheduled: t.statusScheduled,
-                }}
-                locale={appLocale}
-                onCancelBooking={handleCancelBooking}
-              />
-
-              <BookingsTable
-                bookings={filterEmployeeId === "all" ? bookings : bookings.filter((b) => b.employee_id === filterEmployeeId)}
-                employees={employees}
-                shifts={shifts}
-                translations={{
-                  colDate: t.colDate,
-                  colTime: t.colTime,
-                  colService: t.colService,
-                  colEmployee: t.colEmployee,
-                  colCustomer: t.colCustomer,
-                  colStatus: t.colStatus,
-                  colType: t.colType,
-                  colNotes: t.colNotes,
-                  unknownService: t.unknownService,
-                  unknownEmployee: t.unknownEmployee,
-                  unknownCustomer: t.unknownCustomer,
-                  typeWalkIn: t.typeWalkIn,
-                  typeOnline: t.typeOnline,
-                  statusPending: t.statusPending,
-                  statusConfirmed: t.statusConfirmed,
-                  statusNoShow: t.statusNoShow,
-                  statusCompleted: t.statusCompleted,
-                  statusCancelled: t.statusCancelled,
-                  statusScheduled: t.statusScheduled,
-                  cancelButton: t.cancelButton,
-                }}
-                locale={appLocale}
-                onCancelBooking={handleCancelBooking}
-                filterContent={
-                  employees.length > 1 ? (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                          <Users className="h-3.5 w-3.5" />
-                          {filterEmployeeId === "all"
-                            ? calT.filterEmployeeAll
-                            : employees.find((e) => e.id === filterEmployeeId)?.full_name ?? calT.filterEmployeeAll}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent align="end" className="w-52 p-3">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                            {calT.filterEmployeeLabel}
-                          </p>
-                          <button
-                            onClick={() => setFilterEmployeeId("all")}
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
-                          >
-                            <Check className={`h-3.5 w-3.5 ${filterEmployeeId === "all" ? "opacity-100" : "opacity-0"}`} />
-                            {calT.filterEmployeeAll}
-                          </button>
-                          {employees.map((emp) => (
-                            <button
-                              key={emp.id}
-                              onClick={() => setFilterEmployeeId(emp.id)}
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
-                            >
-                              <Check className={`h-3.5 w-3.5 ${filterEmployeeId === emp.id ? "opacity-100" : "opacity-0"}`} />
-                              {emp.full_name}
-                            </button>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  ) : undefined
-                }
-              />
-          </>
-        )}
-        </div>
-
-        {mounted && (
+        {loading ? (
+          <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
+        ) : bookings.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
+          </div>
+        ) : (
           <>
-            <CreateBookingDialog
-              open={isDialogOpen}
-              onOpenChange={handleDialogOpenChange}
+            <BookingsCardView
+              bookings={filteredBookings}
               employees={employees}
-              services={services}
-              products={products}
-              hasInventory={hasInventory}
-              onBookingCreated={handleBookingCreated}
-              translations={{
-                dialogTitle: t.dialogTitle,
-                dialogDescription: t.dialogDescription,
-                employeeLabel: t.employeeLabel,
-                employeePlaceholder: t.employeePlaceholder,
-                serviceLabel: t.serviceLabel,
-                servicePlaceholder: t.servicePlaceholder,
-                dateLabel: t.dateLabel,
-                timeLabel: t.timeLabel,
-                loadSlotsButton: t.loadSlotsButton,
-                loadingSlots: t.loadingSlots,
-                noSlotsYet: t.noSlotsYet,
-                selectSlotPlaceholder: t.selectSlotPlaceholder,
-                customerNameLabel: t.customerNameLabel,
-                customerEmailLabel: t.customerEmailLabel,
-                customerEmailPlaceholder: t.customerEmailPlaceholder,
-                customerPhoneLabel: t.customerPhoneLabel,
-                customerPhonePlaceholder: t.customerPhonePlaceholder,
-                isWalkInLabel: t.isWalkInLabel,
-                cancelButton: t.cancelButton,
-                createBooking: t.createBooking,
-                creatingBooking: t.creatingBooking,
-                invalidSlot: t.invalidSlot,
-                createError: t.createError,
-              }}
-            />
-            <CancelBookingDialog
-              open={cancelDialogOpen}
-              onOpenChange={setCancelDialogOpen}
-              booking={bookingToCancel}
+              shifts={shifts}
+              translations={cardTranslations}
               locale={appLocale}
-              onConfirm={handleConfirmCancel}
-              error={cancelError}
+              onCancelBooking={handleCancelBooking}
+            />
+            <BookingsTable
+              bookings={filteredBookings}
+              employees={employees}
+              shifts={shifts}
+              translations={{
+                ...cardTranslations,
+                colDate: t.colDate, colTime: t.colTime, colService: t.colService,
+                colEmployee: t.colEmployee, colCustomer: t.colCustomer,
+                colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
+                cancelButton: t.cancelButton,
+              }}
+              locale={appLocale}
+              onCancelBooking={handleCancelBooking}
+              filterContent={
+                <EmployeeFilterPopover
+                  employees={employees}
+                  filterEmployeeId={filterEmployeeId}
+                  setFilterEmployeeId={setFilterEmployeeId}
+                  translations={{
+                    filterEmployeeAll: calT.filterEmployeeAll,
+                    filterEmployeeLabel: calT.filterEmployeeLabel,
+                  }}
+                />
+              }
             />
           </>
         )}
+      </div>
+
+      {mounted && (
+        <BookingsDialogs
+          createOpen={isDialogOpen}
+          onCreateOpenChange={handleDialogOpenChange}
+          cancelOpen={cancelDialogOpen}
+          onCancelOpenChange={setCancelDialogOpen}
+          employees={employees}
+          services={services}
+          products={products}
+          hasInventory={hasInventory}
+          onBookingCreated={addBooking}
+          bookingToCancel={bookingToCancel}
+          cancelError={cancelError}
+          onConfirmCancel={handleConfirmCancel}
+          locale={appLocale}
+          t={{
+            dialogTitle: t.dialogTitle, dialogDescription: t.dialogDescription,
+            employeeLabel: t.employeeLabel, employeePlaceholder: t.employeePlaceholder,
+            serviceLabel: t.serviceLabel, servicePlaceholder: t.servicePlaceholder,
+            dateLabel: t.dateLabel, timeLabel: t.timeLabel,
+            loadSlotsButton: t.loadSlotsButton, loadingSlots: t.loadingSlots,
+            noSlotsYet: t.noSlotsYet, selectSlotPlaceholder: t.selectSlotPlaceholder,
+            customerNameLabel: t.customerNameLabel,
+            customerEmailLabel: t.customerEmailLabel, customerEmailPlaceholder: t.customerEmailPlaceholder,
+            customerPhoneLabel: t.customerPhoneLabel, customerPhonePlaceholder: t.customerPhonePlaceholder,
+            isWalkInLabel: t.isWalkInLabel, cancelButton: t.cancelButton,
+            createBooking: t.createBooking, creatingBooking: t.creatingBooking,
+            invalidSlot: t.invalidSlot, createError: t.createError,
+          }}
+        />
+      )}
     </ErrorBoundary>
   );
 }
