@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { TableToolbar } from "@/components/table-toolbar";
@@ -124,21 +123,18 @@ function BookingsContent() {
 
   return (
     <ErrorBoundary>
-      <PageLayout
-        title={t.title}
-        description={t.description}
-        actions={
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setIsDialogOpen(true)}
-            disabled={employees.length === 0 || services.length === 0}
-          >
-            {t.newBookingButton}
-          </Button>
-        }
-      >
-        {error && (
+      <div className="flex items-center justify-end mb-4">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => setIsDialogOpen(true)}
+          disabled={employees.length === 0 || services.length === 0}
+        >
+          {t.newBookingButton}
+        </Button>
+      </div>
+
+      {error && (
           <ErrorMessage
             message={error}
             onDismiss={() => setError(null)}
@@ -296,7 +292,6 @@ function BookingsContent() {
             />
           </>
         )}
-      </PageLayout>
     </ErrorBoundary>
   );
 }

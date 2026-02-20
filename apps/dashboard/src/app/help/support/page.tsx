@@ -5,7 +5,6 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { PageLayout } from "@/components/layout/page-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -165,21 +164,15 @@ export default function SupportPage() {
   // ---------------------------------------------------------------------------
   if (selectedCase) {
     return (
-      <PageLayout
-        title="Support"
-        description={t.dashboard?.support ?? "Support"}
-        showCard={false}
-      >
-        <CaseDetailView
-          supportCase={selectedCase}
-          userId={user?.id ?? ""}
-          salonId={salon?.id ?? ""}
-          onBack={() => {
-            setSelectedCase(null);
-            loadCases();
-          }}
-        />
-      </PageLayout>
+      <CaseDetailView
+        supportCase={selectedCase}
+        userId={user?.id ?? ""}
+        salonId={salon?.id ?? ""}
+        onBack={() => {
+          setSelectedCase(null);
+          loadCases();
+        }}
+      />
     );
   }
 
@@ -187,16 +180,14 @@ export default function SupportPage() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <PageLayout
-      title="Support"
-      description="Need help? Create a support case and we'll get back to you."
-      actions={
+    <>
+      <div className="flex items-center justify-end mb-4">
         <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           New case
         </Button>
-      }
-    >
+      </div>
+
       {error && (
         <ErrorMessage
           message={error}
@@ -264,7 +255,7 @@ export default function SupportPage() {
           loadCases();
         }}
       />
-    </PageLayout>
+    </>
   );
 }
 

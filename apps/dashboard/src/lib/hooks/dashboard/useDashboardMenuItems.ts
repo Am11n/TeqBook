@@ -13,8 +13,7 @@ import {
   TrendingUp,
   Package,
   FileCheck,
-  Headset,
-  MessageSquare,
+  HelpCircle,
   ShoppingBag,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
@@ -64,7 +63,6 @@ export function useDashboardMenuItems({
     () => [
       { href: "/calendar", label: texts.calendar, icon: Calendar },
       { href: "/bookings", label: texts.bookings, icon: BookOpen },
-      { href: "/waitlist", label: "Waitlist", icon: Clock },
     ],
     [texts.calendar, texts.bookings]
   );
@@ -126,20 +124,11 @@ export function useDashboardMenuItems({
 
   const systemItems = useMemo<MenuItem[]>(() => {
     const items: MenuItem[] = [];
-    // Feedback is visible to all logged-in roles
     if (isReady) {
       items.push({
-        href: "/feedback",
-        label: texts.feedback ?? "Feedback",
-        icon: MessageSquare,
-      });
-    }
-    // Support is visible to all logged-in roles
-    if (isReady) {
-      items.push({
-        href: "/support",
-        label: texts.support ?? "Support",
-        icon: Headset,
+        href: "/help/feedback",
+        label: "Hjelp",
+        icon: HelpCircle,
       });
     }
     if (canAccessSettings(userRole)) {
@@ -158,7 +147,7 @@ export function useDashboardMenuItems({
       });
     }
     return items;
-  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations, texts.feedback, texts.support]);
+  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations]);
 
   return {
     overviewItems,

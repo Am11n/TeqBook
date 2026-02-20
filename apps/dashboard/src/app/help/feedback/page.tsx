@@ -5,7 +5,6 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { PageLayout } from "@/components/layout/page-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -203,21 +202,15 @@ export default function FeedbackPage() {
   // ---------------------------------------------------------------------------
   if (selectedEntry) {
     return (
-      <PageLayout
-        title={t.dashboard?.feedback ?? "Feedback"}
-        description={t.dashboard?.feedback ?? "Feedback"}
-        showCard={false}
-      >
-        <FeedbackDetailView
-          entry={selectedEntry}
-          userId={user?.id ?? ""}
-          salonId={salon?.id ?? ""}
-          onBack={() => {
-            setSelectedEntry(null);
-            loadEntries();
-          }}
-        />
-      </PageLayout>
+      <FeedbackDetailView
+        entry={selectedEntry}
+        userId={user?.id ?? ""}
+        salonId={salon?.id ?? ""}
+        onBack={() => {
+          setSelectedEntry(null);
+          loadEntries();
+        }}
+      />
     );
   }
 
@@ -225,16 +218,14 @@ export default function FeedbackPage() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <PageLayout
-      title={t.dashboard?.feedback ?? "Feedback"}
-      description="Share your ideas, report bugs, or suggest improvements."
-      actions={
+    <>
+      <div className="flex items-center justify-end mb-4">
         <Button size="sm" className="gap-1.5" onClick={() => openCreateDialog("feature_request")}>
           <Plus className="h-4 w-4" />
           Submit feedback
         </Button>
-      }
-    >
+      </div>
+
       {error && (
         <ErrorMessage
           message={error}
@@ -316,7 +307,7 @@ export default function FeedbackPage() {
           }
         }}
       />
-    </PageLayout>
+    </>
   );
 }
 
