@@ -295,13 +295,13 @@ export async function markAllAsRead(
       query = query.eq("type", category);
     }
 
-    const { error, count } = await query.select("id", { count: "exact", head: false });
+    const { data, error } = await query.select("id");
 
     if (error) {
       return { data: 0, error: error.message };
     }
 
-    return { data: count || 0, error: null };
+    return { data: data?.length ?? 0, error: null };
   } catch (error) {
     return {
       data: 0,
