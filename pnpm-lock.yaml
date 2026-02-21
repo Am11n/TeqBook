@@ -74,6 +74,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.85.0
         version: 2.93.2
+      '@teqbook/layout':
+        specifier: workspace:*
+        version: link:../../packages/layout
       '@teqbook/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -137,7 +140,7 @@ importers:
         version: 9.39.2(jiti@2.6.1)
       eslint-config-next:
         specifier: ^16.1.1
-        version: 16.1.6(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.1.6(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
@@ -207,6 +210,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.85.0
         version: 2.93.2
+      '@teqbook/layout':
+        specifier: workspace:*
+        version: link:../../packages/layout
       '@teqbook/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -291,7 +297,7 @@ importers:
         version: 9.39.2(jiti@2.6.1)
       eslint-config-next:
         specifier: ^16.1.1
-        version: 16.1.6(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.1.6(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
@@ -446,6 +452,46 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@20.19.30)(jsdom@25.0.1)(lightningcss@1.30.2)(terser@5.46.0)
+
+  packages/layout:
+    dependencies:
+      '@teqbook/ui':
+        specifier: workspace:*
+        version: link:../ui
+      lucide-react:
+        specifier: ^0.555.0
+        version: 0.555.0(react@19.2.0)
+      next:
+        specifier: '>=14'
+        version: 16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.0(react@19.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.10
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.3(@types/react@19.2.10)
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.54.0
+        version: 8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.54.0
+        version: 8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      eslint:
+        specifier: ^9
+        version: 9.39.2(jiti@2.6.1)
+      prettier:
+        specifier: ^3.4.2
+        version: 3.8.1
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
   packages/shared:
     dependencies:

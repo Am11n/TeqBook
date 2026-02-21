@@ -7,8 +7,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@teqbook/ui";
+import { Button } from "@teqbook/ui";
 
 interface SessionTimeoutDialogProps {
   open: boolean;
@@ -42,4 +42,3 @@ export function SessionTimeoutDialog({
     </Dialog>
   );
 }
-

@@ -49,6 +49,10 @@ interface BookingsTableProps {
   onCompleteBooking?: (booking: Booking) => void;
   getRowClassName?: (row: Booking) => string;
   filterContent?: React.ReactNode;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
+  headerContent?: React.ReactNode;
 }
 
 export function BookingsTable({
@@ -62,6 +66,10 @@ export function BookingsTable({
   onCompleteBooking,
   getRowClassName,
   filterContent,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder,
+  headerContent,
 }: BookingsTableProps) {
   const { salon } = useCurrentSalon();
   const { locale: localeCtx } = useLocale();
@@ -262,6 +270,10 @@ export function BookingsTable({
         storageKey="dashboard-bookings"
         emptyMessage="No bookings available"
         toolbarEndContent={filterContent}
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={searchPlaceholder}
+        headerContent={headerContent}
       />
     </div>
   );

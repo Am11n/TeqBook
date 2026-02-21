@@ -161,19 +161,21 @@ export default function ServicesPage() {
 
         {/* Table Card */}
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <TableToolbar
-            title={t.tableTitle}
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
-            filters={
-              <FilterChips
-                chips={filterChips}
-                value={activeFilters}
-                onChange={setActiveFilters}
-              />
-            }
-          />
+          {/* Mobile toolbar */}
+          <div className="md:hidden">
+            <TableToolbar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
+              filters={
+                <FilterChips
+                  chips={filterChips}
+                  value={activeFilters}
+                  onChange={setActiveFilters}
+                />
+              }
+            />
+          </div>
           {loading ? (
             <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
           ) : services.length === 0 ? (
@@ -218,6 +220,16 @@ export default function ServicesPage() {
                 onReorder={handleReorder}
                 currency={salonCurrency}
                 translations={buildTableTranslations(t, appLocale)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
+                headerContent={
+                  <FilterChips
+                    chips={filterChips}
+                    value={activeFilters}
+                    onChange={setActiveFilters}
+                  />
+                }
               />
             </>
           )}

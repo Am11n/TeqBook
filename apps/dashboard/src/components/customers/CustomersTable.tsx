@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { SetupBadge } from "@/components/setup-badge";
 import { getCustomerIssues } from "@/lib/setup/health";
 import { Edit, Trash2, ShieldCheck } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Customer } from "@/lib/types";
 
 interface CustomersTableProps {
@@ -12,6 +13,10 @@ interface CustomersTableProps {
   onDelete: (customerId: string) => void;
   onRowClick: (customer: Customer) => void;
   onEditClick: (customer: Customer) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
+  headerContent?: ReactNode;
   translations: {
     colName: string;
     colContact: string;
@@ -32,6 +37,10 @@ export function CustomersTable({
   onDelete,
   onRowClick,
   onEditClick,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder,
+  headerContent,
   translations,
 }: CustomersTableProps) {
   const columns: ColumnDef<Customer>[] = [
@@ -120,7 +129,7 @@ export function CustomersTable({
   ];
 
   return (
-    <div className="mt-4 hidden md:block">
+    <div className="hidden md:block">
       <DataTable
         columns={columns}
         data={customers}
@@ -129,6 +138,10 @@ export function CustomersTable({
         onRowClick={onRowClick}
         storageKey="dashboard-customers"
         emptyMessage="Ingen kunder funnet"
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={searchPlaceholder}
+        headerContent={headerContent}
       />
     </div>
   );

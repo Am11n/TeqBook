@@ -33,6 +33,7 @@
     "@stripe/stripe-js": "^8.6.4",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.85.0",
+    "@teqbook/layout": "workspace:*",
     "@teqbook/shared": "workspace:*",
     "@teqbook/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",

@@ -45,11 +45,6 @@ export default function DashboardLoginPage() {
       return;
     }
 
-    if (profile.is_superadmin) {
-      router.push("/admin");
-      return;
-    }
-
     if (profile.salon_id) {
       router.push("/");
       return;

@@ -6,6 +6,7 @@ import { SetupBadge } from "@/components/setup-badge";
 import { getServiceSetupIssues } from "@/lib/setup/health";
 import { formatPrice as _formatPrice, getCategoryLabel as _getCategoryLabel } from "@/lib/utils/services/services-utils";
 import { Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Service } from "@/lib/types";
 
 interface ServicesTableTranslations {
@@ -45,6 +46,10 @@ interface ServicesTableProps {
   onReorder: (serviceId: string, direction: "up" | "down") => void;
   translations: ServicesTableTranslations;
   currency: string;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
+  headerContent?: ReactNode;
 }
 
 export function ServicesTable({
@@ -57,6 +62,10 @@ export function ServicesTable({
   onReorder,
   translations: t,
   currency,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder,
+  headerContent,
 }: ServicesTableProps) {
   const categoryLabels = {
     categoryCut: t.categoryCut,
@@ -205,7 +214,7 @@ export function ServicesTable({
   ];
 
   return (
-    <div className="mt-4 hidden md:block">
+    <div className="hidden md:block">
       <DataTable
         columns={columns}
         data={services}
@@ -214,6 +223,10 @@ export function ServicesTable({
         onRowClick={onRowClick}
         storageKey="dashboard-services"
         emptyMessage=""
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={searchPlaceholder}
+        headerContent={headerContent}
       />
     </div>
   );

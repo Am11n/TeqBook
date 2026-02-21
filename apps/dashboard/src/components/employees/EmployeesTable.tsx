@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { SetupBadge } from "@/components/setup-badge";
 import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { Check, X, Edit, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Employee, Service, Shift } from "@/lib/types";
 
 interface EmployeesTableProps {
@@ -16,6 +17,10 @@ interface EmployeesTableProps {
   onDelete: (employeeId: string) => void;
   onRowClick: (employee: Employee) => void;
   onEditClick: (employee: Employee) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
+  headerContent?: ReactNode;
   translations: {
     colName: string;
     colRole: string;
@@ -43,6 +48,10 @@ export function EmployeesTable({
   onDelete,
   onRowClick,
   onEditClick,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder,
+  headerContent,
   translations,
 }: EmployeesTableProps) {
   const columns: ColumnDef<Employee>[] = [
@@ -170,7 +179,7 @@ export function EmployeesTable({
   ];
 
   return (
-    <div className="mt-4 hidden md:block">
+    <div className="hidden md:block">
       <DataTable
         columns={columns}
         data={employees}
@@ -179,6 +188,10 @@ export function EmployeesTable({
         onRowClick={onRowClick}
         storageKey="dashboard-employees"
         emptyMessage="Ingen ansatte funnet"
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={searchPlaceholder}
+        headerContent={headerContent}
       />
     </div>
   );

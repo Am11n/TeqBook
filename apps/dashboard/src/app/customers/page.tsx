@@ -112,19 +112,21 @@ export default function CustomersPage() {
 
         {/* Table Card */}
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <TableToolbar
-            title={t.tableTitle}
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={t.searchPlaceholder ?? "Search customers..."}
-            filters={
-              <FilterChips
-                chips={filterChips}
-                value={activeFilters}
-                onChange={setActiveFilters}
-              />
-            }
-          />
+          {/* Mobile toolbar */}
+          <div className="md:hidden">
+            <TableToolbar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={t.searchPlaceholder ?? "Search customers..."}
+              filters={
+                <FilterChips
+                  chips={filterChips}
+                  value={activeFilters}
+                  onChange={setActiveFilters}
+                />
+              }
+            />
+          </div>
           {loading ? (
             <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
           ) : customers.length === 0 ? (
@@ -199,6 +201,16 @@ export default function CustomersPage() {
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
                 onEditClick={(c) => detailDialog.openEdit(c.id)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t.searchPlaceholder ?? "Search customers..."}
+                headerContent={
+                  <FilterChips
+                    chips={filterChips}
+                    value={activeFilters}
+                    onChange={setActiveFilters}
+                  />
+                }
                 translations={{
                   colName: t.colName,
                   colContact: t.colContact,

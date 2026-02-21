@@ -174,19 +174,21 @@ export default function EmployeesPage() {
 
         {/* Table Card */}
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <TableToolbar
-            title={t.tableTitle}
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
-            filters={
-              <FilterChips
-                chips={filterChips}
-                value={activeFilters}
-                onChange={setActiveFilters}
-              />
-            }
-          />
+          {/* Mobile toolbar - hidden on desktop where DataTable has its own */}
+          <div className="md:hidden">
+            <TableToolbar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
+              filters={
+                <FilterChips
+                  chips={filterChips}
+                  value={activeFilters}
+                  onChange={setActiveFilters}
+                />
+              }
+            />
+          </div>
           {loading ? (
             <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
           ) : employees.length === 0 ? (
@@ -226,6 +228,16 @@ export default function EmployeesPage() {
                 onDelete={handleDelete}
                 onRowClick={detailDialog.onRowClick}
                 onEditClick={(emp) => detailDialog.openEdit(emp.id)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
+                headerContent={
+                  <FilterChips
+                    chips={filterChips}
+                    value={activeFilters}
+                    onChange={setActiveFilters}
+                  />
+                }
                 translations={{
                   colName: t.colName,
                   colRole: t.colRole,

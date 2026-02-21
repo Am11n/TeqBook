@@ -1,20 +1,30 @@
+"use client";
+
 import { memo } from "react";
 import Link from "next/link";
 import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@teqbook/ui";
 
-type NavLinkProps = {
+interface NavLinkProps {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   isActive?: boolean;
   collapsed?: boolean;
   className?: string;
-};
+}
 
 export const NavLink = memo(function NavLink({
-  href, label, icon: Icon, isActive = false, collapsed = false, className,
+  href,
+  label,
+  icon: Icon,
+  isActive = false,
+  collapsed = false,
+  className,
 }: NavLinkProps) {
   const content = (
     <Link
@@ -27,14 +37,18 @@ export const NavLink = memo(function NavLink({
       } ${collapsed ? "justify-center px-3 py-3" : "gap-2 px-4 py-3"} ${className ?? ""} ${
         !isActive ? "hover:-translate-y-[1px]" : ""
       }`}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
     >
       {isActive && !collapsed && (
         <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-blue-700" />
       )}
+
       {isActive && collapsed && (
         <div className="absolute inset-0 rounded-xl bg-blue-700/10" />
       )}
+
       <Icon
         className={`h-5 w-5 flex-shrink-0 transition-all duration-150 ${
           isActive
@@ -43,7 +57,11 @@ export const NavLink = memo(function NavLink({
         } ${!isActive ? "opacity-70 group-hover:opacity-100" : ""}`}
       />
       {!collapsed && (
-        <span className={`truncate transition-opacity duration-200 ${collapsed ? "opacity-0" : "opacity-100"}`}>
+        <span
+          className={`truncate transition-opacity duration-200 ${
+            collapsed ? "opacity-0" : "opacity-100"
+          }`}
+        >
           {label}
         </span>
       )}
@@ -52,10 +70,15 @@ export const NavLink = memo(function NavLink({
 
   if (collapsed) {
     return (
-      <TooltipProvider>
+      <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
-          <TooltipContent side="right">{label}</TooltipContent>
+          <TooltipContent
+            side="right"
+            className="rounded-lg bg-foreground px-2 py-1 text-xs text-background"
+          >
+            {label}
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );

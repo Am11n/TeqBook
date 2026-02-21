@@ -7,7 +7,6 @@ import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { TableToolbar } from "@/components/table-toolbar";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -154,8 +153,6 @@ function BookingsContent() {
       <div className="flex gap-4">
         <div className="min-w-0 flex-1">
           <div className="rounded-xl border bg-card p-4 shadow-sm">
-            <TableToolbar title={t.listTitle} />
-
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {timeFilters.map((f) => (
                 <Button

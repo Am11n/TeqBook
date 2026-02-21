@@ -55,24 +55,26 @@ export function DataTableToolbar({
 }: DataTableToolbarProps) {
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
-        {onSearchChange && (
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="pl-8 h-9"
-            />
-          </div>
-        )}
-        {headerContent}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          {onSearchChange ? (
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="pl-8 h-9"
+              />
+            </div>
+          ) : (
+            headerContent
+          )}
 
-        <div className="flex items-center gap-1.5 ml-auto">
-          {toolbarEndContent}
+          <div className="flex items-center gap-1.5 ml-auto shrink-0">
+            {toolbarEndContent}
 
-          {storageKey && (
+            {storageKey && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon" className="h-9 w-9">
@@ -155,6 +157,13 @@ export function DataTableToolbar({
             </PopoverContent>
           </Popover>
         </div>
+      </div>
+
+        {onSearchChange && headerContent && (
+          <div className="flex flex-wrap items-center gap-2">
+            {headerContent}
+          </div>
+        )}
       </div>
 
       {bulkSelectable && selectedKeys.size > 0 && bulkActions && (

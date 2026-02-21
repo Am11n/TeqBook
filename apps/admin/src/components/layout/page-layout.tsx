@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { DashboardShell } from "./dashboard-shell";
 import { PageHeader } from "./page-header";
 import { cn } from "@/lib/utils";
 
@@ -95,7 +94,7 @@ export function PageLayout({
   onPeriodChange,
 }: PageLayoutProps) {
   return (
-    <DashboardShell>
+    <>
       {showHeader && (
         <PageHeader
           title={title}
@@ -123,7 +122,7 @@ export function PageLayout({
       >
         {children}
       </div>
-    </DashboardShell>
+    </>
   );
 }
 

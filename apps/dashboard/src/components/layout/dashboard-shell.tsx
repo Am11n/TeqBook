@@ -50,11 +50,6 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   const appLocale = normalizeLocale(locale);
   const texts = translations[appLocale].dashboard;
 
-  // Don't render DashboardShell on admin pages - they use AdminShell instead
-  if (pathname.startsWith("/admin")) {
-    return <>{children}</>;
-  }
-
   // Only use features after mount to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
