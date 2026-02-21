@@ -5,7 +5,6 @@ import {
   createContext,
   useContext,
   useRef,
-  useState,
   useEffect,
   useCallback,
 } from "react";
@@ -16,7 +15,7 @@ type TabActionsStore = {
   emit: () => void;
 };
 
-const TabActionsContext = createContext<TabActionsStore | null>(null);
+export const TabActionsContext = createContext<TabActionsStore | null>(null);
 
 export function TabActionsProvider({ children }: { children: ReactNode }) {
   const actionsRef = useRef<ReactNode>(null);
@@ -67,23 +66,12 @@ export function TabToolbar({
   children: ReactNode;
   extras?: ReactNode;
 }) {
-  const store = useContext(TabActionsContext);
-  const [, rerender] = useState(0);
-
-  useEffect(() => {
-    if (!store) return;
-    return store.subscribe(() => rerender((n) => n + 1));
-  }, [store]);
-
-  const actions = store?.actionsRef.current ?? null;
-
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center">{children}</div>
       {extras && (
         <div className="flex flex-1 items-center justify-center">{extras}</div>
       )}
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { getBookingRowColor } from "@/lib/utils/bookings/bookings-utils";
 import { EmployeeFilterPopover } from "./_components/EmployeeFilterPopover";
 import { BookingsDialogs } from "./_components/BookingsDialogs";
 import { NextBookingSidebar } from "./_components/NextBookingSidebar";
+import { BookingsSummary } from "./_components/BookingsSummary";
 import type { TimeFilter } from "./_types";
 import { filterBookings } from "./_helpers/filter-bookings";
 
@@ -115,6 +116,8 @@ function BookingsContent() {
     [bookings, filterEmployeeId, timeFilter]
   );
 
+  const hideDateColumn = timeFilter === "today" || timeFilter === "tomorrow" || timeFilter === "next_2h";
+
   const timeFilters: { key: TimeFilter; label: string }[] = [
     { key: "next_2h", label: isNb ? "Neste 2 timer" : "Next 2 hours" },
     { key: "today", label: isNb ? "I dag" : "Today" },
@@ -144,76 +147,126 @@ function BookingsContent() {
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
   }, [bookings]);
 
+  const filterEmptyState = useMemo(() => {
+    const map: Record<TimeFilter, { title: string; description: string }> = {
+      today: { title: t.emptyTodayTitle, description: t.emptyTodayDescription },
+      tomorrow: { title: t.emptyTomorrowTitle, description: t.emptyTomorrowDescription },
+      this_week: { title: t.emptyTodayTitle, description: t.emptyTodayDescription },
+      next_2h: { title: t.emptyNext2hTitle, description: t.emptyNext2hDescription },
+      needs_action: { title: t.emptyNeedsActionTitle, description: t.emptyNeedsActionDescription },
+      cancelled: { title: t.emptyCancelledTitle, description: t.emptyCancelledDescription },
+      history: { title: t.emptyHistoryTitle, description: t.emptyHistoryDescription },
+    };
+    return map[timeFilter];
+  }, [timeFilter, t]);
+
+  const hasData = bookings.length > 0;
+  const hasFilteredData = filteredBookings.length > 0;
+
   return (
     <ErrorBoundary>
       {error && (
         <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />
       )}
 
+      {/* Filter zone: sits between tabs and data */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {timeFilters.map((f) => (
+            <Button
+              key={f.key}
+              size="sm"
+              variant={timeFilter === f.key ? "default" : "outline"}
+              className="h-7 text-xs"
+              onClick={() => setTimeFilter(f.key)}
+            >
+              {f.label}
+            </Button>
+          ))}
+        </div>
+        <EmployeeFilterPopover
+          employees={employees}
+          filterEmployeeId={filterEmployeeId}
+          setFilterEmployeeId={setFilterEmployeeId}
+          translations={{
+            filterEmployeeAll: calT.filterEmployeeAll,
+            filterEmployeeLabel: calT.filterEmployeeLabel,
+          }}
+        />
+      </div>
+
+      {/* Summary bar */}
+      {!loading && hasData && (
+        <div className="mb-4">
+          <BookingsSummary
+            bookings={filteredBookings}
+            timeFilter={timeFilter}
+            locale={appLocale}
+            translations={{
+              summaryBookings: t.summaryBookings,
+              summaryNoShow: t.summaryNoShow,
+              summaryNeedsAction: t.summaryNeedsAction,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Data zone */}
       <div className="flex gap-4">
         <div className="min-w-0 flex-1">
-          <div className="rounded-xl border bg-card p-4 shadow-sm">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {timeFilters.map((f) => (
-                <Button
-                  key={f.key}
-                  size="sm"
-                  variant={timeFilter === f.key ? "default" : "outline"}
-                  className="h-7 text-xs"
-                  onClick={() => setTimeFilter(f.key)}
-                >
-                  {f.label}
-                </Button>
-              ))}
+          {loading ? (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <p className="text-sm text-muted-foreground">{t.loading}</p>
             </div>
-
-            {loading ? (
-              <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-            ) : bookings.length === 0 ? (
-              <div className="mt-4">
-                <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
-              </div>
-            ) : (
-              <>
-                <BookingsCardView
-                  bookings={filteredBookings}
-                  employees={employees}
-                  shifts={shifts}
-                  translations={cardTranslations}
-                  locale={appLocale}
-                  onCancelBooking={handleCancelBooking}
-                />
-                <BookingsTable
-                  bookings={filteredBookings}
-                  employees={employees}
-                  shifts={shifts}
-                  translations={{
-                    ...cardTranslations,
-                    colDate: t.colDate, colTime: t.colTime, colService: t.colService,
-                    colEmployee: t.colEmployee, colCustomer: t.colCustomer,
-                    colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
-                    cancelButton: t.cancelButton,
-                  }}
-                  locale={appLocale}
-                  onCancelBooking={handleCancelBooking}
-                  onConfirmBooking={handleConfirmBooking}
-                  onCompleteBooking={handleCompleteBooking}
-                  getRowClassName={getBookingRowColor}
-                  filterContent={
-                    <EmployeeFilterPopover
-                      employees={employees}
-                      filterEmployeeId={filterEmployeeId}
-                      setFilterEmployeeId={setFilterEmployeeId}
-                      translations={{
-                        filterEmployeeAll: calT.filterEmployeeAll,
-                        filterEmployeeLabel: calT.filterEmployeeLabel,
-                      }}
-                    />
-                  }
-                />
-              </>
-            )}
-          </div>
+          ) : !hasData ? (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <EmptyState title={t.emptyTitle} description={t.emptyDescription} />
+            </div>
+          ) : !hasFilteredData ? (
+            <div className="rounded-xl border bg-card px-6 py-12 shadow-sm text-center">
+              <p className="text-sm font-medium">{filterEmptyState.title}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{filterEmptyState.description}</p>
+              {timeFilter === "today" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => setTimeFilter("this_week")}
+                >
+                  {t.emptyTodayAction}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <BookingsCardView
+                bookings={filteredBookings}
+                employees={employees}
+                shifts={shifts}
+                translations={cardTranslations}
+                locale={appLocale}
+                onCancelBooking={handleCancelBooking}
+              />
+              <BookingsTable
+                bookings={filteredBookings}
+                employees={employees}
+                shifts={shifts}
+                hideDateColumn={hideDateColumn}
+                translations={{
+                  ...cardTranslations,
+                  colDate: t.colDate, colTime: t.colTime, colService: t.colService,
+                  colEmployee: t.colEmployee, colCustomer: t.colCustomer,
+                  colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
+                  cancelButton: t.cancelButton,
+                }}
+                locale={appLocale}
+                onCancelBooking={handleCancelBooking}
+                onConfirmBooking={handleConfirmBooking}
+                onCompleteBooking={handleCompleteBooking}
+                getRowClassName={getBookingRowColor}
+              />
+            </div>
+          )}
         </div>
 
         <div className="hidden lg:block">
@@ -222,6 +275,14 @@ function BookingsContent() {
             locale={appLocale}
             timezone={salon?.timezone ?? undefined}
             hour12={salon?.time_format === "12h" ? true : undefined}
+            translations={{
+              sidebarNextCustomer: t.sidebarNextCustomer,
+              sidebarNoUpcoming: t.sidebarNoUpcoming,
+              sidebarStartTreatment: t.sidebarStartTreatment,
+              sidebarCancelBooking: t.sidebarCancelBooking,
+            }}
+            onComplete={handleCompleteBooking}
+            onCancel={handleCancelBooking}
           />
         </div>
       </div>

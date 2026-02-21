@@ -44,6 +44,7 @@ interface BookingsTableProps {
     cancelButton?: string;
   };
   locale: string;
+  hideDateColumn?: boolean;
   onCancelBooking: (booking: Booking) => void;
   onConfirmBooking?: (booking: Booking) => void;
   onCompleteBooking?: (booking: Booking) => void;
@@ -61,6 +62,7 @@ export function BookingsTable({
   shifts,
   translations,
   locale,
+  hideDateColumn = false,
   onCancelBooking,
   onConfirmBooking,
   onCompleteBooking,
@@ -81,27 +83,39 @@ export function BookingsTable({
 
   const isNb = locale === "nb";
 
+  const dateCol: ColumnDef<Booking> = {
+    id: "date",
+    header: translations.colDate,
+    cell: (booking) => (
+      <div className="text-xs text-muted-foreground">
+        {formatDate(booking.start_time, locale, timezone)}
+      </div>
+    ),
+    getValue: (booking) => booking.start_time,
+  };
+
   const columns: ColumnDef<Booking>[] = [
-    {
-      id: "date",
-      header: translations.colDate,
-      cell: (booking) => (
-        <div className="text-xs text-muted-foreground">
-          {formatDate(booking.start_time, locale, timezone)}
-        </div>
-      ),
-      getValue: (booking) => booking.start_time,
-    },
+    ...(hideDateColumn ? [] : [dateCol]),
     {
       id: "time",
       header: translations.colTime,
       cell: (booking) => (
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs font-medium tabular-nums">
           {formatTime(booking.start_time, locale, timezone, hour12)} – {formatTime(booking.end_time, locale, timezone, hour12)}
         </div>
       ),
       getValue: (booking) => booking.start_time,
       sortable: false,
+    },
+    {
+      id: "customer",
+      header: translations.colCustomer,
+      cell: (booking) => (
+        <div className="text-sm">
+          {booking.customers?.full_name ?? translations.unknownCustomer}
+        </div>
+      ),
+      getValue: (booking) => booking.customers?.full_name ?? "",
     },
     {
       id: "service",
@@ -129,22 +143,12 @@ export function BookingsTable({
       getValue: (booking) => booking.employees?.full_name ?? "",
     },
     {
-      id: "customer",
-      header: translations.colCustomer,
-      cell: (booking) => (
-        <div className="text-xs text-muted-foreground">
-          {booking.customers?.full_name ?? translations.unknownCustomer}
-        </div>
-      ),
-      getValue: (booking) => booking.customers?.full_name ?? "",
-    },
-    {
       id: "status",
       header: translations.colStatus,
       cell: (booking) => (
         <Badge
           variant="outline"
-          className={`border px-2 py-0.5 text-[11px] ${statusColor(booking.status)}`}
+          className={`border px-2 py-0.5 text-[11px] font-semibold ${statusColor(booking.status)}`}
         >
           {statusLabel(booking.status, translations)}
         </Badge>
@@ -268,6 +272,7 @@ export function BookingsTable({
         getRowActions={getRowActions}
         getRowClassName={getRowClassName}
         storageKey="dashboard-bookings"
+        density="compact"
         emptyMessage="No bookings available"
         toolbarEndContent={filterContent}
         searchQuery={searchQuery}

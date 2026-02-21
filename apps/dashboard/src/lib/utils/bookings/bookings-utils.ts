@@ -43,11 +43,11 @@ export function formatDate(value: string, locale: string, timezone?: string | nu
 export function statusColor(status: string): string {
   switch (status) {
     case "pending":
-      return "bg-yellow-50 text-yellow-700 border-yellow-200";
+      return "bg-amber-100 text-amber-800 border-amber-300";
     case "confirmed":
       return "bg-blue-50 text-blue-700 border-blue-200";
     case "no-show":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-red-100 text-red-800 border-red-300";
     case "completed":
       return "bg-emerald-50 text-emerald-700 border-emerald-200";
     case "cancelled":

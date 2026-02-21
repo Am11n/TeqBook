@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useContext, type ReactNode } from "react";
 import { PageHeader } from "@teqbook/layout";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent,
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
   Button,
 } from "@teqbook/ui";
-import { TabActionsProvider, TabToolbar } from "./tab-toolbar";
+import { TabActionsProvider, TabActionsContext, TabToolbar } from "./tab-toolbar";
 import { DirtyGuardProvider, useDirtyGuard } from "./use-dirty-state";
 import type { TabDef } from "../types";
 
@@ -33,13 +33,22 @@ function TabbedPageInner({
   const pathname = usePathnameFn();
   const router = useRouterFn();
   const { isAnyDirty } = useDirtyGuard();
+  const store = useContext(TabActionsContext);
   const [mounted, setMounted] = useState(false);
   const [showGuardDialog, setShowGuardDialog] = useState(false);
   const pendingTabRef = useRef<string | null>(null);
+  const [, rerender] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!store) return;
+    return store.subscribe(() => rerender((n) => n + 1));
+  }, [store]);
+
+  const headerActions = store?.actionsRef.current ?? null;
 
   const visibleTabs = tabs.filter((t) => t.visible !== false);
 
@@ -77,7 +86,7 @@ function TabbedPageInner({
 
   return (
     <>
-      <PageHeader title={title} description={description} />
+      <PageHeader title={title} description={description} actions={headerActions} />
       <div className="mt-4">
         {mounted ? (
           <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>

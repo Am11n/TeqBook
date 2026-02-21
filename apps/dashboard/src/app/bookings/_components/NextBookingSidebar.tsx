@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, User, Scissors, CalendarClock } from "lucide-react";
+import { Clock, User, Scissors, CalendarClock, UserCog } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Booking } from "@/lib/types";
 
 interface NextBookingSidebarProps {
@@ -9,6 +10,14 @@ interface NextBookingSidebarProps {
   locale: string;
   timezone?: string;
   hour12?: boolean;
+  translations: {
+    sidebarNextCustomer: string;
+    sidebarNoUpcoming: string;
+    sidebarStartTreatment: string;
+    sidebarCancelBooking: string;
+  };
+  onComplete?: (booking: Booking) => void;
+  onCancel?: (booking: Booking) => void;
 }
 
 function getNextBooking(bookings: Booking[]): Booking | null {
@@ -62,7 +71,15 @@ function formatTimeStr(iso: string, locale: string, timezone?: string, hour12?: 
   }
 }
 
-export function NextBookingSidebar({ bookings, locale, timezone, hour12 }: NextBookingSidebarProps) {
+export function NextBookingSidebar({
+  bookings,
+  locale,
+  timezone,
+  hour12,
+  translations: t,
+  onComplete,
+  onCancel,
+}: NextBookingSidebarProps) {
   const [now, setNow] = useState(Date.now());
   const isNb = locale === "nb";
 
@@ -75,12 +92,12 @@ export function NextBookingSidebar({ bookings, locale, timezone, hour12 }: NextB
 
   if (!next) {
     return (
-      <div className="sticky top-4 w-64 shrink-0 rounded-xl border bg-card p-4 shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground">
-          {isNb ? "Neste kunde" : "Next customer"}
+      <div className="sticky top-4 w-64 shrink-0 rounded-xl border-2 border-border/60 bg-card p-5 shadow-sm">
+        <p className="text-sm font-semibold">
+          {t.sidebarNextCustomer}
         </p>
         <p className="mt-3 text-xs text-muted-foreground/70">
-          {isNb ? "Ingen kommende bookinger" : "No upcoming bookings"}
+          {t.sidebarNoUpcoming}
         </p>
       </div>
     );
@@ -88,29 +105,30 @@ export function NextBookingSidebar({ bookings, locale, timezone, hour12 }: NextB
 
   const startMs = new Date(next.start_time).getTime();
   const diff = startMs - now;
+  const countdown = formatCountdown(diff, isNb, next.start_time);
+  const timeStr = formatTimeStr(next.start_time, locale, timezone, hour12);
+  const canComplete = next.status === "confirmed";
 
   return (
-    <div className="sticky top-4 w-64 shrink-0 rounded-xl border bg-card p-4 shadow-sm">
-      <p className="text-sm font-medium text-muted-foreground">
-        {isNb ? "Neste kunde" : "Next customer"}
+    <div className="sticky top-4 w-64 shrink-0 rounded-xl border-2 border-border/60 bg-card p-5 shadow-sm">
+      <p className="text-sm font-semibold">
+        {t.sidebarNextCustomer}
       </p>
 
-      <div className="mt-3 space-y-2.5">
+      <div className="mt-4 space-y-3">
         <div className="flex items-center gap-2">
           <CalendarClock className="h-4 w-4 text-primary" />
           <span className="text-lg font-semibold tabular-nums">
-            {formatCountdown(diff, isNb, next.start_time)}
+            {timeStr}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            ({countdown})
           </span>
         </div>
 
         <div className="flex items-center gap-2 text-sm">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span>{formatTimeStr(next.start_time, locale, timezone, hour12)}</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm">
           <User className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="truncate">
+          <span className="truncate font-medium">
             {next.customers?.full_name ?? (isNb ? "Ukjent kunde" : "Unknown customer")}
           </span>
         </div>
@@ -123,9 +141,34 @@ export function NextBookingSidebar({ bookings, locale, timezone, hour12 }: NextB
         </div>
 
         {next.employees?.full_name && (
-          <p className="text-xs text-muted-foreground">
-            {next.employees.full_name}
-          </p>
+          <div className="flex items-center gap-2 text-sm">
+            <UserCog className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="truncate text-muted-foreground">
+              {next.employees.full_name}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-5 flex flex-col gap-2">
+        {canComplete && onComplete && (
+          <Button
+            size="sm"
+            className="w-full"
+            onClick={() => onComplete(next)}
+          >
+            {t.sidebarStartTreatment}
+          </Button>
+        )}
+        {onCancel && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => onCancel(next)}
+          >
+            {t.sidebarCancelBooking}
+          </Button>
         )}
       </div>
     </div>

@@ -637,6 +637,26 @@ export type BookingsMessages = {
   cancelButton: string;
   createBooking: string;
   creatingBooking: string;
+  summaryBookings: string;
+  summaryNoShow: string;
+  summaryNeedsAction: string;
+  emptyTodayTitle: string;
+  emptyTodayDescription: string;
+  emptyTodayAction: string;
+  emptyNeedsActionTitle: string;
+  emptyNeedsActionDescription: string;
+  emptyNext2hTitle: string;
+  emptyNext2hDescription: string;
+  emptyCancelledTitle: string;
+  emptyCancelledDescription: string;
+  emptyTomorrowTitle: string;
+  emptyTomorrowDescription: string;
+  emptyHistoryTitle: string;
+  emptyHistoryDescription: string;
+  sidebarNextCustomer: string;
+  sidebarNoUpcoming: string;
+  sidebarStartTreatment: string;
+  sidebarCancelBooking: string;
 };
 
 export type ShiftsMessages = {
