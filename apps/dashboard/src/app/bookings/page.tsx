@@ -8,6 +8,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useBookings } from "@/lib/hooks/bookings/useBookings";
@@ -21,7 +22,7 @@ import { EmployeeFilterPopover } from "./_components/EmployeeFilterPopover";
 import { BookingsDialogs } from "./_components/BookingsDialogs";
 import { NextBookingSidebar } from "./_components/NextBookingSidebar";
 import { BookingsSummary } from "./_components/BookingsSummary";
-import type { TimeFilter } from "./_types";
+import type { StatusFilter } from "./_types";
 import { filterBookings } from "./_helpers/filter-bookings";
 
 function BookingsContent() {
@@ -38,9 +39,8 @@ function BookingsContent() {
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("today");
 
-  const isNb = appLocale === "nb";
+  const [statusFilter, setStatusFilter] = useState<StatusFilter | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -112,21 +112,9 @@ function BookingsContent() {
   );
 
   const filteredBookings = useMemo(
-    () => filterBookings(bookings, filterEmployeeId, timeFilter),
-    [bookings, filterEmployeeId, timeFilter]
+    () => filterBookings(bookings, statusFilter, filterEmployeeId),
+    [bookings, statusFilter, filterEmployeeId],
   );
-
-  const hideDateColumn = timeFilter === "today" || timeFilter === "tomorrow" || timeFilter === "next_2h";
-
-  const timeFilters: { key: TimeFilter; label: string }[] = [
-    { key: "next_2h", label: isNb ? "Neste 2 timer" : "Next 2 hours" },
-    { key: "today", label: isNb ? "I dag" : "Today" },
-    { key: "tomorrow", label: isNb ? "I morgen" : "Tomorrow" },
-    { key: "this_week", label: isNb ? "Denne uken" : "This week" },
-    { key: "needs_action", label: isNb ? "Trenger handling" : "Needs action" },
-    { key: "cancelled", label: isNb ? "Avbrutt" : "Cancelled" },
-    { key: "history", label: isNb ? "Historikk" : "History" },
-  ];
 
   const cardTranslations = {
     unknownService: t.unknownService, unknownEmployee: t.unknownEmployee,
@@ -134,6 +122,14 @@ function BookingsContent() {
     statusPending: t.statusPending, statusConfirmed: t.statusConfirmed,
     statusNoShow: t.statusNoShow, statusCompleted: t.statusCompleted,
     statusCancelled: t.statusCancelled, statusScheduled: t.statusScheduled,
+  };
+
+  const tableTranslations = {
+    ...cardTranslations,
+    colDate: t.colDate, colTime: t.colTime, colService: t.colService,
+    colEmployee: t.colEmployee, colCustomer: t.colCustomer,
+    colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
+    cancelButton: t.cancelButton,
   };
 
   const sortedBookingsForSidebar = useMemo(() => {
@@ -147,21 +143,19 @@ function BookingsContent() {
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
   }, [bookings]);
 
-  const filterEmptyState = useMemo(() => {
-    const map: Record<TimeFilter, { title: string; description: string }> = {
-      today: { title: t.emptyTodayTitle, description: t.emptyTodayDescription },
-      tomorrow: { title: t.emptyTomorrowTitle, description: t.emptyTomorrowDescription },
-      this_week: { title: t.emptyTodayTitle, description: t.emptyTodayDescription },
-      next_2h: { title: t.emptyNext2hTitle, description: t.emptyNext2hDescription },
-      needs_action: { title: t.emptyNeedsActionTitle, description: t.emptyNeedsActionDescription },
-      cancelled: { title: t.emptyCancelledTitle, description: t.emptyCancelledDescription },
-      history: { title: t.emptyHistoryTitle, description: t.emptyHistoryDescription },
-    };
-    return map[timeFilter];
-  }, [timeFilter, t]);
-
   const hasData = bookings.length > 0;
   const hasFilteredData = filteredBookings.length > 0;
+
+  const showSidebar = statusFilter === null || statusFilter === "upcoming";
+
+  const statusFilters: { key: StatusFilter | null; label: string }[] = [
+    { key: null, label: t.statusAll },
+    { key: "upcoming", label: t.filterUpcoming },
+    { key: "confirmed", label: t.filterConfirmed },
+    { key: "completed", label: t.filterCompleted },
+    { key: "cancelled", label: t.filterCancelled },
+    { key: "no_show", label: t.filterNoShow },
+  ];
 
   return (
     <ErrorBoundary>
@@ -169,39 +163,43 @@ function BookingsContent() {
         <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />
       )}
 
-      {/* Filter zone: sits between tabs and data */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {timeFilters.map((f) => (
-            <Button
-              key={f.key}
-              size="sm"
-              variant={timeFilter === f.key ? "default" : "outline"}
-              className="h-7 text-xs"
-              onClick={() => setTimeFilter(f.key)}
-            >
-              {f.label}
-            </Button>
-          ))}
+      {/* ZONE 1: Status segment (primary control) */}
+      <div className="sticky top-0 z-10 bg-background pb-2">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-0.5 rounded-md border bg-card px-1 py-0.5 w-fit">
+            {statusFilters.map((f) => (
+              <Button
+                key={f.key ?? "all"}
+                type="button"
+                variant={statusFilter === f.key ? "secondary" : "ghost"}
+                size="sm"
+                className={cn(
+                  "h-7 text-xs",
+                  statusFilter === f.key && "bg-accent text-accent-foreground font-medium",
+                )}
+                onClick={() => setStatusFilter(f.key)}
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
+          <EmployeeFilterPopover
+            employees={employees}
+            filterEmployeeId={filterEmployeeId}
+            setFilterEmployeeId={setFilterEmployeeId}
+            translations={{
+              filterEmployeeAll: calT.filterEmployeeAll,
+              filterEmployeeLabel: calT.filterEmployeeLabel,
+            }}
+          />
         </div>
-        <EmployeeFilterPopover
-          employees={employees}
-          filterEmployeeId={filterEmployeeId}
-          setFilterEmployeeId={setFilterEmployeeId}
-          translations={{
-            filterEmployeeAll: calT.filterEmployeeAll,
-            filterEmployeeLabel: calT.filterEmployeeLabel,
-          }}
-        />
       </div>
 
-      {/* Summary bar */}
+      {/* ZONE 2: Summary */}
       {!loading && hasData && (
-        <div className="mb-4">
+        <div className="mt-4 mb-3">
           <BookingsSummary
             bookings={filteredBookings}
-            timeFilter={timeFilter}
-            locale={appLocale}
             translations={{
               summaryBookings: t.summaryBookings,
               summaryNoShow: t.summaryNoShow,
@@ -211,7 +209,7 @@ function BookingsContent() {
         </div>
       )}
 
-      {/* Data zone */}
+      {/* ZONE 3: Data */}
       <div className="flex gap-4">
         <div className="min-w-0 flex-1">
           {loading ? (
@@ -224,18 +222,8 @@ function BookingsContent() {
             </div>
           ) : !hasFilteredData ? (
             <div className="rounded-xl border bg-card px-6 py-12 shadow-sm text-center">
-              <p className="text-sm font-medium">{filterEmptyState.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{filterEmptyState.description}</p>
-              {timeFilter === "today" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-4"
-                  onClick={() => setTimeFilter("this_week")}
-                >
-                  {t.emptyTodayAction}
-                </Button>
-              )}
+              <p className="text-sm font-medium">{t.emptyTitle}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t.emptyDescription}</p>
             </div>
           ) : (
             <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -251,14 +239,7 @@ function BookingsContent() {
                 bookings={filteredBookings}
                 employees={employees}
                 shifts={shifts}
-                hideDateColumn={hideDateColumn}
-                translations={{
-                  ...cardTranslations,
-                  colDate: t.colDate, colTime: t.colTime, colService: t.colService,
-                  colEmployee: t.colEmployee, colCustomer: t.colCustomer,
-                  colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
-                  cancelButton: t.cancelButton,
-                }}
+                translations={tableTranslations}
                 locale={appLocale}
                 onCancelBooking={handleCancelBooking}
                 onConfirmBooking={handleConfirmBooking}
@@ -269,22 +250,24 @@ function BookingsContent() {
           )}
         </div>
 
-        <div className="hidden lg:block">
-          <NextBookingSidebar
-            bookings={sortedBookingsForSidebar}
-            locale={appLocale}
-            timezone={salon?.timezone ?? undefined}
-            hour12={salon?.time_format === "12h" ? true : undefined}
-            translations={{
-              sidebarNextCustomer: t.sidebarNextCustomer,
-              sidebarNoUpcoming: t.sidebarNoUpcoming,
-              sidebarStartTreatment: t.sidebarStartTreatment,
-              sidebarCancelBooking: t.sidebarCancelBooking,
-            }}
-            onComplete={handleCompleteBooking}
-            onCancel={handleCancelBooking}
-          />
-        </div>
+        {showSidebar && (
+          <div className="hidden lg:block">
+            <NextBookingSidebar
+              bookings={sortedBookingsForSidebar}
+              locale={appLocale}
+              timezone={salon?.timezone ?? undefined}
+              hour12={salon?.time_format === "12h" ? true : undefined}
+              translations={{
+                sidebarNextCustomer: t.sidebarNextCustomer,
+                sidebarNoUpcoming: t.sidebarNoUpcoming,
+                sidebarStartTreatment: t.sidebarStartTreatment,
+                sidebarCancelBooking: t.sidebarCancelBooking,
+              }}
+              onComplete={handleCompleteBooking}
+              onCancel={handleCancelBooking}
+            />
+          </div>
+        )}
       </div>
 
       {mounted && (

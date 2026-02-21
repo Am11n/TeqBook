@@ -92,7 +92,7 @@ export function NextBookingSidebar({
 
   if (!next) {
     return (
-      <div className="sticky top-4 w-64 shrink-0 rounded-xl border-2 border-border/60 bg-card p-5 shadow-sm">
+      <div className="sticky top-4 w-64 shrink-0 rounded-xl border border-border/40 bg-card p-5 shadow-sm">
         <p className="text-sm font-semibold">
           {t.sidebarNextCustomer}
         </p>
@@ -110,7 +110,7 @@ export function NextBookingSidebar({
   const canComplete = next.status === "confirmed";
 
   return (
-    <div className="sticky top-4 w-64 shrink-0 rounded-xl border-2 border-border/60 bg-card p-5 shadow-sm">
+    <div className="sticky top-4 w-64 shrink-0 rounded-xl border border-border/40 bg-card p-5 shadow-sm">
       <p className="text-sm font-semibold">
         {t.sidebarNextCustomer}
       </p>

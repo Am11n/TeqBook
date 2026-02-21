@@ -13,6 +13,7 @@ extend it (see build-gate.md).
 | PageLayoutSimple | Same as PageLayout without card wrapper | You need a flat content area |
 | StatsBar | KPI row above content | You need metric cards |
 | FilterChips | Toggle-able filter pills | You need inline filters |
+| TimeNavigation | Date arrows + period toggle (day/week/month) with keyboard shortcuts | You need date-based navigation with period switching |
 | TabToolbar | Tabs-left, actions-right toolbar row | You need a toolbar inside TabbedPage |
 | TabActionsProvider | Context for child pages to register tab actions | You need dynamic actions in tabs |
 | useDirtyState | Hook for child pages to register dirty state | You need unsaved changes guard |

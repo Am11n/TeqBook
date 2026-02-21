@@ -40,3 +40,16 @@ export type TabDef = {
   href: string;
   visible?: boolean;
 };
+
+export type Period = "day" | "week" | "month";
+
+export type TimeNavigationProps = {
+  selectedDate: string;
+  onDateChange: (date: string) => void;
+  period: Period;
+  onPeriodChange: (period: Period) => void;
+  periods?: Period[];
+  locale: string;
+  weekStartsOn?: 0 | 1;
+  className?: string;
+};
