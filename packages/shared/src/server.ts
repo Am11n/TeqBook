@@ -1,10 +1,7 @@
-// =====================================================
-// Server-only entry: @teqbook/shared/server
-// =====================================================
-// Import this only from Server Components or API routes.
-// Do not import from client components or pages/ directory.
+// @deprecated -- import from @teqbook/shared-data/server directly
+// This file is a backward-compatibility shim. Remove by 2026-04-01.
 
 export {
   createServerSupabaseClient,
   createServerSupabaseClientForRouteHandler,
-} from "./supabase/server-client";
+} from "@teqbook/shared-data/server";

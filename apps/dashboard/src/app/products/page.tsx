@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout } from "@/components/layout/page-layout";
-import { EmptyState } from "@/components/empty-state";
+import { ListPage, type PageState } from "@teqbook/page";
+import { ErrorBoundary } from "@teqbook/feedback";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ErrorBoundary } from "@/components/error-boundary";
 import { FeatureGate } from "@/components/feature-gate";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
@@ -51,85 +50,49 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { saving, deletingId, handleSubmit, handleDelete } = useProductActions(
-    products,
-    setProducts,
-    setError,
-    () => {
-      setShowModal(false);
-      setEditingProduct(null);
-    }
+    products, setProducts, setError,
+    () => { setShowModal(false); setEditingProduct(null); }
   );
 
-  function openCreateModal() {
-    setEditingProduct(null);
-    setShowModal(true);
-  }
+  function openCreateModal() { setEditingProduct(null); setShowModal(true); }
+  function openEditModal(product: Product) { setEditingProduct(product); setShowModal(true); }
+  function closeModal() { setShowModal(false); setEditingProduct(null); }
 
-  function openEditModal(product: Product) {
-    setEditingProduct(product);
-    setShowModal(true);
-  }
-
-  function closeModal() {
-    setShowModal(false);
-    setEditingProduct(null);
-  }
-
-  if (!isReady) {
-    return (
-      <ErrorBoundary>
-      <PageLayout
-        title={t.title}
-        description={t.description}
-        showCard={false}
-      >
-        <div className="space-y-4">
-          <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-          <div className="h-64 w-full animate-pulse rounded bg-muted" />
-        </div>
-      </PageLayout>
-      </ErrorBoundary>
-    );
-  }
-
-  return (
-    <FeatureGate feature="INVENTORY">
-    <ErrorBoundary>
-    <PageLayout
-      title={t.title}
-      description={t.description}
-      actions={
-        <Button onClick={openCreateModal} size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          {t.create}
-        </Button>
-      }
-      showCard={false}
-    >
-      {error && (
-        <Card className="p-4 border-destructive bg-destructive/10 mb-4">
-          <p className="text-sm text-destructive">{error}</p>
-        </Card>
-      )}
-
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
-        {loading ? (
-          <div className="space-y-4">
-            <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-64 w-full animate-pulse rounded bg-muted" />
-          </div>
-        ) : products.length === 0 ? (
-          <EmptyState
-            title={t.noProducts}
-            description={t.createFirst}
-            primaryAction={
+  const pageState: PageState = !isReady || loading
+    ? { status: "loading" }
+    : error
+      ? { status: "error", message: error, retry: () => setError(null) }
+      : products.length === 0
+        ? {
+            status: "empty",
+            title: t.noProducts,
+            description: t.createFirst,
+            action: (
               <Button onClick={openCreateModal} className="gap-2">
                 <Plus className="h-4 w-4" />
                 {t.create}
               </Button>
-            }
-          />
-        ) : (
+            ),
+          }
+        : { status: "ready" };
+
+  return (
+    <FeatureGate feature="INVENTORY">
+      <ErrorBoundary>
+        <DashboardShell>
+        <ListPage
+          title={t.title}
+          description={t.description}
+          actions={[
+            {
+              label: t.create,
+              icon: Plus,
+              onClick: openCreateModal,
+              priority: "primary",
+            },
+          ]}
+          state={pageState}
+        >
           <ProductsTable
             products={products}
             onEdit={openEditModal}
@@ -139,20 +102,18 @@ export default function ProductsPage() {
             onSearchChange={setSearchQuery}
             translations={t}
           />
-        )}
-      </div>
+        </ListPage>
 
-      <ProductFormDialog
-        isOpen={showModal}
-        editingProduct={editingProduct}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-        saving={saving}
-        translations={t}
-      />
-    </PageLayout>
-    </ErrorBoundary>
+        <ProductFormDialog
+          isOpen={showModal}
+          editingProduct={editingProduct}
+          onClose={closeModal}
+          onSubmit={handleSubmit}
+          saving={saving}
+          translations={t}
+        />
+        </DashboardShell>
+      </ErrorBoundary>
     </FeatureGate>
   );
 }
-

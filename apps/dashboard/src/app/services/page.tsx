@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout } from "@/components/layout/page-layout";
-import { EmptyState } from "@/components/empty-state";
-import { TableToolbar } from "@/components/table-toolbar";
-import { StatsBar } from "@/components/stats-bar";
-import { FilterChips } from "@/components/filter-chips";
+import { ListPage, type PageState } from "@teqbook/page";
+import { ErrorBoundary } from "@teqbook/feedback";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { ErrorMessage } from "@/components/feedback/error-message";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
@@ -63,7 +59,6 @@ export default function ServicesPage() {
     setActiveFilters,
   } = useServices({ translations: { noSalon: t.noSalon } });
 
-  // Build category filter chips
   const categoryChips = Object.entries(categoryCounts).map(([cat, count]) => ({
     id: cat,
     label: cat.charAt(0).toUpperCase() + cat.slice(1),
@@ -72,211 +67,126 @@ export default function ServicesPage() {
 
   const filterChips = [
     { id: "active", label: t.filterActive ?? "Active", count: stats.active },
-    {
-      id: "inactive",
-      label: t.filterInactive ?? "Inactive",
-      count: stats.total - stats.active,
-    },
+    { id: "inactive", label: t.filterInactive ?? "Inactive", count: stats.total - stats.active },
     ...categoryChips,
   ];
 
+  const pageState: PageState = loading
+    ? { status: "loading" }
+    : error
+      ? { status: "error", message: error, retry: () => setError(null) }
+      : services.length === 0
+        ? {
+            status: "empty",
+            title: t.emptyTitle,
+            description: t.emptyDescription,
+            action: (
+              <Button size="sm" onClick={() => setIsDialogOpen(true)}>
+                {t.newService}
+              </Button>
+            ),
+          }
+        : { status: "ready" };
+
   return (
     <ErrorBoundary>
-      <PageLayout
+      <DashboardShell>
+      <ListPage
         title={t.title}
         description={t.description}
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTemplateOpen(true)}
-            >
-              {t.addFromTemplate ?? "From template"}
-            </Button>
-            {services.length > 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setBulkSelectedIds([]);
-                  setIsBulkPriceOpen(true);
-                }}
-              >
-                {t.bulkAdjustPrice ?? "Adjust prices"}
-              </Button>
-            )}
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              {t.newService}
-            </Button>
-          </div>
-        }
-        showCard={false}
+        actions={[
+          {
+            label: t.addFromTemplate ?? "From template",
+            onClick: () => setIsTemplateOpen(true),
+            variant: "outline",
+            priority: "secondary",
+          },
+          ...(services.length > 0
+            ? [{
+                label: t.bulkAdjustPrice ?? "Adjust prices",
+                onClick: () => { setBulkSelectedIds([]); setIsBulkPriceOpen(true); },
+                variant: "outline" as const,
+                priority: "secondary" as const,
+              }]
+            : []),
+          {
+            label: t.newService,
+            onClick: () => setIsDialogOpen(true),
+            priority: "primary",
+          },
+        ]}
+        stats={[
+          { label: t.statsTotal ?? "Total", value: stats.total, icon: <Package className="h-4 w-4" /> },
+          { label: t.statsActive ?? "Active", value: stats.active, variant: "success", icon: <PackageCheck className="h-4 w-4" /> },
+          { label: t.statsCategories ?? "Categories", value: stats.categories, icon: <Layers className="h-4 w-4" /> },
+          { label: t.statsWithoutEmployees ?? "Without staff", value: stats.withoutEmployees, variant: stats.withoutEmployees > 0 ? "warning" : "default", icon: <UserX className="h-4 w-4" /> },
+        ]}
+        filterChips={filterChips}
+        activeFilters={activeFilters}
+        onFiltersChange={setActiveFilters}
+        state={pageState}
       >
-        {error && (
-          <ErrorMessage
-            message={error}
-            onDismiss={() => setError(null)}
-            variant="destructive"
-            className="mb-4"
-          />
-        )}
-
-        {/* KPI Header */}
-        {!loading && services.length > 0 && (
-          <StatsBar
-            className="mb-4"
-            items={[
-              {
-                label: t.statsTotal ?? "Total",
-                value: stats.total,
-                icon: <Package className="h-4 w-4" />,
-              },
-              {
-                label: t.statsActive ?? "Active",
-                value: stats.active,
-                variant: "success",
-                icon: <PackageCheck className="h-4 w-4" />,
-              },
-              {
-                label: t.statsCategories ?? "Categories",
-                value: stats.categories,
-                icon: <Layers className="h-4 w-4" />,
-              },
-              {
-                label: t.statsWithoutEmployees ?? "Without staff",
-                value: stats.withoutEmployees,
-                variant: stats.withoutEmployees > 0 ? "warning" : "default",
-                icon: <UserX className="h-4 w-4" />,
-              },
-            ]}
-          />
-        )}
-
-        {/* Table Card */}
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          {/* Mobile toolbar */}
-          <div className="md:hidden">
-            <TableToolbar
-              searchValue={searchQuery}
-              onSearchChange={setSearchQuery}
-              searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
-              filters={
-                <FilterChips
-                  chips={filterChips}
-                  value={activeFilters}
-                  onChange={setActiveFilters}
-                />
-              }
-            />
-          </div>
-          {loading ? (
-            <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-          ) : services.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState
-                title={t.emptyTitle}
-                description={t.emptyDescription}
-                primaryAction={
-                  <Button size="sm" onClick={() => setIsDialogOpen(true)}>
-                    {t.newService}
-                  </Button>
-                }
-                secondaryAction={
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsTemplateOpen(true)}
-                  >
-                    {t.addFromTemplate ?? "From template"}
-                  </Button>
-                }
-              />
-            </div>
-          ) : (
-            <>
-              <ServicesCardView
-                services={filteredServices}
-                serviceEmployeeCountMap={serviceEmployeeCountMap}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
-                onRowClick={detailDialog.onRowClick}
-                currency={salonCurrency}
-                translations={buildCardViewTranslations(t, appLocale)}
-              />
-              <ServicesTable
-                services={filteredServices}
-                serviceEmployeeCountMap={serviceEmployeeCountMap}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
-                onRowClick={detailDialog.onRowClick}
-                onEditClick={(svc) => detailDialog.openEdit(svc.id)}
-                onReorder={handleReorder}
-                currency={salonCurrency}
-                translations={buildTableTranslations(t, appLocale)}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
-                headerContent={
-                  <FilterChips
-                    chips={filterChips}
-                    value={activeFilters}
-                    onChange={setActiveFilters}
-                  />
-                }
-              />
-            </>
-          )}
-        </div>
-
-        {/* Create Service Dialog */}
-        <CreateServiceDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onServiceCreated={reloadServices}
-          translations={buildCreateDialogTranslations(t)}
-        />
-
-        {/* Service Detail Dialog */}
-        <ServiceDetailDialog
-          serviceId={detailDialog.selectedId}
-          open={detailDialog.open}
-          onOpenChange={(open) => {
-            if (!open) detailDialog.close();
-          }}
-          mode={detailDialog.mode}
-          onSwitchToEdit={detailDialog.switchToEdit}
-          onSwitchToView={detailDialog.switchToView}
-          services={services}
+        <ServicesCardView
+          services={filteredServices}
           serviceEmployeeCountMap={serviceEmployeeCountMap}
-          onServiceUpdated={reloadServices}
-          translations={buildDetailDialogTranslations(t, appLocale)}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
+          onRowClick={detailDialog.onRowClick}
           currency={salonCurrency}
+          translations={buildCardViewTranslations(t, appLocale)}
         />
-
-        {/* Templates Dialog */}
-        <ServiceTemplatesDialog
-          open={isTemplateOpen}
-          onOpenChange={setIsTemplateOpen}
-          onCreated={reloadServices}
-        />
-
-        {/* Bulk Price Dialog */}
-        <BulkPriceDialog
-          open={isBulkPriceOpen}
-          onOpenChange={setIsBulkPriceOpen}
-          services={services}
-          selectedIds={bulkSelectedIds}
-          onApply={bulkUpdatePrices}
+        <ServicesTable
+          services={filteredServices}
+          serviceEmployeeCountMap={serviceEmployeeCountMap}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
+          onRowClick={detailDialog.onRowClick}
+          onEditClick={(svc) => detailDialog.openEdit(svc.id)}
+          onReorder={handleReorder}
           currency={salonCurrency}
+          translations={buildTableTranslations(t, appLocale)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
         />
-      </PageLayout>
+      </ListPage>
+
+      <CreateServiceDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onServiceCreated={reloadServices}
+        translations={buildCreateDialogTranslations(t)}
+      />
+
+      <ServiceDetailDialog
+        serviceId={detailDialog.selectedId}
+        open={detailDialog.open}
+        onOpenChange={(open) => { if (!open) detailDialog.close(); }}
+        mode={detailDialog.mode}
+        onSwitchToEdit={detailDialog.switchToEdit}
+        onSwitchToView={detailDialog.switchToView}
+        services={services}
+        serviceEmployeeCountMap={serviceEmployeeCountMap}
+        onServiceUpdated={reloadServices}
+        translations={buildDetailDialogTranslations(t, appLocale)}
+        currency={salonCurrency}
+      />
+
+      <ServiceTemplatesDialog
+        open={isTemplateOpen}
+        onOpenChange={setIsTemplateOpen}
+        onCreated={reloadServices}
+      />
+
+      <BulkPriceDialog
+        open={isBulkPriceOpen}
+        onOpenChange={setIsBulkPriceOpen}
+        services={services}
+        selectedIds={bulkSelectedIds}
+        onApply={bulkUpdatePrices}
+        currency={salonCurrency}
+      />
+      </DashboardShell>
     </ErrorBoundary>
   );
 }

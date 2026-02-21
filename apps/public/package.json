@@ -29,6 +29,7 @@
     "@sentry/nextjs": "^10.37.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.85.0",
+    "@teqbook/feedback": "workspace:*",
     "@teqbook/shared": "workspace:*",
     "@teqbook/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",

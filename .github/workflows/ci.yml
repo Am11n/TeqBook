@@ -75,10 +75,29 @@ jobs:
           path: apps/dashboard/coverage/
           if-no-files-found: ignore
 
+  architecture:
+    name: Architecture Guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Deep import check
+        run: pnpm tsx scripts/check-deep-imports.ts
+      - name: New component gate
+        run: bash scripts/check-new-components.sh
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [type-check, lint, test]
+    needs: [type-check, lint, test, architecture]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

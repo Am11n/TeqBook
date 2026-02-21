@@ -8,7 +8,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { useTabActions } from "@/components/layout/tab-toolbar";
+import { useTabActions } from "@teqbook/page";
 import { supabase } from "@/lib/supabase-client";
 import { Plus } from "lucide-react";
 import { type SupportCase, type FilterTab } from "./_components/types";

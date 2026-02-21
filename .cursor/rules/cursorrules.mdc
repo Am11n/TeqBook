@@ -3,42 +3,113 @@ name: cursorrules
 description: This is a new rule
 ---
 
-# Overview
-
 # TeqBook Cursor Rules
 
-## Admin App – Page Structure
+## Package Architecture
 
-Every page inside `apps/admin/src/app/(admin)/` MUST follow this exact pattern:
+The monorepo has shared packages and thin app shells:
+
+| Package | Purpose |
+|---|---|
+| `@teqbook/ui` | Radix primitives, `cn()`, design tokens |
+| `@teqbook/layout` | PageHeader, NavLink, SessionTimeoutDialog |
+| `@teqbook/feedback` | ErrorBoundary, ErrorMessage, EmptyState |
+| `@teqbook/data-table` | DataTable, DataTableToolbar, Pagination, types, hooks |
+| `@teqbook/page` | ListPage, TabbedPage, PageLayout, StatsBar, FilterChips, TabToolbar, Action model |
+| `@teqbook/shared-core` | Pure types, utils, constants (no Supabase) |
+| `@teqbook/shared-data` | Supabase clients, auth contract, rate limiting |
+
+**Apps are shells**: `dashboard`, `admin`, `public` own routing, shell chrome, and access control. All reusable logic lives in packages.
+
+## Import Rules
+
+- Import from package root only: `import { ListPage } from "@teqbook/page"` -- never deep imports like `@teqbook/page/components/list-page`
+- No cross-app imports: dashboard cannot import from admin or vice versa
+- UI primitives: always from `@teqbook/ui`, never from `@/components/ui/*` in new code
+- `cn()`: from `@teqbook/ui`, not from `@/lib/utils`
+
+## Page Structure
+
+### List pages (CRUD)
+
+Use `ListPage` from `@teqbook/page`:
+
+```tsx
+<ErrorBoundary>
+  <ListPage
+    title="..."
+    description="..."
+    actions={[
+      { label: "Secondary", onClick: ..., variant: "outline", priority: "secondary" },
+      { label: "Primary", onClick: ..., priority: "primary" },
+    ]}
+    stats={statsItems}
+    filterChips={filterChips}
+    activeFilters={activeFilters}
+    onFiltersChange={setActiveFilters}
+    state={pageState}
+    banner={<AppSpecificBanners />}
+  >
+    <CustomTableOrContent />
+  </ListPage>
+</ErrorBoundary>
+```
+
+### Tabbed pages
+
+Use `TabbedPage` from `@teqbook/page`:
+
+```tsx
+<DashboardShell>
+  <TabbedPage
+    title="..."
+    description="..."
+    tabs={tabs}
+    guardEnabled={needsDirtyGuard}
+    usePathname={usePathname}
+    useRouter={useRouter}
+  >
+    {children}
+  </TabbedPage>
+</DashboardShell>
+```
+
+### Admin pages
+
+Wrap in `AdminShell`:
 
 ```tsx
 <ErrorBoundary>
   <AdminShell>
-    <PageLayout title="..." description="..." actions={...}>
-      {/* page content */}
-    </PageLayout>
+    <ListPage title="..." state={pageState} actions={[...]}>
+      {/* content */}
+    </ListPage>
   </AdminShell>
 </ErrorBoundary>
 ```
 
-### Critical: DashboardShell admin route bypass
+## Action Model
 
-`PageLayout` internally wraps content in `DashboardShell`. For admin pages, `DashboardShell` has a bypass list that makes it pass children through without rendering the dashboard sidebar/header.
+All page actions use the `PageAction` type from `@teqbook/page`:
 
-**When you create a new admin page, you MUST add its route to the `adminRoutes` array in `apps/admin/src/components/layout/dashboard-shell.tsx`.**
+- **Primary action**: always far right, always `priority: "primary"`
+- **Secondary actions**: to the left, `priority: "secondary"`, `variant: "outline"`
+- **Row actions**: always kebab menu (MoreVertical), never inline buttons in cells
+- **Bulk actions**: always in a selection bar below the toolbar
 
-If you forget this step, the page will render with BOTH the admin sidebar AND the dashboard sidebar (nested shells).
+## Component Creation Gate
 
-File: `apps/admin/src/components/layout/dashboard-shell.tsx`
-Look for:
-```ts
-const adminRoutes = [
-  "/", "/login",
-  "/salons", "/users", ...
-];
-```
+- NEVER create a new component file without first:
+  1. Searching `docs/component-registry.md` for an existing match
+  2. Searching `packages/` for similar components
+  3. Checking if an existing component can be extended with a new prop
+  4. If nothing fits: write a New Component Proposal (format in `docs/build-gate.md`) and ASK THE USER for approval before writing any code
 
-Add your new route there.
+- Extending an existing component is ALWAYS preferred over creating a new one
+- New reusable components MUST live in `packages/`, never in `apps/`
+- App components are page-specific only; if usable in 2+ places, it belongs in a package
+- Every new public component MUST be added to `docs/component-registry.md`
+- New public components MUST use `@teqbook/ui` tokens; no hardcoded spacing/colors
 
 ## UI Styling
 
@@ -48,28 +119,21 @@ Add your new route there.
 
 ## Dialogs / Modals
 
-**ALL dialogs and modals MUST use the Radix `Dialog` component** from `@/components/ui/dialog`. Never create custom modal wrappers with `fixed inset-0` or side-panel slide-ins. Every dialog must follow this exact pattern:
+**ALL dialogs and modals MUST use the Radix `Dialog` component** from `@teqbook/ui`. Never create custom modal wrappers with `fixed inset-0` or side-panel slide-ins. Every dialog must follow this exact pattern:
 
 ```tsx
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
+} from "@teqbook/ui";
 
-// Props: open: boolean, onOpenChange: (open: boolean) => void
 <Dialog open={open} onOpenChange={onOpenChange}>
   <DialogContent className="max-w-md">
     <DialogHeader>
       <DialogTitle>Title</DialogTitle>
       <DialogDescription>Description</DialogDescription>
     </DialogHeader>
-
     {/* Content / form */}
-
     <DialogFooter>
       <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
       <Button type="submit">Confirm</Button>
@@ -79,74 +143,42 @@ import {
 ```
 
 **Key rules:**
-- Use `open` / `onOpenChange` props (controlled) — never uncontrolled.
+- Use `open` / `onOpenChange` props (controlled) -- never uncontrolled.
 - Use `DialogContent className="max-w-md"` (or `max-w-lg` for larger forms). Never full-screen or side-panel.
-- Use `DialogHeader` with `DialogTitle` and optional `DialogDescription`.
-- Use `DialogFooter` for action buttons.
 - For scrollable content inside a dialog, wrap the body in `<div className="max-h-[60vh] overflow-y-auto">`.
-- The `DialogContent` component already provides: backdrop, close button (X), centered positioning, zoom animation, and Escape-to-close.
-
-Reference implementation: `apps/dashboard/src/components/bookings/CreateBookingDialog.tsx`.
 
 ## Dropdowns inside Dialogs
 
-**ALWAYS use native `<select>` elements for dropdowns inside Dialog boxes.** Never use the Radix `Select` component (`SelectTrigger` / `SelectContent` / `SelectItem`) inside a `Dialog`. Radix Select portals its dropdown to `<body>`, causing z-index conflicts with the Dialog overlay — the options become invisible.
-
-Use this pattern (same as `BookingForm.tsx`):
-
-```tsx
-<select
-  id="my-field"
-  value={value}
-  onChange={(e) => setValue(e.target.value)}
-  required
-  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
->
-  <option value="">Placeholder...</option>
-  {items.map((item) => (
-    <option key={item.id} value={item.id}>{item.name}</option>
-  ))}
-</select>
-```
-
-The Radix `Select` component is fine on regular pages (outside Dialogs).
+**ALWAYS use native `<select>` elements for dropdowns inside Dialog boxes.** Never use the Radix `Select` component inside a `Dialog`. Radix Select portals its dropdown to `<body>`, causing z-index conflicts with the Dialog overlay.
 
 ## Auth / Cookie Isolation
 
-- The **admin app** uses a custom cookie name `sb-admin-auth-token` (set in `apps/admin/src/lib/supabase/client.ts` and `server.ts`).
-- The **dashboard app** and **public app** use the default Supabase cookie name (no custom name).
-- The **`/login-admin`** page on the public app creates its own Supabase client with the admin cookie name so the session is readable by the admin app.
-- Never change the dashboard cookie name to something custom — it must match the public app (default) so the login → redirect flow works.
+- The **admin app** uses a custom cookie name `sb-admin-auth-token`.
+- The **dashboard app** and **public app** use the default Supabase cookie name.
+- Never change the dashboard cookie name to something custom.
 
 ## Sidebar Navigation
 
-- The sidebar uses a "longest prefix match" algorithm for active state. When adding new nav items, ensure the `href` values don't cause multiple items to highlight. See `admin-shell.tsx` for the `activeHref` logic.
+- The sidebar uses a "longest prefix match" algorithm for active state. When adding new nav items, ensure the `href` values don't cause multiple items to highlight.
 
-## DataTable Sorting
+## DataTable
 
-- `DataTable` always applies client-side sorting.
-- For computed columns (e.g. "status" derived from `is_public`), use the `getValue` property on `ColumnDef` so sorting works correctly.
+- Use `DataTable` from `@teqbook/data-table` (not from `@/components/shared/data-table`).
+- Client-side sorting is the default. For computed columns, use `getValue` on `ColumnDef`.
 - The prop for sort column is `sortColumn` (NOT `sortBy`).
+- For mobile responsiveness, use the `mobileRow` contract on `DataTableProps`.
 
 ## Supabase / Backend
 
-- Admin API routes that need Supabase should import from `@/lib/supabase/server` (NOT from `@teqbook/shared/supabase/server-client` directly).
-- The admin app uses `trailingSlash: true` in `next.config.ts`. When fetching internal API routes client-side, always include the trailing slash (e.g. `fetch("/api/health/")`).
+- Admin API routes that need Supabase should import from `@/lib/supabase/server`.
+- The admin app uses `trailingSlash: true` in `next.config.ts`. Always include trailing slashes in API routes.
 
 ## Weekday Numbering Convention
 
-The codebase uses Monday-first weeks everywhere in the UI. Two different numbering systems exist in the database:
-
-- **opening_hours.day_of_week**: 0=Monday, 1=Tuesday, ..., 6=Sunday (set by onboarding, see `onboarding-utils.ts`)
-- **shifts.weekday**: 0=Sunday, 1=Monday, ..., 6=Saturday (JS `Date.getDay()` convention)
-
-**Rules:**
-- All week views (calendar, shifts, opening hours) MUST start on Monday.
-- When reading opening hours, use the helpers in `useOpeningHoursForShifts.ts` which accept JS weekday (`getDay()`: 0=Sun, 1=Mon, ..., 6=Sat) and convert to the OH convention internally.
+- **opening_hours.day_of_week**: 0=Monday, ..., 6=Sunday
+- **shifts.weekday**: 0=Sunday, 1=Monday, ..., 6=Saturday (JS `Date.getDay()`)
+- All week views MUST start on Monday.
 - Never assume 0=Sunday or 0=Monday without checking which table you are reading from.
-- The pattern editor in `CopyShiftsDialog` uses ISO weekdays internally (1=Monday, 7=Sunday).
-- When converting ISO weekday to JS: `jsDay = isoDay === 7 ? 0 : isoDay`
-- When converting JS to OH: `ohDay = jsDay === 0 ? 6 : jsDay - 1` (handled by `jsWeekdayToOH` in the hook)
 
 ## General
 

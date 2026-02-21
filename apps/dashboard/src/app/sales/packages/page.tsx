@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { useTabActions } from "@/components/layout/tab-toolbar";
+import { useTabActions } from "@teqbook/page";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";

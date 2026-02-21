@@ -15,7 +15,7 @@ import { BookingsTable } from "@/components/bookings/BookingsTable";
 import { BookingsCardView } from "@/components/bookings/BookingsCardView";
 import { cancelBooking, updateBookingStatus } from "@/lib/services/bookings-service";
 import type { Booking } from "@/lib/types";
-import { useTabActions } from "@/components/layout/tab-toolbar";
+import { useTabActions } from "@teqbook/page";
 import { getBookingRowColor } from "@/lib/utils/bookings/bookings-utils";
 import { EmployeeFilterPopover } from "./_components/EmployeeFilterPopover";
 import { BookingsDialogs } from "./_components/BookingsDialogs";

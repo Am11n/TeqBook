@@ -15,6 +15,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@teqbook/shared-core": "workspace:*",
+    "@teqbook/shared-data": "workspace:*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.85.0",
     "zod": "^3.23.8"

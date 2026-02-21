@@ -16,6 +16,14 @@ export default defineConfig([
               "group": ["**/web", "**/web/**"],
               "message": "Importing from legacy web/ is not allowed. Use packages/ or app-local code.",
             },
+            {
+              "group": ["@teqbook/*/src/*"],
+              "message": "Import from package root only, e.g. @teqbook/feedback",
+            },
+            {
+              "group": ["../../apps/*"],
+              "message": "Cross-app imports are forbidden. Use a shared package.",
+            },
           ],
         },
       ],

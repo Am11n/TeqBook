@@ -1,32 +1,11 @@
-// =====================================================
-// Shared Package Public API
-// =====================================================
-// Main entry point for @teqbook/shared package
-// Export only what should be used by apps
+// @deprecated -- import from @teqbook/shared-core or @teqbook/shared-data directly
+// This file is a backward-compatibility shim. Remove by 2026-04-01.
 
-// Supabase browser client only (main entry is client-safe; no next/headers)
 export {
-  createBrowserSupabaseClient,
-  getBrowserSupabaseClient,
-} from "./supabase/browser-client";
+  formatCurrency,
+  formatDuration,
+} from "@teqbook/shared-core";
 
-// Auth contract
-export type { Session } from "./supabase/auth-contract";
-export { hasSalonAccess, hasRole, isSuperAdmin } from "./supabase/auth-contract";
-
-// Session service (browser session timeout / inactivity logout)
-export {
-  initSession,
-  updateActivity,
-  isSessionExpired,
-  getTimeUntilExpiry,
-  shouldShowWarning,
-  clearSession,
-  extendSession,
-  formatSessionTimeRemaining,
-} from "./session/session-service";
-
-// Timezone utils (display and local→UTC conversion)
 export {
   formatTimeInTimezone,
   formatDateInTimezone,
@@ -39,7 +18,23 @@ export {
   getMinutesInTimezone,
   getTodayInTimezone,
   type ZonedTimeParts,
-} from "./utils/timezone";
+} from "@teqbook/shared-core";
 
-// Format utils (currency, duration)
-export { formatCurrency, formatDuration } from "./utils/format";
+export {
+  initSession,
+  updateActivity,
+  isSessionExpired,
+  getTimeUntilExpiry,
+  shouldShowWarning,
+  clearSession,
+  extendSession,
+  formatSessionTimeRemaining,
+} from "@teqbook/shared-core";
+
+export {
+  createBrowserSupabaseClient,
+  getBrowserSupabaseClient,
+} from "@teqbook/shared-data";
+
+export type { Session } from "@teqbook/shared-data";
+export { hasSalonAccess, hasRole, isSuperAdmin } from "@teqbook/shared-data";

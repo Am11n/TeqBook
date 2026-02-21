@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
-import { useTabActions } from "@/components/layout/tab-toolbar";
+import { useTabActions } from "@teqbook/page";
 import {
   Dialog,
   DialogContent,

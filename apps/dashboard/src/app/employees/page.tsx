@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout } from "@/components/layout/page-layout";
-import { EmptyState } from "@/components/empty-state";
-import { TableToolbar } from "@/components/table-toolbar";
-import { StatsBar } from "@/components/stats-bar";
-import { FilterChips } from "@/components/filter-chips";
-import { QuickFixBanner } from "@/components/quick-fix-banner";
+import { ListPage, type PageState } from "@teqbook/page";
+import { ErrorBoundary } from "@teqbook/feedback";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { ErrorMessage } from "@/components/feedback/error-message";
 import { CapacityBanner, LimitIndicator } from "@/components/limit-warning";
+import { QuickFixBanner } from "@/components/quick-fix-banner";
+import { FilterChips } from "@/components/filter-chips";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -25,13 +22,11 @@ import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialo
 import { AssignServicesDialog } from "@/components/employees/AssignServicesDialog";
 import { useRouter } from "next/navigation";
 import { useFeatures } from "@/lib/hooks/use-features";
-import { AlertTriangle } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import {
   buildStatsItems,
   buildFilterChips,
   buildCardViewTranslations,
-  buildEmployeesTableTranslations,
   buildCreateDialogTranslations,
   buildDetailDialogTranslations,
 } from "./_helpers/translations";
@@ -75,7 +70,6 @@ export default function EmployeesPage() {
 
   const handleUpgrade = () => router.push("/settings/billing");
 
-  // Booking blockers for QuickFixBanner
   const bookingBlockers = getBookingBlockers({
     employees,
     services,
@@ -86,216 +80,165 @@ export default function EmployeesPage() {
 
   const filterChips = buildFilterChips(t, stats, hasShiftsFeature);
 
+  const pageState: PageState = loading
+    ? { status: "loading" }
+    : error
+      ? { status: "error", message: error, retry: () => setError(null) }
+      : employees.length === 0
+        ? {
+            status: "empty",
+            title: t.emptyTitle,
+            description: t.emptyActionDescription ?? t.emptyDescription,
+            action: (
+              <Button size="sm" onClick={() => setIsDialogOpen(true)} disabled={isAtLimit}>
+                {t.addButton}
+              </Button>
+            ),
+          }
+        : { status: "ready" };
+
   return (
     <ErrorBoundary>
-      <PageLayout
+      <DashboardShell>
+      <ListPage
         title={t.title}
         description={t.description}
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAssignDialogOpen(true)}
-              disabled={employees.length === 0}
-            >
-              {t.assignServices ?? "Assign services"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsDialogOpen(true)}
-              disabled={isAtLimit}
-            >
-              {t.addButton}
-            </Button>
-          </div>
-        }
-        showCard={false}
-      >
-        {error && (
-          <ErrorMessage
-            message={error}
-            onDismiss={() => setError(null)}
-            variant="destructive"
-            className="mb-4"
-          />
-        )}
-
-        {/* KPI Header */}
-        {!loading && employees.length > 0 && (
-          <StatsBar className="mb-4" items={buildStatsItems(t, stats)} />
-        )}
-
-        {/* Capacity Banner */}
-        <CapacityBanner
-          limitInfo={planLimits.employees}
-          entityLabel={t.staffCount ?? "staff"}
-          onUpgrade={handleUpgrade}
-          onDeactivate={() => {
-            // Open detail dialog to let user pick which employee to remove
-            const emp = employees[0];
-            if (emp) detailDialog.onRowClick(emp);
-          }}
-        />
-
-        {/* Limit Indicator */}
-        {planLimits.employees && planLimits.employees.limit !== null && (
-          <div className="mb-4 rounded-xl border bg-card p-4 shadow-sm">
-            <LimitIndicator
-              currentCount={planLimits.employees.current}
-              limit={planLimits.employees.limit}
-              limitType="employees"
+        actions={[
+          {
+            label: t.assignServices ?? "Assign services",
+            onClick: () => setIsAssignDialogOpen(true),
+            variant: "outline",
+            priority: "secondary",
+            disabled: employees.length === 0,
+          },
+          {
+            label: t.addButton,
+            onClick: () => setIsDialogOpen(true),
+            priority: "primary",
+            disabled: isAtLimit,
+          },
+        ]}
+        stats={buildStatsItems(t, stats)}
+        filterChips={filterChips}
+        activeFilters={activeFilters}
+        onFiltersChange={setActiveFilters}
+        banner={
+          <>
+            <CapacityBanner
+              limitInfo={planLimits.employees}
+              entityLabel={t.staffCount ?? "staff"}
+              onUpgrade={handleUpgrade}
+              onDeactivate={() => {
+                const emp = employees[0];
+                if (emp) detailDialog.onRowClick(emp);
+              }}
             />
-          </div>
-        )}
-
-        {/* Quick Fix Banner */}
-        {!loading && employees.length > 0 && (
-          <QuickFixBanner
-            issues={bookingBlockers}
-            title={t.bookingBlocked ?? "Booking is not working"}
-            actions={[
-              {
-                issueKey: "no_employees_with_services",
-                label: t.assignServices ?? "Assign services",
-                onClick: () => setIsAssignDialogOpen(true),
-              },
-              {
-                issueKey: "no_employees_with_shifts",
-                label: t.setupShifts ?? "Set up shifts",
-                onClick: () => router.push("/shifts"),
-              },
-            ]}
-            className="mb-4"
-          />
-        )}
-
-        {/* Table Card */}
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          {/* Mobile toolbar - hidden on desktop where DataTable has its own */}
-          <div className="md:hidden">
-            <TableToolbar
-              searchValue={searchQuery}
-              onSearchChange={setSearchQuery}
-              searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
-              filters={
-                <FilterChips
-                  chips={filterChips}
-                  value={activeFilters}
-                  onChange={setActiveFilters}
+            {planLimits.employees && planLimits.employees.limit !== null && (
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <LimitIndicator
+                  currentCount={planLimits.employees.current}
+                  limit={planLimits.employees.limit}
+                  limitType="employees"
                 />
-              }
-            />
-          </div>
-          {loading ? (
-            <p className="mt-4 text-sm text-muted-foreground">{t.loading}</p>
-          ) : employees.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState
-                title={t.emptyTitle}
-                description={t.emptyActionDescription ?? t.emptyDescription}
-                primaryAction={
-                  <Button
-                    size="sm"
-                    onClick={() => setIsDialogOpen(true)}
-                    disabled={isAtLimit}
-                  >
-                    {t.addButton}
-                  </Button>
-                }
+              </div>
+            )}
+            {!loading && employees.length > 0 && (
+              <QuickFixBanner
+                issues={bookingBlockers}
+                title={t.bookingBlocked ?? "Booking is not working"}
+                actions={[
+                  {
+                    issueKey: "no_employees_with_services",
+                    label: t.assignServices ?? "Assign services",
+                    onClick: () => setIsAssignDialogOpen(true),
+                  },
+                  {
+                    issueKey: "no_employees_with_shifts",
+                    label: t.setupShifts ?? "Set up shifts",
+                    onClick: () => router.push("/shifts"),
+                  },
+                ]}
               />
-            </div>
-          ) : (
-            <>
-              <EmployeesCardView
-                employees={filteredEmployees}
-                employeeServicesMap={employeeServicesMap}
-                employeeShiftsMap={employeeShiftsMap}
-                hasShiftsFeature={hasShiftsFeature}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
-                onRowClick={detailDialog.onRowClick}
-                translations={buildCardViewTranslations(t)}
-              />
-              <EmployeesTable
-                employees={filteredEmployees}
-                employeeServicesMap={employeeServicesMap}
-                employeeShiftsMap={employeeShiftsMap}
-                hasShiftsFeature={hasShiftsFeature}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
-                onRowClick={detailDialog.onRowClick}
-                onEditClick={(emp) => detailDialog.openEdit(emp.id)}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
-                headerContent={
-                  <FilterChips
-                    chips={filterChips}
-                    value={activeFilters}
-                    onChange={setActiveFilters}
-                  />
-                }
-                translations={{
-                  colName: t.colName,
-                  colRole: t.colRole,
-                  colContact: t.colContact,
-                  colServices: t.colServices,
-                  colStatus: t.colStatus,
-                  colActions: t.colActions,
-                  colSetup: t.colSetup ?? "Setup",
-                  active: t.active,
-                  inactive: t.inactive,
-                  delete: t.delete,
-                  edit: t.edit,
-                  addContact: t.addContact ?? "Add",
-                  canBeBooked: t.canBeBooked ?? "Can be booked",
-                  notBookable: t.notBookable ?? "Not bookable",
-                }}
-              />
-            </>
-          )}
-        </div>
-
-        {/* Create Employee Dialog */}
-        <CreateEmployeeDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          services={services}
-          onEmployeeCreated={loadEmployees}
-          translations={buildCreateDialogTranslations(t)}
-        />
-
-        {/* Employee Detail Dialog (view/edit mode) */}
-        <EmployeeDetailDialog
-          employeeId={detailDialog.selectedId}
-          open={detailDialog.open}
-          onOpenChange={(open) => { if (!open) detailDialog.close(); }}
-          mode={detailDialog.mode}
-          onSwitchToEdit={detailDialog.switchToEdit}
-          onSwitchToView={detailDialog.switchToView}
-          employees={employees}
-          services={services}
+            )}
+          </>
+        }
+        state={pageState}
+      >
+        <EmployeesCardView
+          employees={filteredEmployees}
           employeeServicesMap={employeeServicesMap}
           employeeShiftsMap={employeeShiftsMap}
           hasShiftsFeature={hasShiftsFeature}
           onToggleActive={handleToggleActive}
-          onEmployeeUpdated={loadEmployees}
-          translations={buildDetailDialogTranslations(t)}
+          onDelete={handleDelete}
+          onRowClick={detailDialog.onRowClick}
+          translations={buildCardViewTranslations(t)}
         />
-
-        {/* Assign Services Dialog */}
-        <AssignServicesDialog
-          open={isAssignDialogOpen}
-          onOpenChange={setIsAssignDialogOpen}
-          employees={employees}
-          services={services}
+        <EmployeesTable
+          employees={filteredEmployees}
           employeeServicesMap={employeeServicesMap}
-          onSaved={loadEmployees}
+          employeeShiftsMap={employeeShiftsMap}
+          hasShiftsFeature={hasShiftsFeature}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
+          onRowClick={detailDialog.onRowClick}
+          onEditClick={(emp) => detailDialog.openEdit(emp.id)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
+          translations={{
+            colName: t.colName,
+            colRole: t.colRole,
+            colContact: t.colContact,
+            colServices: t.colServices,
+            colStatus: t.colStatus,
+            colActions: t.colActions,
+            colSetup: t.colSetup ?? "Setup",
+            active: t.active,
+            inactive: t.inactive,
+            delete: t.delete,
+            edit: t.edit,
+            addContact: t.addContact ?? "Add",
+            canBeBooked: t.canBeBooked ?? "Can be booked",
+            notBookable: t.notBookable ?? "Not bookable",
+          }}
         />
-      </PageLayout>
+      </ListPage>
+
+      <CreateEmployeeDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        services={services}
+        onEmployeeCreated={loadEmployees}
+        translations={buildCreateDialogTranslations(t)}
+      />
+
+      <EmployeeDetailDialog
+        employeeId={detailDialog.selectedId}
+        open={detailDialog.open}
+        onOpenChange={(open) => { if (!open) detailDialog.close(); }}
+        mode={detailDialog.mode}
+        onSwitchToEdit={detailDialog.switchToEdit}
+        onSwitchToView={detailDialog.switchToView}
+        employees={employees}
+        services={services}
+        employeeServicesMap={employeeServicesMap}
+        employeeShiftsMap={employeeShiftsMap}
+        hasShiftsFeature={hasShiftsFeature}
+        onToggleActive={handleToggleActive}
+        onEmployeeUpdated={loadEmployees}
+        translations={buildDetailDialogTranslations(t)}
+      />
+
+      <AssignServicesDialog
+        open={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
+        employees={employees}
+        services={services}
+        employeeServicesMap={employeeServicesMap}
+        onSaved={loadEmployees}
+      />
+      </DashboardShell>
     </ErrorBoundary>
   );
 }
