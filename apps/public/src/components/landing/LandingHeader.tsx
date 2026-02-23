@@ -4,8 +4,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DialogSelect } from "@/components/ui/dialog-select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Locale } from "./landing-copy";
+import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "./language-constants";
 
 interface LandingHeaderProps {
   locale: Locale;
@@ -76,27 +82,32 @@ export function LandingHeader({
         <div className="flex items-center gap-2">
           {/* Desktop: Language selector and buttons */}
           <div className="hidden sm:flex items-center gap-2">
-            <DialogSelect
-              value={locale}
-              onChange={(v) => setLocale(v as Locale)}
-              options={[
-                { value: "nb", label: "Norsk" },
-                { value: "en", label: "English" },
-                { value: "ar", label: "العربية" },
-                { value: "so", label: "Soomaali" },
-                { value: "ti", label: "ትግርኛ" },
-                { value: "am", label: "አማርኛ" },
-                { value: "tr", label: "Türkçe" },
-                { value: "pl", label: "Polski" },
-                { value: "vi", label: "Tiếng Việt" },
-                { value: "tl", label: "Tagalog" },
-                { value: "zh", label: "中文" },
-                { value: "fa", label: "فارسی" },
-                { value: "dar", label: "دری" },
-                { value: "ur", label: "اردو" },
-                { value: "hi", label: "हिन्दी" },
-              ]}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/60 backdrop-blur-lg outline-none transition-all hover:scale-105 hover:bg-slate-100/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+                  aria-label="Language"
+                  title="Language"
+                >
+                  <span className="text-base leading-none">
+                    {LANGUAGE_FLAGS[locale as LanguageCode] || "🌐"}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40">
+                {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+                  <DropdownMenuItem
+                    key={lang}
+                    onClick={() => setLocale(lang as Locale)}
+                    className="cursor-pointer"
+                  >
+                    <span className="mr-2">{LANGUAGE_FLAGS[lang]}</span>
+                    <span className="text-sm">{LANGUAGE_LABELS[lang]}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link href="/signup">
               <Button size="sm">{signUpButton}</Button>
             </Link>

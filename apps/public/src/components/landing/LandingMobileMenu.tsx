@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DialogSelect } from "@/components/ui/dialog-select";
 import type { Locale } from "./landing-copy";
+import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "./language-constants";
 
 interface LandingMobileMenuProps {
   open: boolean;
@@ -77,35 +77,32 @@ export function LandingMobileMenu({
         </div>
 
         <div className="flex flex-col gap-4">
-          {/* Language selector */}
+          {/* Language selector — flag grid */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-600">
               {locale === "nb" ? "Språk" : "Language"}
             </label>
-            <DialogSelect
-              value={locale}
-              onChange={(v) => {
-                setLocale(v as Locale);
-                onClose();
-              }}
-              options={[
-                { value: "nb", label: "Norsk" },
-                { value: "en", label: "English" },
-                { value: "ar", label: "العربية" },
-                { value: "so", label: "Soomaali" },
-                { value: "ti", label: "ትግርኛ" },
-                { value: "am", label: "አማርኛ" },
-                { value: "tr", label: "Türkçe" },
-                { value: "pl", label: "Polski" },
-                { value: "vi", label: "Tiếng Việt" },
-                { value: "tl", label: "Tagalog" },
-                { value: "zh", label: "中文" },
-                { value: "fa", label: "فارسی" },
-                { value: "dar", label: "دری" },
-                { value: "ur", label: "اردو" },
-                { value: "hi", label: "हिन्दी" },
-              ]}
-            />
+            <div className="grid grid-cols-5 gap-1.5">
+              {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => {
+                    setLocale(lang as Locale);
+                    onClose();
+                  }}
+                  className={`flex flex-col items-center gap-0.5 rounded-lg p-2 text-center transition-colors ${
+                    locale === lang
+                      ? "bg-blue-50 ring-1 ring-blue-300"
+                      : "hover:bg-slate-100"
+                  }`}
+                  title={LANGUAGE_LABELS[lang]}
+                >
+                  <span className="text-lg leading-none">{LANGUAGE_FLAGS[lang]}</span>
+                  <span className="text-[10px] text-slate-500">{lang.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Buttons */}
