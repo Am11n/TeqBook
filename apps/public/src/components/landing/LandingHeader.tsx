@@ -1,15 +1,10 @@
 "use client";
 
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { Locale } from "./landing-copy";
 import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "./language-constants";
 
@@ -25,6 +20,64 @@ interface LandingHeaderProps {
   signUpButton: string;
   logInButton: string;
   onMobileMenuOpen: () => void;
+}
+
+function LanguageDropdown({
+  locale,
+  setLocale,
+}: {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open, close]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/60 backdrop-blur-lg outline-none transition-all hover:scale-105 hover:bg-slate-100/60 focus-visible:ring-2 focus-visible:ring-blue-400/30"
+        aria-label="Language"
+        title="Language"
+      >
+        <span className="text-base leading-none">
+          {LANGUAGE_FLAGS[locale as LanguageCode] || "\u{1F310}"}
+        </span>
+      </button>
+
+      {open && (
+        <ul className="absolute right-0 top-full z-30 mt-1 min-w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+          {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+            <li key={lang}>
+              <button
+                type="button"
+                onClick={() => {
+                  setLocale(lang as Locale);
+                  close();
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-slate-50"
+              >
+                <span>{LANGUAGE_FLAGS[lang]}</span>
+                <span>{LANGUAGE_LABELS[lang]}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export function LandingHeader({
@@ -82,32 +135,7 @@ export function LandingHeader({
         <div className="flex items-center gap-2">
           {/* Desktop: Language selector and buttons */}
           <div className="hidden sm:flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/60 backdrop-blur-lg outline-none transition-all hover:scale-105 hover:bg-slate-100/60 focus-visible:ring-2 focus-visible:ring-primary/20"
-                  aria-label="Language"
-                  title="Language"
-                >
-                  <span className="text-base leading-none">
-                    {LANGUAGE_FLAGS[locale as LanguageCode] || "🌐"}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-40">
-                {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
-                  <DropdownMenuItem
-                    key={lang}
-                    onClick={() => setLocale(lang as Locale)}
-                    className="cursor-pointer"
-                  >
-                    <span className="mr-2">{LANGUAGE_FLAGS[lang]}</span>
-                    <span className="text-sm">{LANGUAGE_LABELS[lang]}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageDropdown locale={locale} setLocale={setLocale} />
             <Link href="/signup">
               <Button size="sm">{signUpButton}</Button>
             </Link>
@@ -138,4 +166,3 @@ export function LandingHeader({
     </header>
   );
 }
-

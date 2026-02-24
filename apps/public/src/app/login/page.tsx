@@ -87,6 +87,11 @@ export default function LoginPage() {
                 {t.dontHaveAccount} <Link href="/signup" className="font-semibold text-blue-600 hover:underline">{t.createOne}</Link>
               </div>
               <p className="mt-4 text-[11px] text-center text-slate-400">{t.secureLoginLine}</p>
+              <div className="mt-2 text-center text-xs">
+                <Link href="/login-admin" className="font-medium text-blue-600 hover:underline">
+                  Log in as Admin
+                </Link>
+              </div>
             </MotionDiv>
           </div>
         </div>
