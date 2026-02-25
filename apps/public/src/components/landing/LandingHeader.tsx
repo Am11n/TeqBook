@@ -97,8 +97,8 @@ export function LandingHeader({
     <header
       className={`sticky top-0 z-20 transition-all duration-300 ${
         scrolled
-          ? "border-b border-blue-200/50 bg-white/70 backdrop-blur-xl backdrop-saturate-150"
-          : "border-b border-transparent bg-transparent backdrop-blur-none backdrop-saturate-100"
+          ? "border-b border-blue-200/30 bg-white/12 backdrop-blur-md backdrop-saturate-150"
+          : "border-b border-transparent bg-transparent backdrop-blur-none"
       }`}
     >
       <div

@@ -30,14 +30,14 @@ export function CTASection({
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Link
           href={primaryHref}
-          className="rounded-lg bg-slate-900 px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl"
+          className="w-full rounded-xl bg-slate-900 px-8 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-slate-800 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30 sm:w-auto sm:text-sm"
         >
           {primaryLabel}
         </Link>
         {secondaryLabel && secondaryHref && (
           <Link
             href={secondaryHref}
-            className="rounded-lg border border-slate-300 px-8 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
+            className="w-full rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40 sm:w-auto sm:text-sm"
           >
             {secondaryLabel}
           </Link>

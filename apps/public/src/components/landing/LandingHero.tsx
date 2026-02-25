@@ -68,7 +68,7 @@ export function LandingHero({
   cutService,
 }: LandingHeroProps) {
   return (
-    <section className="relative -mt-[120px] pt-[120px] border-b border-blue-200/30 overflow-hidden bg-blue-50 min-h-[calc(100vh-120px)]">
+    <section className="relative -mt-18 pt-18 border-b border-blue-200/30 overflow-hidden bg-blue-50 min-h-[calc(100vh-4.5rem)]">
       {/* Abstract gradient background layers */}
       <div className="pointer-events-none absolute inset-0 top-0">
         {/* Base gradient */}

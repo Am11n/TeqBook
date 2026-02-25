@@ -9,7 +9,9 @@ export default function MarketingLayout({
   return (
     <>
       <MarketingHeader />
-      <main className="min-h-[calc(100vh-4rem)] scroll-smooth">{children}</main>
+      <main className="min-h-screen scroll-smooth overflow-x-hidden pt-18">
+        {children}
+      </main>
       <MarketingFooter />
     </>
   );

@@ -95,11 +95,11 @@ export default function PricingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`relative flex flex-col rounded-2xl border-2 p-6 shadow-md sm:p-8 ${
+                  className={`relative flex flex-col rounded-2xl border-2 p-5 shadow-sm sm:p-8 sm:shadow-md ${
                     plan.badge ? "pt-10 sm:pt-12" : ""
                   } ${
                     plan.highlighted
-                      ? "border-blue-500 bg-gradient-to-br from-white via-blue-50/50 to-blue-50/30 shadow-xl shadow-blue-500/10 ring-2 ring-blue-500/20"
+                      ? "border-blue-500 bg-gradient-to-br from-white via-blue-50/50 to-blue-50/30 ring-2 ring-blue-500/20 sm:shadow-xl sm:shadow-blue-500/10"
                       : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg"
                   }`}
                 >
@@ -154,7 +154,7 @@ export default function PricingPage() {
                   </ul>
                   <Link
                     href="/signup"
-                    className={`block w-full rounded-lg py-3 text-center text-sm font-semibold transition-colors ${
+                    className={`block min-h-12 w-full rounded-xl py-3.5 text-center text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 sm:text-sm ${
                       plan.highlighted
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl"
                         : "bg-slate-900 text-white hover:bg-slate-800"

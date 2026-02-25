@@ -113,11 +113,37 @@
 }
 
 @layer base {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  @media (max-width: 640px) {
+    html,
+    body {
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+    }
+
+    body {
+      font-size: 16px;
+      line-height: 1.6;
+      text-wrap: pretty;
+      touch-action: pan-y;
+    }
+
+    p,
+    li {
+      line-height: 1.65;
+    }
   }
   
   /* Remove default dropdown arrow from select elements */
