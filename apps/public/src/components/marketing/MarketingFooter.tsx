@@ -3,8 +3,9 @@ import Link from "next/link";
 const FOOTER_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/security", label: "Security" },
-  { href: "/signup", label: "Sign up" },
-  { href: "/login", label: "Log in" },
+  { href: "/contact", label: "Contact" },
+  { href: "/privacy", label: "Privacy policy" },
+  { href: "/terms", label: "Terms of service" },
 ];
 
 export function MarketingFooter() {

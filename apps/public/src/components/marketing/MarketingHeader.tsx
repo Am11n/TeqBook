@@ -1,5 +1,3 @@
- "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -36,6 +34,12 @@ export function MarketingHeader() {
                 className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-100/80 hover:text-slate-900"
               >
                 Security
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-100/80 hover:text-slate-900"
+              >
+                Contact
               </Link>
             </nav>
 
