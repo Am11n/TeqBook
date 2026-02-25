@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import Image from "next/image";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const menuId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -23,6 +23,25 @@ export function MobileNav() {
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = originalOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (panelRef.current && !panelRef.current.contains(target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
     };
   }, [open]);
 
@@ -47,47 +66,23 @@ export function MobileNav() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-slate-900/45 backdrop-blur-[3px]"
+            className="fixed inset-x-0 bottom-0 top-16 z-40 bg-slate-900/45 backdrop-blur-[3px]"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
           />
           <div
             id={menuId}
-            className="fixed inset-0 z-50 flex items-start justify-center px-4 pb-4 pt-2"
+            className="fixed inset-x-0 bottom-0 top-16 z-50 flex items-start justify-center px-4 pb-4 pt-2"
             role="dialog"
             aria-label="Mobile navigation menu"
             aria-modal="true"
           >
-            <div className="w-full max-w-sm rounded-[24px] border border-white/50 bg-slate-50/95 p-3 shadow-2xl shadow-slate-900/30 backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 duration-200">
-              <div className="mb-2 flex items-center justify-between rounded-xl border border-slate-200/80 bg-white/80 px-3 py-1.5">
-                <Link
-                  href="/"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-2"
-                >
-                  <Image
-                    src="/Favikon.svg"
-                    alt="TeqBook"
-                    width={100}
-                    height={28}
-                    className="h-6 w-auto"
-                  />
-                  <span className="text-sm font-semibold tracking-tight text-slate-900">
-                    TeqBook
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
-                  aria-label="Close menu"
-                >
-                  <span className="text-lg leading-none">&times;</span>
-                </button>
-              </div>
-
-              <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3">
-                <nav className="space-y-0.5" aria-label="Primary mobile links">
+            <div
+              ref={panelRef}
+              className="w-full max-w-sm rounded-[24px] border border-white/50 bg-slate-50/95 p-3 shadow-2xl shadow-slate-900/30 backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+            >
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                <nav className="space-y-0.5 text-center" aria-label="Primary mobile links">
                   <Link
                     href="/pricing"
                     onClick={() => setOpen(false)}
@@ -110,29 +105,29 @@ export function MobileNav() {
                     Contact
                   </Link>
                 </nav>
-              </div>
-
-              <div className="mt-2 rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="mb-2 grid grid-cols-2 gap-2">
+                <div className="my-3 h-px bg-slate-200" />
+                <div className="flex flex-col items-center gap-2">
                   <Link
                     href="/signup"
                     onClick={() => setOpen(false)}
-                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+                    className="inline-flex min-w-28 items-center justify-center rounded-lg bg-blue-600 px-4 py-1.5 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500"
                   >
                     Sign up
                   </Link>
                   <Link
                     href="/login"
                     onClick={() => setOpen(false)}
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-center text-sm font-semibold text-slate-700"
+                    className="inline-flex min-w-28 items-center justify-center rounded-lg border border-slate-300 px-4 py-1.5 text-center text-sm font-semibold text-slate-700"
                   >
                     Log in
                   </Link>
                 </div>
-                <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <p className="mb-1.5 mt-3 text-center text-[11px] font-medium uppercase tracking-wide text-slate-500">
                   Language
                 </p>
-                <LanguageSwitcher />
+                <div className="flex justify-center">
+                  <LanguageSwitcher />
+                </div>
               </div>
             </div>
           </div>

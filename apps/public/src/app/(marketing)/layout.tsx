@@ -29,7 +29,9 @@ export default function MarketingLayout({
           </Link>
         </div>
       </div>
-      <MarketingFooter />
+      <div className="pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0">
+        <MarketingFooter />
+      </div>
     </>
   );
 }
