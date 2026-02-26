@@ -30,6 +30,24 @@ function TabbedPageInner({
   usePathname: usePathnameFn,
   useRouter: useRouterFn,
 }: TabbedPageProps) {
+  const normalizePath = (path: string) => {
+    if (!path) return "/";
+    const normalized = path.replace(/\/+$/, "");
+    return normalized === "" ? "/" : normalized;
+  };
+
+  const matchesTabPath = (pathname: string, href: string) => {
+    const current = normalizePath(pathname);
+    const target = normalizePath(href);
+
+    return (
+      current === target ||
+      current.startsWith(`${target}/`) ||
+      current.endsWith(target) ||
+      current.includes(`${target}/`)
+    );
+  };
+
   const pathname = usePathnameFn();
   const router = useRouterFn();
   const { isAnyDirty } = useDirtyGuard();
@@ -53,7 +71,11 @@ function TabbedPageInner({
   const visibleTabs = tabs.filter((t) => t.visible !== false);
 
   const activeTab = visibleTabs.reduce<string>(
-    (best, tab) => (pathname.startsWith(tab.href) && tab.href.length > (visibleTabs.find(t => t.id === best)?.href.length ?? 0) ? tab.id : best),
+    (best, tab) =>
+      matchesTabPath(pathname, tab.href) &&
+      tab.href.length > (visibleTabs.find((t) => t.id === best)?.href.length ?? 0)
+        ? tab.id
+        : best,
     visibleTabs[0]?.id ?? "",
   );
 
