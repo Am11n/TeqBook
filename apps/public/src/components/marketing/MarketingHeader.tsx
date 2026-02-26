@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { MobileNav } from "./MobileNav";
+import { MobileNavClient } from "./MobileNavClient";
 
 export function MarketingHeader() {
   return (
@@ -74,7 +74,7 @@ export function MarketingHeader() {
               TeqBook
             </span>
           </Link>
-          <MobileNav />
+          <MobileNavClient />
         </div>
       </div>
     </header>

@@ -5,3 +5,8 @@
 # Disable JWT verification for webhook endpoint
 # Webhooks use Stripe signature verification instead
 verify_jwt = false
+
+[functions.rate-limit-check]
+# Called from public login flow before a user has a JWT
+# Must allow anonymous preflight + POST requests
+verify_jwt = false
