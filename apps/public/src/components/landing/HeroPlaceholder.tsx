@@ -36,7 +36,7 @@ export function HeroPlaceholder() {
                 {lcp.ctaPrimary}
               </Button>
             </Link>
-            <Link href="/#pricing" className="w-full sm:w-auto">
+            <Link href="/contact" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full rounded-xl sm:w-auto" type="button">
                 {lcp.ctaSecondary}
               </Button>

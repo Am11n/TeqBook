@@ -149,7 +149,7 @@ export function LandingHero({
                 <span className="relative z-10">{ctaPrimary}</span>
               </Button>
             </Link>
-            <Link href="/#pricing" className="w-full sm:w-auto">
+            <Link href="/contact" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="lg"
