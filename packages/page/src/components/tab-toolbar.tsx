@@ -44,10 +44,6 @@ export function TabActionsProvider({ children }: { children: ReactNode }) {
 export function useTabActions(node: ReactNode) {
   const store = useContext(TabActionsContext);
 
-  if (store) {
-    store.actionsRef.current = node;
-  }
-
   useEffect(() => {
     if (!store) return;
     store.actionsRef.current = node;
@@ -56,7 +52,7 @@ export function useTabActions(node: ReactNode) {
       store.actionsRef.current = null;
       store.emit();
     };
-  });
+  }, [store, node]);
 }
 
 export function TabToolbar({

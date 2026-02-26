@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { useTabActions } from "@teqbook/page";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -121,11 +121,16 @@ export default function PackagesPage() {
     }
   };
 
-  useTabActions(
-    <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
-      <Plus className="h-3.5 w-3.5 mr-1" /> New Package
-    </Button>
+  const tabAction = useMemo(
+    () => (
+      <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
+        <Plus className="h-3.5 w-3.5 mr-1" /> New Package
+      </Button>
+    ),
+    [services.length]
   );
+
+  useTabActions(tabAction);
 
   return (
     <ErrorBoundary>

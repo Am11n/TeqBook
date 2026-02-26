@@ -70,14 +70,10 @@ function TabbedPageInner({
 
   const visibleTabs = tabs.filter((t) => t.visible !== false);
 
-  const activeTab = visibleTabs.reduce<string>(
-    (best, tab) =>
-      matchesTabPath(pathname, tab.href) &&
-      tab.href.length > (visibleTabs.find((t) => t.id === best)?.href.length ?? 0)
-        ? tab.id
-        : best,
-    visibleTabs[0]?.id ?? "",
-  );
+  const matchingTabs = visibleTabs.filter((tab) => matchesTabPath(pathname, tab.href));
+  const activeTab = (matchingTabs.length > 0
+    ? matchingTabs.reduce((best, tab) => (tab.href.length > best.href.length ? tab : best))
+    : visibleTabs[0])?.id ?? "";
 
   const tabRoutes = Object.fromEntries(visibleTabs.map((t) => [t.id, t.href]));
 

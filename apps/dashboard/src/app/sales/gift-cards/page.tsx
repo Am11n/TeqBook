@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, Copy, Check } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -60,11 +60,16 @@ export default function GiftCardsPage() {
     loadCards();
   }, [salon?.id]);
 
-  useTabActions(
-    <Button size="sm" onClick={() => setShowCreate(true)}>
-      <Plus className="h-3.5 w-3.5 mr-1" /> New Gift Card
-    </Button>
+  const tabAction = useMemo(
+    () => (
+      <Button size="sm" onClick={() => setShowCreate(true)}>
+        <Plus className="h-3.5 w-3.5 mr-1" /> New Gift Card
+      </Button>
+    ),
+    []
   );
+
+  useTabActions(tabAction);
 
   const handleCreate = async () => {
     if (!salon?.id || !newValue.trim()) return;
