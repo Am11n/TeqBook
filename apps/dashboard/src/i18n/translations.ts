@@ -198,6 +198,35 @@ export type DashboardMessages = {
   // Extra menu labels
   products: string;
   reports: string;
+  sales?: string;
+  help?: string;
+  salesDescription?: string;
+  helpDescription?: string;
+  salesTabGiftCards?: string;
+  salesTabPackages?: string;
+  helpTabFeedback?: string;
+  helpTabSupport?: string;
+  reportsDescription?: string;
+  reportsTabOverview?: string;
+  reportsTabCommissions?: string;
+  reportsTabCapacity?: string;
+  reportsTabExport?: string;
+  helpNewCase?: string;
+  helpSubmitFeedback?: string;
+  tabAll?: string;
+  tabOpen?: string;
+  tabWaitingOnYou?: string;
+  tabClosed?: string;
+  tabNew?: string;
+  tabInProgress?: string;
+  tabDone?: string;
+  helpNoFeedbackInCategory?: string;
+  salesNewGiftCard?: string;
+  salesNewPackage?: string;
+  salesNoGiftCardsTitle?: string;
+  salesNoGiftCardsDescription?: string;
+  salesNoPackagesTitle?: string;
+  salesNoPackagesDescription?: string;
   // Sidebar tooltips
   collapseSidebar: string;
   expandSidebar: string;
@@ -650,6 +679,7 @@ export type BookingsMessages = {
   sidebarNoUpcoming: string;
   sidebarStartTreatment: string;
   sidebarCancelBooking: string;
+  waitlistTab?: string;
 };
 
 export type ShiftsMessages = {
@@ -774,6 +804,9 @@ export type SettingsMessages = {
   notificationsTab: string;
   billingTab: string;
   brandingTab: string;
+  noShowTab?: string;
+  importTab?: string;
+  securityTab?: string;
   // General settings
   generalTitle: string;
   generalDescription: string;

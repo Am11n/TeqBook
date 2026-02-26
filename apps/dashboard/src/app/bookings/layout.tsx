@@ -9,7 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const tabs: TabDef[] = [
   { id: "bookings", label: "", href: "/bookings" },
-  { id: "waitlist", label: "Waitlist", href: "/bookings/waitlist" },
+  { id: "waitlist", label: "", href: "/bookings/waitlist" },
 ];
 
 export default function BookingsLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export default function BookingsLayout({ children }: { children: React.ReactNode
 
   const localTabs: TabDef[] = [
     { ...tabs[0], label: t.title },
-    tabs[1],
+    { ...tabs[1], label: t.waitlistTab ?? "Waitlist" },
   ];
 
   return (

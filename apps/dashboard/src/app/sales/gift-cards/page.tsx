@@ -20,6 +20,7 @@ import {
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import {
   listGiftCards,
@@ -32,6 +33,7 @@ export default function GiftCardsPage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const td = translations[appLocale].dashboard;
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
@@ -63,7 +65,7 @@ export default function GiftCardsPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)}>
-        <Plus className="h-3.5 w-3.5 mr-1" /> New Gift Card
+        <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewGiftCard ?? "New Gift Card"}
       </Button>
     ),
     []
@@ -225,11 +227,11 @@ export default function GiftCardsPage() {
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         {!loading && cards.length === 0 ? (
           <EmptyState
-            title="No gift cards yet"
-            description="Create your first gift card to get started."
+            title={td.salesNoGiftCardsTitle ?? "No gift cards yet"}
+            description={td.salesNoGiftCardsDescription ?? "Create your first gift card to get started."}
             primaryAction={
               <Button size="sm" onClick={() => setShowCreate(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> New Gift Card
+                <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewGiftCard ?? "New Gift Card"}
               </Button>
             }
           />

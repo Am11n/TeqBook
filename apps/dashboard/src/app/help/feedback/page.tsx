@@ -22,6 +22,7 @@ export default function FeedbackPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale];
+  const td = t.dashboard;
 
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +71,7 @@ export default function FeedbackPage() {
   useTabActions(
     <Button size="sm" className="gap-1.5" onClick={() => openCreateDialog("feature_request")}>
       <Plus className="h-4 w-4" />
-      Submit feedback
+      {td.helpSubmitFeedback ?? "Submit feedback"}
     </Button>
   );
 
@@ -102,10 +103,10 @@ export default function FeedbackPage() {
       <div className="flex gap-1 mb-4 border-b">
         {(
           [
-            { key: "all", label: "All" },
-            { key: "new", label: "New", count: newCount },
-            { key: "active", label: "In progress", count: activeCount },
-            { key: "done", label: "Done" },
+            { key: "all", label: td.tabAll ?? "All" },
+            { key: "new", label: td.tabNew ?? "New", count: newCount },
+            { key: "active", label: td.tabInProgress ?? "In progress", count: activeCount },
+            { key: "done", label: td.tabDone ?? "Done" },
           ] as { key: FilterTab; label: string; count?: number }[]
         ).map((tab) => (
           <button
@@ -137,7 +138,7 @@ export default function FeedbackPage() {
         <FeedbackEmptyState onSelect={openCreateDialog} />
       ) : filteredEntries.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">
-          No feedback in this category.
+          {td.helpNoFeedbackInCategory ?? "No feedback in this category."}
         </p>
       ) : (
         <div className="space-y-2">

@@ -22,6 +22,7 @@ export default function SupportPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale];
+  const td = t.dashboard;
 
   const [cases, setCases] = useState<SupportCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +66,7 @@ export default function SupportPage() {
   useTabActions(
     <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
       <Plus className="h-4 w-4" />
-      New case
+      {td.helpNewCase ?? "New case"}
     </Button>
   );
 
@@ -97,10 +98,10 @@ export default function SupportPage() {
       <div className="flex gap-1 mb-4 border-b">
         {(
           [
-            { key: "all", label: "All" },
-            { key: "open", label: "Open", count: openCount },
-            { key: "waiting", label: "Waiting on you", count: waitingCount },
-            { key: "closed", label: "Closed" },
+            { key: "all", label: td.tabAll ?? "All" },
+            { key: "open", label: td.tabOpen ?? "Open", count: openCount },
+            { key: "waiting", label: td.tabWaitingOnYou ?? "Waiting on you", count: waitingCount },
+            { key: "closed", label: td.tabClosed ?? "Closed" },
           ] as { key: FilterTab; label: string; count?: number }[]
         ).map((tab) => (
           <button

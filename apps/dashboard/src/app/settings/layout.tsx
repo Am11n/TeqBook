@@ -55,16 +55,16 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const tabs: TabDef[] = [
     { id: "general", label: t.generalTab, href: "/settings/general" },
     { id: "opening-hours", label: t.openingHoursTab, href: "/settings/opening-hours" },
-    { id: "no-show-policy", label: "No-show", href: "/settings/no-show-policy" },
-    { id: "import", label: "Import", href: "/settings/import" },
+    { id: "no-show-policy", label: t.noShowTab ?? "No-show", href: "/settings/no-show-policy" },
+    { id: "import", label: t.importTab ?? "Import", href: "/settings/import" },
     { id: "notifications", label: t.notificationsTab, href: "/settings/notifications" },
     { id: "billing", label: t.billingTab, href: "/settings/billing" },
-    { id: "security", label: "Security", href: "/settings/security" },
+    { id: "security", label: t.securityTab ?? "Security", href: "/settings/security" },
     { id: "branding", label: t.brandingTab, href: "/settings/branding", visible: featuresMounted && hasFeature("BRANDING") },
   ];
 
   const description = lastSavedAt
-    ? `${t.description} \u00B7 Last saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    ? `${t.description} \u00B7 ${t.lastSaved ?? "Last saved"} ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
     : t.description;
 
   return (

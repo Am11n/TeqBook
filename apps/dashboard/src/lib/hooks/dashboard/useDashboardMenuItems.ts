@@ -100,7 +100,11 @@ export function useDashboardMenuItems({
       items.push({ href: "/reports", label: texts.reports, icon: TrendingUp });
     }
 
-    items.push({ href: "/sales/gift-cards", label: "Salg", icon: ShoppingBag });
+    items.push({
+      href: "/sales/gift-cards",
+      label: texts.sales ?? "Sales",
+      icon: ShoppingBag,
+    });
 
     return items;
   }, [
@@ -114,6 +118,7 @@ export function useDashboardMenuItems({
     texts.shifts,
     texts.products,
     texts.reports,
+    texts.sales,
   ]);
 
   const complianceItems = useMemo<MenuItem[]>(() => {
@@ -127,7 +132,7 @@ export function useDashboardMenuItems({
     if (isReady) {
       items.push({
         href: "/help/feedback",
-        label: "Hjelp",
+        label: texts.help ?? "Help",
         icon: HelpCircle,
       });
     }
@@ -147,7 +152,7 @@ export function useDashboardMenuItems({
       });
     }
     return items;
-  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, translations]);
+  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, texts.help]);
 
   return {
     overviewItems,

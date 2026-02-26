@@ -18,6 +18,7 @@ import {
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import {
   listPackages,
@@ -32,6 +33,7 @@ export default function PackagesPage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const td = translations[appLocale].dashboard;
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
@@ -124,7 +126,7 @@ export default function PackagesPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
-        <Plus className="h-3.5 w-3.5 mr-1" /> New Package
+        <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewPackage ?? "New Package"}
       </Button>
     ),
     [services.length]
@@ -140,7 +142,10 @@ export default function PackagesPage() {
         {loading ? (
           <p className="text-sm text-muted-foreground py-4">Loading packages...</p>
         ) : packages.length === 0 ? (
-          <EmptyState title="No packages yet" description="Create your first service package to get started." />
+          <EmptyState
+            title={td.salesNoPackagesTitle ?? "No packages yet"}
+            description={td.salesNoPackagesDescription ?? "Create your first service package to get started."}
+          />
         ) : (
           <div className="divide-y">
             {packages.map((pkg) => {
