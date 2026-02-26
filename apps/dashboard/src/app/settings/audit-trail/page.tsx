@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -12,13 +10,14 @@ import { supabase } from "@/lib/supabase-client";
 import { getAuditLogsForSalon } from "@/lib/services/audit-log-service";
 import type { AuditLog, AuditLogQueryOptions } from "@/lib/repositories/audit-log";
 import { logError } from "@/lib/services/logger";
-import { Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download } from "lucide-react";
 import { format } from "date-fns";
 import { actionLabels, actionBadgeVariants, resourceTypeLabels } from "./_components/constants";
 import { AuditFilters } from "./_components/AuditFilters";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { DataTable, type ColumnDef } from "@/components/shared/data-table";
 
 export default function AuditTrailPage() {
   const { salon, loading: contextLoading } = useCurrentSalon();
@@ -31,7 +30,7 @@ export default function AuditTrailPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState(0);
-  const [pageSize] = useState(25);
+  const pageSize = 25;
 
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [resourceTypeFilter, setResourceTypeFilter] = useState<string>("all");
@@ -56,13 +55,7 @@ export default function AuditTrailPage() {
         setError(result.error);
         logError("Error loading audit trail", result.error);
       } else {
-        let filteredLogs = result.data || [];
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          filteredLogs = filteredLogs.filter(
-            (log) => log.action.toLowerCase().includes(query) || log.resource_type.toLowerCase().includes(query) || JSON.stringify(log.metadata || {}).toLowerCase().includes(query)
-          );
-        }
+        const filteredLogs = result.data || [];
         const userIds = Array.from(new Set(filteredLogs.map((log) => log.user_id).filter(Boolean))) as string[];
         if (userIds.length > 0) {
           const { data: profileRows, error: profileError } = await supabase
@@ -97,7 +90,7 @@ export default function AuditTrailPage() {
     } finally {
       setLoading(false);
     }
-  }, [salon?.id, page, pageSize, actionFilter, resourceTypeFilter, startDate, endDate, searchQuery]);
+  }, [salon?.id, page, pageSize, actionFilter, resourceTypeFilter, startDate, endDate]);
 
   useEffect(() => { if (!contextLoading && salon?.id) loadLogs(); }, [contextLoading, salon?.id, loadLogs]);
 
@@ -128,6 +121,49 @@ export default function AuditTrailPage() {
 
   const availableResourceTypes = Array.from(new Set(logs.map((log) => log.resource_type))).sort();
   const availableActions = Array.from(new Set(logs.map((log) => log.action))).sort();
+  const columns = useMemo<ColumnDef<AuditLog>[]>(() => [
+    {
+      id: "created_at",
+      header: t.auditTrailTime ?? "Time",
+      cell: (log) => (
+        <span className="whitespace-nowrap">{format(new Date(log.created_at), "yyyy-MM-dd HH:mm")}</span>
+      ),
+      getValue: (log) => log.created_at,
+    },
+    {
+      id: "action",
+      header: t.auditTrailAction ?? "Action",
+      cell: (log) => (
+        <Badge variant={actionBadgeVariants[log.action] || "outline"}>
+          {actionLabels[log.action] || log.action}
+        </Badge>
+      ),
+      getValue: (log) => actionLabels[log.action] || log.action,
+    },
+    {
+      id: "resource_type",
+      header: t.auditTrailResourceType ?? "Resource Type",
+      cell: (log) => resourceTypeLabels[log.resource_type] || log.resource_type,
+      getValue: (log) => resourceTypeLabels[log.resource_type] || log.resource_type,
+    },
+    {
+      id: "changed_by",
+      header: t.auditTrailChangedBy ?? "Changed by",
+      cell: (log) => {
+        if (!log.user_id) return t.auditTrailSystemActor ?? "System";
+        return actorNames[log.user_id] || (
+          <span className="text-muted-foreground">
+            {t.auditTrailUnknownActor ?? "Unknown user"} ({log.user_id.slice(0, 8)})
+          </span>
+        );
+      },
+      getValue: (log) => {
+        if (!log.user_id) return t.auditTrailSystemActor ?? "System";
+        return actorNames[log.user_id] || `${t.auditTrailUnknownActor ?? "Unknown user"} (${log.user_id.slice(0, 8)})`;
+      },
+      sortable: false,
+    },
+  ], [t, actorNames]);
 
   if (contextLoading) {
     return (
@@ -145,6 +181,7 @@ export default function AuditTrailPage() {
 
       <AuditFilters
         searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+        showSearch={false}
         actionFilter={actionFilter} setActionFilter={setActionFilter}
         resourceTypeFilter={resourceTypeFilter} setResourceTypeFilter={setResourceTypeFilter}
         startDate={startDate} setStartDate={setStartDate}
@@ -154,59 +191,32 @@ export default function AuditTrailPage() {
       />
 
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-muted-foreground">{t.auditTrailShowing ?? "Showing"} {logs.length} {t.auditTrailOf ?? "of"} {total} {t.auditTrailEntries ?? "entries"}</p>
-        <Button onClick={handleExport} variant="outline" size="sm"><Download className="h-4 w-4 mr-2" />{t.auditTrailExportCsv ?? "Export CSV"}</Button>
+        <p className="text-sm text-muted-foreground">
+          {t.auditTrailShowing ?? "Showing"} {logs.length} {t.auditTrailOf ?? "of"} {total} {t.auditTrailEntries ?? "entries"}
+        </p>
+        <Button onClick={handleExport} size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          {t.auditTrailExportCsv ?? "Export CSV"}
+        </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t.auditTrailTime ?? "Time"}</TableHead><TableHead>{t.auditTrailAction ?? "Action"}</TableHead><TableHead>{t.auditTrailResourceType ?? "Resource Type"}</TableHead><TableHead>{t.auditTrailChangedBy ?? "Changed by"}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t.auditTrailLoading ?? "Loading..."}</TableCell></TableRow>
-                ) : logs.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t.auditTrailNoActivity ?? "No activity recorded yet"}</TableCell></TableRow>
-                ) : (
-                  logs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">{format(new Date(log.created_at), "yyyy-MM-dd HH:mm")}</TableCell>
-                      <TableCell><Badge variant={actionBadgeVariants[log.action] || "outline"}>{actionLabels[log.action] || log.action}</Badge></TableCell>
-                      <TableCell>{resourceTypeLabels[log.resource_type] || log.resource_type}</TableCell>
-                      <TableCell>
-                        {!log.user_id
-                          ? t.auditTrailSystemActor ?? "System"
-                          : actorNames[log.user_id] || (
-                              <span className="text-muted-foreground">
-                                {t.auditTrailUnknownActor ?? "Unknown user"} ({log.user_id.slice(0, 8)})
-                              </span>
-                            )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {total > pageSize && (
-        <div className="flex justify-between items-center mt-4">
-          <Button variant="outline" size="sm" onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
-            <ChevronLeft className="h-4 w-4 mr-1" />{t.auditTrailPrevious ?? "Previous"}
-          </Button>
-          <p className="text-sm text-muted-foreground">{t.auditTrailPage ?? "Page"} {page + 1} {t.auditTrailOf ?? "of"} {Math.ceil(total / pageSize)}</p>
-          <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= total}>
-            {t.auditTrailNext ?? "Next"}<ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <DataTable
+          columns={columns}
+          data={logs}
+          totalCount={total}
+          rowKey={(row) => row.id}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          loading={loading}
+          emptyMessage={t.auditTrailNoActivity ?? "No activity recorded yet"}
+          storageKey="settings-audit-trail"
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t.auditSearchPlaceholder ?? "Search activity..."}
+        />
+      </div>
     </ErrorBoundary>
   );
 }

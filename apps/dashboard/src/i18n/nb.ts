@@ -1041,6 +1041,8 @@ export const nb: TranslationNamespaces = {
     auditStartDate: "Startdato",
     auditEndDate: "Sluttdato",
     auditResetFilters: "Nullstill filtre",
+    auditFiltersShow: "Vis filtre",
+    auditFiltersHide: "Skjul filtre",
     auditViewDetails: "Vis detaljer",
     profileTitle: "Min profil",
     profileDescription: "Oppdater din personlige informasjon",

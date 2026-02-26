@@ -1041,6 +1041,8 @@ export type SettingsMessages = {
   auditStartDate?: string;
   auditEndDate?: string;
   auditResetFilters?: string;
+  auditFiltersShow?: string;
+  auditFiltersHide?: string;
   auditViewDetails?: string;
   profileTitle?: string;
   profileDescription?: string;

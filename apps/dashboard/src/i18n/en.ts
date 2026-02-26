@@ -1017,6 +1017,8 @@ export const en: TranslationNamespaces = {
     auditStartDate: "Start Date",
     auditEndDate: "End Date",
     auditResetFilters: "Reset Filters",
+    auditFiltersShow: "Show filters",
+    auditFiltersHide: "Hide filters",
     auditViewDetails: "View details",
     profileTitle: "My Profile",
     profileDescription: "Update your personal information",

@@ -23,6 +23,7 @@ Dette er hoveddokumentasjonen for TeqBook-monorepoet (`apps/*` + `packages/*`).
 - [`compliance/data-lifecycle.md`](./compliance/data-lifecycle.md)
 - [`nordic-readiness/README.md`](./nordic-readiness/README.md)
 - [`api/README.md`](./api/README.md)
+- [`frontend/ui-composition-patterns.md`](./frontend/ui-composition-patterns.md)
 
 ## Evidens-prinsipp
 
