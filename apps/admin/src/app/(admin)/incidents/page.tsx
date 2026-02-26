@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 type Incident = {
@@ -89,7 +88,7 @@ export default function IncidentsPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Incidents" description="Track and manage platform incidents" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />New Incident</Button>}>
+        <PageLayout title="Incidents" description="Track and manage platform incidents" actions={<Button size="sm">New Incident</Button>}>
           <DataTable
             columns={columns}
             data={incidents}

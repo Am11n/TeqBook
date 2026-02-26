@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Copy, Check } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";
@@ -65,7 +65,7 @@ export default function GiftCardsPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)}>
-        <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewGiftCard ?? "New Gift Card"}
+        {td.salesNewGiftCard ?? "New Gift Card"}
       </Button>
     ),
     []
@@ -231,7 +231,7 @@ export default function GiftCardsPage() {
             description={td.salesNoGiftCardsDescription ?? "Create your first gift card to get started."}
             primaryAction={
               <Button size="sm" onClick={() => setShowCreate(true)}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewGiftCard ?? "New Gift Card"}
+                {td.salesNewGiftCard ?? "New Gift Card"}
               </Button>
             }
           />

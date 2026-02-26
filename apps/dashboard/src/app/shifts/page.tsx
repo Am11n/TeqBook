@@ -28,7 +28,7 @@ import { ShiftsListView } from "@/components/shifts/ShiftsListView";
 import { EditShiftDialog } from "@/components/shifts/EditShiftDialog";
 import { WeekSummaryHeader } from "@/components/shifts/WeekSummaryHeader";
 import { CopyShiftsDialog } from "@/components/shifts/CopyShiftsDialog";
-import { Plus, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import type { Shift } from "@/lib/types";
 import {
   buildCopyTranslations,
@@ -153,7 +153,6 @@ export default function ShiftsPage() {
               </Button>
             )}
             <Button size="sm" className="gap-1.5" onClick={() => { setPrefillEmployeeId(undefined); setShowCreateDialog(true); }}>
-              <Plus className="h-4 w-4" />
               {t.newShift}
             </Button>
           </div>

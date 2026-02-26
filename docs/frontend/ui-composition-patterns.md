@@ -127,3 +127,16 @@ For operasjonssider som bookings:
 Typisk sted:
 
 - `apps/dashboard/src/app/bookings/page.tsx`
+
+## 11) Primærknapper (tekst-only regel)
+
+For konsistent UI i TeqBook:
+
+- **Primærknapper med tekst skal ikke ha ledende `+`-ikon**
+- Eksempler: `New`, `Create`, `Add`, `Invite` vises som ren tekst i primary-knappen
+- Dette gjelder både `PageHeader` actions, `ListPage` actions og primary CTA i empty states
+
+Begrunnelse:
+
+- Mindre visuell støy på tvers av sider
+- Mer konsekvent med eksisterende tabell- og side-mønstre

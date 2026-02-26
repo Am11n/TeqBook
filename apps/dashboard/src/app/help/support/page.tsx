@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useTabActions } from "@teqbook/page";
 import { supabase } from "@/lib/supabase-client";
-import { Plus } from "lucide-react";
 import { type SupportCase, type FilterTab } from "./_components/types";
 import { SupportEmptyState } from "./_components/SupportEmptyState";
 import { CaseRow } from "./_components/CaseRow";
@@ -64,8 +63,7 @@ export default function SupportPage() {
   const waitingCount = cases.filter((c) => c.status === "waiting_on_salon").length;
 
   useTabActions(
-    <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
-      <Plus className="h-4 w-4" />
+    <Button size="sm" onClick={() => setDialogOpen(true)}>
       {td.helpNewCase ?? "New case"}
     </Button>
   );

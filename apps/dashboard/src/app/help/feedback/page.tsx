@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useTabActions } from "@teqbook/page";
 import { supabase } from "@/lib/supabase-client";
-import { Plus } from "lucide-react";
 import { type FeedbackEntry, type FilterTab } from "./_components/types";
 import { FeedbackEmptyState } from "./_components/FeedbackEmptyState";
 import { FeedbackRow } from "./_components/FeedbackRow";
@@ -69,8 +68,7 @@ export default function FeedbackPage() {
   }
 
   useTabActions(
-    <Button size="sm" className="gap-1.5" onClick={() => openCreateDialog("feature_request")}>
-      <Plus className="h-4 w-4" />
+    <Button size="sm" onClick={() => openCreateDialog("feature_request")}>
       {td.helpSubmitFeedback ?? "Submit feedback"}
     </Button>
   );

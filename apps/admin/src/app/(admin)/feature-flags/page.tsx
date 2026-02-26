@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { ToggleRight, Plus, Globe } from "lucide-react";
+import { ToggleRight, Globe } from "lucide-react";
 
 type FeatureFlag = {
   id: string;
@@ -70,7 +70,7 @@ export default function FeatureFlagsPage() {
           title="Feature Flags"
           description={`${enabledCount} of ${flags.length} flags enabled`}
           breadcrumbs={<span>Analytics / Feature Flags</span>}
-          actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add Flag</Button>}
+          actions={<Button size="sm">Add Flag</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 

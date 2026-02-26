@@ -7,7 +7,6 @@ import { ListPage, type PageState } from "@teqbook/page";
 import { ErrorBoundary } from "@teqbook/feedback";
 import { DataTable, type ColumnDef, type RowAction } from "@teqbook/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
-import { EntityLink } from "@/components/shared/entity-link";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { ImpersonationDrawer } from "@/components/shared/impersonation-drawer";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +18,7 @@ import {
   getSalonUsageStats,
 } from "@/lib/services/admin-service";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Eye, Power, CreditCard, FileText } from "lucide-react";
+import { Eye, Power, CreditCard, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 type SalonRow = {
@@ -168,7 +167,7 @@ export default function AdminSalonsPage() {
         <ListPage
           title="Salons"
           description="Manage and monitor all salons"
-          actions={[{ label: "Create Salon", icon: Plus, onClick: () => {}, priority: "primary" }]}
+          actions={[{ label: "Create Salon", onClick: () => {}, priority: "primary" }]}
           state={pageState}
         >
           <DataTable

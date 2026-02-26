@@ -9,11 +9,10 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Database, Download, Trash2, Shield, Plus } from "lucide-react";
+import { Database, Download, Trash2, Shield } from "lucide-react";
 import { format } from "date-fns";
 
 type DataRequest = {
@@ -120,7 +119,7 @@ export default function DataToolsPage() {
           title="Data Tools"
           description={`${pendingCount} pending requests`}
           breadcrumbs={<span>Security / Data Tools</span>}
-          actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />New Request</Button>}
+          actions={<Button size="sm">New Request</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus } from "lucide-react";
 import { useTabActions } from "@teqbook/page";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -126,7 +125,7 @@ export default function PackagesPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
-        <Plus className="h-3.5 w-3.5 mr-1" /> {td.salesNewPackage ?? "New Package"}
+        {td.salesNewPackage ?? "New Package"}
       </Button>
     ),
     [services.length]

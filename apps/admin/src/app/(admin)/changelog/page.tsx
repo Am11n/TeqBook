@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Rocket, Wrench, Bug, AlertTriangle } from "lucide-react";
+import { Rocket, Wrench, Bug, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 type ChangelogEntry = {
@@ -72,7 +72,7 @@ export default function ChangelogPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Changelog" description="Track what was launched and when" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Add Entry</Button>}>
+        <PageLayout title="Changelog" description="Track what was launched and when" actions={<Button size="sm">Add Entry</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           {entries.length === 0 ? (

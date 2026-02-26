@@ -9,7 +9,6 @@ import { FeatureGate } from "@/components/feature-gate";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { Plus } from "lucide-react";
 import { useProducts } from "@/lib/hooks/products/useProducts";
 import { useProductActions } from "@/lib/hooks/products/useProductActions";
 import { ProductsTable } from "@/components/products/ProductsTable";
@@ -68,10 +67,7 @@ export default function ProductsPage() {
             title: t.noProducts,
             description: t.createFirst,
             action: (
-              <Button onClick={openCreateModal} className="gap-2">
-                <Plus className="h-4 w-4" />
-                {t.create}
-              </Button>
+              <Button onClick={openCreateModal}>{t.create}</Button>
             ),
           }
         : { status: "ready" };
@@ -86,7 +82,6 @@ export default function ProductsPage() {
           actions={[
             {
               label: t.create,
-              icon: Plus,
               onClick: openCreateModal,
               priority: "primary",
             },

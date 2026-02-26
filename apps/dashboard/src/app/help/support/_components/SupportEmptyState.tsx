@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 export function SupportEmptyState({ onNewCase }: { onNewCase: () => void }) {
   return (
@@ -9,10 +9,7 @@ export function SupportEmptyState({ onNewCase }: { onNewCase: () => void }) {
       <p className="text-sm text-muted-foreground mb-4">
         Need help? Create a new case and our team will assist you.
       </p>
-      <Button size="sm" onClick={onNewCase} className="gap-1.5">
-        <Plus className="h-4 w-4" />
-        Create a new case
-      </Button>
+      <Button size="sm" onClick={onNewCase}>Create a new case</Button>
     </div>
   );
 }

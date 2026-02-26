@@ -114,6 +114,7 @@ All page actions use the `PageAction` type from `@teqbook/page`:
 ## UI Styling
 
 - Buttons for primary actions use `variant="default"` (NOT `variant="outline"` or `variant="primary"`).
+- Primary buttons with text should be text-only; do not prepend a `+` icon for labels like "New/Create/Add/Invite".
 - Never put icons inside table cells/columns unless explicitly asked.
 - The admin app uses Tailwind v4. Shared UI packages are scanned via `@source` directives in `globals.css`.
 

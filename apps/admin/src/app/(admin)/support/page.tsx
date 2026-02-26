@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getSupportCases, updateCaseStatus, type SupportCase } from "@/lib/services/support-service";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Paperclip, ExternalLink } from "lucide-react";
+import { Paperclip, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -103,7 +103,7 @@ export default function SupportInboxPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button size="sm" className="gap-1"><Plus className="h-4 w-4" />Create Case</Button>}>
+        <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button size="sm">Create Case</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
           <DataTable
             columns={columns}

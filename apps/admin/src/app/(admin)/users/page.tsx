@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
-import { Plus, Building2, FileText, LogOut } from "lucide-react";
+import { Building2, FileText, LogOut } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRow = {
@@ -153,7 +153,7 @@ export default function AdminUsersPage() {
         <ListPage
           title="Users"
           description="Manage platform users and access"
-          actions={[{ label: "Invite User", icon: Plus, onClick: () => {}, priority: "primary" }]}
+          actions={[{ label: "Invite User", onClick: () => {}, priority: "primary" }]}
           state={pageState}
         >
           <DataTable
