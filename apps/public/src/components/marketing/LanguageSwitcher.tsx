@@ -6,7 +6,11 @@ import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "@/components
 
 const LANDING_LOCALE_KEY = "teqbook_landing_locale";
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  dropUp?: boolean;
+}
+
+export function LanguageSwitcher({ dropUp = false }: LanguageSwitcherProps) {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -51,7 +55,11 @@ export function LanguageSwitcher() {
       </button>
 
       {open && (
-        <ul className="absolute right-0 top-full z-30 mt-1 min-w-40 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <ul
+          className={`absolute right-0 z-30 min-w-40 max-h-[min(20rem,50vh)] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg ${
+            dropUp ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
+        >
           {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
             <li key={lang}>
               <button

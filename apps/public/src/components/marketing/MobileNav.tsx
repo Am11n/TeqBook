@@ -126,7 +126,7 @@ export function MobileNav() {
                   Language
                 </p>
                 <div className="flex justify-center">
-                  <LanguageSwitcher />
+                  <LanguageSwitcher dropUp />
                 </div>
               </div>
             </div>
