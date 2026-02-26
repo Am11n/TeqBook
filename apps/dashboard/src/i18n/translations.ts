@@ -1023,6 +1023,9 @@ export type SettingsMessages = {
   auditTrailAction?: string;
   auditTrailResourceType?: string;
   auditTrailDetails?: string;
+  auditTrailChangedBy?: string;
+  auditTrailSystemActor?: string;
+  auditTrailUnknownActor?: string;
   auditTrailNoActivity?: string;
   auditTrailPage?: string;
   auditTrailOf?: string;

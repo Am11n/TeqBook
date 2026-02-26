@@ -8,12 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { supabase } from "@/lib/supabase-client";
 import { getAuditLogsForSalon } from "@/lib/services/audit-log-service";
 import type { AuditLog, AuditLogQueryOptions } from "@/lib/repositories/audit-log";
 import { logError } from "@/lib/services/logger";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { actionLabels, actionBadgeVariants, resourceTypeLabels, getMetadataSummary } from "./_components/constants";
+import { actionLabels, actionBadgeVariants, resourceTypeLabels } from "./_components/constants";
 import { AuditFilters } from "./_components/AuditFilters";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -37,6 +38,7 @@ export default function AuditTrailPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [actorNames, setActorNames] = useState<Record<string, string>>({});
 
   const loadLogs = useCallback(async () => {
     if (!salon?.id) return;
@@ -61,6 +63,30 @@ export default function AuditTrailPage() {
             (log) => log.action.toLowerCase().includes(query) || log.resource_type.toLowerCase().includes(query) || JSON.stringify(log.metadata || {}).toLowerCase().includes(query)
           );
         }
+        const userIds = Array.from(new Set(filteredLogs.map((log) => log.user_id).filter(Boolean))) as string[];
+        if (userIds.length > 0) {
+          const { data: profileRows, error: profileError } = await supabase
+            .from("profiles")
+            .select("user_id, first_name, last_name")
+            .eq("salon_id", salon.id)
+            .in("user_id", userIds);
+
+          if (profileError) {
+            logError("Error loading audit actor names", profileError.message);
+            setActorNames({});
+          } else {
+            const nextActorNames: Record<string, string> = {};
+            for (const row of profileRows ?? []) {
+              const firstName = row.first_name?.trim() ?? "";
+              const lastName = row.last_name?.trim() ?? "";
+              const fullName = `${firstName} ${lastName}`.trim();
+              nextActorNames[row.user_id] = fullName || row.user_id;
+            }
+            setActorNames(nextActorNames);
+          }
+        } else {
+          setActorNames({});
+        }
         setLogs(filteredLogs);
         setTotal(result.total || filteredLogs.length);
       }
@@ -76,13 +102,15 @@ export default function AuditTrailPage() {
   useEffect(() => { if (!contextLoading && salon?.id) loadLogs(); }, [contextLoading, salon?.id, loadLogs]);
 
   function handleExport() {
-    const headers = ["Timestamp", "Action", "Resource Type", "Resource ID", "Details"];
+    const headers = ["Timestamp", "Action", "Resource Type", "Resource ID", "Changed By"];
     const rows = logs.map((log) => [
       format(new Date(log.created_at), "yyyy-MM-dd HH:mm:ss"),
       actionLabels[log.action] || log.action,
       resourceTypeLabels[log.resource_type] || log.resource_type,
       log.resource_id || "-",
-      JSON.stringify(log.metadata || {}),
+      !log.user_id
+        ? t.auditTrailSystemActor ?? "System"
+        : actorNames[log.user_id] || `${t.auditTrailUnknownActor ?? "Unknown user"} (${log.user_id.slice(0, 8)})`,
     ]);
     const csv = [headers.join(","), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -136,7 +164,7 @@ export default function AuditTrailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t.auditTrailTime ?? "Time"}</TableHead><TableHead>{t.auditTrailAction ?? "Action"}</TableHead><TableHead>{t.auditTrailResourceType ?? "Resource Type"}</TableHead><TableHead>{t.auditTrailDetails ?? "Details"}</TableHead>
+                  <TableHead>{t.auditTrailTime ?? "Time"}</TableHead><TableHead>{t.auditTrailAction ?? "Action"}</TableHead><TableHead>{t.auditTrailResourceType ?? "Resource Type"}</TableHead><TableHead>{t.auditTrailChangedBy ?? "Changed by"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,12 +179,13 @@ export default function AuditTrailPage() {
                       <TableCell><Badge variant={actionBadgeVariants[log.action] || "outline"}>{actionLabels[log.action] || log.action}</Badge></TableCell>
                       <TableCell>{resourceTypeLabels[log.resource_type] || log.resource_type}</TableCell>
                       <TableCell>
-                        {log.metadata ? (
-                          <details className="cursor-pointer">
-                            <summary className="text-sm text-muted-foreground hover:text-foreground">{getMetadataSummary(log.metadata, t.auditViewDetails ?? "View details")}</summary>
-                            <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-w-md">{JSON.stringify(log.metadata, null, 2)}</pre>
-                          </details>
-                        ) : <span className="text-muted-foreground">-</span>}
+                        {!log.user_id
+                          ? t.auditTrailSystemActor ?? "System"
+                          : actorNames[log.user_id] || (
+                              <span className="text-muted-foreground">
+                                {t.auditTrailUnknownActor ?? "Unknown user"} ({log.user_id.slice(0, 8)})
+                              </span>
+                            )}
                       </TableCell>
                     </TableRow>
                   ))
