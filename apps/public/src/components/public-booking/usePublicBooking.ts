@@ -152,7 +152,7 @@ export function usePublicBooking(slug: string) {
     setSuccessMessage(null);
 
     try {
-      const { checkRateLimit } = await import("@/lib/services/rate-limit-service");
+      const { checkRateLimit, incrementRateLimit } = await import("@/lib/services/rate-limit-service");
       const identifier = customerEmail || "anonymous";
       const rateLimitCheck = await checkRateLimit(identifier, "booking", {
         identifierType: customerEmail ? "email" : "ip",
@@ -165,6 +165,10 @@ export function usePublicBooking(slug: string) {
         setSaving(false);
         return;
       }
+
+      await incrementRateLimit(identifier, "booking", {
+        identifierType: customerEmail ? "email" : "ip",
+      });
     } catch (rateLimitError) {
       console.error("Error checking rate limit:", rateLimitError);
     }

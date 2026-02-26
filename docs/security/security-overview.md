@@ -324,7 +324,15 @@ const corsHeaders = {
 
 ### Rate Limiting
 
-**Status**: Ikke implementert (se [Forbedringer](#identifiserte-forbedringer))
+**Status**: Implementert (hybrid policy)
+
+- Server-side rate limiting via Edge Function: `supabase/supabase/functions/rate-limit-check/index.ts`
+- Shared policy-matrise: `packages/shared-core/src/rate-limit/policy.ts`
+- Edge policy-matrise: `supabase/supabase/functions/_shared/rate-limit-config.ts`
+- Sensitive endepunkter kjører **fail-closed**, lav-risiko public-read kan kjøre **fail-open**
+- API-ruter returnerer konsistente `429`-headers (`X-RateLimit-*`, `Retry-After`) ved blokkering
+
+Se også: [Rate Limiting Operations](./rate-limiting-operations.md)
 
 ---
 
@@ -531,8 +539,9 @@ return { error: "An error occurred. Please try again." };
    - **Status**: ✅ Implementert (se [Implemented Features](./implemented-features.md))
 
 8. **API Rate Limiting**
-   - Rate limiting for alle API-endepunkter
-   - **Status**: 📋 Planlagt
+   - Rate limiting aktivert for kritiske API-endepunkter og edge functions
+   - Hybrid fail-policy per endpoint-type (fail-closed / fail-open)
+   - **Status**: ✅ Implementert
 
 9. **Input Sanitization Library**
    - Bruk et dedikert sanitization library (DOMPurify)

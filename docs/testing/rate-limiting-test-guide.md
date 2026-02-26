@@ -1,6 +1,6 @@
 # Rate Limiting Testing Guide
 
-Denne guiden viser deg hvordan du tester server-side rate limiting implementasjonen.
+Denne guiden viser hvordan du tester rate limiting med hybrid policy (fail-closed for sensitive endepunkter, fail-open for lav-risiko public-read).
 
 ---
 
@@ -9,11 +9,11 @@ Denne guiden viser deg hvordan du tester server-side rate limiting implementasjo
 Kjør unit tests for rate limiting service:
 
 ```bash
-cd web
-npm run test -- tests/unit/services/rate-limit-service.test.ts
+cd apps/dashboard
+npm run test -- tests/unit/services/rate-limit-service.test.ts tests/unit/services/rate-limit-policy.test.ts
 ```
 
-**Forventet resultat:** Alle 7 tester skal passere.
+**Forventet resultat:** Alle tester passerer, inkludert policy-adferd for fail-closed/fail-open.
 
 ---
 
@@ -24,6 +24,17 @@ npm run test -- tests/unit/services/rate-limit-service.test.ts
 1. Supabase CLI installert og konfigurert
 2. Lokal Supabase instans kjørende (hvis du tester lokalt)
 3. Environment variables satt opp
+
+### Verifiser hybrid policy
+
+Test to endpoint-typer med ulik failure policy:
+
+1. **Fail-closed endpoint** (f.eks. `booking-notifications`)
+2. **Fail-open endpoint** (`public-booking-data`)
+
+Ved simulert backend-feil i rate-limit backend skal:
+- fail-closed blokkere request
+- fail-open tillate request i degradert modus
 
 ### Test Edge Function direkte
 

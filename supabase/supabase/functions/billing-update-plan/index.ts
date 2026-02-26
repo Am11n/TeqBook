@@ -10,235 +10,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// =====================================================
-// Rate Limiting (Inlined - Supabase Dashboard doesn't support _shared folder)
-// =====================================================
-
-interface RateLimitResult {
-  allowed: boolean;
-  remainingAttempts: number;
-  resetTime: number | null;
-  blocked: boolean;
-  headers: Record<string, string>;
-}
-
-const RATE_LIMIT_CONFIG = {
-  maxAttempts: 20,
-  windowMs: 60 * 60 * 1000, // 1 hour
-  blockDurationMs: 60 * 60 * 1000, // 1 hour
-};
-
-async function checkRateLimit(
-  req: Request,
-  supabaseUrl: string,
-  supabaseServiceKey: string,
-  user: { id: string } | null
-): Promise<RateLimitResult> {
-  const identifier = user?.id || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const identifierType = user?.id ? "user_id" : "ip";
-  const endpointType = "billing-update-plan";
-  const normalizedIdentifier = identifier.trim();
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_LIMIT_CONFIG.windowMs);
-
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-  // Get or create rate limit entry
-  const { data: entry, error: fetchError } = await supabase
-    .from("rate_limit_entries")
-    .select("*")
-    .eq("identifier", normalizedIdentifier)
-    .eq("identifier_type", identifierType)
-    .eq("endpoint_type", endpointType)
-    .maybeSingle();
-
-  if (fetchError && fetchError.code !== "PGRST116") {
-    // Fail open - allow the request if we can't check rate limit
-    return {
-      allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-      resetTime: null,
-      blocked: false,
-      headers: {
-        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-      },
-    };
-  }
-
-  // If entry doesn't exist, create it
-  if (!entry) {
-    const resetAt = new Date(now.getTime() + RATE_LIMIT_CONFIG.windowMs);
-    const { error: createError } = await supabase
-      .from("rate_limit_entries")
-      .insert({
-        identifier: normalizedIdentifier,
-        identifier_type: identifierType,
-        endpoint_type: endpointType,
-        attempts: 0,
-        reset_at: resetAt.toISOString(),
-        blocked_until: null,
-      });
-
-    if (createError) {
-      // Fail open
-      return {
-        allowed: true,
-        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-        resetTime: null,
-        blocked: false,
-        headers: {
-          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-          "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        },
-      };
-    }
-
-    return {
-      allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-      resetTime: resetAt.getTime(),
-      blocked: false,
-      headers: {
-        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
-      },
-    };
-  }
-
-  // Check if currently blocked
-  if (entry.blocked_until) {
-    const blockedUntil = new Date(entry.blocked_until);
-    if (blockedUntil > now) {
-      const retryAfter = Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000);
-      return {
-        allowed: false,
-        remainingAttempts: 0,
-        resetTime: blockedUntil.getTime(),
-        blocked: true,
-        headers: {
-          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
-          "Retry-After": retryAfter.toString(),
-        },
-      };
-    }
-  }
-
-  // Check if window has expired
-  const resetAt = new Date(entry.reset_at);
-  if (resetAt < now) {
-    const newResetAt = new Date(now.getTime() + RATE_LIMIT_CONFIG.windowMs);
-    const { error: updateError } = await supabase
-      .from("rate_limit_entries")
-      .update({
-        attempts: 0,
-        reset_at: newResetAt.toISOString(),
-        blocked_until: null,
-      })
-      .eq("id", entry.id);
-
-    if (updateError) {
-      return {
-        allowed: true,
-        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-        resetTime: null,
-        blocked: false,
-        headers: {
-          "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-          "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        },
-      };
-    }
-
-    return {
-      allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-      resetTime: newResetAt.getTime(),
-      blocked: false,
-      headers: {
-        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Remaining": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Reset": Math.floor(newResetAt.getTime() / 1000).toString(),
-      },
-    };
-  }
-
-  // Check if limit exceeded
-  if (entry.attempts >= RATE_LIMIT_CONFIG.maxAttempts) {
-    const blockedUntil = new Date(now.getTime() + RATE_LIMIT_CONFIG.blockDurationMs);
-    await supabase
-      .from("rate_limit_entries")
-      .update({
-        blocked_until: blockedUntil.toISOString(),
-      })
-      .eq("id", entry.id);
-
-    const retryAfter = Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000);
-    return {
-      allowed: false,
-      remainingAttempts: 0,
-      resetTime: blockedUntil.getTime(),
-      blocked: true,
-      headers: {
-        "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-        "X-RateLimit-Remaining": "0",
-        "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
-        "Retry-After": retryAfter.toString(),
-      },
-    };
-  }
-
-  // Within limit, increment attempts
-  const newAttempts = entry.attempts + 1;
-  await supabase
-    .from("rate_limit_entries")
-    .update({
-      attempts: newAttempts,
-      last_attempt_at: now.toISOString(),
-    })
-    .eq("id", entry.id);
-
-  const remainingAttempts = Math.max(0, RATE_LIMIT_CONFIG.maxAttempts - newAttempts);
-  return {
-    allowed: true,
-    remainingAttempts,
-    resetTime: resetAt.getTime(),
-    blocked: false,
-    headers: {
-      "X-RateLimit-Limit": RATE_LIMIT_CONFIG.maxAttempts.toString(),
-      "X-RateLimit-Remaining": remainingAttempts.toString(),
-      "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
-    },
-  };
-}
-
-function createRateLimitErrorResponse(result: RateLimitResult): Response {
-  const retryAfter = result.resetTime
-    ? Math.ceil((result.resetTime - Date.now()) / 1000)
-    : 900;
-
-  return new Response(
-    JSON.stringify({
-      error: "Rate limit exceeded",
-      message: "Too many requests. Please try again later.",
-      retryAfter,
-      blockedUntil: result.resetTime ? new Date(result.resetTime).toISOString() : null,
-    }),
-    {
-      status: 429,
-      headers: {
-        "Content-Type": "application/json",
-        ...result.headers,
-        "Retry-After": retryAfter.toString(),
-      },
-    }
-  );
-}
-
+import {
+  checkRateLimit,
+  createRateLimitErrorResponse,
+} from "../_shared/rate-limit.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -352,13 +127,25 @@ serve(async (req) => {
     // Check rate limit
     const rateLimitResult = await checkRateLimit(
       req,
-      supabaseUrl,
-      supabaseServiceKey,
+      {
+        endpointType: "billing-update-plan",
+        supabaseUrl,
+        supabaseServiceKey,
+      },
       user
     );
 
     if (!rateLimitResult.allowed) {
-      return createRateLimitErrorResponse(rateLimitResult);
+      const identifier = user?.id || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+      const identifierType = user?.id ? "user_id" : "ip";
+      return createRateLimitErrorResponse(
+        rateLimitResult,
+        identifier,
+        identifierType,
+        "billing-update-plan",
+        supabaseUrl,
+        supabaseServiceKey
+      );
     }
 
     // Parse request body

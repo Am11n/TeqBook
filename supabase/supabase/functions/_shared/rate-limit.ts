@@ -6,61 +6,10 @@
 // Returns rate limit headers in responses
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// Rate limit configuration per endpoint type
-export const RATE_LIMIT_CONFIGS: Record<
-  string,
-  {
-    maxAttempts: number;
-    windowMs: number;
-    blockDurationMs: number;
-  }
-> = {
-  // Billing endpoints
-  "billing-create-customer": {
-    maxAttempts: 10,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 30 * 60 * 1000, // 30 minutes
-  },
-  "billing-create-subscription": {
-    maxAttempts: 5,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 30 * 60 * 1000, // 30 minutes
-  },
-  "billing-update-plan": {
-    maxAttempts: 20,
-    windowMs: 60 * 60 * 1000, // 1 hour
-    blockDurationMs: 60 * 60 * 1000, // 1 hour
-  },
-  "billing-cancel-subscription": {
-    maxAttempts: 5,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 30 * 60 * 1000, // 30 minutes
-  },
-  "billing-update-payment-method": {
-    maxAttempts: 10,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 30 * 60 * 1000, // 30 minutes
-  },
-  // WhatsApp endpoint
-  "whatsapp-send": {
-    maxAttempts: 100,
-    windowMs: 60 * 60 * 1000, // 1 hour
-    blockDurationMs: 60 * 60 * 1000, // 1 hour
-  },
-  // Public booking data endpoint (higher limit for legitimate traffic)
-  "public-booking-data": {
-    maxAttempts: 60, // 60 requests per window
-    windowMs: 60 * 1000, // 1 minute
-    blockDurationMs: 5 * 60 * 1000, // 5 minutes
-  },
-  // Default configuration
-  default: {
-    maxAttempts: 10,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 30 * 60 * 1000, // 30 minutes
-  },
-};
+import {
+  getRateLimitConfig,
+  type EdgeRateLimitFailurePolicy,
+} from "./rate-limit-config.ts";
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -68,6 +17,10 @@ export interface RateLimitResult {
   resetTime: number | null;
   blocked: boolean;
   headers: Record<string, string>;
+  degraded?: boolean;
+  source?: "server" | "fail_open" | "fail_closed";
+  failurePolicy?: EdgeRateLimitFailurePolicy;
+  reason?: string;
 }
 
 export interface RateLimitOptions {
@@ -134,6 +87,52 @@ function normalizeIdentifier(
   return identifier.trim();
 }
 
+function buildFallbackResult(
+  endpointType: string,
+  config: {
+    maxAttempts: number;
+    failurePolicy: EdgeRateLimitFailurePolicy;
+  },
+  reason: string
+): RateLimitResult {
+  const sharedHeaders = {
+    "X-RateLimit-Limit": config.maxAttempts.toString(),
+    "X-RateLimit-Remaining": config.maxAttempts.toString(),
+  };
+
+  if (config.failurePolicy === "fail_open") {
+    console.warn("[RATE_LIMIT] fail-open fallback", { endpointType, reason });
+    return {
+      allowed: true,
+      remainingAttempts: config.maxAttempts,
+      resetTime: null,
+      blocked: false,
+      headers: sharedHeaders,
+      degraded: true,
+      source: "fail_open",
+      failurePolicy: config.failurePolicy,
+      reason,
+    };
+  }
+
+  const retryAfterSeconds = 60;
+  return {
+    allowed: false,
+    remainingAttempts: 0,
+    resetTime: Date.now() + retryAfterSeconds * 1000,
+    blocked: true,
+    headers: {
+      ...sharedHeaders,
+      "X-RateLimit-Remaining": "0",
+      "Retry-After": retryAfterSeconds.toString(),
+    },
+    degraded: true,
+    source: "fail_closed",
+    failurePolicy: config.failurePolicy,
+    reason,
+  };
+}
+
 /**
  * Check rate limit for an identifier
  */
@@ -142,7 +141,12 @@ async function checkRateLimitInDB(
   identifier: string,
   identifierType: string,
   endpointType: string,
-  config: { maxAttempts: number; windowMs: number; blockDurationMs: number }
+  config: {
+    maxAttempts: number;
+    windowMs: number;
+    blockDurationMs: number;
+    failurePolicy: EdgeRateLimitFailurePolicy;
+  }
 ): Promise<RateLimitResult> {
   const normalizedIdentifier = normalizeIdentifier(identifier, identifierType);
   const now = new Date();
@@ -158,19 +162,8 @@ async function checkRateLimitInDB(
     .maybeSingle();
 
   if (fetchError && fetchError.code !== "PGRST116") {
-    // PGRST116 is "not found" which is OK
     console.error("Error fetching rate limit entry:", fetchError);
-    // Fail open - allow the request if we can't check rate limit
-    return {
-      allowed: true,
-      remainingAttempts: config.maxAttempts,
-      resetTime: null,
-      blocked: false,
-      headers: {
-        "X-RateLimit-Limit": config.maxAttempts.toString(),
-        "X-RateLimit-Remaining": config.maxAttempts.toString(),
-      },
-    };
+    return buildFallbackResult(endpointType, config, "db_fetch_error");
   }
 
   // If entry doesn't exist, create it
@@ -189,17 +182,7 @@ async function checkRateLimitInDB(
 
     if (createError) {
       console.error("Error creating rate limit entry:", createError);
-      // Fail open
-      return {
-        allowed: true,
-        remainingAttempts: config.maxAttempts,
-        resetTime: null,
-        blocked: false,
-        headers: {
-          "X-RateLimit-Limit": config.maxAttempts.toString(),
-          "X-RateLimit-Remaining": config.maxAttempts.toString(),
-        },
-      };
+      return buildFallbackResult(endpointType, config, "db_create_error");
     }
 
     // New entry, no attempts yet
@@ -213,6 +196,8 @@ async function checkRateLimitInDB(
         "X-RateLimit-Remaining": config.maxAttempts.toString(),
         "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
       },
+      source: "server",
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -235,6 +220,8 @@ async function checkRateLimitInDB(
           "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
           "Retry-After": retryAfter.toString(),
         },
+        source: "server",
+        failurePolicy: config.failurePolicy,
       };
     }
   }
@@ -255,17 +242,7 @@ async function checkRateLimitInDB(
 
     if (updateError) {
       console.error("Error updating rate limit entry:", updateError);
-      // Fail open
-      return {
-        allowed: true,
-        remainingAttempts: config.maxAttempts,
-        resetTime: null,
-        blocked: false,
-        headers: {
-          "X-RateLimit-Limit": config.maxAttempts.toString(),
-          "X-RateLimit-Remaining": config.maxAttempts.toString(),
-        },
-      };
+      return buildFallbackResult(endpointType, config, "db_window_update_error");
     }
 
     return {
@@ -278,6 +255,8 @@ async function checkRateLimitInDB(
         "X-RateLimit-Remaining": config.maxAttempts.toString(),
         "X-RateLimit-Reset": Math.floor(newResetAt.getTime() / 1000).toString(),
       },
+      source: "server",
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -310,6 +289,8 @@ async function checkRateLimitInDB(
         "X-RateLimit-Reset": Math.floor(blockedUntil.getTime() / 1000).toString(),
         "Retry-After": retryAfter.toString(),
       },
+      source: "server",
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -325,7 +306,7 @@ async function checkRateLimitInDB(
 
   if (incrementError) {
     console.error("Error incrementing rate limit:", incrementError);
-    // Fail open, but use current state
+    return buildFallbackResult(endpointType, config, "db_increment_error");
   }
 
   const remainingAttempts = Math.max(0, config.maxAttempts - newAttempts);
@@ -339,6 +320,8 @@ async function checkRateLimitInDB(
       "X-RateLimit-Remaining": remainingAttempts.toString(),
       "X-RateLimit-Reset": Math.floor(resetAt.getTime() / 1000).toString(),
     },
+    source: "server",
+    failurePolicy: config.failurePolicy,
   };
 }
 
@@ -355,11 +338,11 @@ export async function checkRateLimit(
   const { endpointType, supabaseUrl, supabaseServiceKey } = options;
 
   // Get configuration for this endpoint type
-  const config =
-    RATE_LIMIT_CONFIGS[endpointType] || RATE_LIMIT_CONFIGS.default;
+  const config = getRateLimitConfig(endpointType);
 
-  // Extract identifier
-  const { identifier, identifierType } = extractIdentifier(req, user);
+  const extracted = extractIdentifier(req, user);
+  const identifier = options.identifier || extracted.identifier;
+  const identifierType = options.identifierType || extracted.identifierType;
 
   // Create Supabase client with service role key
   const supabase = createClient(supabaseUrl, supabaseServiceKey);

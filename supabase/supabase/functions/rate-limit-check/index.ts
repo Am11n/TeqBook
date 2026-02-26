@@ -15,6 +15,10 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  getRateLimitConfig,
+  type EdgeRateLimitFailurePolicy,
+} from "../_shared/rate-limit-config.ts";
 
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") ?? "";
@@ -33,16 +37,6 @@ function getCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
-// Rate limit configuration
-const RATE_LIMIT_CONFIG = {
-  // Maximum number of attempts before blocking
-  maxAttempts: 5,
-  // Time window in milliseconds (15 minutes)
-  windowMs: 15 * 60 * 1000,
-  // Block duration in milliseconds (30 minutes)
-  blockDurationMs: 30 * 60 * 1000,
-} as const;
-
 interface RateLimitRequest {
   identifier: string;
   identifierType?: "email" | "ip" | "user_id";
@@ -55,6 +49,16 @@ interface RateLimitResponse {
   remainingAttempts: number;
   resetTime: number | null;
   blocked: boolean;
+  degraded?: boolean;
+  failurePolicy?: EdgeRateLimitFailurePolicy;
+  reason?: string;
+}
+
+interface RateLimitConfig {
+  maxAttempts: number;
+  windowMs: number;
+  blockDurationMs: number;
+  failurePolicy: EdgeRateLimitFailurePolicy;
 }
 
 /**
@@ -77,11 +81,12 @@ async function checkRateLimit(
   supabase: ReturnType<typeof createClient>,
   identifier: string,
   identifierType: string,
-  endpointType: string
+  endpointType: string,
+  config: RateLimitConfig
 ): Promise<RateLimitResponse> {
   const normalizedIdentifier = normalizeIdentifier(identifier, identifierType);
   const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_LIMIT_CONFIG.windowMs);
+  const windowStart = new Date(now.getTime() - config.windowMs);
 
   // Get or create rate limit entry
   const { data: entry, error: fetchError } = await supabase
@@ -95,12 +100,25 @@ async function checkRateLimit(
   if (fetchError && fetchError.code !== "PGRST116") {
     // PGRST116 is "not found" which is OK
     console.error("Error fetching rate limit entry:", fetchError);
-    // Fail open - allow the request if we can't check rate limit
+    if (config.failurePolicy === "fail_open") {
+      return {
+        allowed: true,
+        remainingAttempts: config.maxAttempts,
+        resetTime: null,
+        blocked: false,
+        degraded: true,
+        failurePolicy: config.failurePolicy,
+        reason: "db_fetch_error",
+      };
+    }
     return {
-      allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-      resetTime: null,
-      blocked: false,
+      allowed: false,
+      remainingAttempts: 0,
+      resetTime: Date.now() + 60 * 1000,
+      blocked: true,
+      degraded: true,
+      failurePolicy: config.failurePolicy,
+      reason: "db_fetch_error",
     };
   }
 
@@ -120,19 +138,34 @@ async function checkRateLimit(
 
     if (createError) {
       console.error("Error creating rate limit entry:", createError);
+      if (config.failurePolicy === "fail_open") {
+        return {
+          allowed: true,
+          remainingAttempts: config.maxAttempts,
+          resetTime: null,
+          blocked: false,
+          degraded: true,
+          failurePolicy: config.failurePolicy,
+          reason: "db_create_error",
+        };
+      }
       return {
-        allowed: true,
-        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
-        resetTime: null,
-        blocked: false,
+        allowed: false,
+        remainingAttempts: 0,
+        resetTime: Date.now() + 60 * 1000,
+        blocked: true,
+        degraded: true,
+        failurePolicy: config.failurePolicy,
+        reason: "db_create_error",
       };
     }
 
     return {
       allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      remainingAttempts: config.maxAttempts,
       resetTime: null,
       blocked: false,
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -160,9 +193,10 @@ async function checkRateLimit(
 
     return {
       allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      remainingAttempts: config.maxAttempts,
       resetTime: null,
       blocked: false,
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -181,27 +215,26 @@ async function checkRateLimit(
 
     return {
       allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts,
+      remainingAttempts: config.maxAttempts,
       resetTime: null,
       blocked: false,
+      failurePolicy: config.failurePolicy,
     };
   }
 
   // Calculate remaining attempts
-  const remainingAttempts = Math.max(
-    0,
-    RATE_LIMIT_CONFIG.maxAttempts - entry.attempts
-  );
-  const isBlocked = entry.attempts >= RATE_LIMIT_CONFIG.maxAttempts;
+  const remainingAttempts = Math.max(0, config.maxAttempts - entry.attempts);
+  const isBlocked = entry.attempts >= config.maxAttempts;
   const resetTime = isBlocked && entry.blocked_until
     ? new Date(entry.blocked_until).getTime()
-    : new Date(entryWindowStart.getTime() + RATE_LIMIT_CONFIG.windowMs).getTime();
+    : new Date(entryWindowStart.getTime() + config.windowMs).getTime();
 
   return {
     allowed: !isBlocked,
     remainingAttempts,
     resetTime,
     blocked: isBlocked,
+    failurePolicy: config.failurePolicy,
   };
 }
 
@@ -212,11 +245,12 @@ async function incrementRateLimit(
   supabase: ReturnType<typeof createClient>,
   identifier: string,
   identifierType: string,
-  endpointType: string
+  endpointType: string,
+  config: RateLimitConfig
 ): Promise<RateLimitResponse> {
   const normalizedIdentifier = normalizeIdentifier(identifier, identifierType);
   const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_LIMIT_CONFIG.windowMs);
+  const windowStart = new Date(now.getTime() - config.windowMs);
 
   // Get or create rate limit entry
   const { data: entry, error: fetchError } = await supabase
@@ -229,11 +263,25 @@ async function incrementRateLimit(
 
   if (fetchError && fetchError.code !== "PGRST116") {
     console.error("Error fetching rate limit entry:", fetchError);
+    if (config.failurePolicy === "fail_open") {
+      return {
+        allowed: true,
+        remainingAttempts: config.maxAttempts - 1,
+        resetTime: now.getTime() + config.windowMs,
+        blocked: false,
+        degraded: true,
+        failurePolicy: config.failurePolicy,
+        reason: "db_fetch_error",
+      };
+    }
     return {
-      allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts - 1,
-      resetTime: now.getTime() + RATE_LIMIT_CONFIG.windowMs,
-      blocked: false,
+      allowed: false,
+      remainingAttempts: 0,
+      resetTime: now.getTime() + 60 * 1000,
+      blocked: true,
+      degraded: true,
+      failurePolicy: config.failurePolicy,
+      reason: "db_fetch_error",
     };
   }
 
@@ -254,19 +302,34 @@ async function incrementRateLimit(
 
     if (createError) {
       console.error("Error creating rate limit entry:", createError);
+      if (config.failurePolicy === "fail_open") {
+        return {
+          allowed: true,
+          remainingAttempts: config.maxAttempts - 1,
+          resetTime: now.getTime() + config.windowMs,
+          blocked: false,
+          degraded: true,
+          failurePolicy: config.failurePolicy,
+          reason: "db_create_error",
+        };
+      }
       return {
-        allowed: true,
-        remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts - 1,
-        resetTime: now.getTime() + RATE_LIMIT_CONFIG.windowMs,
-        blocked: false,
+        allowed: false,
+        remainingAttempts: 0,
+        resetTime: now.getTime() + 60 * 1000,
+        blocked: true,
+        degraded: true,
+        failurePolicy: config.failurePolicy,
+        reason: "db_create_error",
       };
     }
 
     return {
       allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts - 1,
-      resetTime: now.getTime() + RATE_LIMIT_CONFIG.windowMs,
+      remainingAttempts: config.maxAttempts - 1,
+      resetTime: now.getTime() + config.windowMs,
       blocked: false,
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -283,9 +346,9 @@ async function incrementRateLimit(
     }
     // Block expired, reset and increment
     const newAttempts = 1;
-    const shouldBlock = newAttempts >= RATE_LIMIT_CONFIG.maxAttempts;
+    const shouldBlock = newAttempts >= config.maxAttempts;
     const blockedUntilNew = shouldBlock
-      ? new Date(now.getTime() + RATE_LIMIT_CONFIG.blockDurationMs)
+      ? new Date(now.getTime() + config.blockDurationMs)
       : null;
 
     await supabase
@@ -299,11 +362,12 @@ async function incrementRateLimit(
 
     return {
       allowed: !shouldBlock,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts - newAttempts,
+      remainingAttempts: config.maxAttempts - newAttempts,
       resetTime: shouldBlock
         ? blockedUntilNew!.getTime()
-        : now.getTime() + RATE_LIMIT_CONFIG.windowMs,
+        : now.getTime() + config.windowMs,
       blocked: shouldBlock,
+      failurePolicy: config.failurePolicy,
     };
   }
 
@@ -323,17 +387,18 @@ async function incrementRateLimit(
 
     return {
       allowed: true,
-      remainingAttempts: RATE_LIMIT_CONFIG.maxAttempts - newAttempts,
-      resetTime: now.getTime() + RATE_LIMIT_CONFIG.windowMs,
+      remainingAttempts: config.maxAttempts - newAttempts,
+      resetTime: now.getTime() + config.windowMs,
       blocked: false,
+      failurePolicy: config.failurePolicy,
     };
   }
 
   // Increment attempts within current window
   const newAttempts = entry.attempts + 1;
-  const shouldBlock = newAttempts >= RATE_LIMIT_CONFIG.maxAttempts;
+  const shouldBlock = newAttempts >= config.maxAttempts;
   const blockedUntilNew = shouldBlock
-    ? new Date(now.getTime() + RATE_LIMIT_CONFIG.blockDurationMs)
+    ? new Date(now.getTime() + config.blockDurationMs)
     : null;
 
   await supabase
@@ -344,16 +409,17 @@ async function incrementRateLimit(
     })
     .eq("id", entry.id);
 
-  const remainingAttempts = Math.max(0, RATE_LIMIT_CONFIG.maxAttempts - newAttempts);
+  const remainingAttempts = Math.max(0, config.maxAttempts - newAttempts);
   const resetTime = shouldBlock
     ? blockedUntilNew!.getTime()
-    : new Date(entryWindowStart.getTime() + RATE_LIMIT_CONFIG.windowMs).getTime();
+    : new Date(entryWindowStart.getTime() + config.windowMs).getTime();
 
   return {
     allowed: !shouldBlock,
     remainingAttempts,
     resetTime,
     blocked: shouldBlock,
+    failurePolicy: config.failurePolicy,
   };
 }
 
@@ -427,6 +493,7 @@ serve(async (req) => {
     const identifierType = body.identifierType || "email";
     const endpointType = body.endpointType || "login";
     const action = body.action || "check";
+    const config = getRateLimitConfig(endpointType);
 
     let result: RateLimitResponse | { success: boolean };
 
@@ -436,7 +503,8 @@ serve(async (req) => {
           supabase,
           body.identifier,
           identifierType,
-          endpointType
+          endpointType,
+          config
         );
         break;
       case "increment":
@@ -444,7 +512,8 @@ serve(async (req) => {
           supabase,
           body.identifier,
           identifierType,
-          endpointType
+          endpointType,
+          config
         );
         break;
       case "reset":

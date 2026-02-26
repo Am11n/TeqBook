@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 export async function GET(request: NextRequest) {
+  const rateLimitPolicy = getRateLimitPolicy("admin-impersonate");
   const salonId = request.nextUrl.searchParams.get("salon_id");
   if (!salonId) {
     return NextResponse.json({ error: "salon_id required" }, { status: 400 });
@@ -24,6 +27,38 @@ export async function GET(request: NextRequest) {
     if (!profile?.is_superadmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    const rateLimitResult = await checkRateLimit(user.id, "admin-impersonate", {
+      identifierType: "user_id",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitPolicy.maxAttempts.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "X-RateLimit-Reset": rateLimitResult.resetTime
+              ? Math.ceil(rateLimitResult.resetTime / 1000).toString()
+              : Math.ceil((Date.now() + rateLimitPolicy.windowMs) / 1000).toString(),
+            "Retry-After": rateLimitResult.resetTime
+              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              : Math.ceil(rateLimitPolicy.windowMs / 1000).toString(),
+          },
+        }
+      );
+    }
+
+    await incrementRateLimit(user.id, "admin-impersonate", {
+      identifierType: "user_id",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
 
     // Fetch salon data (read-only)
     const [salon, employees, bookings, services] = await Promise.all([

@@ -13,6 +13,13 @@ export {
 } from "./utils/timezone";
 
 export { formatCurrency, formatDuration } from "./utils/format";
+export {
+  RATE_LIMIT_POLICIES,
+  getRateLimitPolicy,
+  type RateLimitPolicy,
+  type RateLimitIdentifierType,
+  type RateLimitFailurePolicy,
+} from "./rate-limit/policy";
 
 export {
   initSession,

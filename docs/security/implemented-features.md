@@ -6,24 +6,24 @@ Dette dokumentet beskriver de sikkerhetsfunksjonene som er implementert i TeqBoo
 
 ## ✅ Implementerte Funksjoner
 
-### 1. Rate Limiting for Login
+### 1. Rate Limiting (Login + API + Edge)
 
 **Status**: ✅ Implementert
 
 **Implementasjon**:
-- Client-side rate limiting i `apps/dashboard/src/lib/services/rate-limit-service.ts`
-- Maksimalt 5 mislykkede forsøk per 15 minutter
-- 30 minutters blokkering etter 5 mislykkede forsøk
-- Bruker localStorage for å spore forsøk per email
-- Integrert i login-siden (`apps/dashboard/src/app/(auth)/login/page.tsx`)
+- Policy-matrise i `packages/shared-core/src/rate-limit/policy.ts`
+- Server wrapper i `packages/shared/src/services/rate-limit/server.ts`
+- Edge håndheving i `supabase/supabase/functions/rate-limit-check/index.ts`
+- Edge shared middleware i `supabase/supabase/functions/_shared/rate-limit.ts`
+- Integrert i login + booking flyt + utvalgte API-ruter i `apps/*/src/app/api/*`
 
 **Funksjonalitet**:
-- Sporer mislykkede login-forsøk per email
-- Viser gjenværende forsøk til brukeren
-- Blokkerer midlertidig etter for mange forsøk
-- Nullstiller automatisk etter timeout
-
-**Note**: Dette er client-side beskyttelse. Server-side rate limiting bør også implementeres i Edge Functions eller middleware for produksjon.
+- Sporer forsøk per `identifier` + `identifier_type` + `endpoint_type`
+- Returnerer konsistente `429` med `X-RateLimit-*` og `Retry-After`
+- Hybrid failure policy:
+  - **Fail-closed** for sensitive endepunkter (auth, billing, impersonation, mutations)
+  - **Fail-open** kun for lav-risiko public-read (`public-booking-data`)
+- Client-side fallback brukes kun når endpoint-policy tillater det
 
 ---
 
@@ -207,9 +207,9 @@ Følgende events logges automatisk:
 
 ### Rate Limiting
 
-- Client-side rate limiting kan omgås av sofistikerte angripere
-- Anbefaler å implementere server-side rate limiting i Edge Functions eller middleware
-- Database-basert rate limiting vil være mer robust
+- Server-side håndheving er standard for sensitive endepunkter
+- Client fallback brukes policy-styrt og logges som degradert modus
+- Se runbook: `docs/security/rate-limiting-operations.md`
 
 ### Session Timeout
 

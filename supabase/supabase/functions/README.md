@@ -48,6 +48,10 @@ supabase functions serve
 
 ## Available Functions
 
+### `rate-limit-check`
+Server-side rate limiting endpoint used by apps and edge middleware.
+Supports `check`, `increment`, and `reset` actions against `rate_limit_entries`.
+
 ### `whatsapp-send`
 Sends WhatsApp messages via external API. See `whatsapp-send/README.md` for details.
 
@@ -56,6 +60,11 @@ Shared authentication middleware for Edge Functions. Provides:
 - `authenticateRequest()` - Validates JWT tokens from Authorization header
 - `isSuperAdmin()` - Checks if user is superadmin
 - `getUserSalonId()` - Gets user's salon_id from profile
+
+### `_shared/rate-limit.ts`
+Shared edge rate-limit middleware and helpers:
+- `checkRateLimit()` - Endpoint-aware rate limiting with policy lookup
+- `createRateLimitErrorResponse()` - Standardized `429` response with headers
 
 ## Notes
 

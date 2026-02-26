@@ -121,6 +121,7 @@ export async function createBookingWithCustomer(
 | `notification-service.ts` | Unified notifications | `sendNotification`, `createReminder` |
 | `in-app-notification-service.ts` | In-app notifications | `createInAppNotification`, `markAsRead` |
 | `customer-history-service.ts` | Customer history | `getCustomerHistory`, `exportToCSV` |
+| `rate-limit-service.ts` | Rate limit orchestration | `checkRateLimit`, `incrementRateLimit`, `resetRateLimit` |
 
 ### Best Practices
 

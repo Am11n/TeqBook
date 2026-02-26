@@ -112,6 +112,38 @@ describe("Rate Limit Service (Server-Side)", () => {
         })
       );
     });
+
+    it("should fail-closed for sensitive endpoints when edge check fails", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+      } as Response);
+
+      const result = await checkRateLimit("user-1", "booking-notifications", {
+        identifierType: "user_id",
+      });
+
+      expect(result.allowed).toBe(false);
+      expect(result.blocked).toBe(true);
+      expect(result.source).toBe("fail_closed");
+      expect(result.failurePolicy).toBe("fail_closed");
+      expect(result.reason).toContain("rate_limit_edge_error");
+    });
+
+    it("should fail-open for low-risk endpoints when edge check fails", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+      } as Response);
+
+      const result = await checkRateLimit("203.0.113.1", "public-booking-data", {
+        identifierType: "ip",
+      });
+
+      expect(result.allowed).toBe(true);
+      expect(result.source).toBe("client_fallback");
+      expect(result.degraded).toBe(true);
+    });
   });
 
   describe("incrementRateLimit", () => {
@@ -187,6 +219,20 @@ describe("Rate Limit Service (Server-Side)", () => {
       const callArgs = vi.mocked(fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
       expect(body.action).toBe("reset");
+    });
+
+    it("should return success=false on fail-closed reset fallback", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+      } as Response);
+
+      const result = await resetRateLimit("user-1", "booking-notifications", {
+        identifierType: "user_id",
+      });
+      expect(result.success).toBe(false);
+      expect(result.failurePolicy).toBe("fail_closed");
+      expect(result.degraded).toBe(true);
     });
   });
 

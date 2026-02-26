@@ -7,12 +7,14 @@ import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import type { Booking } from "@/lib/types";
 import { UUID_REGEX, type SendNotificationsBody } from "../_shared/types";
 import { prepareBookingForNotification, notifySalonStaff } from "../_shared/notify-staff";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
+  const rateLimitPolicy = getRateLimitPolicy("booking-notifications");
   
   try {
     const body = await request.json();
@@ -184,7 +186,11 @@ export async function POST(request: NextRequest) {
     const rateLimitResult = await checkRateLimit(
       userId,
       "booking-notifications",
-      { identifierType: "user_id", endpointType: "booking-notifications" }
+      {
+        identifierType: "user_id",
+        endpointType: "booking-notifications",
+        failurePolicy: rateLimitPolicy.failurePolicy,
+      }
     );
 
     if (!rateLimitResult.allowed) {
@@ -201,11 +207,14 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
-            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Limit": rateLimitPolicy.maxAttempts.toString(),
             "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "X-RateLimit-Reset": rateLimitResult.resetTime
+              ? Math.ceil(rateLimitResult.resetTime / 1000).toString()
+              : Math.ceil((Date.now() + rateLimitPolicy.windowMs) / 1000).toString(),
             "Retry-After": rateLimitResult.resetTime
               ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-              : "60",
+              : Math.ceil(rateLimitPolicy.windowMs / 1000).toString(),
           },
         }
       );
@@ -215,7 +224,11 @@ export async function POST(request: NextRequest) {
     await incrementRateLimit(
       userId,
       "booking-notifications",
-      { identifierType: "user_id", endpointType: "booking-notifications" }
+      {
+        identifierType: "user_id",
+        endpointType: "booking-notifications",
+        failurePolicy: rateLimitPolicy.failurePolicy,
+      }
     );
 
     // Get salon info for language and timezone

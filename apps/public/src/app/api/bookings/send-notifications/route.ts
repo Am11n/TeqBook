@@ -4,6 +4,8 @@ import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { createClientForRouteHandler } from "@/lib/supabase/server";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 type BookingNotificationPayload = {
   bookingId: string;
@@ -25,6 +27,7 @@ type BookingNotificationPayload = {
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
+  const rateLimitPolicy = getRateLimitPolicy("public-booking-notifications");
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
@@ -46,6 +49,50 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimitIdentifier = customerEmail || ipIdentifier;
+    const rateLimitIdentifierType = customerEmail ? "email" : "ip";
+
+    const rateLimitResult = await checkRateLimit(
+      rateLimitIdentifier,
+      "public-booking-notifications",
+      {
+        identifierType: rateLimitIdentifierType,
+        failurePolicy: rateLimitPolicy.failurePolicy,
+      }
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitPolicy.maxAttempts.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "X-RateLimit-Reset": rateLimitResult.resetTime
+              ? Math.ceil(rateLimitResult.resetTime / 1000).toString()
+              : Math.ceil((Date.now() + rateLimitPolicy.windowMs) / 1000).toString(),
+            "Retry-After": rateLimitResult.resetTime
+              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              : Math.ceil(rateLimitPolicy.windowMs / 1000).toString(),
+          },
+        }
+      );
+    }
+
+    await incrementRateLimit(
+      rateLimitIdentifier,
+      "public-booking-notifications",
+      {
+        identifierType: rateLimitIdentifierType,
+        failurePolicy: rateLimitPolicy.failurePolicy,
+      }
+    );
 
     // Fetch salon to get language/timezone and name
     const salonResult = await getSalonById(salonId);
