@@ -56,3 +56,74 @@ Før ferdigstilling av en ny tabellside:
 - Sammenlign visuelt med `employees`-siden.
 - Verifiser at wrapper, toolbar og spacing matcher standardmønsteret.
 - Behold samme struktur med mindre produktkrav eksplisitt sier noe annet.
+
+## 6) Responsive lister (mobilkort + desktop-tabell)
+
+Bruk denne komposisjonen for entitetslister som skal funke godt på mobil:
+
+- **Mobil**: card/list-visning med `md:hidden`
+- **Desktop**: tabellvisning med `hidden md:block` + `DataTable`
+- Begge visninger skal bruke samme underliggende data og handlinger
+
+Typiske steder:
+
+- `apps/dashboard/src/app/employees/page.tsx`
+- `apps/dashboard/src/app/services/page.tsx`
+- `apps/dashboard/src/app/bookings/page.tsx`
+
+## 7) Liste med dialog-flyt (create + detail/edit)
+
+Standard flyt for CRUD-lister:
+
+- Én listeside (ListPage eller PageLayout)
+- Create-dialog som sibling til listen
+- Detail/Edit-dialog styrt av side-state (ikke inne i tabellceller)
+- Etter create/update/delete: reload av liste-data
+
+Typiske steder:
+
+- `apps/dashboard/src/app/customers/page.tsx`
+- `apps/dashboard/src/app/employees/page.tsx`
+- `apps/dashboard/src/app/services/page.tsx`
+
+## 8) Tabbed section-layout
+
+For seksjoner med undersider (settings/reports/bookings):
+
+- `DashboardShell` + `TabbedPage`
+- Tabs definert i `layout.tsx` (id/label/href/visibility)
+- Innhold renderes i tab-content, ikke med egne nested page-shells
+
+Typiske steder:
+
+- `apps/dashboard/src/app/settings/layout.tsx`
+- `apps/dashboard/src/app/reports/layout.tsx`
+- `apps/dashboard/src/app/bookings/layout.tsx`
+
+## 9) Settings-form komposisjon
+
+Når siden er en innstillingsside med lagre-flyt:
+
+- `SettingsGrid` (main + optional aside/footer)
+- `SettingsSection` for delseksjoner
+- `StickySaveBar` for save/discard/retry
+- Dirty-state skal knyttes til tab-guard når siden ligger i settings-tabs
+
+Typiske steder:
+
+- `apps/dashboard/src/app/settings/general/page.tsx`
+- `apps/dashboard/src/app/settings/notifications/page.tsx`
+- `apps/dashboard/src/app/settings/security/page.tsx`
+
+## 10) Filter + summary + hovedinnhold (+ valgfri sidebar)
+
+For operasjonssider som bookings:
+
+- Filterstrip øverst
+- Valgfri summary-blokk under filter
+- Hovedinnhold i standard content-card
+- Valgfri høyre sidebar på større skjerm
+
+Typisk sted:
+
+- `apps/dashboard/src/app/bookings/page.tsx`
