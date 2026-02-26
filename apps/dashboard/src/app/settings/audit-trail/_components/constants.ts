@@ -39,10 +39,10 @@ export const actionBadgeVariants: Record<string, "default" | "secondary" | "dest
   login_failed: "destructive",
 };
 
-export function getMetadataSummary(metadata: Record<string, unknown>): string {
+export function getMetadataSummary(metadata: Record<string, unknown>, fallbackLabel = "View details"): string {
   const summaryFields = ["customer_name", "service_name", "employee_name", "product_name", "salon_name", "profile_name", "status"];
   for (const field of summaryFields) {
     if (metadata[field]) return String(metadata[field]);
   }
-  return "View details";
+  return fallbackLabel;
 }

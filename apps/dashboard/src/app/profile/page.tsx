@@ -8,9 +8,15 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useProfile } from "@/lib/hooks/profile/useProfile";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { WorkspaceCard } from "@/components/profile/WorkspaceCard";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
 
 export default function ProfilePage() {
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = translations[appLocale].settings;
   const {
     loading,
     saving,
@@ -31,12 +37,11 @@ export default function ProfilePage() {
     handleSave,
     handleCancel,
     setError,
-    setSuccess,
   } = useProfile();
 
   if (loading) {
     return (
-      <PageLayout title="My Profile" description="Update your personal information" showCard={false}>
+      <PageLayout title={t.profileTitle ?? "My Profile"} description={t.profileDescription ?? "Update your personal information"} showCard={false}>
         <div className="max-w-4xl space-y-8">
           <div className="h-64 animate-pulse rounded-xl bg-muted" />
           <div className="h-48 animate-pulse rounded-xl bg-muted" />
@@ -48,17 +53,17 @@ export default function ProfilePage() {
   return (
     <ErrorBoundary>
       <PageLayout
-        title="My Profile"
-        description="Update your personal information"
+        title={t.profileTitle ?? "My Profile"}
+        description={t.profileDescription ?? "Update your personal information"}
         actions={
           <div className="flex items-center gap-2">
             {isDirty && (
               <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
-                Cancel
+                {t.profileCancel ?? "Cancel"}
               </Button>
             )}
             <Button size="sm" onClick={handleSave} disabled={!isDirty || saving}>
-              {saving ? "Saving..." : "Save changes"}
+              {saving ? t.profileSaving ?? "Saving..." : t.profileSaveChanges ?? "Save changes"}
             </Button>
           </div>
         }

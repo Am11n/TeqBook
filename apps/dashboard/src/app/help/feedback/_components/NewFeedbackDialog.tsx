@@ -18,6 +18,9 @@ import {
 import { supabase } from "@/lib/supabase-client";
 import { Paperclip, Loader2 } from "lucide-react";
 import { FEEDBACK_TYPES, captureMetadata, type FeedbackEntry } from "./types";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
 
 interface NewFeedbackDialogProps {
   open: boolean;
@@ -36,6 +39,9 @@ export function NewFeedbackDialog({
   defaultType,
   onCreated,
 }: NewFeedbackDialogProps) {
+  const { locale: appRawLocale } = useLocale();
+  const appLocale = normalizeLocale(appRawLocale);
+  const t = translations[appLocale].dashboard;
   const [type, setType] = useState(defaultType);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -80,7 +86,7 @@ export function NewFeedbackDialog({
           .from("feedback-attachments")
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (uploadErr) {
-          setError(`Failed to upload ${file.name}: ${uploadErr.message}`);
+          setError(`${t.feedbackUploadFailed ?? "Failed to upload"} ${file.name}: ${uploadErr.message}`);
           setSubmitting(false);
           return;
         }
@@ -99,7 +105,7 @@ export function NewFeedbackDialog({
 
       if (rpcError) {
         if (rpcError.message.includes("Rate limit")) {
-          setError("You've reached the submission limit. Please try again later.");
+          setError(t.feedbackRateLimitError ?? "You've reached the submission limit. Please try again later.");
         } else {
           setError(rpcError.message);
         }
@@ -120,7 +126,7 @@ export function NewFeedbackDialog({
 
       onCreated(returnedEntry);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t.feedbackUnknownError ?? "Unknown error");
     } finally {
       setSubmitting(false);
     }
@@ -130,19 +136,19 @@ export function NewFeedbackDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Submit feedback</DialogTitle>
+          <DialogTitle>{t.feedbackDialogTitle ?? "Submit feedback"}</DialogTitle>
           <DialogDescription>
-            Help us improve by sharing your thoughts, reporting bugs, or requesting features.
+            {t.feedbackDialogDescription ?? "Help us improve by sharing your thoughts, reporting bugs, or requesting features."}
           </DialogDescription>
         </DialogHeader>
 
         {dupeEntry && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
             <p className="text-sm font-medium text-amber-800 mb-1">
-              We&apos;re already tracking this
+              {t.feedbackDupeTitle ?? "We're already tracking this"}
             </p>
             <p className="text-xs text-amber-700 mb-2">
-              A similar feedback entry was found: &quot;{dupeEntry.title}&quot;
+              {t.feedbackDupeFound ?? "A similar feedback entry was found:"} &quot;{dupeEntry.title}&quot;
             </p>
             <div className="flex gap-2">
               <Button
@@ -154,7 +160,7 @@ export function NewFeedbackDialog({
                   onCreated(dupeEntry);
                 }}
               >
-                View existing
+                {t.feedbackViewExisting ?? "View existing"}
               </Button>
               <Button
                 size="sm"
@@ -162,7 +168,7 @@ export function NewFeedbackDialog({
                 className="text-xs"
                 onClick={() => setDupeEntry(null)}
               >
-                Dismiss
+                {t.feedbackDismiss ?? "Dismiss"}
               </Button>
             </div>
           </div>
@@ -174,21 +180,39 @@ export function NewFeedbackDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="feedback-type">Type</Label>
+            <Label htmlFor="feedback-type">{t.feedbackType ?? "Type"}</Label>
             <DialogSelect
               value={type}
               onChange={setType}
-              options={FEEDBACK_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              options={FEEDBACK_TYPES.map((entry) => ({
+                value: entry.value,
+                label:
+                  entry.value === "bug_report"
+                    ? appLocale === "nb"
+                      ? "Rapporter en feil"
+                      : "Report a bug"
+                    : entry.value === "feature_request"
+                      ? appLocale === "nb"
+                        ? "Be om en funksjon"
+                        : "Request a feature"
+                      : entry.value === "improvement"
+                        ? appLocale === "nb"
+                          ? "Foresla forbedring"
+                          : "Suggest improvement"
+                        : appLocale === "nb"
+                          ? "Annet"
+                          : "Other",
+              }))}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="feedback-title">Title</Label>
+            <Label htmlFor="feedback-title">{t.feedbackTitle ?? "Title"}</Label>
             <Input
               id="feedback-title"
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 200))}
-              placeholder="Brief summary"
+              placeholder={t.feedbackTitlePlaceholder ?? "Brief summary"}
               required
               maxLength={200}
             />
@@ -197,7 +221,7 @@ export function NewFeedbackDialog({
 
           <div className="space-y-2">
             <Label htmlFor="feedback-description">
-              Description{" "}
+              {(t.feedbackDescriptionLabel ?? "Description")}{" "}
               {type === "bug_report" && (
                 <span className="text-red-500 font-normal">*</span>
               )}
@@ -208,8 +232,8 @@ export function NewFeedbackDialog({
               onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
               placeholder={
                 type === "bug_report"
-                  ? "What happened? What did you expect? Steps to reproduce..."
-                  : "Describe your idea or suggestion..."
+                  ? t.feedbackBugDescriptionPlaceholder ?? "What happened? What did you expect? Steps to reproduce..."
+                  : t.feedbackDescriptionPlaceholder ?? "Describe your idea or suggestion..."
               }
               rows={4}
               required={type === "bug_report"}
@@ -223,9 +247,9 @@ export function NewFeedbackDialog({
 
           <div className="space-y-2">
             <Label htmlFor="feedback-files">
-              Screenshots{" "}
+              {t.feedbackScreenshots ?? "Screenshots"}{" "}
               <span className="text-muted-foreground font-normal">
-                (optional, max 3 images, 5MB each)
+                {t.feedbackScreenshotsHint ?? "(optional, max 3 images, 5MB each)"}
               </span>
             </Label>
             <Input
@@ -255,16 +279,16 @@ export function NewFeedbackDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancel
+              {t.feedbackCancel ?? "Cancel"}
             </Button>
             <Button type="submit" disabled={submitting || !title.trim()}>
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  Submitting...
+                  {t.feedbackSubmitting ?? "Submitting..."}
                 </>
               ) : (
-                "Submit"
+                t.feedbackSubmit ?? "Submit"
               )}
             </Button>
           </DialogFooter>

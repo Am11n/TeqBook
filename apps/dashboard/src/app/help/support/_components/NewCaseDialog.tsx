@@ -18,6 +18,9 @@ import {
 import { supabase } from "@/lib/supabase-client";
 import { Paperclip, Loader2 } from "lucide-react";
 import { CATEGORIES } from "./types";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
 
 interface NewCaseDialogProps {
   open: boolean;
@@ -36,6 +39,9 @@ export function NewCaseDialog({
   salonPlan,
   onCreated,
 }: NewCaseDialogProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = translations[appLocale].dashboard;
   const [category, setCategory] = useState("general");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -75,7 +81,7 @@ export function NewCaseDialog({
           .from("support-attachments")
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (uploadErr) {
-          setError(`Failed to upload ${file.name}: ${uploadErr.message}`);
+          setError(`${t.supportUploadFailed ?? "Failed to upload"} ${file.name}: ${uploadErr.message}`);
           setSubmitting(false);
           return;
         }
@@ -91,7 +97,7 @@ export function NewCaseDialog({
 
       if (rpcError) {
         if (rpcError.message.includes("Rate limit")) {
-          setError("You've reached the limit of 5 support cases per hour. Please try again later.");
+          setError(t.supportRateLimitError ?? "You've reached the limit of 5 support cases per hour. Please try again later.");
         } else {
           setError(rpcError.message);
         }
@@ -101,7 +107,7 @@ export function NewCaseDialog({
 
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t.supportUnknownError ?? "Unknown error");
     } finally {
       setSubmitting(false);
     }
@@ -111,14 +117,14 @@ export function NewCaseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New support case</DialogTitle>
+          <DialogTitle>{t.supportDialogTitle ?? "New support case"}</DialogTitle>
           <DialogDescription>
-            Describe your issue and we'll get back to you as soon as possible.
+            {t.supportDialogDescription ?? "Describe your issue and we'll get back to you as soon as possible."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Salon:</span>
+          <span className="text-muted-foreground">{t.supportSalonLabel ?? "Salon:"}</span>
           <span className="font-medium">{salonName}</span>
           <Badge variant="outline" className="ml-auto text-xs capitalize">
             {salonPlan}
@@ -131,21 +137,47 @@ export function NewCaseDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="case-category">Category</Label>
+            <Label htmlFor="case-category">{t.supportCategory ?? "Category"}</Label>
             <DialogSelect
               value={category}
               onChange={setCategory}
-              options={CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+              options={CATEGORIES.map((c) => ({
+                value: c.value,
+                label:
+                  c.value === "general"
+                    ? appLocale === "nb"
+                      ? "Generelt"
+                      : "General"
+                    : c.value === "booking_issue"
+                      ? appLocale === "nb"
+                        ? "Bookingproblem"
+                        : "Booking issue"
+                      : c.value === "payment_issue"
+                        ? appLocale === "nb"
+                          ? "Betalingsproblem"
+                          : "Payment issue"
+                        : c.value === "account_issue"
+                          ? appLocale === "nb"
+                            ? "Kontoproblem"
+                            : "Account issue"
+                          : c.value === "feature_request"
+                            ? appLocale === "nb"
+                              ? "Funksjonsønske"
+                              : "Feature request"
+                            : appLocale === "nb"
+                              ? "Annet"
+                              : "Other",
+              }))}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="case-title">Subject</Label>
+            <Label htmlFor="case-title">{t.supportSubject ?? "Subject"}</Label>
             <Input
               id="case-title"
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 200))}
-              placeholder="Brief summary of the issue"
+              placeholder={t.supportSubjectPlaceholder ?? "Brief summary of the issue"}
               required
               maxLength={200}
             />
@@ -153,12 +185,12 @@ export function NewCaseDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="case-description">Description</Label>
+            <Label htmlFor="case-description">{t.supportDescriptionLabel ?? "Description"}</Label>
             <textarea
               id="case-description"
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
-              placeholder="Describe the issue in detail..."
+              placeholder={t.supportDescriptionPlaceholder ?? "Describe the issue in detail..."}
               rows={4}
               required
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition placeholder:text-muted-foreground focus-visible:ring-2 resize-none"
@@ -171,7 +203,10 @@ export function NewCaseDialog({
 
           <div className="space-y-2">
             <Label htmlFor="case-files">
-              Attachments <span className="text-muted-foreground font-normal">(optional, max 3 files, 5MB each)</span>
+              {t.supportAttachments ?? "Attachments"}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t.supportAttachmentsHint ?? "(optional, max 3 files, 5MB each)"}
+              </span>
             </Label>
             <Input
               id="case-files"
@@ -195,16 +230,16 @@ export function NewCaseDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-              Cancel
+              {t.supportCancel ?? "Cancel"}
             </Button>
             <Button type="submit" disabled={submitting || !title.trim()}>
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  Submitting...
+                  {t.supportSubmitting ?? "Submitting..."}
                 </>
               ) : (
-                "Submit case"
+                t.supportSubmitCase ?? "Submit case"
               )}
             </Button>
           </DialogFooter>

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, createContext, useContext, useEffect } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { TabbedPage, type TabDef, useDirtyState } from "@teqbook/page";
+import { TabbedPage, type TabDef } from "@teqbook/page";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -60,6 +60,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { id: "notifications", label: t.notificationsTab, href: "/settings/notifications" },
     { id: "billing", label: t.billingTab, href: "/settings/billing" },
     { id: "security", label: t.securityTab ?? "Security", href: "/settings/security" },
+    { id: "audit-trail", label: t.auditTrailTab ?? "Audit Trail", href: "/settings/audit-trail" },
     { id: "branding", label: t.brandingTab, href: "/settings/branding", visible: featuresMounted && hasFeature("BRANDING") },
   ];
 
