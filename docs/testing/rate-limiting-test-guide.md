@@ -150,11 +150,11 @@ curl -X POST \
 
 ---
 
-## 3. Test i Browser (Login Page)
+## 3. Test i Browser (Public Login)
 
 ### Test Scenario 1: Normal Login Flow
 
-1. Gå til `/login` i browseren
+1. Gå til `/login` i **public app**
 2. Prøv å logge inn med feil passord 5 ganger
 3. **Forventet:** Etter 5. feil forsøk skal du se:
    - "Too many failed login attempts. Your account has been temporarily blocked."
@@ -164,7 +164,7 @@ curl -X POST \
 ### Test Scenario 2: Rate Limit Reset
 
 1. Vent til rate limit perioden er utløpt (eller reset manuelt i database)
-2. Prøv å logge inn igjen
+2. Prøv å logge inn igjen i public app
 3. **Forventet:** Du kan logge inn igjen
 
 ### Test Scenario 3: Successful Login Resets Rate Limit
@@ -178,7 +178,7 @@ curl -X POST \
 ### Test Scenario 4: Browser Console Inspection
 
 1. Åpne browser console (F12)
-2. Gå til `/login`
+2. Gå til `/login` i public app
 3. Prøv å logge inn med feil passord
 4. **Sjekk console:**
    - Skal se rate limit check kall til Edge Function
@@ -246,7 +246,7 @@ WHERE identifier = 'test@example.com'
 
 ### Opprett E2E test (valgfritt)
 
-Opprett `tests/e2e/rate-limiting.spec.ts` eller tilsvarende under `apps/dashboard/tests/`:
+Opprett `tests/e2e/rate-limiting.spec.ts` (repo root) eller tilsvarende under `apps/public/tests/`:
 
 ```typescript
 import { test, expect } from "@playwright/test";

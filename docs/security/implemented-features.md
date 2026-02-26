@@ -15,7 +15,7 @@ Dette dokumentet beskriver de sikkerhetsfunksjonene som er implementert i TeqBoo
 - Server wrapper i `packages/shared/src/services/rate-limit/server.ts`
 - Edge håndheving i `supabase/supabase/functions/rate-limit-check/index.ts`
 - Edge shared middleware i `supabase/supabase/functions/_shared/rate-limit.ts`
-- Integrert i login + booking flyt + utvalgte API-ruter i `apps/*/src/app/api/*`
+- Integrert i public login + public booking flyt + utvalgte API-ruter i `apps/*/src/app/api/*`
 
 **Funksjonalitet**:
 - Sporer forsøk per `identifier` + `identifier_type` + `endpoint_type`
@@ -181,7 +181,7 @@ Følgende events logges automatisk:
 
 ### Test Rate Limiting
 
-1. Prøv å logge inn med feil passord 5 ganger
+1. Prøv å logge inn i public app (`apps/public`) med feil passord 5 ganger
 2. Du skal se advarsel om gjenværende forsøk
 3. Etter 5 forsøk skal du bli blokkert i 30 minutter
 

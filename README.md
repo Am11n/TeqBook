@@ -117,13 +117,18 @@ For detailed architecture documentation, see [`docs/architecture/overview.md`](d
 
 - **Authentication** – Email/password with 2FA (TOTP)
 - **Role-Based Access Control** – Owner, manager, staff roles with database-level enforcement
-- **Rate Limiting** – Server-side and client-side rate limiting
+- **Rate Limiting** – Server-side and client-side rate limiting (policy-driven)
 - **Security Headers** – HSTS, CSP, X-Frame-Options, etc.
 - **RLS Hardening** – WITH CHECK clauses and salon_id immutability triggers
-- **API Authentication** – All API routes require authentication
-- **Audit Logging** – Security audit log and salon activity trail
+- **API Authentication** – Protected API routes require authentication; public booking/contact routes are rate-limited
+- **Audit Logging** – Structured security event logging is implemented; full audit trail coverage is still being expanded
 
-For detailed security documentation, see [`docs/security/security-overview.md`](docs/security/security-overview.md).
+For detailed, evidence-based security documentation, see:
+- [`docs/security/security-overview.md`](docs/security/security-overview.md)
+- [`docs/security/implemented-features.md`](docs/security/implemented-features.md)
+- [`docs/security/rate-limiting-operations.md`](docs/security/rate-limiting-operations.md)
+- [`packages/shared-core/src/rate-limit/policy.ts`](packages/shared-core/src/rate-limit/policy.ts)
+- [`supabase/supabase/functions/rate-limit-check/index.ts`](supabase/supabase/functions/rate-limit-check/index.ts)
 
 ---
 
@@ -220,7 +225,7 @@ Each app (`public`, `dashboard`, `admin`) follows a **layered architecture**:
 - **`i18n/`** – Translation files (15 languages)
 
 Shared code lives in **packages**: `@teqbook/ui` (Button, Dialog, Input, etc.) and `@teqbook/shared` (Supabase client, format utilities).  
-For detailed code structure documentation, see [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md).
+For detailed code structure documentation, see [`docs/architecture/overview.md`](docs/architecture/overview.md).
 
 ---
 
@@ -233,6 +238,7 @@ Comprehensive documentation is available in [`docs/`](docs/):
 - **[Onboarding Guide](docs/onboarding.md)** – Developer onboarding guide
 - **[Architecture Overview](docs/architecture/overview.md)** – System architecture and design principles
 - **[Security Overview](docs/security/security-overview.md)** – Security architecture and best practices
+- **[Nordic Readiness](docs/nordic-readiness/README.md)** – GDPR, roles, DPA template, and operations runbooks
 - **[Phase 3 Security Hardening](docs/security/phase3-implementation-status.md)** – Recent security improvements
 - **[Coding Style](docs/standards/coding-style.md)** – Coding standards and best practices
 - **[Billing & Plans](docs/backend/billing-and-plans.md)** – SaaS plan and billing documentation
@@ -247,6 +253,7 @@ Comprehensive documentation is available in [`docs/`](docs/):
 - `docs/integrations/` – External integrations (Stripe, calendar sync)
 - `docs/deployment/` – Deployment guides
 - `docs/compliance/` – GDPR and compliance documentation
+- `docs/nordic-readiness/` – Nordic-focused GDPR and ops readiness pack
 
 See [`docs/README.md`](docs/README.md) for a complete overview.
 
@@ -272,10 +279,10 @@ For detailed deployment information, see [`docs/deployment/vercel.md`](docs/depl
 - ✅ Core booking functionality with atomic conflict prevention
 - ✅ Multi-tenant architecture with RLS hardening
 - ✅ SaaS plans and billing (Stripe integration)
-- ✅ Security features (2FA, rate limiting, API authentication, Phase 3 hardening)
+- ✅ Security features (2FA, policy-driven rate limiting, protected route/API auth, Phase 3 hardening)
 - ✅ Notifications system (Email, In-App, Push, Calendar Invites)
 - ✅ Calendar integrations (Google Calendar, Outlook)
-- ✅ Audit logging (Security audit log, salon activity trail)
+- ✅ Structured security logging (full audit trail coverage is ongoing)
 - ✅ Customer history and CLV tracking
 - ✅ Multi-language support (15 languages)
 - ✅ Role-based access control (database-level enforcement)

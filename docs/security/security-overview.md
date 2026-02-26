@@ -439,8 +439,8 @@ return { error: "An error occurred. Please try again." };
 ### Logging
 
 **Nåværende Implementasjon**:
-- `console.error()` for development
-- Ingen strukturert logging i produksjon
+- Strukturert logger-service i appene (`logInfo`, `logWarn`, `logError`, `logSecurity`)
+- Sentry-integrasjon for client/server/edge er tilgjengelig
 
 **Anbefalinger** (se [Forbedringer](#identifiserte-forbedringer)):
 - Implementer strukturert logging (Winston, Pino)
@@ -514,8 +514,9 @@ return { error: "An error occurred. Please try again." };
    - **Status**: ✅ Implementert
 
 3. **Rate Limiting**
-   - Client-side rate limiting for login-endepunkter
-   - Maksimalt 5 forsøk per 15 minutter, 30 minutter blokkering
+   - Policy-styrt server + client rate limiting
+   - Login-policy: maks 5 forsøk per 15 minutter, 30 minutter blokkering
+   - Login flow med rate-limit er i public-appen
    - **Status**: ✅ Implementert (se [Implemented Features](./implemented-features.md))
 
 4. **Strukturert Logging**

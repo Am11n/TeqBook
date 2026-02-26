@@ -8,7 +8,8 @@ Welcome to the TeqBook API documentation. This guide covers both external APIs (
 
 ### Authentication
 
-All API endpoints require authentication via Supabase JWT token:
+Protected API endpoints require authentication via Supabase JWT token.  
+Public booking/contact endpoints can be unauthenticated, but are rate-limited.
 
 ```typescript
 const response = await fetch("/api/notifications", {
@@ -28,12 +29,12 @@ const response = await fetch("/api/notifications", {
 
 ## Documentation Structure
 
-### [OpenAPI Specification](./openapi.yaml)
-Machine-readable API specification in OpenAPI 3.1 format.
-- All Edge Function endpoints
-- All Next.js API routes
-- Request/response schemas
-- Authentication requirements
+### OpenAPI Specification (planned)
+Machine-readable OpenAPI spec is planned and not yet maintained as a repo source-of-truth file.
+Use these references instead:
+- [Internal APIs](./internal-apis.md)
+- [Code Examples](./examples.md)
+- `apps/*/src/app/api/*` and `supabase/supabase/functions/*`
 
 ### [Internal APIs](./internal-apis.md)
 TypeScript API documentation for internal use.
@@ -86,17 +87,18 @@ Booking notification endpoints.
 
 ## Rate Limiting
 
-All endpoints are rate limited. Check response headers:
+Selected sensitive/public endpoints are rate-limited with policy-driven behavior.
+Check response headers:
 
 ```
 X-RateLimit-Remaining: 99
 X-RateLimit-Reset: 2026-01-22T12:00:00Z
 ```
 
-Rate limits by endpoint type:
-- **Billing**: 10 requests/minute
-- **Notifications**: 60 requests/minute
-- **General**: 100 requests/minute
+Rate limits vary per endpoint type and are source-of-truth in:
+- `packages/shared-core/src/rate-limit/policy.ts`
+- `supabase/supabase/functions/_shared/rate-limit-config.ts`
+- `docs/security/rate-limiting-operations.md`
 
 ## Error Handling
 
@@ -140,5 +142,5 @@ npm run test tests/docs
 
 For questions about the API:
 1. Check the [examples](./examples.md) for common use cases
-2. Review the [OpenAPI spec](./openapi.yaml) for detailed schemas
+2. Review [Internal APIs](./internal-apis.md) and route/function source files for schemas
 3. Contact support for additional help
