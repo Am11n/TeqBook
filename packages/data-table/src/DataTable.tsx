@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import {
   cn, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Checkbox, Button,
@@ -67,16 +68,42 @@ export function DataTable<T>({
   getRowClassName, mobileRow,
 }: DataTableProps<T>) {
   const effectivePageSize = Math.min(pageSize, 10);
+  const hasExternalPagination = typeof onPageChange === "function";
+  const [internalPage, setInternalPage] = useState(0);
+  const currentPage = hasExternalPagination ? page : internalPage;
   const shouldUseServerSearch =
-    serverSearch || Boolean(onPageChange && typeof totalCount === "number" && totalCount > data.length);
+    serverSearch || Boolean(hasExternalPagination && typeof totalCount === "number" && totalCount > data.length);
 
   const dt = useDataTable({
-    columns, data, totalCount, rowKey, page, pageSize: effectivePageSize,
+    columns, data, totalCount, rowKey, page: currentPage, pageSize: effectivePageSize,
     controlledSortColumn, controlledSortDirection,
     onSortChange, searchQuery, onSearchChange,
     serverSearch: shouldUseServerSearch,
     onBulkSelectionChange, storageKey,
   });
+
+  const handlePageChange = useCallback(
+    (nextPage: number) => {
+      if (hasExternalPagination) {
+        onPageChange?.(nextPage);
+        return;
+      }
+      setInternalPage(nextPage);
+    },
+    [hasExternalPagination, onPageChange],
+  );
+
+  useEffect(() => {
+    if (hasExternalPagination) return;
+    setInternalPage(0);
+  }, [hasExternalPagination, searchQuery]);
+
+  useEffect(() => {
+    if (hasExternalPagination) return;
+    if (internalPage > dt.totalPages - 1) {
+      setInternalPage(Math.max(0, dt.totalPages - 1));
+    }
+  }, [hasExternalPagination, internalPage, dt.totalPages]);
 
   const hasRowActions = !!(rowActions && rowActions.length > 0) || !!getRowActions;
 
@@ -259,15 +286,13 @@ export function DataTable<T>({
         </div>
       </div>
 
-      {onPageChange && (
-        <DataTablePagination
-          page={page}
-          pageSize={effectivePageSize}
-          total={dt.total}
-          totalPages={dt.totalPages}
-          onPageChange={onPageChange}
-        />
-      )}
+      <DataTablePagination
+        page={currentPage}
+        pageSize={effectivePageSize}
+        total={dt.total}
+        totalPages={dt.totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }

@@ -159,10 +159,8 @@ export default function CustomerHistoryPage() {
                       <div className="text-sm text-muted-foreground">
                         {t.customerHistoryShowing ?? "Showing"} {page * pageSize + 1}-{Math.min((page + 1) * pageSize, historyData.total)} {translations[appLocale].settings.auditTrailOf ?? "of"} {historyData.total}
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>{t.customerHistoryPrevious ?? "Previous"}</Button>
-                        <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={(page + 1) * pageSize >= historyData.total}>{t.customerHistoryNext ?? "Next"}</Button>
-                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>{t.customerHistoryPrevious ?? "Previous"}</Button>
+                      <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={(page + 1) * pageSize >= historyData.total}>{t.customerHistoryNext ?? "Next"}</Button>
                     </div>
                   )}
                 </>

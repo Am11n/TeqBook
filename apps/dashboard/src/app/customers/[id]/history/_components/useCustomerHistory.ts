@@ -31,7 +31,7 @@ export function useCustomerHistory() {
 
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
-  const pageSize = 20;
+  const pageSize = 10;
 
   const loadHistory = useCallback(async () => {
     if (!salon?.id || !customerId) return;
