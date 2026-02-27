@@ -61,6 +61,7 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const handleSearchChange = useCallback((value: string) => {
@@ -73,12 +74,17 @@ export default function AdminUsersPage() {
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [recentActivity, setRecentActivity] = useState<Array<{ id: string; action: string; created_at: string }>>([]);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearch(search), 250);
+    return () => window.clearTimeout(timeout);
+  }, [search]);
+
   const loadUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const filters: Record<string, string> = {};
-      if (search) filters.search = search;
+      if (debouncedSearch) filters.search = debouncedSearch;
       const { data, error: rpcError } = await supabase.rpc("get_users_paginated", {
         filters, sort_col: sortBy, sort_dir: sortDir, lim: PAGE_SIZE, off: page * PAGE_SIZE,
       });
@@ -102,7 +108,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, sortBy, sortDir]);
+  }, [page, debouncedSearch, sortBy, sortDir]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -144,7 +150,8 @@ export default function AdminUsersPage() {
 
   if (contextLoading || !isSuperAdmin) return null;
 
-  const pageState: PageState = loading
+  const isInitialLoading = loading && users.length === 0;
+  const pageState: PageState = isInitialLoading
     ? { status: "loading" }
     : error
       ? { status: "error", message: error, retry: loadUsers }
