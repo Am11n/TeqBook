@@ -60,7 +60,7 @@ export function DataTable<T>({
   sortColumn: controlledSortColumn,
   sortDirection: controlledSortDirection,
   onSortChange, searchQuery = "", onSearchChange,
-  searchPlaceholder, rowActions, getRowActions, onRowClick,
+  searchPlaceholder, serverSearch = false, rowActions, getRowActions, onRowClick,
   bulkSelectable = false, onBulkSelectionChange, bulkActions,
   storageKey, loading = false, emptyMessage = "No data found",
   headerContent, toolbarEndContent, density = "comfortable", className,
@@ -70,6 +70,7 @@ export function DataTable<T>({
     columns, data, totalCount, rowKey, pageSize,
     controlledSortColumn, controlledSortDirection,
     onSortChange, searchQuery, onSearchChange,
+    serverSearch,
     onBulkSelectionChange, storageKey,
   });
 

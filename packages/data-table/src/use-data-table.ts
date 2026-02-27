@@ -19,6 +19,7 @@ interface UseDataTableOptions<T> {
   onSortChange?: (column: string, direction: SortDirection) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  serverSearch?: boolean;
   onBulkSelectionChange?: (keys: string[]) => void;
   storageKey?: string;
 }
@@ -34,6 +35,7 @@ export function useDataTable<T>({
   onSortChange,
   searchQuery = "",
   onSearchChange,
+  serverSearch = false,
   onBulkSelectionChange,
   storageKey,
 }: UseDataTableOptions<T>) {
@@ -65,6 +67,7 @@ export function useDataTable<T>({
   );
 
   const filteredData = useMemo(() => {
+    if (serverSearch) return data;
     const query = searchQuery.trim().toLowerCase();
     if (!query) return data;
 
@@ -77,9 +80,9 @@ export function useDataTable<T>({
         return String(rawValue).toLowerCase().includes(query);
       }),
     );
-  }, [data, columns, searchQuery]);
+  }, [data, columns, searchQuery, serverSearch]);
 
-  const hasLocalSearch = searchQuery.trim().length > 0;
+  const hasLocalSearch = !serverSearch && searchQuery.trim().length > 0;
   const total = hasLocalSearch ? filteredData.length : (totalCount ?? data.length);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 

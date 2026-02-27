@@ -58,6 +58,7 @@ export type DataTableProps<T> = {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   searchPlaceholder?: string;
+  serverSearch?: boolean;
   rowActions?: RowAction<T>[];
   getRowActions?: (row: T) => RowAction<T>[];
   onRowClick?: (row: T) => void;

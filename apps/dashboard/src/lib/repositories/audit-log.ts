@@ -34,6 +34,8 @@ export type CreateAuditLogInput = {
 export type AuditLogQueryOptions = {
   action?: string;
   resource_type?: string;
+  search?: string;
+  searchActorUserIds?: string[];
   startDate?: string;
   endDate?: string;
   limit?: number;
@@ -105,6 +107,28 @@ export async function getAuditLogsForSalon(
 
     if (options.resource_type) {
       query = query.eq("resource_type", options.resource_type);
+    }
+
+    const trimmedSearch = options.search?.trim();
+    if (trimmedSearch) {
+      const normalizedSearch = trimmedSearch.replace(/[(),]/g, " ").trim();
+      if (!normalizedSearch) {
+        const { data, error, count } = await query.range(offset, offset + limit - 1);
+        if (error) return { data: null, error: error.message };
+        return { data: (data as AuditLog[]) || [], error: null, total: count ?? undefined };
+      }
+      const pattern = `%${normalizedSearch}%`;
+      const orClauses = [
+        `action.ilike.${pattern}`,
+        `resource_type.ilike.${pattern}`,
+        `resource_id.ilike.${pattern}`,
+      ];
+
+      if (options.searchActorUserIds && options.searchActorUserIds.length > 0) {
+        orClauses.push(`user_id.in.(${options.searchActorUserIds.join(",")})`);
+      }
+
+      query = query.or(orClauses.join(","));
     }
 
     if (options.startDate) {
