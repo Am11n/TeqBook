@@ -433,6 +433,16 @@ serve(async (req) => {
         break;
       }
 
+      case "invoice.upcoming": {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log("Invoice upcoming received - SMS overage hook is preview-only in this phase", {
+          invoice_id: invoice.id,
+          customer_id: invoice.customer,
+          subscription_id: invoice.subscription,
+        });
+        break;
+      }
+
       default: {
         console.log(`Unhandled event type: ${event.type}`);
       }

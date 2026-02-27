@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { logError } from "@/lib/services/logger";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { normalizeToE164 } from "./e164";
 import { resolveSmsPolicyForSalon } from "./policy";
 import { TwilioAdapter } from "./twilio-adapter";
@@ -66,6 +67,46 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
         blockedReason: `SMS type ${input.type} is not allowed for ${policy.plan}`,
       };
     }
+
+    const claimOrManualEndpoint = input.type === "waitlist_claim" ? "claim-sms" : input.type === "manual" ? "manual-sms" : null;
+    if (claimOrManualEndpoint) {
+      const rlIdentifier = `${input.salonId}:${input.type}:${normalizedPhone}`;
+      const rl = await checkRateLimit(rlIdentifier, claimOrManualEndpoint, {
+        endpointType: claimOrManualEndpoint,
+        identifierType: "user_id",
+      });
+      if (!rl.allowed) {
+        return {
+          allowed: false,
+          status: "blocked",
+          blockedReason: `Rate limit exceeded (${claimOrManualEndpoint})`,
+        };
+      }
+      await incrementRateLimit(rlIdentifier, claimOrManualEndpoint, {
+        endpointType: claimOrManualEndpoint,
+        identifierType: "user_id",
+      });
+    }
+
+    const globalRlIdentifier =
+      (input.metadata && typeof input.metadata.request_ip === "string"
+        ? String(input.metadata.request_ip)
+        : normalizedPhone) || "unknown";
+    const globalRl = await checkRateLimit(globalRlIdentifier, "sms-global-abuse", {
+      endpointType: "sms-global-abuse",
+      identifierType: "ip",
+    });
+    if (!globalRl.allowed) {
+      return {
+        allowed: false,
+        status: "blocked",
+        blockedReason: "Global SMS abuse guard triggered",
+      };
+    }
+    await incrementRateLimit(globalRlIdentifier, "sms-global-abuse", {
+      endpointType: "sms-global-abuse",
+      identifierType: "ip",
+    });
 
     const rpcMetadata = {
       ...(input.metadata || {}),
