@@ -1,0 +1,116 @@
+// =====================================================
+// SMS Status Webhook (Twilio)
+// =====================================================
+// Updates sms_log status fields from provider callbacks.
+// Idempotent on provider_message_id + status.
+// =====================================================
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "content-type, x-twilio-signature",
+};
+
+function mapTwilioStatus(status?: string): "sent" | "delivered" | "undelivered" | "failed" | null {
+  if (!status) return null;
+  if (status === "sent") return "sent";
+  if (status === "delivered") return "delivered";
+  if (status === "undelivered") return "undelivered";
+  if (status === "failed") return "failed";
+  return null;
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const twilioWebhookToken = Deno.env.get("TWILIO_STATUS_WEBHOOK_TOKEN") ?? "";
+    const providedToken = req.headers.get("x-twilio-signature") ?? "";
+    if (!twilioWebhookToken || providedToken !== twilioWebhookToken) {
+      return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+    }
+
+    const form = await req.formData();
+    const messageSid = (form.get("MessageSid") as string | null) ?? null;
+    const messageStatus = (form.get("MessageStatus") as string | null) ?? null;
+    const errorCode = (form.get("ErrorCode") as string | null) ?? null;
+
+    if (!messageSid || !messageStatus) {
+      return new Response("Bad Request", { status: 400, headers: corsHeaders });
+    }
+
+    const mappedStatus = mapTwilioStatus(messageStatus);
+    if (!mappedStatus) {
+      return new Response(
+        JSON.stringify({ success: true, ignored: true, reason: "status_not_mapped" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: existing } = await supabase
+      .from("sms_log")
+      .select("id, status, metadata")
+      .eq("provider_message_id", messageSid)
+      .maybeSingle();
+
+    if (!existing) {
+      return new Response(JSON.stringify({ success: true, ignored: true, reason: "message_not_found" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existing.status === mappedStatus) {
+      return new Response(JSON.stringify({ success: true, idempotent: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const mergedMetadata =
+      existing.metadata && typeof existing.metadata === "object"
+        ? {
+            ...(existing.metadata as Record<string, unknown>),
+            twilio_status: messageStatus,
+            twilio_error_code: errorCode,
+          }
+        : { twilio_status: messageStatus, twilio_error_code: errorCode };
+
+    const { error } = await supabase
+      .from("sms_log")
+      .update({
+        status: mappedStatus,
+        delivered_at: mappedStatus === "delivered" ? new Date().toISOString() : null,
+        error_message: errorCode ? `Twilio error ${errorCode}` : null,
+        metadata: mergedMetadata,
+      })
+      .eq("id", existing.id);
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
