@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // First, get booking to find salonId
     const { data: bookingRow, error: bookingFetchError } = await supabase
       .from("bookings")
-      .select("id, salon_id, status, customers(email)")
+      .select("id, salon_id, status, customers(email, phone)")
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -169,6 +169,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Resolve customer email (prefer booking, then body)
+    const customerPhoneFromRow = (() => {
+      const c = Array.isArray((bookingRow as { customers?: unknown }).customers)
+        ? (bookingRow as { customers?: { phone?: string | null }[] }).customers?.[0]
+        : (bookingRow as { customers?: { phone?: string | null } | null }).customers;
+      return (c as { phone?: string | null } | null)?.phone ?? null;
+    })();
+
     let customerEmail = booking.customer_email || bodyCustomerEmail || null;
 
     if (!customerEmail) {
@@ -251,6 +258,7 @@ export async function POST(request: NextRequest) {
       salonId,
       recipientUserId: null,
       recipientEmail: customerEmail,
+      recipientPhone: customerPhoneFromRow,
       language,
     }).catch((err) => {
       logWarn("Failed to send booking confirmation via unified notification service", {

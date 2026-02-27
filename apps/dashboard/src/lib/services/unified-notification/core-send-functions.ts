@@ -10,6 +10,7 @@ import type {
 } from "@/lib/types/notifications";
 import { shouldSendToChannel } from "./unified-notification-service";
 import { sendEmailNotification } from "./email-channel";
+import { sendSmsNotification } from "./sms-channel";
 
 /**
  * Send a notification to all specified channels
@@ -58,6 +59,10 @@ export async function sendNotification(
           return await sendEmailNotification(eventType, data, correlationId);
         }
 
+        if (channel === "sms") {
+          return await sendSmsNotification(eventType, data, correlationId);
+        }
+
         if (channel === "inApp") {
           return await sendInAppNotificationForEvent(eventType, data, correlationId);
         }
@@ -81,6 +86,8 @@ export async function sendNotification(
         if (channel === "email") {
           result.channels.email = { sent, id, error };
           if (icsAttached) result.icsAttached = true;
+        } else if (channel === "sms") {
+          result.channels.sms = { sent, id, error };
         } else if (channel === "inApp") {
           result.channels.inApp = { sent, id, error };
         }

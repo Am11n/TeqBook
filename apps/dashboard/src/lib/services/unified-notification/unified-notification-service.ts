@@ -36,7 +36,7 @@ function mapEventToEmailType(eventType: NotificationEventType): EmailNotificatio
  * Check if user has enabled notifications for this channel and type
  */
 export async function shouldSendToChannel(
-  channel: "email" | "inApp",
+  channel: "email" | "sms" | "inApp",
   eventType: NotificationEventType,
   userId: string | null | undefined,
   salonId: string | null | undefined
@@ -54,6 +54,14 @@ export async function shouldSendToChannel(
       userId,
       notificationType: "email",
       emailType,
+      salonId: salonId || null,
+    });
+  }
+
+  if (channel === "sms") {
+    return await shouldSendNotification({
+      userId,
+      notificationType: "sms",
       salonId: salonId || null,
     });
   }

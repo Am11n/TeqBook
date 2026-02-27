@@ -9,7 +9,7 @@ import type { Booking } from "./domain";
 // Notification Channel Types
 // =====================================================
 
-export type NotificationChannel = "email" | "inApp";
+export type NotificationChannel = "email" | "sms" | "inApp";
 
 export type NotificationEventType =
   | "booking_confirmed"
@@ -72,6 +72,7 @@ export interface BookingNotificationData {
   salonId: string;
   recipientUserId?: string | null; // User ID for preference checks and in-app notifications
   recipientEmail?: string | null; // Email address for email notifications
+  recipientPhone?: string | null; // Phone for SMS notifications (E.164 preferred)
   language?: string;
   cancellationReason?: string | null; // For booking_cancelled emails
 }
@@ -86,6 +87,7 @@ export interface ReminderNotificationData {
   salonId: string;
   recipientUserId?: string | null;
   recipientEmail?: string | null;
+  recipientPhone?: string | null;
   reminderType: "24h" | "2h";
   language?: string;
 }
@@ -100,6 +102,7 @@ export interface SendNotificationResult {
   success: boolean;
   channels: {
     email?: { sent: boolean; id?: string; error?: string };
+    sms?: { sent: boolean; id?: string; error?: string };
     inApp?: { sent: boolean; id?: string; error?: string };
   };
   icsAttached?: boolean;

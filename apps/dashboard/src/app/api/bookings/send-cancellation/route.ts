@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const supabase = createClientForRouteHandler(request, response);
     const { data: bookingRow, error: bookingFetchError } = await supabase
       .from("bookings")
-      .select("id, salon_id, status, customers(email)")
+      .select("id, salon_id, status, customers(email, phone)")
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -67,6 +67,12 @@ export async function POST(request: NextRequest) {
         ? (bookingRow as { customers?: { email?: string | null }[] }).customers?.[0]
         : (bookingRow as { customers?: { email?: string | null } | null }).customers;
       return (c as { email?: string | null } | null)?.email ?? null;
+    })();
+    const customerPhoneFromRow = (() => {
+      const c = Array.isArray((bookingRow as { customers?: unknown }).customers)
+        ? (bookingRow as { customers?: { phone?: string | null }[] }).customers?.[0]
+        : (bookingRow as { customers?: { phone?: string | null } | null }).customers;
+      return (c as { phone?: string | null } | null)?.phone ?? null;
     })();
 
     // Authenticate user and verify salon access
@@ -244,6 +250,7 @@ export async function POST(request: NextRequest) {
       salonId,
       recipientUserId: null,
       recipientEmail: customerEmail,
+      recipientPhone: customerPhoneFromRow,
       language,
       cancellationReason: cancellationReason ?? undefined,
     }).catch((emailError) => {

@@ -104,6 +104,24 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     blockDurationMs: ONE_HOUR_MS,
     failurePolicy: "fail_closed",
   },
+  "claim-sms": {
+    maxAttempts: 1,
+    windowMs: FIVE_MINUTES_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "manual-sms": {
+    maxAttempts: 5,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "sms-global-abuse": {
+    maxAttempts: 1000,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "public-booking-data": {
     maxAttempts: 60,
     windowMs: ONE_MINUTE_MS,

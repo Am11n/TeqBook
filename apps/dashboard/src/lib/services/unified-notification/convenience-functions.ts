@@ -16,7 +16,7 @@ export async function sendBookingNotification(
 ): Promise<SendNotificationResult> {
   return sendNotification({
     eventType,
-    channels: ["email", "inApp"],
+    channels: ["email", "sms", "inApp"],
     data,
   });
 }
@@ -32,7 +32,7 @@ export async function sendReminderNotification(
   
   return sendNotification({
     eventType,
-    channels: ["email", "inApp"],
+    channels: ["email", "sms", "inApp"],
     data,
   });
 }
