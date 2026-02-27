@@ -94,6 +94,7 @@ CREATE TRIGGER trigger_update_sms_usage_updated_at
 ALTER TABLE sms_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sms_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view sms_usage for their salon" ON sms_usage;
 CREATE POLICY "Users can view sms_usage for their salon"
   ON sms_usage FOR SELECT
   USING (
@@ -102,11 +103,13 @@ CREATE POLICY "Users can view sms_usage for their salon"
     )
   );
 
+DROP POLICY IF EXISTS "Service role can manage sms_usage" ON sms_usage;
 CREATE POLICY "Service role can manage sms_usage"
   ON sms_usage FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Users can view sms_log for their salon" ON sms_log;
 CREATE POLICY "Users can view sms_log for their salon"
   ON sms_log FOR SELECT
   USING (
@@ -115,6 +118,7 @@ CREATE POLICY "Users can view sms_log for their salon"
     )
   );
 
+DROP POLICY IF EXISTS "Service role can manage sms_log" ON sms_log;
 CREATE POLICY "Service role can manage sms_log"
   ON sms_log FOR ALL
   USING (auth.role() = 'service_role')
@@ -151,7 +155,7 @@ BEGIN
     RAISE EXCEPTION 'p_hard_cap must be >= 0 when provided' USING ERRCODE = 'P0001';
   END IF;
 
-  IF auth.role() <> 'service_role' THEN
+  IF COALESCE(auth.role(), '') <> 'service_role' THEN
     IF auth.uid() IS NULL THEN
       RAISE EXCEPTION 'Authentication required' USING ERRCODE = 'P0001';
     END IF;
@@ -257,7 +261,7 @@ BEGIN
     RAISE EXCEPTION 'p_effective_unit_price_at_send must be >= 0' USING ERRCODE = 'P0001';
   END IF;
 
-  IF auth.role() <> 'service_role' THEN
+  IF COALESCE(auth.role(), '') <> 'service_role' THEN
     IF auth.uid() IS NULL THEN
       RAISE EXCEPTION 'Authentication required' USING ERRCODE = 'P0001';
     END IF;
