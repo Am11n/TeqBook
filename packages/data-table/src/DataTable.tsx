@@ -56,7 +56,7 @@ function MobileCardView<T>({
 
 export function DataTable<T>({
   columns, data, totalCount, rowKey,
-  page = 0, pageSize = 25, onPageChange,
+  page = 0, pageSize = 10, onPageChange,
   sortColumn: controlledSortColumn,
   sortDirection: controlledSortDirection,
   onSortChange, searchQuery = "", onSearchChange,
@@ -66,11 +66,12 @@ export function DataTable<T>({
   headerContent, toolbarEndContent, density = "comfortable", className,
   getRowClassName, mobileRow,
 }: DataTableProps<T>) {
+  const effectivePageSize = Math.min(pageSize, 10);
   const shouldUseServerSearch =
     serverSearch || Boolean(onPageChange && typeof totalCount === "number" && totalCount > data.length);
 
   const dt = useDataTable({
-    columns, data, totalCount, rowKey, pageSize,
+    columns, data, totalCount, rowKey, page, pageSize: effectivePageSize,
     controlledSortColumn, controlledSortDirection,
     onSortChange, searchQuery, onSearchChange,
     serverSearch: shouldUseServerSearch,
@@ -104,9 +105,9 @@ export function DataTable<T>({
         onBulkSelectionChange={onBulkSelectionChange}
       />
 
-      {mobileRow && !loading && dt.sortedData.length > 0 && (
+      {mobileRow && !loading && dt.pagedData.length > 0 && (
         <MobileCardView
-          data={dt.sortedData}
+          data={dt.pagedData}
           rowKey={rowKey}
           mobileRow={mobileRow}
           onRowClick={onRowClick}
@@ -164,7 +165,7 @@ export function DataTable<T>({
 
             <TableBody>
               {loading ? (
-                Array.from({ length: Math.min(pageSize, 5) }).map((_, i) => (
+                Array.from({ length: Math.min(effectivePageSize, 5) }).map((_, i) => (
                   <TableRow key={`skeleton-${i}`}>
                     {bulkSelectable && (
                       <TableCell><div className="h-4 w-4 rounded bg-muted animate-pulse" /></TableCell>
@@ -177,7 +178,7 @@ export function DataTable<T>({
                     )}
                   </TableRow>
                 ))
-              ) : dt.sortedData.length === 0 ? (
+              ) : dt.pagedData.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={dt.visibleColumns.length + (bulkSelectable ? 1 : 0) + (hasRowActions ? 1 : 0)}
@@ -187,7 +188,7 @@ export function DataTable<T>({
                   </TableCell>
                 </TableRow>
               ) : (
-                dt.sortedData.map((row) => {
+                dt.pagedData.map((row) => {
                   const key = rowKey(row);
                   const isSelected = dt.selectedKeys.has(key);
                   const actions = getRowActions ? getRowActions(row) : rowActions;
@@ -261,7 +262,7 @@ export function DataTable<T>({
       {onPageChange && (
         <DataTablePagination
           page={page}
-          pageSize={pageSize}
+          pageSize={effectivePageSize}
           total={dt.total}
           totalPages={dt.totalPages}
           onPageChange={onPageChange}

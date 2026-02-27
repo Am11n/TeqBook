@@ -25,6 +25,7 @@ type Incident = {
   postmortem: string | null;
   created_at: string;
 };
+const PAGE_SIZE = 10;
 
 const SEV_COLORS: Record<string, string> = {
   critical: "bg-red-100 text-red-800",
@@ -73,7 +74,7 @@ export default function IncidentsPage() {
       const q = `%${search.trim()}%`;
       query = query.or(`title.ilike.${q},description.ilike.${q},severity.ilike.${q},status.ilike.${q}`);
     }
-    const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
+    const { data, count } = await query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     setIncidents((data as Incident[]) ?? []);
     setTotal(count ?? 0);
     setLoading(false);
@@ -103,7 +104,7 @@ export default function IncidentsPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

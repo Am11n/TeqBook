@@ -29,7 +29,8 @@ export function useDataTable<T>({
   data,
   totalCount,
   rowKey,
-  pageSize = 25,
+  page = 0,
+  pageSize = 10,
   controlledSortColumn,
   controlledSortDirection,
   onSortChange,
@@ -148,6 +149,12 @@ export function useDataTable<T>({
     });
   }, [filteredData, sortColumn, sortDirection, columns]);
 
+  const pagedData = useMemo(() => {
+    if (serverSearch) return sortedData;
+    const start = page * pageSize;
+    return sortedData.slice(start, start + pageSize);
+  }, [serverSearch, sortedData, page, pageSize]);
+
   const handleSaveView = useCallback(() => {
     if (!storageKey || !newViewName.trim()) return;
     const view: SavedView = {
@@ -194,7 +201,7 @@ export function useDataTable<T>({
   );
 
   return {
-    sortColumn, sortDirection, handleSort, sortedData,
+    sortColumn, sortDirection, handleSort, sortedData, pagedData,
     columnVisibility, setColumnVisibility, visibleColumns,
     selectedKeys, setSelectedKeys, allSelected, someSelected, toggleAll, toggleRow,
     savedViews, newViewName, setNewViewName, handleSaveView, handleApplyView, handleDeleteView,

@@ -169,6 +169,8 @@ import {
 - The prop for sort column is `sortColumn` (NOT `sortBy`).
 - For mobile responsiveness, use the `mobileRow` contract on `DataTableProps`.
 - Table search must be global across the full dataset. For paginated/server-backed tables, implement server-side search and reset pagination to page 1 on search changes.
+- Table pagination must use a maximum of 10 rows per page.
+- Pagination controls should render below the table with Previous aligned left and Next aligned right.
 
 ## Supabase / Backend
 

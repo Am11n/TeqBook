@@ -35,6 +35,7 @@ type SalonRow = {
   last_active: string | null;
   total_count: number;
 };
+const PAGE_SIZE = 10;
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-muted text-muted-foreground",
@@ -91,7 +92,7 @@ export default function AdminSalonsPage() {
       const filters: Record<string, string> = {};
       if (search) filters.search = search;
       const { data, error: rpcError } = await supabase.rpc("get_salons_paginated", {
-        filters, sort_col: sortBy, sort_dir: sortDir, lim: 25, off: page * 25,
+        filters, sort_col: sortBy, sort_dir: sortDir, lim: PAGE_SIZE, off: page * PAGE_SIZE,
       });
       if (rpcError) { setError(rpcError.message); return; }
       const rows: SalonRow[] = ((data as Array<Record<string, unknown>>) ?? []).map((d) => ({
@@ -180,7 +181,7 @@ export default function AdminSalonsPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

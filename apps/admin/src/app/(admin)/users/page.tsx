@@ -28,6 +28,7 @@ type UserRow = {
   created_at: string;
   total_count: number;
 };
+const PAGE_SIZE = 10;
 
 const ROLE_COLORS: Record<string, string> = {
   super_admin: "bg-purple-50 text-purple-700",
@@ -79,7 +80,7 @@ export default function AdminUsersPage() {
       const filters: Record<string, string> = {};
       if (search) filters.search = search;
       const { data, error: rpcError } = await supabase.rpc("get_users_paginated", {
-        filters, sort_col: sortBy, sort_dir: sortDir, lim: 25, off: page * 25,
+        filters, sort_col: sortBy, sort_dir: sortDir, lim: PAGE_SIZE, off: page * PAGE_SIZE,
       });
       if (rpcError) { setError(rpcError.message); return; }
       const rows: UserRow[] = ((data as Array<Record<string, unknown>>) ?? []).map((d) => ({
@@ -166,7 +167,7 @@ export default function AdminUsersPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

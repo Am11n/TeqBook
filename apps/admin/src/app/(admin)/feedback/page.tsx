@@ -19,6 +19,7 @@ import {
 import { FeedbackDrawerContent } from "./_components/FeedbackDrawerContent";
 
 export default function FeedbackPage() {
+  const PAGE_SIZE = 10;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
@@ -45,7 +46,7 @@ export default function FeedbackPage() {
         const q = `%${search.trim()}%`;
         query = query.or(`title.ilike.${q},description.ilike.${q},type.ilike.${q},status.ilike.${q}`);
       }
-      const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
+      const { data, count } = await query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
       setEntries((data as FeedbackEntry[]) ?? []);
       setTotal(count ?? 0);
     } catch (err) {
@@ -121,7 +122,7 @@ export default function FeedbackPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

@@ -30,6 +30,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 const ADMIN_ROLES = ["full_admin", "support_admin", "billing_admin", "security_admin", "read_only_auditor"] as const;
+const PAGE_SIZE = 10;
 
 const columns: ColumnDef<AdminUser>[] = [
   { id: "email", header: "Email", cell: (r) => <span className="font-medium">{r.email}</span>, sticky: true, hideable: false },
@@ -44,6 +45,7 @@ export default function AdminsPage() {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   const loadAdmins = useCallback(async () => {
     setLoading(true);
@@ -53,7 +55,7 @@ export default function AdminsPage() {
         filters: { is_superadmin: "true" } as unknown as Record<string, unknown>,
         sort_col: "created_at",
         sort_dir: "desc",
-        lim: 100,
+        lim: 500,
         off: 0,
       });
       if (e) { setError(e.message); return; }
@@ -132,9 +134,9 @@ export default function AdminsPage() {
             data={admins}
             totalCount={admins.length}
             rowKey={(r) => r.user_id}
-            page={0}
-            pageSize={50}
-            onPageChange={() => {}}
+            page={page}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
             rowActions={rowActions}
             loading={loading}
             emptyMessage="No admin users"

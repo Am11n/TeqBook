@@ -44,6 +44,7 @@ const columns: ColumnDef<SupportCase>[] = [
   { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm"), sortable: true },
   { id: "updated_at", header: "Updated", cell: (r) => format(new Date(r.updated_at), "MMM d, HH:mm"), defaultVisible: false },
 ];
+const PAGE_SIZE = 10;
 
 export default function SupportInboxPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
@@ -65,7 +66,7 @@ export default function SupportInboxPage() {
   const loadCases = useCallback(async () => {
     setLoading(true);
     const filters = search.trim() ? { search: search.trim() } : {};
-    const { data, total: t, error: e } = await getSupportCases(filters, 25, page * 25);
+    const { data, total: t, error: e } = await getSupportCases(filters, PAGE_SIZE, page * PAGE_SIZE);
     if (e) setError(e);
     else { setCases(data ?? []); setTotal(t); }
     setLoading(false);
@@ -116,7 +117,7 @@ export default function SupportInboxPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

@@ -19,30 +19,30 @@ export function DataTablePagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
         Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} of{" "}
         {total.toLocaleString()}
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between">
         <Button
-          variant="outline" size="sm" className="h-8 w-8 p-0"
+          variant="outline" size="sm" className="h-8 px-3"
           disabled={page === 0}
           onClick={() => onPageChange(page - 1)}
         >
           <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only">Previous page</span>
+          <span>Previous</span>
         </Button>
-        <span className="text-sm text-muted-foreground px-2">
+        <span className="text-sm text-muted-foreground">
           {page + 1} / {totalPages}
         </span>
         <Button
-          variant="outline" size="sm" className="h-8 w-8 p-0"
+          variant="outline" size="sm" className="h-8 px-3"
           disabled={page >= totalPages - 1}
           onClick={() => onPageChange(page + 1)}
         >
+          <span>Next</span>
           <ChevronRight className="h-4 w-4" />
-          <span className="sr-only">Next page</span>
         </Button>
       </div>
     </div>

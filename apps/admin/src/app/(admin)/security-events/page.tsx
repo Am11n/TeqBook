@@ -41,6 +41,7 @@ const SECURITY_ACTIONS = [
   "account_locked",
   "suspicious_activity",
 ];
+const PAGE_SIZE = 10;
 
 const columns: ColumnDef<SecurityEvent>[] = [
   { id: "created_at", header: "Time", cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm:ss"), sortable: true, sticky: true, hideable: false },
@@ -96,7 +97,7 @@ export default function SecurityEventsPage() {
         const q = `%${search.trim()}%`;
         query = query.or(`action.ilike.${q},resource_type.ilike.${q},user_id.ilike.${q},salon_id.ilike.${q},ip_address.ilike.${q},user_agent.ilike.${q}`);
       }
-      const { data, count } = await query.range(page * 50, (page + 1) * 50 - 1);
+      const { data, count } = await query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       setEvents((data as SecurityEvent[]) ?? []);
       setTotal(count ?? 0);
@@ -150,7 +151,7 @@ export default function SecurityEventsPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={50}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

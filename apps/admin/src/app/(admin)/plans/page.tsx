@@ -26,6 +26,7 @@ type SalonPlanRow = {
   owner_email: string | null;
   total_count: number;
 };
+const PAGE_SIZE = 10;
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-muted text-muted-foreground",
@@ -64,7 +65,7 @@ export default function PlansPage() {
     setLoading(true);
     try {
       const [salonsResult, distResult] = await Promise.all([
-        supabase.rpc("get_salons_paginated", { filters: search ? { search } : {}, sort_col: "plan", sort_dir: "asc", lim: 25, off: page * 25 }),
+        supabase.rpc("get_salons_paginated", { filters: search ? { search } : {}, sort_col: "plan", sort_dir: "asc", lim: PAGE_SIZE, off: page * PAGE_SIZE }),
         supabase.rpc("get_admin_plan_distribution"),
       ]);
       const rows = (salonsResult.data as SalonPlanRow[]) ?? [];
@@ -128,7 +129,7 @@ export default function PlansPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

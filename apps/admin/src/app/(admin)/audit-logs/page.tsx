@@ -35,6 +35,7 @@ const VIEW_PRESETS = [
   { label: "All booking changes", action: "all", resource: "booking", preset: 3 },
   { label: "All admin actions", action: "all", resource: "admin", preset: 3 },
 ];
+const PAGE_SIZE = 10;
 
 const columns: ColumnDef<AuditLog>[] = [
   { id: "created_at", header: "Time", cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm:ss"), sortable: true, sticky: true, hideable: false },
@@ -56,7 +57,7 @@ function AuditLogsContent() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
-  const pageSize = 50;
+  const pageSize = PAGE_SIZE;
 
   const [actionFilter, setActionFilter] = useState("all");
   const [resourceFilter, setResourceFilter] = useState("all");
@@ -101,7 +102,7 @@ function AuditLogsContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, actionFilter, resourceFilter, startDate, endDate, search]);
+  }, [page, pageSize, actionFilter, resourceFilter, startDate, endDate, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }

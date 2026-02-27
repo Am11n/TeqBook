@@ -30,7 +30,7 @@ export default function AuditTrailPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState(0);
-  const pageSize = 25;
+  const pageSize = 10;
 
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [resourceTypeFilter, setResourceTypeFilter] = useState<string>("all");

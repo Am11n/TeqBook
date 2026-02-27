@@ -28,6 +28,7 @@ type DataRequest = {
   completed_at: string | null;
   created_at: string;
 };
+const PAGE_SIZE = 10;
 
 const TYPE_ICONS: Record<string, typeof Download> = { export: Download, deletion: Trash2, anonymization: Shield };
 const STATUS_COLORS: Record<string, string> = {
@@ -82,7 +83,7 @@ export default function DataToolsPage() {
         const q = `%${search.trim()}%`;
         query = query.or(`type.ilike.${q},status.ilike.${q},entity_type.ilike.${q},entity_id.ilike.${q},entity_name.ilike.${q},reason.ilike.${q}`);
       }
-      const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
+      const { data, count } = await query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
       setRequests((data as DataRequest[]) ?? []);
       setTotal(count ?? 0);
     } catch (err) {
@@ -160,7 +161,7 @@ export default function DataToolsPage() {
             totalCount={total}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}

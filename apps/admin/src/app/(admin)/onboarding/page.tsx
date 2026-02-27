@@ -23,6 +23,7 @@ type OnboardingSalon = {
   has_booking: boolean;
   owner_email: string | null;
 };
+const PAGE_SIZE = 10;
 
 function getOnboardingStep(salon: OnboardingSalon): { label: string; pct: number; color: string } {
   if (salon.has_booking) return { label: "Completed", pct: 100, color: "bg-emerald-50 text-emerald-700" };
@@ -178,7 +179,7 @@ export default function OnboardingPage() {
             totalCount={salons.length}
             rowKey={(r) => r.id}
             page={page}
-            pageSize={25}
+            pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}
