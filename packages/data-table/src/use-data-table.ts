@@ -64,7 +64,23 @@ export function useDataTable<T>({
     [columns, columnVisibility],
   );
 
-  const total = totalCount ?? data.length;
+  const filteredData = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return data;
+
+    return data.filter((row) =>
+      columns.some((col) => {
+        const rawValue = col.getValue
+          ? col.getValue(row)
+          : (row as Record<string, unknown>)[col.id];
+        if (rawValue == null) return false;
+        return String(rawValue).toLowerCase().includes(query);
+      }),
+    );
+  }, [data, columns, searchQuery]);
+
+  const hasLocalSearch = searchQuery.trim().length > 0;
+  const total = hasLocalSearch ? filteredData.length : (totalCount ?? data.length);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const allKeys = useMemo(() => new Set(data.map((row) => rowKey(row))), [data, rowKey]);
@@ -99,9 +115,9 @@ export function useDataTable<T>({
   );
 
   const sortedData = useMemo(() => {
-    if (!sortColumn) return data;
+    if (!sortColumn) return filteredData;
     const col = columns.find((c) => c.id === sortColumn);
-    return [...data].sort((a, b) => {
+    return [...filteredData].sort((a, b) => {
       const aVal = col?.getValue ? col.getValue(a) : (a as Record<string, unknown>)[sortColumn];
       const bVal = col?.getValue ? col.getValue(b) : (b as Record<string, unknown>)[sortColumn];
       if (aVal == null && bVal == null) return 0;
@@ -127,7 +143,7 @@ export function useDataTable<T>({
       }
       return sortDirection === "desc" ? -cmp : cmp;
     });
-  }, [data, sortColumn, sortDirection, columns]);
+  }, [filteredData, sortColumn, sortDirection, columns]);
 
   const handleSaveView = useCallback(() => {
     if (!storageKey || !newViewName.trim()) return;
