@@ -168,6 +168,7 @@ import {
 - Client-side sorting is the default. For computed columns, use `getValue` on `ColumnDef`.
 - The prop for sort column is `sortColumn` (NOT `sortBy`).
 - For mobile responsiveness, use the `mobileRow` contract on `DataTableProps`.
+- Table search must be global across the full dataset. For paginated/server-backed tables, implement server-side search and reset pagination to page 1 on search changes.
 
 ## Supabase / Backend
 

@@ -56,20 +56,28 @@ export default function IncidentsPage() {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Incident | null>(null);
 
   const loadIncidents = useCallback(async () => {
     setLoading(true);
-    const { data, count } = await supabase
+    let query = supabase
       .from("incidents")
       .select("*", { count: "exact" })
-      .order("started_at", { ascending: false })
-      .range(page * 25, (page + 1) * 25 - 1);
+      .order("started_at", { ascending: false });
+    if (search.trim()) {
+      const q = `%${search.trim()}%`;
+      query = query.or(`title.ilike.${q},description.ilike.${q},severity.ilike.${q},status.ilike.${q}`);
+    }
+    const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
     setIncidents((data as Incident[]) ?? []);
     setTotal(count ?? 0);
     setLoading(false);
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -97,7 +105,7 @@ export default function IncidentsPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search incidents..."
             rowActions={rowActions}

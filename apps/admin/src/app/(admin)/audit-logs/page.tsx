@@ -187,22 +187,22 @@ function AuditLogsContent() {
             <CardContent className="py-3">
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
                 <Input placeholder="Search..." value={search} onChange={(e) => handleSearchChange(e.target.value)} className="h-9" />
-                <Select value={actionFilter} onValueChange={setActionFilter}>
+                <Select value={actionFilter} onValueChange={(value) => { setPage(0); setActionFilter(value); }}>
                   <SelectTrigger className="h-9"><SelectValue placeholder="Action" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All actions</SelectItem>
                     {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                <Select value={resourceFilter} onValueChange={(value) => { setPage(0); setResourceFilter(value); }}>
                   <SelectTrigger className="h-9"><SelectValue placeholder="Resource" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All types</SelectItem>
                     {uniqueResources.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9" placeholder="Start" />
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9" placeholder="End" />
+                <Input type="date" value={startDate} onChange={(e) => { setPage(0); setStartDate(e.target.value); }} className="h-9" placeholder="Start" />
+                <Input type="date" value={endDate} onChange={(e) => { setPage(0); setEndDate(e.target.value); }} className="h-9" placeholder="End" />
               </div>
             </CardContent>
           </Card>

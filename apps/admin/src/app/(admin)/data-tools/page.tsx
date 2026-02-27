@@ -64,17 +64,25 @@ export default function DataToolsPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<DataRequest | null>(null);
 
   const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, count } = await supabase
+      let query = supabase
         .from("data_requests")
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .range(page * 25, (page + 1) * 25 - 1);
+        .order("created_at", { ascending: false });
+      if (search.trim()) {
+        const q = `%${search.trim()}%`;
+        query = query.or(`type.ilike.${q},status.ilike.${q},entity_type.ilike.${q},entity_id.ilike.${q},entity_name.ilike.${q},reason.ilike.${q}`);
+      }
+      const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
       setRequests((data as DataRequest[]) ?? []);
       setTotal(count ?? 0);
     } catch (err) {
@@ -82,7 +90,7 @@ export default function DataToolsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -154,7 +162,7 @@ export default function DataToolsPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search requests..."
             rowActions={rowActions}

@@ -140,3 +140,12 @@ Begrunnelse:
 
 - Mindre visuell støy på tvers av sider
 - Mer konsekvent med eksisterende tabell- og side-mønstre
+
+## 12) Globalt tabellsøk (obligatorisk)
+
+For alle tabeller med søk i TeqBook skal søk være globalt for hele datasettet, ikke bare aktiv side.
+
+- Hvis tabellen er paginert med backend-data, bruk **server-side søk** (query/RPC) og reset til side 1 ved nytt søk.
+- Ikke bruk lokal filtrering på kun nåværende side når `totalCount` er større enn antall rader i viewet.
+- For paginerte tabeller skal søkefeltet alltid være koblet til datakilden (DB/API), slik at treff kan finnes på tvers av alle sider.
+- Kun tabeller som laster hele datasettet i klienten kan bruke ren lokal filtrering.

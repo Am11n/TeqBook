@@ -50,6 +50,10 @@ export default function PlansPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [planDist, setPlanDist] = useState<{ plan: string; count: number }[]>([]);
 
   // Detail drawer for plan change
@@ -126,7 +130,7 @@ export default function PlansPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search salons..."
             rowActions={rowActions}

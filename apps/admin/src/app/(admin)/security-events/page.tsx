@@ -66,6 +66,10 @@ export default function SecurityEventsPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [period, setPeriod] = useState<"7d" | "30d" | "90d">("7d");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -82,13 +86,17 @@ export default function SecurityEventsPage() {
   const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, count } = await supabase
+      let query = supabase
         .from("security_audit_log")
         .select("*", { count: "exact" })
         .in("action", SECURITY_ACTIONS)
         .gte("created_at", since)
-        .order("created_at", { ascending: false })
-        .range(page * 50, (page + 1) * 50 - 1);
+        .order("created_at", { ascending: false });
+      if (search.trim()) {
+        const q = `%${search.trim()}%`;
+        query = query.or(`action.ilike.${q},resource_type.ilike.${q},user_id.ilike.${q},salon_id.ilike.${q},ip_address.ilike.${q},user_agent.ilike.${q}`);
+      }
+      const { data, count } = await query.range(page * 50, (page + 1) * 50 - 1);
 
       setEvents((data as SecurityEvent[]) ?? []);
       setTotal(count ?? 0);
@@ -103,7 +111,7 @@ export default function SecurityEventsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, since]);
+  }, [page, since, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -144,7 +152,7 @@ export default function SecurityEventsPage() {
             page={page}
             pageSize={50}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search events..."
             onRowClick={(e) => { setSelected(e); setDrawerOpen(true); }}

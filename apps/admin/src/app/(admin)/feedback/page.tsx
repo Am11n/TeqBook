@@ -27,17 +27,25 @@ export default function FeedbackPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<FeedbackEntry | null>(null);
 
   const loadEntries = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, count } = await supabase
+      let query = supabase
         .from("feedback_entries")
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .range(page * 25, (page + 1) * 25 - 1);
+        .order("created_at", { ascending: false });
+      if (search.trim()) {
+        const q = `%${search.trim()}%`;
+        query = query.or(`title.ilike.${q},description.ilike.${q},type.ilike.${q},status.ilike.${q}`);
+      }
+      const { data, count } = await query.range(page * 25, (page + 1) * 25 - 1);
       setEntries((data as FeedbackEntry[]) ?? []);
       setTotal(count ?? 0);
     } catch (err) {
@@ -45,7 +53,7 @@ export default function FeedbackPage() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) {
@@ -115,7 +123,7 @@ export default function FeedbackPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search feedback..."
             rowActions={rowActions}

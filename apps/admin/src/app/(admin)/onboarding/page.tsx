@@ -55,6 +55,10 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
 
   // Summary stats
   const [funnelSteps, setFunnelSteps] = useState<{ step: string; count: number }[]>([]);
@@ -176,7 +180,7 @@ export default function OnboardingPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search salons..."
             rowActions={rowActions}

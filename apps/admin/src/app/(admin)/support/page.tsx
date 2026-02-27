@@ -54,17 +54,22 @@ export default function SupportInboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<SupportCase | null>(null);
   const [notes, setNotes] = useState<AdminNote[]>([]);
 
   const loadCases = useCallback(async () => {
     setLoading(true);
-    const { data, total: t, error: e } = await getSupportCases({}, 25, page * 25);
+    const filters = search.trim() ? { search: search.trim() } : {};
+    const { data, total: t, error: e } = await getSupportCases(filters, 25, page * 25);
     if (e) setError(e);
     else { setCases(data ?? []); setTotal(t); }
     setLoading(false);
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -113,7 +118,7 @@ export default function SupportInboxPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search cases..."
             rowActions={rowActions}

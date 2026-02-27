@@ -30,6 +30,7 @@ export type SupportCaseFilters = {
   status?: string;
   priority?: string;
   assignee_id?: string;
+  search?: string;
 };
 
 /**
@@ -46,6 +47,7 @@ export async function getSupportCases(
     if (filters.status) filterJson.status = filters.status;
     if (filters.priority) filterJson.priority = filters.priority;
     if (filters.assignee_id) filterJson.assignee_id = filters.assignee_id;
+    if (filters.search) filterJson.search = filters.search;
 
     const { data, error } = await supabase.rpc("get_support_cases_list", {
       filters: filterJson,
