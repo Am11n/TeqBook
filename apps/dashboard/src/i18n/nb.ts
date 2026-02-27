@@ -754,6 +754,7 @@ export const nb: TranslationNamespaces = {
     summaryNoShow: "no-show",
     summaryNeedsAction: "trenger handling",
     statusAll: "Alle",
+    bookingsSearchPlaceholder: "Søk i bookinger...",
     filterUpcoming: "Kommende",
     filterConfirmed: "Bekreftet",
     filterCompleted: "Fullført",

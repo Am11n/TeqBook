@@ -752,6 +752,7 @@ export type BookingsMessages = {
   summaryNoShow: string;
   summaryNeedsAction: string;
   statusAll: string;
+  bookingsSearchPlaceholder?: string;
   filterUpcoming: string;
   filterConfirmed: string;
   filterCompleted: string;

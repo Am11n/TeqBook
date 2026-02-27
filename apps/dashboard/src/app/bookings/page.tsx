@@ -39,8 +39,10 @@ function BookingsContent() {
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter | null>(null);
+  const [nowTs, setNowTs] = useState<number>(() => Date.now());
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -53,6 +55,7 @@ function BookingsContent() {
       invalidSlot: t.invalidSlot, createError: t.createError,
     },
   });
+  useEffect(() => { setNowTs(Date.now()); }, [bookings]);
 
   useEffect(() => {
     if (searchParams.get("new") === "true") {
@@ -133,15 +136,14 @@ function BookingsContent() {
   };
 
   const sortedBookingsForSidebar = useMemo(() => {
-    const now = Date.now();
     return [...bookings]
       .filter((b) => {
         const start = new Date(b.start_time).getTime();
         const isActive = b.status === "confirmed" || b.status === "scheduled" || b.status === "pending";
-        return start > now && isActive;
+        return start > nowTs && isActive;
       })
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-  }, [bookings]);
+  }, [bookings, nowTs]);
 
   const hasData = bookings.length > 0;
   const hasFilteredData = filteredBookings.length > 0;
@@ -245,6 +247,9 @@ function BookingsContent() {
                 onConfirmBooking={handleConfirmBooking}
                 onCompleteBooking={handleCompleteBooking}
                 getRowClassName={getBookingRowColor}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder={t.bookingsSearchPlaceholder ?? "Search bookings..."}
               />
             </div>
           )}

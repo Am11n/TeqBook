@@ -726,6 +726,7 @@ export const en: TranslationNamespaces = {
     summaryNoShow: "no-show",
     summaryNeedsAction: "needs action",
     statusAll: "All",
+    bookingsSearchPlaceholder: "Search bookings...",
     filterUpcoming: "Upcoming",
     filterConfirmed: "Confirmed",
     filterCompleted: "Completed",
