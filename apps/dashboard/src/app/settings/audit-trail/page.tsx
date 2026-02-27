@@ -39,6 +39,27 @@ export default function AuditTrailPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [actorNames, setActorNames] = useState<Record<string, string>>({});
 
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearchQuery(value);
+  }, []);
+  const handleActionFilterChange = useCallback((value: string) => {
+    setPage(0);
+    setActionFilter(value);
+  }, []);
+  const handleResourceTypeFilterChange = useCallback((value: string) => {
+    setPage(0);
+    setResourceTypeFilter(value);
+  }, []);
+  const handleStartDateChange = useCallback((value: string) => {
+    setPage(0);
+    setStartDate(value);
+  }, []);
+  const handleEndDateChange = useCallback((value: string) => {
+    setPage(0);
+    setEndDate(value);
+  }, []);
+
   const loadLogs = useCallback(async () => {
     if (!salon?.id) return;
     setLoading(true);
@@ -49,6 +70,33 @@ export default function AuditTrailPage() {
       if (resourceTypeFilter !== "all") options.resource_type = resourceTypeFilter;
       if (startDate) options.startDate = new Date(startDate).toISOString();
       if (endDate) options.endDate = new Date(endDate).toISOString();
+      const trimmedSearch = searchQuery.trim();
+      if (trimmedSearch) {
+        options.search = trimmedSearch;
+        const { data: allProfiles, error: allProfilesError } = await supabase
+          .from("profiles")
+          .select("user_id, first_name, last_name")
+          .eq("salon_id", salon.id);
+
+        if (allProfilesError) {
+          logError("Error loading profiles for audit search", allProfilesError.message);
+        } else {
+          const searchLower = trimmedSearch.toLowerCase();
+          options.searchActorUserIds = (allProfiles ?? [])
+            .filter((row) => {
+              const firstName = row.first_name?.trim() ?? "";
+              const lastName = row.last_name?.trim() ?? "";
+              const fullName = `${firstName} ${lastName}`.trim();
+              return (
+                firstName.toLowerCase().includes(searchLower) ||
+                lastName.toLowerCase().includes(searchLower) ||
+                fullName.toLowerCase().includes(searchLower) ||
+                row.user_id.toLowerCase().includes(searchLower)
+              );
+            })
+            .map((row) => row.user_id);
+        }
+      }
 
       const result = await getAuditLogsForSalon(salon.id, options);
       if (result.error) {
@@ -90,7 +138,7 @@ export default function AuditTrailPage() {
     } finally {
       setLoading(false);
     }
-  }, [salon?.id, page, pageSize, actionFilter, resourceTypeFilter, startDate, endDate]);
+  }, [salon?.id, page, pageSize, actionFilter, resourceTypeFilter, startDate, endDate, searchQuery]);
 
   useEffect(() => { if (!contextLoading && salon?.id) loadLogs(); }, [contextLoading, salon?.id, loadLogs]);
 
@@ -180,12 +228,12 @@ export default function AuditTrailPage() {
       {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
       <AuditFilters
-        searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+        searchQuery={searchQuery} setSearchQuery={handleSearchChange}
         showSearch={false}
-        actionFilter={actionFilter} setActionFilter={setActionFilter}
-        resourceTypeFilter={resourceTypeFilter} setResourceTypeFilter={setResourceTypeFilter}
-        startDate={startDate} setStartDate={setStartDate}
-        endDate={endDate} setEndDate={setEndDate}
+        actionFilter={actionFilter} setActionFilter={handleActionFilterChange}
+        resourceTypeFilter={resourceTypeFilter} setResourceTypeFilter={handleResourceTypeFilterChange}
+        startDate={startDate} setStartDate={handleStartDateChange}
+        endDate={endDate} setEndDate={handleEndDateChange}
         availableActions={availableActions} availableResourceTypes={availableResourceTypes}
         onReset={handleResetFilters}
       />
@@ -212,8 +260,9 @@ export default function AuditTrailPage() {
           loading={loading}
           emptyMessage={t.auditTrailNoActivity ?? "No activity recorded yet"}
           storageKey="settings-audit-trail"
+          serverSearch
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           searchPlaceholder={t.auditSearchPlaceholder ?? "Search activity..."}
         />
       </div>
