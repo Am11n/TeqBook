@@ -8,17 +8,8 @@ import {
   type WaitlistEntry,
 } from "@/lib/repositories/waitlist";
 import { logInfo, logWarn } from "@/lib/services/logger";
-import { sendSms } from "@/lib/services/sms";
-import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 
 export type { WaitlistEntry };
-
-function getBillingWindow(): { start: string; end: string } {
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0));
-  return { start: start.toISOString(), end: end.toISOString() };
-}
 
 export async function listWaitlist(salonId: string, status?: string) {
   return getWaitlistEntries(salonId, status ? { status } : undefined);
@@ -139,50 +130,6 @@ export async function handleCancellation(
         });
       } catch {
         logWarn("Failed to send waitlist email notification", { salonId, entryId: match.id });
-      }
-    }
-
-    // Send transactional waitlist claim SMS if phone is available.
-    if (match.customer_phone) {
-      const rateLimitKey = `${salonId}:${match.id}`;
-      const rl = await checkRateLimit(rateLimitKey, "claim-sms", {
-        endpointType: "claim-sms",
-        identifierType: "user_id",
-      });
-
-      if (!rl.allowed) {
-        logWarn("Claim SMS blocked by rate limit", {
-          salonId,
-          waitlistId: match.id,
-        });
-      } else {
-        await incrementRateLimit(rateLimitKey, "claim-sms", {
-          endpointType: "claim-sms",
-          identifierType: "user_id",
-        });
-
-        const window = getBillingWindow();
-        const smsResult = await sendSms({
-          salonId,
-          recipient: match.customer_phone,
-          type: "waitlist_claim",
-          body: `Hei! En time ble ledig ${date}. Book innen 2 timer ved å kontakte salongen.`,
-          billingPeriodStart: window.start,
-          billingPeriodEnd: window.end,
-          idempotencyKey: match.id,
-          waitlistId: match.id,
-          metadata: {
-            source: "waitlist_handle_cancellation",
-          },
-        });
-
-        if (!smsResult.allowed) {
-          logWarn("Failed to send waitlist claim SMS", {
-            salonId,
-            waitlistId: match.id,
-            error: smsResult.error || smsResult.blockedReason,
-          });
-        }
       }
     }
 
