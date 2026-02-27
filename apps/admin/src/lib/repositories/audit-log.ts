@@ -34,6 +34,7 @@ export type CreateAuditLogInput = {
 export type AuditLogQueryOptions = {
   action?: string;
   resource_type?: string;
+  search?: string;
   startDate?: string;
   endDate?: string;
   limit?: number;
@@ -107,6 +108,21 @@ export async function getAuditLogsForSalon(
       query = query.eq("resource_type", options.resource_type);
     }
 
+    const trimmedSearch = options.search?.trim();
+    if (trimmedSearch) {
+      const normalizedSearch = trimmedSearch.replace(/[(),]/g, " ").trim();
+      if (normalizedSearch) {
+        const pattern = `%${normalizedSearch}%`;
+        query = query.or([
+          `action.ilike.${pattern}`,
+          `resource_type.ilike.${pattern}`,
+          `resource_id.ilike.${pattern}`,
+          `user_id.ilike.${pattern}`,
+          `salon_id.ilike.${pattern}`,
+        ].join(","));
+      }
+    }
+
     if (options.startDate) {
       query = query.gte("created_at", options.startDate);
     }
@@ -160,6 +176,20 @@ export async function getAuditLogsForUser(
       query = query.eq("resource_type", options.resource_type);
     }
 
+    const trimmedSearch = options.search?.trim();
+    if (trimmedSearch) {
+      const normalizedSearch = trimmedSearch.replace(/[(),]/g, " ").trim();
+      if (normalizedSearch) {
+        const pattern = `%${normalizedSearch}%`;
+        query = query.or([
+          `action.ilike.${pattern}`,
+          `resource_type.ilike.${pattern}`,
+          `resource_id.ilike.${pattern}`,
+          `salon_id.ilike.${pattern}`,
+        ].join(","));
+      }
+    }
+
     if (options.startDate) {
       query = query.gte("created_at", options.startDate);
     }
@@ -209,6 +239,21 @@ export async function getAllAuditLogs(
 
     if (options.resource_type) {
       query = query.eq("resource_type", options.resource_type);
+    }
+
+    const trimmedSearch = options.search?.trim();
+    if (trimmedSearch) {
+      const normalizedSearch = trimmedSearch.replace(/[(),]/g, " ").trim();
+      if (normalizedSearch) {
+        const pattern = `%${normalizedSearch}%`;
+        query = query.or([
+          `action.ilike.${pattern}`,
+          `resource_type.ilike.${pattern}`,
+          `resource_id.ilike.${pattern}`,
+          `user_id.ilike.${pattern}`,
+          `salon_id.ilike.${pattern}`,
+        ].join(","));
+      }
     }
 
     if (options.startDate) {

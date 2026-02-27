@@ -66,11 +66,14 @@ export function DataTable<T>({
   headerContent, toolbarEndContent, density = "comfortable", className,
   getRowClassName, mobileRow,
 }: DataTableProps<T>) {
+  const shouldUseServerSearch =
+    serverSearch || Boolean(onPageChange && typeof totalCount === "number" && totalCount > data.length);
+
   const dt = useDataTable({
     columns, data, totalCount, rowKey, pageSize,
     controlledSortColumn, controlledSortDirection,
     onSortChange, searchQuery, onSearchChange,
-    serverSearch,
+    serverSearch: shouldUseServerSearch,
     onBulkSelectionChange, storageKey,
   });
 

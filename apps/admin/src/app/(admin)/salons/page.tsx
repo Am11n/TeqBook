@@ -71,6 +71,10 @@ export default function AdminSalonsPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedSalon, setSelectedSalon] = useState<SalonRow | null>(null);
@@ -178,7 +182,7 @@ export default function AdminSalonsPage() {
             page={page}
             pageSize={25}
             onPageChange={setPage}
-            onSearchChange={setSearch}
+            onSearchChange={handleSearchChange}
             searchQuery={search}
             searchPlaceholder="Search salons..."
             sortColumn={sortBy}

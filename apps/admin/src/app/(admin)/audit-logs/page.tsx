@@ -63,6 +63,10 @@ function AuditLogsContent() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [search, setSearch] = useState("");
+  const handleSearchChange = useCallback((value: string) => {
+    setPage(0);
+    setSearch(value);
+  }, []);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
@@ -83,23 +87,14 @@ function AuditLogsContent() {
       if (resourceFilter !== "all") opts.resource_type = resourceFilter;
       if (startDate) opts.startDate = new Date(startDate).toISOString();
       if (endDate) opts.endDate = new Date(endDate).toISOString();
+      if (search.trim()) opts.search = search.trim();
 
       const result = await getAllAuditLogs(opts as Parameters<typeof getAllAuditLogs>[0]);
       if (result.error) { setError(result.error); return; }
 
-      let filtered = result.data ?? [];
-      if (search) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter((l) =>
-          l.action.toLowerCase().includes(q) ||
-          l.resource_type.toLowerCase().includes(q) ||
-          l.user_id?.toLowerCase().includes(q) ||
-          l.salon_id?.toLowerCase().includes(q) ||
-          JSON.stringify(l.metadata ?? {}).toLowerCase().includes(q)
-        );
-      }
-      setLogs(filtered);
-      setTotal(result.total ?? filtered.length);
+      const rows = result.data ?? [];
+      setLogs(rows);
+      setTotal(result.total ?? rows.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       logError("Audit load error", err);
@@ -191,7 +186,7 @@ function AuditLogsContent() {
           <Card className="mb-4">
             <CardContent className="py-3">
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-                <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-9" />
+                <Input placeholder="Search..." value={search} onChange={(e) => handleSearchChange(e.target.value)} className="h-9" />
                 <Select value={actionFilter} onValueChange={setActionFilter}>
                   <SelectTrigger className="h-9"><SelectValue placeholder="Action" /></SelectTrigger>
                   <SelectContent>
