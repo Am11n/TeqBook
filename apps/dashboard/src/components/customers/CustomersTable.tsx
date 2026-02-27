@@ -62,7 +62,7 @@ export function CustomersTable({
           {!customer.email && !customer.phone && "-"}
         </div>
       ),
-      getValue: (customer) => customer.email ?? customer.phone ?? "",
+      getValue: (customer) => `${customer.email ?? ""} ${customer.phone ?? ""}`.trim(),
     },
     {
       id: "notes",
@@ -102,7 +102,7 @@ export function CustomersTable({
             {translations.consentMissing}
           </Badge>
         ),
-      getValue: (customer) => (customer.gdpr_consent ? 1 : 0),
+      getValue: (customer) => (customer.gdpr_consent ? translations.consentOk : translations.consentMissing),
     },
   ];
 

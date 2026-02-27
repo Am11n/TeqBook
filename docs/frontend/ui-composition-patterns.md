@@ -149,6 +149,7 @@ For alle tabeller med søk i TeqBook skal søk være globalt for hele datasettet
 - Ikke bruk lokal filtrering på kun nåværende side når `totalCount` er større enn antall rader i viewet.
 - For paginerte tabeller skal søkefeltet alltid være koblet til datakilden (DB/API), slik at treff kan finnes på tvers av alle sider.
 - Kun tabeller som laster hele datasettet i klienten kan bruke ren lokal filtrering.
+- Søk skal dekke alle tabellkolonner som vises til brukeren (tekst, status, relasjoner og relevante dato/felt).
 
 ## 13) Standard paginering (obligatorisk)
 

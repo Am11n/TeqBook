@@ -102,7 +102,8 @@ export function EmployeesTable({
           </div>
         );
       },
-      getValue: (employee) => employeeServicesMap[employee.id]?.length ?? 0,
+      getValue: (employee) =>
+        (employeeServicesMap[employee.id] ?? []).map((service) => service.name).join(", "),
     },
     {
       id: "setup",
@@ -159,7 +160,7 @@ export function EmployeesTable({
           {employee.is_active ? translations.active : translations.inactive}
         </Badge>
       ),
-      getValue: (employee) => (employee.is_active ? 1 : 0),
+      getValue: (employee) => (employee.is_active ? translations.active : translations.inactive),
     },
   ];
 

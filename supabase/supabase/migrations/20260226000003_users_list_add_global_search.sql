@@ -52,6 +52,13 @@ BEGIN
       q IS NULL
       OR u.email ILIKE '%' || q || '%'
       OR COALESCE(s.name, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.role::TEXT, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.first_name, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.last_name, '') ILIKE '%' || q || '%'
+      OR CONCAT_WS(' ', COALESCE(pr.first_name, ''), COALESCE(pr.last_name, '')) ILIKE '%' || q || '%'
+      OR CASE WHEN pr.is_superadmin THEN 'super admin' ELSE 'user' END ILIKE '%' || q || '%'
+      OR TO_CHAR(u.created_at, 'YYYY-MM-DD HH24:MI') ILIKE '%' || q || '%'
+      OR TO_CHAR(COALESCE(u.last_sign_in_at, u.created_at), 'YYYY-MM-DD HH24:MI') ILIKE '%' || q || '%'
       OR pr.user_id::TEXT ILIKE '%' || q || '%'
     );
 
@@ -74,6 +81,13 @@ BEGIN
       q IS NULL
       OR u.email ILIKE '%' || q || '%'
       OR COALESCE(s.name, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.role::TEXT, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.first_name, '') ILIKE '%' || q || '%'
+      OR COALESCE(pr.last_name, '') ILIKE '%' || q || '%'
+      OR CONCAT_WS(' ', COALESCE(pr.first_name, ''), COALESCE(pr.last_name, '')) ILIKE '%' || q || '%'
+      OR CASE WHEN pr.is_superadmin THEN 'super admin' ELSE 'user' END ILIKE '%' || q || '%'
+      OR TO_CHAR(u.created_at, 'YYYY-MM-DD HH24:MI') ILIKE '%' || q || '%'
+      OR TO_CHAR(COALESCE(u.last_sign_in_at, u.created_at), 'YYYY-MM-DD HH24:MI') ILIKE '%' || q || '%'
       OR pr.user_id::TEXT ILIKE '%' || q || '%'
     )
   ORDER BY

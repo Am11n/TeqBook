@@ -153,7 +153,7 @@ export function BookingsTable({
           {statusLabel(booking.status, translations)}
         </Badge>
       ),
-      getValue: (booking) => booking.status,
+      getValue: (booking) => statusLabel(booking.status, translations),
     },
     {
       id: "actions_inline",
@@ -222,7 +222,7 @@ export function BookingsTable({
           {booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline}
         </div>
       ),
-      getValue: (booking) => (booking.is_walk_in ? 1 : 0),
+      getValue: (booking) => (booking.is_walk_in ? translations.typeWalkIn : translations.typeOnline),
       defaultVisible: false,
     },
     {
@@ -246,6 +246,12 @@ export function BookingsTable({
       ),
       sortable: false,
       defaultVisible: false,
+      getValue: (booking) => {
+        const productSummary = (booking.products ?? [])
+          .map((bp) => `${bp.product.name} x${bp.quantity}`)
+          .join(" ");
+        return `${booking.notes ?? ""} ${productSummary}`.trim();
+      },
     },
   ];
 

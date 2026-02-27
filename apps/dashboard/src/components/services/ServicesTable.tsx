@@ -96,7 +96,7 @@ export function ServicesTable({
           {getCategoryLabel(service.category)}
         </Badge>
       ),
-      getValue: (service) => service.category ?? "other",
+      getValue: (service) => getCategoryLabel(service.category),
     },
     {
       id: "duration",
@@ -184,7 +184,7 @@ export function ServicesTable({
           {service.is_active ? t.active : t.inactive}
         </Badge>
       ),
-      getValue: (service) => (service.is_active ? 1 : 0),
+      getValue: (service) => (service.is_active ? t.active : t.inactive),
     },
   ];
 

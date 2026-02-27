@@ -90,7 +90,7 @@ export function ProductsTable({
           {product.is_active ? t.active : t.inactive}
         </span>
       ),
-      getValue: (product) => (product.is_active ? 1 : 0),
+      getValue: (product) => (product.is_active ? t.active : t.inactive),
     },
   ];
 
