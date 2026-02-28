@@ -44,10 +44,15 @@ export async function POST(request: NextRequest) {
     }
 
     const row = entry as WaitlistEntry;
+    const slotStartDate = new Date(slotStart);
+    if (Number.isNaN(slotStartDate.getTime())) {
+      return NextResponse.json({ error: "slotStart must be a valid ISO datetime" }, { status: 400 });
+    }
+    const slotDate = slotStartDate.toISOString().slice(0, 10);
     const result = await createAndSendWaitlistOffer({
       salonId,
       serviceId: row.service_id,
-      date: row.preferred_date,
+      date: slotDate,
       waitlistEntry: row,
       slotStartIso: slotStart,
       slotEndIso: slotEnd,

@@ -7,10 +7,11 @@ This runbook documents the operational waitlist flow across public booking and d
 ## Lifecycle State Machine
 
 - `waiting` -> initial state when created from dashboard or public intake.
-- `waiting` -> `notified` when a cancelled slot is matched to a waitlist entry.
+- `waiting` -> `notified` when a cancelled slot is matched to a waitlist entry, or when salon sends manual notify with a concrete slot.
 - `notified` -> `booked` when customer accepts claim-link and booking is created atomically.
 - `notified` -> `expired` when `expires_at` passes and expiry processor runs.
 - `notified` -> `cooldown` when customer declines/offer times out.
+- `notified` -> `booked` when salon runs explicit dashboard `Convert to booking` atomic action.
 - `cooldown` -> `waiting` when `cooldown_until` passes and reactivation job runs.
 - `waiting`/`notified` -> `cancelled` by manual salon action.
 
@@ -20,6 +21,8 @@ Database hardening and lifecycle defaults:
 - Expiry processor function and event log: `supabase/supabase/migrations/20260228000003_waitlist_expiry_processor.sql`
 - Offers/cooldown/policy + atomic claim RPC:
   - `supabase/supabase/migrations/20260301000001_waitlist_offers_and_cooldown.sql`
+- Dashboard convert-to-booking + priority override columns:
+  - `supabase/supabase/migrations/20260301000002_waitlist_convert_and_priority_override.sql`
 
 ## Public Flow
 
@@ -35,6 +38,10 @@ Database hardening and lifecycle defaults:
 
 - Waitlist list/filter/search/pagination/create/manage UI:
   - `apps/dashboard/src/app/bookings/waitlist/page.tsx`
+- Dashboard API endpoints:
+  - `apps/dashboard/src/app/api/waitlist/notify/route.ts`
+  - `apps/dashboard/src/app/api/waitlist/convert-booking/route.ts`
+  - `apps/dashboard/src/app/api/waitlist/priority-override/route.ts`
 - Service/repository entry points:
   - `apps/dashboard/src/lib/services/waitlist-service.ts`
   - `apps/dashboard/src/lib/repositories/waitlist.ts`
@@ -44,7 +51,11 @@ Database hardening and lifecycle defaults:
 ## Notifications (Email + SMS)
 
 - Waitlist claim offers are sent with signed token links (accept/decline) via SMS/email:
-  - `apps/dashboard/src/lib/services/waitlist-cancellation.ts`
+  - `apps/dashboard/src/lib/services/waitlist-offer-flow.ts`
+  - Triggered from both `waitlist-cancellation` and manual notify API.
+- Reminder policy:
+  - Lifecycle processor sends one reminder when offer is within 10 minutes of expiry.
+  - Reminder flow rotates token hash and sends fresh claim links (idempotent via `reminder_sent_at`).
 - Public claim endpoint executes atomic accept/decline:
   - `apps/public/src/app/api/waitlist/claim/route.ts`
 - SMS transport and usage logging pipeline:
@@ -63,6 +74,7 @@ Database hardening and lifecycle defaults:
   - `expire_waitlist_entries(max_rows integer)`
 - Offer timeout and cooldown reactivation API processor:
   - `apps/dashboard/src/app/api/waitlist/process-lifecycle/route.ts`
+  - Includes reminder processing (`processDueWaitlistReminders`) before expiry/cooldown steps.
 
 ## Realtime Contract and Fallback
 
@@ -102,6 +114,18 @@ Implementation reference:
 - Claim-link returns invalid/expired:
   - Verify `waitlist_offers.status='pending'` and `token_expires_at`.
   - Confirm token hash lookup via `claim_waitlist_offer_atomic(...)`.
+- Manual notify blocked as duplicate:
+  - Check existing pending offer for same `(salon_id, employee_id, slot_start)`.
+  - Resolve/expire the active offer before retrying notify for the same slot.
+- Reminder not sent:
+  - Verify `waitlist_offers.reminder_sent_at IS NULL` and offer is in T-10 window.
+  - Confirm lifecycle route (`/api/waitlist/process-lifecycle`) runs with valid `x-cron-key`.
+- Convert to booking fails:
+  - Verify entry status is `notified`.
+  - Confirm either active pending offer exists or entry has explicit `employee_id` + `preferred_time_start`.
+- Priority override not taking effect:
+  - Check `waitlist_entries.priority_override_score` is set.
+  - Verify lifecycle event reason `priority_override_set` exists for audit trail.
 - Customers remain in cooldown too long:
   - Check `waitlist_entries.cooldown_until` and policy from `resolve_waitlist_policy(...)`.
   - Trigger lifecycle processor route if scheduler lagged.
@@ -117,3 +141,8 @@ Implementation reference:
   - `apps/public/tests/unit/api/waitlist-claim.test.ts`
 - Waitlist service transition/notification tests:
   - `apps/dashboard/tests/unit/services/waitlist-service.test.ts`
+- Recommended operational checks:
+  - Manual notify creates `waitlist_offers` row and sends at least one channel.
+  - Claim accept creates booking + links `waitlist_entries.booking_id`.
+  - Convert to booking creates booking via RPC and updates waitlist status.
+  - Reminder sends once per offer (no duplicate reminders when lifecycle processor retries).
