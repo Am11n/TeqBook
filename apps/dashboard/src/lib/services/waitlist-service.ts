@@ -72,6 +72,67 @@ export async function markAsBooked(salonId: string, entryId: string, bookingId?:
   });
 }
 
+export async function notifyWithClaimOffer(input: {
+  salonId: string;
+  entryId: string;
+  slotStart: string;
+  slotEnd?: string | null;
+}) {
+  try {
+    const res = await fetch("/api/waitlist/notify", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json()) as { error?: string; notified?: boolean };
+    if (!res.ok) return { notified: false, error: data.error ?? "Failed to send offer" };
+    return { notified: Boolean(data.notified), error: null };
+  } catch (err) {
+    return { notified: false, error: err instanceof Error ? err.message : "Failed to send offer" };
+  }
+}
+
+export async function convertWaitlistToBooking(input: {
+  salonId: string;
+  entryId: string;
+}) {
+  try {
+    const res = await fetch("/api/waitlist/convert-booking", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json()) as { error?: string; bookingId?: string | null };
+    if (!res.ok) return { bookingId: null, error: data.error ?? "Failed to convert waitlist entry" };
+    return { bookingId: data.bookingId ?? null, error: null };
+  } catch (err) {
+    return { bookingId: null, error: err instanceof Error ? err.message : "Failed to convert waitlist entry" };
+  }
+}
+
+export async function setPriorityOverride(input: {
+  salonId: string;
+  entryId: string;
+  score: number | null;
+  reason?: string | null;
+}) {
+  try {
+    const res = await fetch("/api/waitlist/priority-override", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await res.json()) as { error?: string };
+    if (!res.ok) return { error: data.error ?? "Failed to update priority override" };
+    return { error: null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Failed to update priority override" };
+  }
+}
+
 export async function cancelEntry(salonId: string, entryId: string) {
   return updateWaitlistEntryStatus(salonId, entryId, "cancelled");
 }

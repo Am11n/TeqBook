@@ -32,6 +32,10 @@ export type WaitlistEntry = {
   cooldown_reason: string | null;
   decline_count: number;
   booking_id: string | null;
+  priority_override_score?: number | null;
+  priority_override_reason?: string | null;
+  priority_overridden_by?: string | null;
+  priority_overridden_at?: string | null;
   created_at: string;
   service?: { name: string } | null;
   employee?: { full_name: string } | null;
@@ -99,6 +103,9 @@ function isEntryEligibleForSlot(
 }
 
 function computePriorityScore(entry: WaitlistEntry): number {
+  if (typeof entry.priority_override_score === "number") {
+    return entry.priority_override_score;
+  }
   const createdAtMs = new Date(entry.created_at).getTime();
   const queueAgeMinutes = Number.isNaN(createdAtMs)
     ? 0

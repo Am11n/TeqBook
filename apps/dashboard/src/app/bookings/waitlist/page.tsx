@@ -21,8 +21,9 @@ import { supabase } from "@/lib/supabase-client";
 import {
   listWaitlist,
   removeFromWaitlist,
-  markAsNotified,
-  markAsBooked,
+  notifyWithClaimOffer,
+  convertWaitlistToBooking,
+  setPriorityOverride,
   cancelEntry,
   addToWaitlist,
   markAsCooldown,
@@ -43,6 +44,14 @@ export default function WaitlistPage() {
   const pageSize = 10;
   const [createOpen, setCreateOpen] = useState(false);
   const [savingCreate, setSavingCreate] = useState(false);
+  const [notifyEntry, setNotifyEntry] = useState<WaitlistEntry | null>(null);
+  const [notifySlotStart, setNotifySlotStart] = useState("");
+  const [notifySlotEnd, setNotifySlotEnd] = useState("");
+  const [notifyBusy, setNotifyBusy] = useState(false);
+  const [overrideEntry, setOverrideEntry] = useState<WaitlistEntry | null>(null);
+  const [overrideScore, setOverrideScore] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
+  const [overrideBusy, setOverrideBusy] = useState(false);
   const realtimeRetryRef = useRef(0);
   const realtimeRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -171,13 +180,106 @@ export default function WaitlistPage() {
 
   const handleNotify = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    await markAsNotified(salon.id, entry.id);
+    const initialStart =
+      entry.preferred_time_start != null
+        ? `${entry.preferred_date}T${entry.preferred_time_start.slice(0, 5)}`
+        : "";
+    const initialEnd =
+      entry.preferred_time_end != null
+        ? `${entry.preferred_date}T${entry.preferred_time_end.slice(0, 5)}`
+        : "";
+    setNotifyEntry(entry);
+    setNotifySlotStart(initialStart);
+    setNotifySlotEnd(initialEnd);
+  };
+
+  const submitNotify = async () => {
+    if (!salon?.id || !notifyEntry) return;
+    if (!notifySlotStart) {
+      setError("Slot start is required to send claim-link.");
+      return;
+    }
+    if (!notifyEntry.employee_id) {
+      setError("Entry must have a preferred employee before sending claim-link.");
+      return;
+    }
+    setNotifyBusy(true);
+    const slotStartIso = new Date(notifySlotStart).toISOString();
+    const slotEndIso = notifySlotEnd ? new Date(notifySlotEnd).toISOString() : null;
+    const { error: notifyError } = await notifyWithClaimOffer({
+      salonId: salon.id,
+      entryId: notifyEntry.id,
+      slotStart: slotStartIso,
+      slotEnd: slotEndIso,
+    });
+    setNotifyBusy(false);
+    if (notifyError) {
+      setError(notifyError);
+      return;
+    }
+    setNotifyEntry(null);
     await loadEntries();
   };
 
-  const handleMarkBooked = async (entry: WaitlistEntry) => {
+  const handleConvertToBooking = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    await markAsBooked(salon.id, entry.id);
+    const { error: convertError } = await convertWaitlistToBooking({ salonId: salon.id, entryId: entry.id });
+    if (convertError) {
+      setError(convertError);
+      return;
+    }
+    await loadEntries();
+  };
+
+  const handleOpenPriorityOverride = (entry: WaitlistEntry) => {
+    setOverrideEntry(entry);
+    setOverrideScore(
+      typeof entry.priority_override_score === "number"
+        ? String(entry.priority_override_score)
+        : String(entry.priority_score_snapshot ?? 0)
+    );
+    setOverrideReason(entry.priority_override_reason ?? "");
+  };
+
+  const handleSavePriorityOverride = async () => {
+    if (!salon?.id || !overrideEntry) return;
+    const parsed = Number.parseInt(overrideScore, 10);
+    if (Number.isNaN(parsed)) {
+      setError("Override score must be a valid integer.");
+      return;
+    }
+    if (!overrideReason.trim()) {
+      setError("Override reason is required.");
+      return;
+    }
+    setOverrideBusy(true);
+    const { error: overrideError } = await setPriorityOverride({
+      salonId: salon.id,
+      entryId: overrideEntry.id,
+      score: parsed,
+      reason: overrideReason.trim(),
+    });
+    setOverrideBusy(false);
+    if (overrideError) {
+      setError(overrideError);
+      return;
+    }
+    setOverrideEntry(null);
+    await loadEntries();
+  };
+
+  const handleClearPriorityOverride = async (entry: WaitlistEntry) => {
+    if (!salon?.id) return;
+    const { error: overrideError } = await setPriorityOverride({
+      salonId: salon.id,
+      entryId: entry.id,
+      score: null,
+      reason: null,
+    });
+    if (overrideError) {
+      setError(overrideError);
+      return;
+    }
     await loadEntries();
   };
 
@@ -329,6 +431,9 @@ export default function WaitlistPage() {
                     {entry.flex_window_minutes > 0 && <span>&middot; ±{entry.flex_window_minutes} min</span>}
                     {entry.service && <span>&middot; {entry.service.name}</span>}
                     {entry.employee && <span>&middot; {entry.employee.full_name}</span>}
+                    {typeof entry.priority_override_score === "number" && (
+                      <span>&middot; Override {entry.priority_override_score}</span>
+                    )}
                   </div>
                   {entry.status === "cooldown" && entry.cooldown_until && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -349,8 +454,18 @@ export default function WaitlistPage() {
                     </Button>
                   )}
                   {entry.status === "notified" && (
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleMarkBooked(entry)}>
-                      <CheckCircle className="h-3 w-3" /> Booked
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleConvertToBooking(entry)}>
+                      <CheckCircle className="h-3 w-3" /> Convert to booking
+                    </Button>
+                  )}
+                  {(entry.status === "waiting" || entry.status === "notified" || entry.status === "cooldown") && (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenPriorityOverride(entry)}>
+                      Override priority
+                    </Button>
+                  )}
+                  {typeof entry.priority_override_score === "number" && (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleClearPriorityOverride(entry)}>
+                      Clear override
                     </Button>
                   )}
                   {(entry.status === "waiting" || entry.status === "notified") && (
@@ -526,6 +641,83 @@ export default function WaitlistPage() {
             </Button>
             <Button onClick={handleCreateEntry} disabled={savingCreate}>
               {savingCreate ? "Saving..." : "Create entry"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={notifyEntry !== null} onOpenChange={(open) => (!open ? setNotifyEntry(null) : null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send claim-link offer</DialogTitle>
+            <DialogDescription>
+              Velg tilgjengelig slot for kunden. Dette oppretter offer + claim-link (SMS/e-post).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="notify-slot-start">Slot start</Label>
+              <Input
+                id="notify-slot-start"
+                type="datetime-local"
+                value={notifySlotStart}
+                onChange={(e) => setNotifySlotStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="notify-slot-end">Slot end (optional)</Label>
+              <Input
+                id="notify-slot-end"
+                type="datetime-local"
+                value={notifySlotEnd}
+                onChange={(e) => setNotifySlotEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotifyEntry(null)}>
+              Cancel
+            </Button>
+            <Button onClick={submitNotify} disabled={notifyBusy}>
+              {notifyBusy ? "Sending..." : "Send offer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={overrideEntry !== null} onOpenChange={(open) => (!open ? setOverrideEntry(null) : null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Override waitlist priority</DialogTitle>
+            <DialogDescription>
+              Overstyr score for denne raden. Endringen logges i waitlist lifecycle events.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="override-score">Override score</Label>
+              <Input
+                id="override-score"
+                type="number"
+                value={overrideScore}
+                onChange={(e) => setOverrideScore(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="override-reason">Reason</Label>
+              <Input
+                id="override-reason"
+                value={overrideReason}
+                onChange={(e) => setOverrideReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOverrideEntry(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePriorityOverride} disabled={overrideBusy}>
+              {overrideBusy ? "Saving..." : "Save override"}
             </Button>
           </DialogFooter>
         </DialogContent>
