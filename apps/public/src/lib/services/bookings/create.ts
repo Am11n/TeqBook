@@ -143,6 +143,7 @@ async function sendBookingNotifications(
         body: JSON.stringify({
           bookingId: booking.id,
           customerEmail: input.customer_email,
+          customerPhone: input.customer_phone,
           salonId: input.salon_id,
           language: salon?.preferred_language || "en",
           bookingData: {
@@ -153,6 +154,7 @@ async function sendBookingNotifications(
             status: booking.status,
             is_walk_in: booking.is_walk_in,
             customer_full_name: input.customer_full_name,
+            customer_phone: input.customer_phone || undefined,
             service_name: booking.services?.name || undefined,
             employee_name: booking.employees?.full_name || undefined,
           },

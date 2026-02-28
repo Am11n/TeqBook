@@ -11,6 +11,7 @@ type BookingNotificationPayload = {
   bookingId: string;
   salonId: string;
   customerEmail: string;
+  customerPhone?: string;
   language?: string;
   bookingData?: {
     id: string;
@@ -20,10 +21,62 @@ type BookingNotificationPayload = {
     status: string;
     is_walk_in: boolean;
     customer_full_name: string;
+    customer_phone?: string;
     service_name?: string;
     employee_name?: string;
   };
 };
+
+const E164_REGEX = /^\+[1-9]\d{1,14}$/;
+
+function normalizeToE164(input?: string | null): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const normalized = trimmed.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  return E164_REGEX.test(normalized) ? normalized : null;
+}
+
+async function sendTwilioSms(input: {
+  to: string;
+  body: string;
+}): Promise<{ sent: boolean; id?: string; error?: string }> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_FROM_NUMBER;
+
+  if (!accountSid || !authToken || !fromNumber) {
+    return { sent: false, error: "Twilio environment variables are missing" };
+  }
+
+  const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  const auth = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+
+  const body = new URLSearchParams();
+  body.set("To", input.to);
+  body.set("From", fromNumber);
+  body.set("Body", input.body);
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
+
+  const payload = (await response.json()) as { sid?: string; message?: string };
+  if (!response.ok) {
+    return {
+      sent: false,
+      error: payload.message || `Twilio request failed (${response.status})`,
+    };
+  }
+
+  return { sent: true, id: payload.sid };
+}
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
@@ -31,12 +84,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
-    const { bookingId, salonId, customerEmail, language, bookingData } = body;
+    const { bookingId, salonId, customerEmail, customerPhone, language, bookingData } = body;
 
     const logContext = {
       bookingId,
       salonId,
       customerEmail,
+      hasCustomerPhone: !!customerPhone || !!bookingData?.customer_phone,
       hasBookingData: !!bookingData,
     };
 
@@ -249,8 +303,68 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    // Send customer SMS confirmation if phone exists and is valid E.164.
+    const rawPhone = bookingData?.customer_phone || customerPhone || null;
+    const normalizedPhone = normalizeToE164(rawPhone);
+    const smsResult = normalizedPhone
+      ? await (async () => {
+          const serviceName = bookingData?.service_name || "your appointment";
+          const salonName = salon?.name || "the salon";
+          const dateTime = bookingData?.start_time
+            ? new Date(bookingData.start_time)
+            : null;
+
+          const formattedDate = dateTime
+            ? new Intl.DateTimeFormat("nb-NO", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(dateTime)
+            : "not set";
+
+          const formattedTime = dateTime
+            ? new Intl.DateTimeFormat("nb-NO", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }).format(dateTime)
+            : "not set";
+
+          const message = `Confirmed: ${serviceName} at ${salonName} on ${formattedDate} at ${formattedTime}.`;
+
+          try {
+            const sent = await sendTwilioSms({
+              to: normalizedPhone,
+              body: message,
+            });
+
+            if (!sent.sent) {
+              logWarn("Failed to send public booking confirmation SMS", {
+                ...logContext,
+                phone: normalizedPhone,
+                error: sent.error,
+              });
+            }
+
+            return sent;
+          } catch (smsError) {
+            const errorMessage = smsError instanceof Error ? smsError.message : "Unknown error";
+            logWarn("Exception while sending public booking confirmation SMS", {
+              ...logContext,
+              phone: normalizedPhone,
+              error: errorMessage,
+            });
+            return { sent: false, error: errorMessage };
+          }
+        })()
+      : {
+          sent: false,
+          error: rawPhone ? "Customer phone must be valid E.164 format" : "No customer phone provided",
+        };
+
     const jsonResponse = NextResponse.json({
       email: emailResult,
+      sms: smsResult,
       reminders: reminderResult,
       inApp: inAppResult,
     });
