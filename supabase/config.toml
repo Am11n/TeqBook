@@ -10,3 +10,7 @@ verify_jwt = false
 # Called from public login flow before a user has a JWT
 # Must allow anonymous preflight + POST requests
 verify_jwt = false
+
+[functions.sms-status-webhook]
+# Twilio posts status callbacks without Supabase JWT
+verify_jwt = false

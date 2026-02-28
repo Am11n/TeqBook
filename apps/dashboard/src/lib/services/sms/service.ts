@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 import { logError } from "@/lib/services/logger";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { normalizeToE164 } from "./e164";
@@ -192,12 +193,14 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
 }
 
 async function persistProviderResult(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  _supabase: Awaited<ReturnType<typeof createClient>>,
   logId: string,
   providerResult: SmsProviderSendResult,
   requestStartedAt: number
 ): Promise<void> {
-  const { data: currentLog } = await supabase
+  const adminClient = getAdminClient();
+
+  const { data: currentLog } = await adminClient
     .from("sms_log")
     .select("metadata")
     .eq("id", logId)
@@ -215,7 +218,7 @@ async function persistProviderResult(
           provider_latency_ms: providerResult.providerLatencyMs,
         };
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from("sms_log")
     .update({
       status: providerResult.success ? "sent" : "failed",
