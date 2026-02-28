@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleWaitlistCancellation } from "@/lib/services/waitlist-cancellation";
 
+vi.mock("server-only", () => ({}));
+
 const mockSendSms = vi.fn();
 const mockSendEmail = vi.fn();
 const mockGetSalonById = vi.fn();
@@ -9,6 +11,10 @@ const mockRpc = vi.fn();
 
 function buildAdminClient() {
   const pendingOfferMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+  const pendingOfferQuery = {
+    eq: vi.fn(() => pendingOfferQuery),
+    maybeSingle: pendingOfferMaybeSingle,
+  };
   const waitlistCandidatesQuery = {
     select: vi.fn(() => waitlistCandidatesQuery),
     eq: vi.fn(() => waitlistCandidatesQuery),
@@ -62,17 +68,7 @@ function buildAdminClient() {
     from: vi.fn((table: string) => {
       if (table === "waitlist_offers") {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    maybeSingle: pendingOfferMaybeSingle,
-                  })),
-                })),
-              })),
-            })),
-          })),
+          select: vi.fn(() => pendingOfferQuery),
           insert: vi.fn(() => insertOfferChain),
         };
       }
@@ -124,16 +120,12 @@ describe("Waitlist service", () => {
     const admin = buildAdminClient();
     admin.from = vi.fn((table: string) => {
       if (table === "waitlist_offers") {
+        const pendingQuery = {
+          eq: vi.fn(() => pendingQuery),
+          maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+        };
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  maybeSingle: vi.fn(async () => ({ data: null, error: null })),
-                })),
-              })),
-            })),
-          })),
+          select: vi.fn(() => pendingQuery),
         };
       }
       if (table === "waitlist_entries") {
@@ -150,7 +142,14 @@ describe("Waitlist service", () => {
     });
     mockGetAdminClient.mockReturnValue(admin);
 
-    const result = await handleWaitlistCancellation("salon-1", "service-1", "2026-03-12");
+    const result = await handleWaitlistCancellation(
+      "salon-1",
+      "service-1",
+      "2026-03-12",
+      "employee-1",
+      "2026-03-12T19:35:00.000Z",
+      "2026-03-12T20:05:00.000Z"
+    );
     expect(result.notified).toBe(false);
     expect(mockSendSms).not.toHaveBeenCalled();
     expect(mockSendEmail).not.toHaveBeenCalled();
