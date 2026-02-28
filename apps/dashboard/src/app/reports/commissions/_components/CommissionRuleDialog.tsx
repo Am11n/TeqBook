@@ -27,10 +27,14 @@ export function CommissionRuleDialog({
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    const parsed = parseFloat(rate);
+    const parsed = type === "percentage" ? parseFloat(rate) : parseInt(rate, 10);
     if (isNaN(parsed)) return;
+    if (type === "fixed_per_booking" && parsed < 0) return;
+
+    // UI uses whole currency units; convert to minor units for storage.
+    const normalizedRate = type === "fixed_per_booking" ? parsed * 100 : parsed;
     setSaving(true);
-    await onSave({ employeeId, type, rate: parsed, appliesTo });
+    await onSave({ employeeId, type, rate: normalizedRate, appliesTo });
     setSaving(false);
     onOpenChange(false);
   };
@@ -61,11 +65,11 @@ export function CommissionRuleDialog({
           </div>
           <div>
             <label className="text-xs font-medium">
-              {type === "percentage" ? "Rate (decimal, e.g. 0.30 = 30%)" : `Amount per booking (${currency} in cents)`}
+              {type === "percentage" ? "Rate (decimal, e.g. 0.30 = 30%)" : `Amount per booking (${currency})`}
             </label>
-            <input type="number" step="0.01" min="0" value={rate}
+            <input type="number" step={type === "percentage" ? "0.01" : "1"} min="0" value={rate}
               onChange={(e) => setRate(e.target.value)}
-              placeholder={type === "percentage" ? "0.30" : "5000"}
+              placeholder={type === "percentage" ? "0.30" : "500"}
               className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2" />
           </div>
           <div>
