@@ -84,16 +84,31 @@ export async function updateWaitlistEntryStatus(
   salonId: string,
   entryId: string,
   status: string,
-  extra?: { notified_at?: string; expires_at?: string }
+  extra?: { notified_at?: string; expires_at?: string; from_status?: string }
 ): Promise<{ error: string | null }> {
   try {
-    const { error } = await supabase
+    const updatePayload = {
+      status,
+      notified_at: extra?.notified_at,
+      expires_at: extra?.expires_at,
+    };
+
+    let query = supabase
       .from("waitlist_entries")
-      .update({ status, ...extra })
+      .update(updatePayload)
       .eq("id", entryId)
       .eq("salon_id", salonId);
 
+    if (extra?.from_status) {
+      query = query.eq("status", extra.from_status);
+    }
+
+    const { data, error } = await query.select("id").maybeSingle();
+
     if (error) return { error: error.message };
+    if (!data && extra?.from_status) {
+      return { error: `Entry is no longer in '${extra.from_status}' status` };
+    }
     return { error: null };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Unknown error" };
