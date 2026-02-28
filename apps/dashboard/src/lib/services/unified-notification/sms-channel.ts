@@ -51,16 +51,21 @@ export async function sendSmsNotification(
   const bookingData = data as BookingNotificationData;
   const salonName = bookingData.booking?.salon?.name || "salon";
   const serviceName = bookingData.booking?.service?.name || "appointment";
-  const startTime = bookingData.booking?.start_time
-    ? new Date(bookingData.booking.start_time).toLocaleString("nb-NO")
-    : "snarest";
+  const startDate = bookingData.booking?.start_time ? new Date(bookingData.booking.start_time) : null;
+  const formattedDate = startDate
+    ? new Intl.DateTimeFormat("nb-NO", { day: "numeric", month: "long", year: "numeric" }).format(startDate)
+    : "Ikke angitt";
+  const formattedTime = startDate
+    ? new Intl.DateTimeFormat("nb-NO", { hour: "2-digit", minute: "2-digit", hour12: false }).format(startDate)
+    : "Ikke angitt";
+  const employeeName = bookingData.booking?.employee?.name || "Ikke angitt";
 
   const message =
     smsType === "booking_cancellation"
       ? `Hei! Tiden din hos ${salonName} ble avbestilt. Kontakt salongen om du vil booke ny tid.`
       : smsType === "booking_reminder"
-        ? `Påminnelse: Du har ${serviceName} hos ${salonName} ${startTime}.`
-        : `Bekreftet: ${serviceName} hos ${salonName} ${startTime}.`;
+        ? `Påminnelse: Du har ${serviceName} hos ${salonName} ${formattedDate} kl. ${formattedTime}.`
+        : `Bekreftet:\nDin time for ${serviceName} hos ${salonName} er bekreftet.\nDato: ${formattedDate}\nTid: ${formattedTime}\nBehandler: ${employeeName}\nVennligst kom 10 minutter før for å sikre at du får best mulig opplevelse.\nVi ser frem til å se deg!`;
 
   const { start, end } = getBillingWindow(null);
 
