@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { WaitlistEntry } from "@/lib/repositories/waitlist";
 import { getSalonById } from "@/lib/repositories/salons";
@@ -150,7 +150,7 @@ export async function createAndSendWaitlistOffer(
         body: message,
         billingPeriodStart: start,
         billingPeriodEnd: end,
-        idempotencyKey: `waitlist-offer-${entry.id}-${input.slotStartIso}-attempt-${attemptNo}`,
+        idempotencyKey: randomUUID(),
         waitlistId: entry.id,
         metadata: {
           trigger: input.trigger,

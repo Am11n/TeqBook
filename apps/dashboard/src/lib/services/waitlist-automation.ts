@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { logInfo, logWarn } from "@/lib/services/logger";
 import { handleWaitlistCancellation } from "@/lib/services/waitlist-cancellation";
@@ -142,7 +142,7 @@ export async function processDueWaitlistReminders(maxRows = 200): Promise<{
             `Bekreft her: ${acceptUrl} Avslå: ${declineUrl}`,
           billingPeriodStart: start,
           billingPeriodEnd: end,
-          idempotencyKey: `waitlist-reminder-${offer.id}`,
+          idempotencyKey: randomUUID(),
           waitlistId: offer.waitlist_entry_id,
           metadata: {
             trigger: "waitlist_reminder",
