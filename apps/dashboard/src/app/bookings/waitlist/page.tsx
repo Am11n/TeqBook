@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Clock, Trash2, Bell, CheckCircle } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -41,6 +41,10 @@ export default function WaitlistPage() {
   const pageSize = 10;
   const [createOpen, setCreateOpen] = useState(false);
   const [savingCreate, setSavingCreate] = useState(false);
+  const realtimeRetryRef = useRef(0);
+  const realtimeRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const eventDedupRef = useRef<Map<string, string>>(new Map());
   const [createForm, setCreateForm] = useState({
     customerName: "",
     customerEmail: "",
@@ -52,16 +56,16 @@ export default function WaitlistPage() {
     preferredTimeEnd: "",
   });
 
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     if (!salon?.id) return;
     setLoading(true);
     const { data, error } = await listWaitlist(salon.id, filter === "all" ? undefined : filter);
     setEntries(data ?? []);
     if (error) setError(error);
     setLoading(false);
-  };
+  }, [salon?.id, filter]);
 
-  const loadFormData = async () => {
+  const loadFormData = useCallback(async () => {
     if (!salon?.id) return;
     const [servicesRes, employeesRes] = await Promise.all([
       supabase
@@ -82,12 +86,80 @@ export default function WaitlistPage() {
     if (!employeesRes.error) {
       setEmployees((employeesRes.data ?? []) as Array<{ id: string; full_name: string }>);
     }
-  };
+  }, [salon?.id]);
 
   useEffect(() => {
     loadEntries();
     loadFormData();
-  }, [salon?.id, filter]);
+  }, [loadEntries, loadFormData]);
+
+  useEffect(() => {
+    if (!salon?.id) return;
+
+    const channelName = `waitlist:salon:${salon.id}`;
+    const maxRetries = 4;
+    const baseRetryMs = 1000;
+
+    const subscribe = () => {
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "waitlist_entries",
+            filter: `salon_id=eq.${salon.id}`,
+          },
+          (payload) => {
+            const rowId = String((payload.new as { id?: string } | null)?.id || (payload.old as { id?: string } | null)?.id || "");
+            const stamp = payload.commit_timestamp || "";
+            const dedupKey = `${payload.eventType}:${rowId}`;
+            if (eventDedupRef.current.get(dedupKey) === stamp) {
+              return;
+            }
+            eventDedupRef.current.set(dedupKey, stamp);
+            loadEntries();
+          }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            realtimeRetryRef.current = 0;
+          } else if (status === "CHANNEL_ERROR") {
+            realtimeRetryRef.current += 1;
+            if (realtimeRetryRef.current <= maxRetries) {
+              const delay = Math.min(16000, baseRetryMs * 2 ** (realtimeRetryRef.current - 1));
+              if (realtimeRetryTimerRef.current) clearTimeout(realtimeRetryTimerRef.current);
+              realtimeRetryTimerRef.current = setTimeout(() => {
+                supabase.removeChannel(channel);
+                subscribe();
+              }, delay);
+            } else {
+              console.warn("Waitlist realtime degraded; relying on polling fallback.");
+            }
+          }
+        });
+
+      return channel;
+    };
+
+    const channel = subscribe();
+    pollingTimerRef.current = setInterval(() => {
+      loadEntries();
+    }, 60000);
+
+    return () => {
+      if (realtimeRetryTimerRef.current) {
+        clearTimeout(realtimeRetryTimerRef.current);
+        realtimeRetryTimerRef.current = null;
+      }
+      if (pollingTimerRef.current) {
+        clearInterval(pollingTimerRef.current);
+        pollingTimerRef.current = null;
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [salon?.id, loadEntries]);
 
   useEffect(() => {
     setPage(1);
