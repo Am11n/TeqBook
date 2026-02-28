@@ -38,7 +38,7 @@ export function TodaysBookingsCard({
 }: TodaysBookingsCardProps) {
   const { salon } = useCurrentSalon();
   const timezone = salon?.timezone || "UTC";
-  const hour12 = salon?.time_format === "12h" ? true : undefined;
+  const hour12 = salon?.time_format === "12h";
 
   return (
     <div className="group rounded-2xl bg-card/90 backdrop-blur-xl px-8 py-8 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style={{ animationDelay: '0ms' }}>

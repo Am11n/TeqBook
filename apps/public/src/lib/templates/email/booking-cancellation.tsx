@@ -13,7 +13,7 @@ export interface BookingCancellationTemplateProps {
     customer_full_name: string;
     service?: { name: string | null } | null;
     employee?: { name: string | null } | null;
-    salon?: { name: string | null } | null;
+    salon?: { name: string | null; time_format?: "12h" | "24h" | null } | null;
   };
   language: string;
   cancellationReason?: string | null;
@@ -149,13 +149,24 @@ export function renderBookingCancellationTemplate(
   const customerName = booking.customer_full_name;
   const serviceName = booking.service?.name || "Service";
   const employeeName = booking.employee?.name || "Employee";
+  const hour12Override = booking.salon?.time_format === "12h" ? true : false;
   
   // Use salon timezone if provided, otherwise use UTC
   const timezone = props.timezone || "UTC";
   
   // Format date and time in salon timezone
-  const startDateTime = formatDateTimeInTimezone(booking.start_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
-  const endDateTime = formatDateTimeInTimezone(booking.end_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
+  const startDateTime = formatDateTimeInTimezone(
+    booking.start_time,
+    timezone,
+    locale === "nb" ? "nb-NO" : "en-US",
+    hour12Override
+  );
+  const endDateTime = formatDateTimeInTimezone(
+    booking.end_time,
+    timezone,
+    locale === "nb" ? "nb-NO" : "en-US",
+    hour12Override
+  );
   
   // Format date string (full date with weekday)
   const startDate = new Date(booking.start_time);

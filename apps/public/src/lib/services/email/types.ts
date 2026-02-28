@@ -24,7 +24,7 @@ type BookingWithDetails = Booking & {
   customer_full_name: string;
   service?: { name: string | null } | null;
   employee?: { name: string | null } | null;
-  salon?: { name: string | null } | null;
+  salon?: { name: string | null; time_format?: "12h" | "24h" | null } | null;
 };
 
 export interface SendBookingConfirmationInput {

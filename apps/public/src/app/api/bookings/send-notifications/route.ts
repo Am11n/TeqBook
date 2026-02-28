@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
       customer_full_name: bookingData?.customer_full_name ?? "Customer",
       service: bookingData?.service_name ? { name: bookingData.service_name } : null,
       employee: bookingData?.employee_name ? { name: bookingData.employee_name } : null,
-      salon: salon ? { name: salon.name } : null,
+      salon: salon ? { name: salon.name, time_format: salon.time_format ?? null } : null,
     } as any;
 
     // Send confirmation email (do not fail the request if email fails)
