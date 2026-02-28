@@ -22,6 +22,15 @@ function getBillingWindow(periodEndIso?: string | null): { start: string; end: s
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+function getPublicAppBaseUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "https://teqbook.com";
+  return configured.replace(/\/+$/, "");
+}
+
 export type CreateWaitlistOfferInput = {
   salonId: string;
   serviceId: string;
@@ -127,7 +136,7 @@ export async function createAndSendWaitlistOffer(
 
   const token = randomBytes(24).toString("hex");
   const tokenHash = createHash("sha256").update(token).digest("hex");
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const baseUrl = getPublicAppBaseUrl();
   const acceptUrl = `${baseUrl}/api/waitlist/claim?action=accept&token=${token}`;
   const declineUrl = `${baseUrl}/api/waitlist/claim?action=decline&token=${token}`;
 
