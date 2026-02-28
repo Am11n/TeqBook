@@ -7,12 +7,16 @@ type EnrichedBooking = Booking & {
   customer_full_name: string;
   service?: { name: string | null } | null;
   employee?: { name: string | null } | null;
-  salon?: { name: string | null; timezone?: string | null } | null;
+  salon?: {
+    name: string | null;
+    timezone?: string | null;
+    time_format?: "12h" | "24h" | null;
+  } | null;
 };
 
 export function prepareBookingForNotification(
   booking: EnrichedBooking,
-  salon: { name: string; timezone?: string | null } | null
+  salon: { name: string; timezone?: string | null; time_format?: "12h" | "24h" | null } | null
 ): EnrichedBooking {
   return {
     id: booking.id,
@@ -27,7 +31,13 @@ export function prepareBookingForNotification(
     customer_full_name: booking.customer_full_name,
     service: booking.service,
     employee: booking.employee,
-    salon: salon ? { name: salon.name } : booking.salon,
+    salon: salon
+      ? {
+          name: salon.name,
+          timezone: salon.timezone ?? null,
+          time_format: salon.time_format ?? null,
+        }
+      : booking.salon,
   };
 }
 

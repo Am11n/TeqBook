@@ -4,6 +4,7 @@ import { getAvailableSlots } from "@/lib/repositories/bookings";
 import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
+import { getTodayLocal } from "@/lib/utils/date-utils";
 import type { Booking } from "@/lib/types";
 import type { Product } from "@/lib/repositories/products";
 import { useBookingValidation } from "./useBookingValidation";
@@ -24,7 +25,7 @@ export function useCreateBooking({
   const { salon } = useCurrentSalon();
   const [employeeId, setEmployeeId] = useState("");
   const [serviceId, setServiceId] = useState("");
-  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string>(() => getTodayLocal());
   const [slots, setSlots] = useState<{ start: string; end: string; label: string }[]>([]);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -131,7 +132,7 @@ export function useCreateBooking({
 
   function resetForm() {
     setEmployeeId(""); setServiceId("");
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(getTodayLocal());
     setSlots([]); setSelectedSlot("");
     setCustomerName(""); setCustomerEmail(""); setCustomerPhone("");
     setIsWalkIn(false); setSelectedProducts([]);

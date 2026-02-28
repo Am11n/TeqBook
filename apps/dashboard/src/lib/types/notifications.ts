@@ -67,7 +67,12 @@ export interface BookingNotificationData {
     customer_full_name: string;
     service?: { name: string | null } | null;
     employee?: { name: string | null } | null;
-    salon?: { name: string | null; address?: string | null; timezone?: string | null } | null;
+    salon?: {
+      name: string | null;
+      address?: string | null;
+      timezone?: string | null;
+      time_format?: "12h" | "24h" | null;
+    } | null;
   };
   salonId: string;
   recipientUserId?: string | null; // User ID for preference checks and in-app notifications
@@ -82,7 +87,11 @@ export interface ReminderNotificationData {
     customer_full_name: string;
     service?: { name: string | null } | null;
     employee?: { name: string | null } | null;
-    salon?: { name: string | null } | null;
+    salon?: {
+      name: string | null;
+      timezone?: string | null;
+      time_format?: "12h" | "24h" | null;
+    } | null;
   };
   salonId: string;
   recipientUserId?: string | null;

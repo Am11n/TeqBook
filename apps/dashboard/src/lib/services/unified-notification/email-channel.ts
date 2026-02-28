@@ -33,6 +33,7 @@ export async function sendEmailNotification(
         booking: bookingData.booking, recipientEmail: email,
         language: bookingData.language, salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
+        timezone: bookingData.booking.salon?.timezone || "UTC",
       });
       if (result.error) return { channel: "email", sent: false, error: result.error };
       return { channel: "email", sent: true, id: result.data?.id, icsAttached: !!icsContent };
@@ -45,6 +46,7 @@ export async function sendEmailNotification(
         booking: reminderData.booking, recipientEmail: email,
         reminderType: reminderData.reminderType, language: reminderData.language,
         salonId: reminderData.salonId, userId: reminderData.recipientUserId || null,
+        timezone: reminderData.booking.salon?.timezone || "UTC",
       });
       if (result.error) return { channel: "email", sent: false, error: result.error };
       return { channel: "email", sent: true, id: result.data?.id };
@@ -71,6 +73,7 @@ export async function sendEmailNotification(
         booking: bookingData.booking, recipientEmail: email,
         language: bookingData.language, salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
+        timezone: bookingData.booking.salon?.timezone || "UTC",
       });
       if (result.error) return { channel: "email", sent: false, error: result.error };
       return { channel: "email", sent: true, id: result.data?.id };
