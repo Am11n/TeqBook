@@ -204,8 +204,20 @@ export default function WaitlistPage() {
       return;
     }
     setNotifyBusy(true);
-    const slotStartIso = new Date(notifySlotStart).toISOString();
-    const slotEndIso = notifySlotEnd ? new Date(notifySlotEnd).toISOString() : null;
+    const slotStartDate = new Date(notifySlotStart);
+    if (Number.isNaN(slotStartDate.getTime())) {
+      setNotifyBusy(false);
+      setError("Slot start is invalid.");
+      return;
+    }
+    const slotEndDate = notifySlotEnd ? new Date(notifySlotEnd) : null;
+    if (slotEndDate && Number.isNaN(slotEndDate.getTime())) {
+      setNotifyBusy(false);
+      setError("Slot end is invalid.");
+      return;
+    }
+    const slotStartIso = slotStartDate.toISOString();
+    const slotEndIso = slotEndDate ? slotEndDate.toISOString() : null;
     const { error: notifyError } = await notifyWithClaimOffer({
       salonId: salon.id,
       entryId: notifyEntry.id,
@@ -646,7 +658,12 @@ export default function WaitlistPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={notifyEntry !== null} onOpenChange={(open) => (!open ? setNotifyEntry(null) : null)}>
+      <Dialog
+        open={notifyEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) setNotifyEntry(null);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Send claim-link offer</DialogTitle>
@@ -685,7 +702,12 @@ export default function WaitlistPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={overrideEntry !== null} onOpenChange={(open) => (!open ? setOverrideEntry(null) : null)}>
+      <Dialog
+        open={overrideEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) setOverrideEntry(null);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Override waitlist priority</DialogTitle>

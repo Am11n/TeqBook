@@ -8,6 +8,7 @@ const mockSendEmail = vi.fn();
 const mockGetSalonById = vi.fn();
 const mockGetAdminClient = vi.fn();
 const mockRpc = vi.fn();
+const mockCreateAndSendWaitlistOffer = vi.fn();
 
 function buildAdminClient() {
   const pendingOfferMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
@@ -109,10 +110,20 @@ vi.mock("@/lib/services/logger", () => ({
   logWarn: vi.fn(),
 }));
 
+vi.mock("@/lib/services/waitlist-offer-flow", () => ({
+  createAndSendWaitlistOffer: (...args: unknown[]) => mockCreateAndSendWaitlistOffer(...args),
+}));
+
 describe("Waitlist service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRpc.mockResolvedValue([{ claim_expiry_minutes: 15 }]);
+    mockCreateAndSendWaitlistOffer.mockResolvedValue({
+      notified: true,
+      entry: { id: "entry-1" },
+      error: null,
+      offerId: "offer-1",
+    });
     mockGetAdminClient.mockReturnValue(buildAdminClient());
   });
 
@@ -170,7 +181,6 @@ describe("Waitlist service", () => {
     const result = await handleWaitlistCancellation("salon-1", "service-1", "2026-03-12");
 
     expect(result.notified).toBe(true);
-    expect(mockSendSms).toHaveBeenCalledOnce();
-    expect(mockSendEmail).toHaveBeenCalledOnce();
+    expect(mockCreateAndSendWaitlistOffer).toHaveBeenCalledOnce();
   });
 });

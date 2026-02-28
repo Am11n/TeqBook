@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  processDueWaitlistReminders,
   processExpiredWaitlistOffers,
   reactivateCooldownEntries,
 } from "@/lib/services/waitlist-automation";
@@ -16,11 +17,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const reminderResult = await processDueWaitlistReminders();
   const expiredResult = await processExpiredWaitlistOffers();
   const reactivationResult = await reactivateCooldownEntries();
 
   return NextResponse.json({
     ok: true,
+    reminders: reminderResult,
     expiredOffers: expiredResult,
     cooldownReactivations: reactivationResult,
   });
