@@ -38,6 +38,7 @@ export default function WaitlistPage() {
   const [employees, setEmployees] = useState<Array<{ id: string; full_name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("waiting");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -195,6 +196,7 @@ export default function WaitlistPage() {
 
   const submitNotify = async () => {
     if (!salon?.id || !notifyEntry) return;
+    setNotice(null);
     if (!notifySlotStart) {
       setError("Slot start is required to send claim-link.");
       return;
@@ -218,7 +220,7 @@ export default function WaitlistPage() {
     }
     const slotStartIso = slotStartDate.toISOString();
     const slotEndIso = slotEndDate ? slotEndDate.toISOString() : null;
-    const { error: notifyError } = await notifyWithClaimOffer({
+    const { error: notifyError, warning } = await notifyWithClaimOffer({
       salonId: salon.id,
       entryId: notifyEntry.id,
       slotStart: slotStartIso,
@@ -228,6 +230,9 @@ export default function WaitlistPage() {
     if (notifyError) {
       setError(notifyError);
       return;
+    }
+    if (warning) {
+      setNotice(warning);
     }
     setNotifyEntry(null);
     await loadEntries();
@@ -398,6 +403,11 @@ export default function WaitlistPage() {
   return (
     <ErrorBoundary>
       {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
+      {notice && (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {notice}
+        </div>
+      )}
 
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center gap-2">

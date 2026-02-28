@@ -85,11 +85,11 @@ export async function notifyWithClaimOffer(input: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     });
-    const data = (await res.json()) as { error?: string; notified?: boolean };
-    if (!res.ok) return { notified: false, error: data.error ?? "Failed to send offer" };
-    return { notified: Boolean(data.notified), error: null };
+    const data = (await res.json()) as { error?: string; warning?: string; notified?: boolean };
+    if (!res.ok) return { notified: false, warning: data.warning ?? null, error: data.error ?? "Failed to send offer" };
+    return { notified: Boolean(data.notified), warning: data.warning ?? null, error: null };
   } catch (err) {
-    return { notified: false, error: err instanceof Error ? err.message : "Failed to send offer" };
+    return { notified: false, warning: null, error: err instanceof Error ? err.message : "Failed to send offer" };
   }
 }
 

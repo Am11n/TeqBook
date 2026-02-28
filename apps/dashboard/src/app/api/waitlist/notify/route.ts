@@ -65,12 +65,15 @@ export async function POST(request: NextRequest) {
     if (result.error) {
       const conflict = result.error.toLowerCase().includes("pending offer");
       return NextResponse.json(
-        { error: result.error, notified: false },
+        { error: result.error, warning: result.warning, notified: false },
         { status: conflict ? 409 : 400 }
       );
     }
 
-    return NextResponse.json({ notified: result.notified, offerId: result.offerId }, { status: 200 });
+    return NextResponse.json(
+      { notified: result.notified, offerId: result.offerId, warning: result.warning },
+      { status: 200 }
+    );
   } catch {
     return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
   }

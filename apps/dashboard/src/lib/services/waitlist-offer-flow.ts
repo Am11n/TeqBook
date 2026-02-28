@@ -40,6 +40,7 @@ export type CreateWaitlistOfferResult = {
   entry: WaitlistEntry | null;
   error: string | null;
   offerId: string | null;
+  warning: string | null;
 };
 
 export async function createAndSendWaitlistOffer(
@@ -54,6 +55,7 @@ export async function createAndSendWaitlistOffer(
       entry,
       error: "Employee is required to create a claim offer",
       offerId: null,
+      warning: null,
     };
   }
 
@@ -63,6 +65,7 @@ export async function createAndSendWaitlistOffer(
       entry,
       error: "Customer has no phone or email for claim-link delivery",
       offerId: null,
+      warning: null,
     };
   }
 
@@ -80,6 +83,7 @@ export async function createAndSendWaitlistOffer(
       entry,
       error: "A pending offer already exists for this slot",
       offerId: null,
+      warning: null,
     };
   }
 
@@ -115,10 +119,10 @@ export async function createAndSendWaitlistOffer(
 
   const { data: updatedEntry, error: updateError } = await updateQuery.select("*").maybeSingle();
   if (updateError) {
-    return { notified: false, entry, error: updateError.message, offerId: null };
+    return { notified: false, entry, error: updateError.message, offerId: null, warning: null };
   }
   if (!updatedEntry) {
-    return { notified: false, entry: null, error: "Entry no longer eligible for notify", offerId: null };
+    return { notified: false, entry: null, error: "Entry no longer eligible for notify", offerId: null, warning: null };
   }
 
   const token = randomBytes(24).toString("hex");
@@ -129,6 +133,7 @@ export async function createAndSendWaitlistOffer(
 
   let smsSent = false;
   let emailSent = false;
+  let smsFailureReason: string | null = null;
 
   if (entry.customer_phone) {
     try {
@@ -156,15 +161,19 @@ export async function createAndSendWaitlistOffer(
       });
       smsSent = smsResult.allowed && smsResult.status === "sent";
       if (!smsSent) {
+        smsFailureReason = smsResult.error || smsResult.blockedReason || "unknown";
         logWarn("Waitlist claim SMS failed", {
           salonId: input.salonId,
           entryId: entry.id,
-          reason: smsResult.error || smsResult.blockedReason || "unknown",
+          reason: smsFailureReason,
         });
       }
-    } catch {
+    } catch (err) {
+      smsFailureReason = err instanceof Error ? err.message : "SMS provider exception";
       logWarn("Waitlist claim SMS threw an exception", { salonId: input.salonId, entryId: entry.id });
     }
+  } else {
+    smsFailureReason = "Customer has no phone number";
   }
 
   if (entry.customer_email) {
@@ -211,7 +220,7 @@ export async function createAndSendWaitlistOffer(
     .single();
 
   if (offerError) {
-    return { notified: false, entry, error: offerError.message, offerId: null };
+    return { notified: false, entry, error: offerError.message, offerId: null, warning: null };
   }
 
   await admin.from("waitlist_lifecycle_events").insert({
@@ -230,10 +239,16 @@ export async function createAndSendWaitlistOffer(
     },
   });
 
+  const warning =
+    emailSent && !smsSent && smsFailureReason
+      ? `SMS claim-link failed, email was sent instead: ${smsFailureReason}`
+      : null;
+
   return {
     notified: true,
     entry: updatedEntry as WaitlistEntry,
     error: null,
     offerId: offer.id as string,
+    warning,
   };
 }
