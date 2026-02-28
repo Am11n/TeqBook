@@ -68,7 +68,7 @@ export async function handleWaitlistCancellation(
     const { data: waitlistCandidates, error } = await matchQuery;
 
     if (error || !waitlistCandidates || waitlistCandidates.length === 0) {
-      return { notified: false, entry: null, error };
+      return { notified: false, entry: null, error: error?.message ?? null };
     }
 
     const slotStart = slotStartIso ? new Date(slotStartIso) : null;

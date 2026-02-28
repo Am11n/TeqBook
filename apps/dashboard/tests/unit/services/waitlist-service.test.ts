@@ -117,7 +117,7 @@ describe("Waitlist service", () => {
   });
 
   it("returns without notify when no match exists", async () => {
-    const admin = buildAdminClient();
+    const admin: any = buildAdminClient();
     admin.from = vi.fn((table: string) => {
       if (table === "waitlist_offers") {
         const pendingQuery = {
