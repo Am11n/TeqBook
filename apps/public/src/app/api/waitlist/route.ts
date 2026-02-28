@@ -10,6 +10,8 @@ type WaitlistPayload = {
   preferredDate: string;
   preferredTimeStart?: string | null;
   preferredTimeEnd?: string | null;
+  preferenceMode?: "specific_time" | "day_flexible";
+  flexWindowMinutes?: number | null;
   customerName: string;
   customerEmail?: string | null;
   customerPhone?: string | null;
@@ -49,6 +51,16 @@ export async function POST(request: NextRequest) {
       preferredDate: (body.preferredDate ?? "").trim(),
       preferredTimeStart: body.preferredTimeStart?.trim() || null,
       preferredTimeEnd: body.preferredTimeEnd?.trim() || null,
+      preferenceMode:
+        body.preferenceMode === "day_flexible" || body.preferenceMode === "specific_time"
+          ? body.preferenceMode
+          : body.preferredTimeStart
+            ? "specific_time"
+            : "day_flexible",
+      flexWindowMinutes:
+        typeof body.flexWindowMinutes === "number" && Number.isFinite(body.flexWindowMinutes)
+          ? Math.max(0, Math.min(2880, Math.round(body.flexWindowMinutes)))
+          : null,
       customerName: (body.customerName ?? "").trim(),
       customerEmail: body.customerEmail?.trim().toLowerCase() || null,
       customerPhone: body.customerPhone?.trim() || null,
@@ -193,6 +205,19 @@ export async function POST(request: NextRequest) {
         preferred_date: payload.preferredDate,
         preferred_time_start: payload.preferredTimeStart,
         preferred_time_end: payload.preferredTimeEnd,
+        preference_mode: payload.preferenceMode,
+        flex_window_minutes:
+          payload.flexWindowMinutes ??
+          (payload.preferenceMode === "day_flexible" ? 1440 : 0),
+        priority_score_snapshot:
+          (payload.preferenceMode === "specific_time" ? 10 : 0) -
+          (payload.preferenceMode === "specific_time"
+            ? 0
+            : payload.flexWindowMinutes && payload.flexWindowMinutes <= 120
+              ? 5
+              : payload.flexWindowMinutes && payload.flexWindowMinutes <= 720
+                ? 7
+                : 10),
         customer_name: payload.customerName,
         customer_email: payload.customerEmail,
         customer_phone: payload.customerPhone,

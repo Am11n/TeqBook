@@ -8,14 +8,18 @@ This runbook documents the operational waitlist flow across public booking and d
 
 - `waiting` -> initial state when created from dashboard or public intake.
 - `waiting` -> `notified` when a cancelled slot is matched to a waitlist entry.
-- `notified` -> `booked` when salon confirms the customer has claimed the slot.
+- `notified` -> `booked` when customer accepts claim-link and booking is created atomically.
 - `notified` -> `expired` when `expires_at` passes and expiry processor runs.
+- `notified` -> `cooldown` when customer declines/offer times out.
+- `cooldown` -> `waiting` when `cooldown_until` passes and reactivation job runs.
 - `waiting`/`notified` -> `cancelled` by manual salon action.
 
 Database hardening and lifecycle defaults:
 
 - Status constraint and lifecycle trigger: `supabase/supabase/migrations/20260228000002_waitlist_lifecycle_hardening.sql`
 - Expiry processor function and event log: `supabase/supabase/migrations/20260228000003_waitlist_expiry_processor.sql`
+- Offers/cooldown/policy + atomic claim RPC:
+  - `supabase/supabase/migrations/20260301000001_waitlist_offers_and_cooldown.sql`
 
 ## Public Flow
 
@@ -34,11 +38,15 @@ Database hardening and lifecycle defaults:
 - Service/repository entry points:
   - `apps/dashboard/src/lib/services/waitlist-service.ts`
   - `apps/dashboard/src/lib/repositories/waitlist.ts`
+  - `apps/dashboard/src/lib/services/waitlist-cancellation.ts`
+  - `apps/dashboard/src/lib/services/waitlist-automation.ts`
 
 ## Notifications (Email + SMS)
 
-- Waitlist claim path now attempts SMS delivery (when phone exists), and keeps email delivery in parallel/fallback path:
-  - `apps/dashboard/src/lib/services/waitlist-service.ts`
+- Waitlist claim offers are sent with signed token links (accept/decline) via SMS/email:
+  - `apps/dashboard/src/lib/services/waitlist-cancellation.ts`
+- Public claim endpoint executes atomic accept/decline:
+  - `apps/public/src/app/api/waitlist/claim/route.ts`
 - SMS transport and usage logging pipeline:
   - `apps/dashboard/src/lib/services/sms/service.ts`
   - `apps/dashboard/src/lib/services/unified-notification/sms-channel.ts`
@@ -53,6 +61,8 @@ Database hardening and lifecycle defaults:
   - `supabase/config.toml` (`[functions.process-waitlist-expiry]`)
 - Core DB RPC:
   - `expire_waitlist_entries(max_rows integer)`
+- Offer timeout and cooldown reactivation API processor:
+  - `apps/dashboard/src/app/api/waitlist/process-lifecycle/route.ts`
 
 ## Realtime Contract and Fallback
 
@@ -89,6 +99,12 @@ Implementation reference:
 - SMS not sent for waitlist claim:
   - Validate salon SMS policy and quotas.
   - Check `sms_log` for `waitlist_claim` entries and provider status.
+- Claim-link returns invalid/expired:
+  - Verify `waitlist_offers.status='pending'` and `token_expires_at`.
+  - Confirm token hash lookup via `claim_waitlist_offer_atomic(...)`.
+- Customers remain in cooldown too long:
+  - Check `waitlist_entries.cooldown_until` and policy from `resolve_waitlist_policy(...)`.
+  - Trigger lifecycle processor route if scheduler lagged.
 - Dashboard not updating in realtime:
   - Check browser console for `CHANNEL_ERROR`.
   - Confirm polling fallback updates data within one minute.
@@ -97,5 +113,7 @@ Implementation reference:
 
 - Public waitlist API rate-limit tests:
   - `apps/public/tests/unit/api/waitlist-rate-limit.test.ts`
+- Public waitlist claim endpoint tests:
+  - `apps/public/tests/unit/api/waitlist-claim.test.ts`
 - Waitlist service transition/notification tests:
   - `apps/dashboard/tests/unit/services/waitlist-service.test.ts`

@@ -54,6 +54,8 @@ export default function WaitlistPage() {
     preferredDate: new Date().toISOString().slice(0, 10),
     preferredTimeStart: "",
     preferredTimeEnd: "",
+    preferenceMode: "specific_time" as "specific_time" | "day_flexible",
+    flexWindowMinutes: "0",
   });
 
   const loadEntries = useCallback(async () => {
@@ -195,6 +197,7 @@ export default function WaitlistPage() {
     booked: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
     expired: "bg-gray-100 text-gray-500",
     cancelled: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    cooldown: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
   };
 
   const filteredEntries = useMemo(() => {
@@ -237,6 +240,8 @@ export default function WaitlistPage() {
       preferredDate: createForm.preferredDate,
       preferredTimeStart: createForm.preferredTimeStart || undefined,
       preferredTimeEnd: createForm.preferredTimeEnd || undefined,
+      preferenceMode: createForm.preferenceMode,
+      flexWindowMinutes: Number.parseInt(createForm.flexWindowMinutes || "0", 10) || 0,
     });
 
     setSavingCreate(false);
@@ -255,6 +260,8 @@ export default function WaitlistPage() {
       preferredDate: new Date().toISOString().slice(0, 10),
       preferredTimeStart: "",
       preferredTimeEnd: "",
+      preferenceMode: "specific_time",
+      flexWindowMinutes: "0",
     });
     await loadEntries();
   };
@@ -268,7 +275,7 @@ export default function WaitlistPage() {
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             Create waitlist entry
           </Button>
-          {["waiting", "notified", "booked", "all"].map((f) => (
+          {["waiting", "notified", "booked", "cooldown", "all"].map((f) => (
             <Button
               key={f}
               size="sm"
@@ -303,9 +310,16 @@ export default function WaitlistPage() {
                     {entry.preferred_time_start && (
                       <span>{entry.preferred_time_start}{entry.preferred_time_end ? `–${entry.preferred_time_end}` : ""}</span>
                     )}
+                    <span>&middot; {entry.preference_mode === "specific_time" ? "Specific time" : "Flexible day"}</span>
+                    {entry.flex_window_minutes > 0 && <span>&middot; ±{entry.flex_window_minutes} min</span>}
                     {entry.service && <span>&middot; {entry.service.name}</span>}
                     {entry.employee && <span>&middot; {entry.employee.full_name}</span>}
                   </div>
+                  {entry.status === "cooldown" && entry.cooldown_until && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Cooldown until {new Date(entry.cooldown_until).toLocaleString()}
+                    </p>
+                  )}
                   {entry.customer_email && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">{entry.customer_email}</p>
                   )}
@@ -430,11 +444,42 @@ export default function WaitlistPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
+                <Label htmlFor="waitlist-mode">Preference mode</Label>
+                <select
+                  id="waitlist-mode"
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                  value={createForm.preferenceMode}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      preferenceMode: e.target.value as "specific_time" | "day_flexible",
+                    }))
+                  }
+                >
+                  <option value="specific_time">Specific time</option>
+                  <option value="day_flexible">Flexible day</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="waitlist-flex-window">Flex window (minutes)</Label>
+                <Input
+                  id="waitlist-flex-window"
+                  type="number"
+                  min={0}
+                  max={2880}
+                  value={createForm.flexWindowMinutes}
+                  onChange={(e) => setCreateForm((prev) => ({ ...prev, flexWindowMinutes: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
                 <Label htmlFor="waitlist-start">Preferred start</Label>
                 <Input
                   id="waitlist-start"
                   type="time"
                   value={createForm.preferredTimeStart}
+                  disabled={createForm.preferenceMode === "day_flexible"}
                   onChange={(e) => setCreateForm((prev) => ({ ...prev, preferredTimeStart: e.target.value }))}
                 />
               </div>
@@ -444,6 +489,7 @@ export default function WaitlistPage() {
                   id="waitlist-end"
                   type="time"
                   value={createForm.preferredTimeEnd}
+                  disabled={createForm.preferenceMode === "day_flexible"}
                   onChange={(e) => setCreateForm((prev) => ({ ...prev, preferredTimeEnd: e.target.value }))}
                 />
               </div>

@@ -5,6 +5,7 @@ import {
   deleteWaitlistEntry,
   getWaitlistCount,
   type WaitlistEntry,
+  type WaitlistPreferenceMode,
 } from "@/lib/repositories/waitlist";
 
 export type { WaitlistEntry };
@@ -24,10 +25,17 @@ export async function addToWaitlist(input: {
   preferredDate: string;
   preferredTimeStart?: string;
   preferredTimeEnd?: string;
+  preferenceMode?: WaitlistPreferenceMode;
+  flexWindowMinutes?: number;
 }) {
   if (!input.customerName.trim()) return { data: null, error: "Customer name is required" };
   if (!input.serviceId) return { data: null, error: "Service is required" };
   if (!input.preferredDate) return { data: null, error: "Preferred date is required" };
+  const mode = input.preferenceMode ?? (input.preferredTimeStart ? "specific_time" : "day_flexible");
+  const flexWindowMinutes = Math.max(0, Math.min(2880, input.flexWindowMinutes ?? (mode === "day_flexible" ? 1440 : 0)));
+  const urgencyWeight = mode === "specific_time" ? 10 : 0;
+  const flexibilityPenalty = mode === "specific_time" ? 0 : flexWindowMinutes <= 120 ? 5 : flexWindowMinutes <= 720 ? 7 : 10;
+  const priorityScoreSnapshot = urgencyWeight - flexibilityPenalty;
 
   return createWaitlistEntry({
     salon_id: input.salonId,
@@ -40,6 +48,9 @@ export async function addToWaitlist(input: {
     preferred_date: input.preferredDate,
     preferred_time_start: input.preferredTimeStart ?? null,
     preferred_time_end: input.preferredTimeEnd ?? null,
+    preference_mode: mode,
+    flex_window_minutes: flexWindowMinutes,
+    priority_score_snapshot: priorityScoreSnapshot,
   });
 }
 
@@ -48,22 +59,37 @@ export async function removeFromWaitlist(salonId: string, entryId: string) {
 }
 
 export async function markAsNotified(salonId: string, entryId: string) {
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 2); // 2 hour window to book
-
   return updateWaitlistEntryStatus(salonId, entryId, "notified", {
     notified_at: new Date().toISOString(),
-    expires_at: expiresAt.toISOString(),
     from_status: "waiting",
   });
 }
 
-export async function markAsBooked(salonId: string, entryId: string) {
-  return updateWaitlistEntryStatus(salonId, entryId, "booked", { from_status: "notified" });
+export async function markAsBooked(salonId: string, entryId: string, bookingId?: string | null) {
+  return updateWaitlistEntryStatus(salonId, entryId, "booked", {
+    from_status: "notified",
+    booking_id: bookingId ?? null,
+  });
 }
 
 export async function cancelEntry(salonId: string, entryId: string) {
   return updateWaitlistEntryStatus(salonId, entryId, "cancelled");
+}
+
+export async function markAsCooldown(
+  salonId: string,
+  entryId: string,
+  cooldownUntilIso: string,
+  reason: string
+) {
+  return updateWaitlistEntryStatus(salonId, entryId, "cooldown", {
+    cooldown_until: cooldownUntilIso,
+    cooldown_reason: reason,
+  });
+}
+
+export async function reactivateFromCooldown(salonId: string, entryId: string) {
+  return updateWaitlistEntryStatus(salonId, entryId, "waiting", { from_status: "cooldown" });
 }
 
 export async function getCount(salonId: string) {

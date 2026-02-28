@@ -177,7 +177,7 @@ async function checkWaitlistForCancelledSlot(salonId: string, bookingId: string)
     const { supabase } = await import("@/lib/supabase-client");
     const { data: bookingRow } = await supabase
       .from("bookings")
-      .select("service_id, employee_id, start_time")
+      .select("service_id, employee_id, start_time, end_time")
       .eq("id", bookingId)
       .eq("salon_id", salonId)
       .single();
@@ -197,6 +197,8 @@ async function checkWaitlistForCancelledSlot(salonId: string, bookingId: string)
             serviceId: bookingRow.service_id,
             date: bookingDate,
             employeeId: bookingRow.employee_id,
+            slotStart: bookingRow.start_time,
+            slotEnd: bookingRow.end_time,
           }),
         }).catch(() => {});
       }

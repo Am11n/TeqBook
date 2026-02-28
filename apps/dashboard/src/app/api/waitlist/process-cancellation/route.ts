@@ -7,6 +7,8 @@ type Body = {
   serviceId?: string;
   date?: string;
   employeeId?: string | null;
+  slotStart?: string | null;
+  slotEnd?: string | null;
 };
 
 export async function POST(request: NextRequest) {
@@ -18,6 +20,8 @@ export async function POST(request: NextRequest) {
     const serviceId = body.serviceId?.trim();
     const date = body.date?.trim();
     const employeeId = body.employeeId?.trim() || null;
+    const slotStart = body.slotStart?.trim() || null;
+    const slotEnd = body.slotEnd?.trim() || null;
 
     if (!salonId || !serviceId || !date) {
       return NextResponse.json({ error: "salonId, serviceId and date are required" }, { status: 400 });
@@ -28,7 +32,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }
 
-    const result = await handleWaitlistCancellation(salonId, serviceId, date, employeeId);
+    const result = await handleWaitlistCancellation(
+      salonId,
+      serviceId,
+      date,
+      employeeId,
+      slotStart,
+      slotEnd
+    );
     return NextResponse.json(result, { status: 200 });
   } catch {
     return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
