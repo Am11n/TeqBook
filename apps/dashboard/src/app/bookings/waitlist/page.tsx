@@ -48,6 +48,7 @@ export default function WaitlistPage() {
   const [notifyEntry, setNotifyEntry] = useState<WaitlistEntry | null>(null);
   const [notifySlotStart, setNotifySlotStart] = useState("");
   const [notifySlotEnd, setNotifySlotEnd] = useState("");
+  const [notifyEmployeeId, setNotifyEmployeeId] = useState("");
   const [notifyBusy, setNotifyBusy] = useState(false);
   const [overrideEntry, setOverrideEntry] = useState<WaitlistEntry | null>(null);
   const [overrideScore, setOverrideScore] = useState("");
@@ -192,6 +193,7 @@ export default function WaitlistPage() {
     setNotifyEntry(entry);
     setNotifySlotStart(initialStart);
     setNotifySlotEnd(initialEnd);
+    setNotifyEmployeeId(entry.employee_id ?? "");
   };
 
   const submitNotify = async () => {
@@ -201,8 +203,8 @@ export default function WaitlistPage() {
       setError("Slot start is required to send claim-link.");
       return;
     }
-    if (!notifyEntry.employee_id) {
-      setError("Entry must have a preferred employee before sending claim-link.");
+    if (!notifyEmployeeId) {
+      setError("Employee is required before sending claim-link.");
       return;
     }
     setNotifyBusy(true);
@@ -225,6 +227,7 @@ export default function WaitlistPage() {
       entryId: notifyEntry.id,
       slotStart: slotStartIso,
       slotEnd: slotEndIso,
+      employeeId: notifyEmployeeId,
     });
     setNotifyBusy(false);
     if (notifyError) {
@@ -358,8 +361,16 @@ export default function WaitlistPage() {
 
   const handleCreateEntry = async () => {
     if (!salon?.id) return;
-    if (!createForm.customerName.trim() || !createForm.serviceId || !createForm.preferredDate) {
-      setError("Customer name, service and date are required.");
+    if (!createForm.customerName.trim() || !createForm.serviceId || !createForm.employeeId || !createForm.preferredDate) {
+      setError("Customer name, service, employee and date are required.");
+      return;
+    }
+    if (!createForm.customerEmail.trim() && !createForm.customerPhone.trim()) {
+      setError("At least one contact field is required (email or phone).");
+      return;
+    }
+    if (createForm.preferenceMode === "specific_time" && !createForm.preferredTimeStart) {
+      setError("Preferred start time is required for specific-time waitlist entries.");
       return;
     }
 
@@ -580,14 +591,14 @@ export default function WaitlistPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-employee">Preferred employee (optional)</Label>
+              <Label htmlFor="waitlist-employee">Preferred employee</Label>
               <select
                 id="waitlist-employee"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={createForm.employeeId}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeId: e.target.value }))}
               >
-                <option value="">Any employee</option>
+                <option value="">Select employee</option>
                 {employees.map((employee) => (
                   <option key={employee.id} value={employee.id}>
                     {employee.full_name}
@@ -699,6 +710,22 @@ export default function WaitlistPage() {
                 value={notifySlotEnd}
                 onChange={(e) => setNotifySlotEnd(e.target.value)}
               />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="notify-employee">Employee</Label>
+              <select
+                id="notify-employee"
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={notifyEmployeeId}
+                onChange={(e) => setNotifyEmployeeId(e.target.value)}
+              >
+                <option value="">Select employee</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.full_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <DialogFooter>

@@ -9,6 +9,7 @@ type Body = {
   entryId?: string;
   slotStart?: string;
   slotEnd?: string | null;
+  employeeId?: string | null;
 };
 
 export async function POST(request: NextRequest) {
@@ -19,6 +20,7 @@ export async function POST(request: NextRequest) {
     const entryId = body.entryId?.trim();
     const slotStart = body.slotStart?.trim();
     const slotEnd = body.slotEnd?.trim() || null;
+    const employeeId = body.employeeId?.trim() || null;
 
     if (!salonId || !entryId || !slotStart) {
       return NextResponse.json(
@@ -49,6 +51,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "slotStart must be a valid ISO datetime" }, { status: 400 });
     }
     const slotDate = slotStartDate.toISOString().slice(0, 10);
+    const effectiveEmployeeId = employeeId ?? row.employee_id;
+    if (!effectiveEmployeeId) {
+      return NextResponse.json({ error: "employeeId is required to send claim-link" }, { status: 400 });
+    }
+
+    if (!row.employee_id) {
+      await admin
+        .from("waitlist_entries")
+        .update({ employee_id: effectiveEmployeeId })
+        .eq("id", row.id)
+        .eq("salon_id", salonId);
+    }
+
     const result = await createAndSendWaitlistOffer({
       salonId,
       serviceId: row.service_id,
@@ -56,7 +71,7 @@ export async function POST(request: NextRequest) {
       waitlistEntry: row,
       slotStartIso: slotStart,
       slotEndIso: slotEnd,
-      employeeId: row.employee_id,
+      employeeId: effectiveEmployeeId,
       trigger: "manual_notify",
       fromStatus: "waiting",
       adminClient: admin,

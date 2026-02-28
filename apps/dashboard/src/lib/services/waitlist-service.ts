@@ -77,6 +77,7 @@ export async function notifyWithClaimOffer(input: {
   entryId: string;
   slotStart: string;
   slotEnd?: string | null;
+  employeeId?: string;
 }) {
   try {
     const res = await fetch("/api/waitlist/notify", {
