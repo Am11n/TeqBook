@@ -22,6 +22,7 @@ Dette er hoveddokumentasjonen for TeqBook-monorepoet (`apps/*` + `packages/*`).
 - [`security/rate-limiting-operations.md`](./security/rate-limiting-operations.md)
 - [`compliance/data-lifecycle.md`](./compliance/data-lifecycle.md)
 - [`nordic-readiness/README.md`](./nordic-readiness/README.md)
+- [`backend/sms-architecture.md`](./backend/sms-architecture.md)
 - [`api/README.md`](./api/README.md)
 - [`frontend/ui-composition-patterns.md`](./frontend/ui-composition-patterns.md)
 

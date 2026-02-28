@@ -40,6 +40,11 @@ These variables are used across multiple apps:
 - `STRIPE_SECRET_KEY` - For subscription management
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - For Stripe checkout
 - `STRIPE_WEBHOOK_SECRET` - For Stripe webhook verification
+- `TWILIO_ACCOUNT_SID` - Twilio account SID for SMS send API
+- `TWILIO_AUTH_TOKEN` - Twilio auth token for SMS send API
+- `TWILIO_FROM_NUMBER` - Twilio sender number used by SMS provider adapter
+- `SMS_PROVIDER` - SMS provider key (`twilio` is current default)
+- `SUPABASE_SERVICE_ROLE_KEY` - Required by server-side SMS status persistence path
 
 **Optional:**
 - `SENTRY_DSN` - Error tracking
@@ -49,6 +54,8 @@ These variables are used across multiple apps:
 - Normal session lifetime
 - Standard security headers
 - Stripe keys must be kept secret
+- Twilio credentials must be server-only
+- `SUPABASE_SERVICE_ROLE_KEY` must never be exposed to browser/client code
 
 ### Admin App (`apps/admin`)
 
@@ -75,6 +82,8 @@ Edge functions have their own environment variables set in Supabase Dashboard:
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (NEVER expose to client)
 - `RESEND_API_KEY` - For sending emails from edge functions
+- `TWILIO_STATUS_WEBHOOK_TOKEN` - Shared token checked by `sms-status-webhook`
+- `SMS_OVERAGE_PREVIEW_TOKEN` - Bearer token for `billing-sms-overage-preview`
 
 **Optional:**
 - `EMAIL_FROM` - Email sender address

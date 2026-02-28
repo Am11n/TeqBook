@@ -166,3 +166,63 @@ I `bookings-service.ts` kalles API-routen kun hvis `typeof window !== "undefined
 3. Sjekk RLS-policies for `email_log`-tabellen
 4. Sjekk at Next.js server er restartet etter endringer i `.env.local`
 
+---
+
+## 11. SMS sendes ikke (Twilio)
+
+Hvis booking sender e-post men ikke SMS:
+
+1. **Sjekk Dashboard env vars**
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_FROM_NUMBER`
+   - `SMS_PROVIDER=twilio`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+
+2. **Sjekk `sms_log`**
+   ```sql
+   SELECT
+     id,
+     recipient_phone,
+     sms_type,
+     status,
+     provider_name,
+     provider_message_id,
+     error_message,
+     created_at,
+     sent_at,
+     delivered_at
+   FROM sms_log
+   ORDER BY created_at DESC
+   LIMIT 20;
+   ```
+
+3. **Vanlige mønstre**
+   - `status = pending` lenge: provider-resultat ble ikke persistert eller request stoppet tidlig
+   - `status = failed`: se `error_message` (ofte manglende/feil Twilio-credentials)
+   - `status = sent` men ingen levering: sjekk callback/webhook
+
+4. **Sjekk nummerformat**
+   - Input må kunne normaliseres til E.164 (`+47...`)
+   - Ugyldig format blir blokkert før provider-kall
+
+5. **Sjekk webhook og secrets**
+   - `sms-status-webhook` må være deployet
+   - `TWILIO_STATUS_WEBHOOK_TOKEN` må være satt i Supabase Edge secrets
+   - Twilio callback URL må peke til funksjonen
+
+6. **Sjekk overage/hard-cap**
+   ```sql
+   SELECT
+     salon_id,
+     period_start,
+     period_end,
+     included_quota,
+     used_count,
+     overage_count,
+     hard_cap_reached
+   FROM sms_usage
+   ORDER BY updated_at DESC
+   LIMIT 10;
+   ```
+

@@ -11,6 +11,10 @@ Welcome to the TeqBook API documentation. This guide covers both external APIs (
 Protected API endpoints require authentication via Supabase JWT token.  
 Public booking/contact endpoints can be unauthenticated, but are rate-limited.
 
+Webhook/service exceptions:
+- `sms-status-webhook` uses `verify_jwt = false` and checks `x-twilio-signature` against `TWILIO_STATUS_WEBHOOK_TOKEN`.
+- `billing-sms-overage-preview` uses bearer token auth (`SMS_OVERAGE_PREVIEW_TOKEN`).
+
 ```typescript
 const response = await fetch("/api/notifications", {
   headers: {
@@ -64,6 +68,8 @@ Stripe billing and subscription management.
 | `/billing-cancel-subscription` | POST | Cancel subscription |
 | `/billing-update-payment-method` | POST | Update payment method |
 | `/billing-webhook` | POST | Stripe webhook handler |
+| `/sms-status-webhook` | POST | SMS delivery callback updater (`sms_log`) |
+| `/billing-sms-overage-preview` | POST | Preview SMS overage aggregation (no Stripe charge) |
 
 ### Notification APIs (API Routes)
 
@@ -82,8 +88,8 @@ Booking notification endpoints.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/bookings/send-notifications` | POST | Send booking notification |
-| `/api/bookings/send-cancellation` | POST | Send cancellation notice |
+| `/api/bookings/send-notifications` | POST | Send booking notifications through unified channels (email/sms/in-app) |
+| `/api/bookings/send-cancellation` | POST | Send cancellation notifications through unified channels (email/sms/in-app) |
 
 ## Rate Limiting
 

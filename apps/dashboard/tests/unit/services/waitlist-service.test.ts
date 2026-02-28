@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { handleCancellation } from "@/lib/services/waitlist-service";
+import { handleWaitlistCancellation } from "@/lib/services/waitlist-cancellation";
 import * as waitlistRepo from "@/lib/repositories/waitlist";
 
 const mockSendSms = vi.fn();
@@ -36,7 +36,7 @@ describe("Waitlist service", () => {
       error: null,
     });
 
-    const result = await handleCancellation("salon-1", "service-1", "2026-03-12");
+    const result = await handleWaitlistCancellation("salon-1", "service-1", "2026-03-12");
     expect(result.notified).toBe(false);
     expect(mockSendSms).not.toHaveBeenCalled();
     expect(mockSendEmail).not.toHaveBeenCalled();
@@ -75,7 +75,7 @@ describe("Waitlist service", () => {
     });
     mockSendEmail.mockResolvedValue({ data: { id: "mail-1" }, error: null });
 
-    const result = await handleCancellation("salon-1", "service-1", "2026-03-12");
+    const result = await handleWaitlistCancellation("salon-1", "service-1", "2026-03-12");
 
     expect(result.notified).toBe(true);
     expect(waitlistRepo.updateWaitlistEntryStatus).toHaveBeenCalledWith(

@@ -6,9 +6,10 @@ Denne guiden forklarer hvordan du tester notification-systemet som ble implement
 
 Notification-systemet består av:
 1. **Email Service** - Sending av emails via Resend
-2. **Notification Preferences** - Brukerpreferanser for mottak av notifikasjoner
-3. **Booking Reminders** - Automatiske påminnelser 24h og 2h før avtale
-4. **Email Logging** - Sporing av email-leveranse
+2. **SMS Service** - Sending av SMS via provider-adapter (Twilio)
+3. **Notification Preferences** - Brukerpreferanser for mottak av notifikasjoner
+4. **Booking Reminders** - Automatiske påminnelser 24h og 2h før avtale
+5. **Logging** - Sporing av email- og SMS-leveranse
 
 ## Forutsetninger
 
@@ -18,16 +19,24 @@ Notification-systemet består av:
    SUPABASE_URL=https://xxxxx.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=xxxxx
    NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxxx
+   TWILIO_ACCOUNT_SID=ACxxxxx
+   TWILIO_AUTH_TOKEN=xxxxx
+   TWILIO_FROM_NUMBER=+47xxxxxxx
+   SMS_PROVIDER=twilio
    ```
 
-2. **Database Migrations** - Kjør følgende migrasjoner i Supabase SQL Editor:
+2. **Database Migrations** - Kjør notification/SMS-relaterte migrasjoner:
    - `20250105000000_create_email_log.sql`
    - `20250105000001_create_reminders.sql`
+   - `20260227000001_create_sms_usage_and_log.sql`
+   - `20260228000001_add_sms_log_status_update_rpc.sql`
 
-3. **Edge Function** - Deploy `process-reminders` Edge Function:
+3. **Edge Functions** - Deploy notification-relaterte functions:
    ```bash
-   cd web
+   cd supabase
    supabase functions deploy process-reminders
+   supabase functions deploy sms-status-webhook
+   supabase functions deploy billing-sms-overage-preview
    ```
 
 ## 1. Test Email Service
@@ -351,9 +360,71 @@ WHERE id = 'email-log-123'
 ORDER BY updated_at DESC;
 ```
 
-## 5. Test Timezone Handling
+## 5. Test SMS Notification Flow
 
-### 5.1 Test med forskjellige timezones
+### 5.1 Test booking confirmation via SMS
+
+1. Opprett en booking med gyldig kundenummer.
+2. Verifiser at det opprettes rad i `sms_log`.
+3. Verifiser at status går fra `pending` til `sent` (eller `failed`).
+
+```sql
+SELECT
+  id,
+  salon_id,
+  recipient_phone,
+  sms_type,
+  status,
+  provider_name,
+  provider_message_id,
+  error_message,
+  created_at,
+  sent_at
+FROM sms_log
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+### 5.2 Test usage/quota counters
+
+Etter utsendelser, sjekk `sms_usage`:
+
+```sql
+SELECT
+  salon_id,
+  period_start,
+  period_end,
+  included_quota,
+  used_count,
+  overage_count,
+  overage_cost_estimate,
+  hard_cap_reached
+FROM sms_usage
+ORDER BY updated_at DESC
+LIMIT 20;
+```
+
+### 5.3 Test status-webhook (delivery updates)
+
+1. Sørg for at Twilio callback peker til `sms-status-webhook`.
+2. Send en testmelding.
+3. Verifiser statusendring i `sms_log` til `delivered` eller `undelivered`.
+
+### 5.4 Test overage preview endpoint
+
+Kall edge-funksjonen med bearer token:
+
+```bash
+curl -X POST "https://<project-ref>.supabase.co/functions/v1/billing-sms-overage-preview" \
+  -H "Authorization: Bearer $SMS_OVERAGE_PREVIEW_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+Forventet: JSON med `mode: "preview_only"` og aggregerte overage-rader.
+
+## 6. Test Timezone Handling
+
+### 6.1 Test med forskjellige timezones
 
 **Opprett booking i Oslo timezone:**
 ```typescript
@@ -378,7 +449,7 @@ JOIN bookings b ON r.booking_id = b.id
 WHERE r.booking_id = 'booking-123';
 ```
 
-## 6. Test i18n (Internationalization)
+## 7. Test i18n (Internationalization)
 
 ### 6.1 Test Email Templates på forskjellige språk
 
@@ -420,16 +491,16 @@ await sendBookingReminder({
 - `ur` - Urdu
 - `hi` - Hindi
 
-## 7. Test Error Handling
+## 8. Test Error Handling
 
-### 7.1 Test Missing API Key
+### 8.1 Test Missing API Key
 
 Hvis `RESEND_API_KEY` ikke er satt:
 - Systemet skal ikke krasje
 - Email log skal opprettes med status "failed"
 - Error message skal lagres i `error_message`
 
-### 7.2 Test Invalid Email Address
+### 8.2 Test Invalid Email Address
 
 ```typescript
 const result = await sendEmail({
@@ -441,13 +512,13 @@ const result = await sendEmail({
 console.log(result.error); // Skal inneholde feilmelding
 ```
 
-### 7.3 Test Network Errors
+### 8.3 Test Network Errors
 
 Simuler network error ved å deaktivere internett eller endre Resend URL til en ugyldig URL.
 
-## 8. Test Integration med Booking Service
+## 9. Test Integration med Booking Service
 
-### 8.1 Test Booking Creation Flow
+### 9.1 Test Booking Creation Flow
 
 1. Opprett booking med `customer_email`
 2. Verifiser at:
@@ -467,22 +538,22 @@ SELECT * FROM email_log WHERE booking_id = 'booking-123';
 SELECT * FROM reminders WHERE booking_id = 'booking-123';
 ```
 
-### 8.2 Test Booking Cancellation Flow
+### 9.2 Test Booking Cancellation Flow
 
 1. Kanseller en booking
 2. Verifiser at:
    - Reminders er markert som "cancelled"
    - Email log viser cancellation (hvis implementert)
 
-## 9. Test Performance
+## 10. Test Performance
 
-### 9.1 Test Bulk Reminder Processing
+### 10.1 Test Bulk Reminder Processing
 
 1. Opprett 100 bookings med reminders
 2. Kjør `processReminders` Edge Function
 3. Sjekk at alle reminders prosesseres innen rimelig tid (< 30 sekunder)
 
-### 9.2 Test Database Queries
+### 10.2 Test Database Queries
 
 Sjekk at queries er optimaliserte:
 ```sql
@@ -495,9 +566,9 @@ FROM pg_indexes
 WHERE tablename IN ('reminders', 'email_log');
 ```
 
-## 10. Test Security
+## 11. Test Security
 
-### 10.1 Test RLS Policies
+### 11.1 Test RLS Policies
 
 **Test at brukere kun kan se sine egne salon's email logs:**
 ```sql
@@ -514,7 +585,7 @@ SELECT * FROM email_log; -- Skal kun vise salon2's emails
 SELECT * FROM reminders; -- Skal kun vise salon1's reminders
 ```
 
-### 10.2 Test Input Validation
+### 11.2 Test Input Validation
 
 Test at systemet validerer:
 - Email addresses
@@ -522,7 +593,7 @@ Test at systemet validerer:
 - User IDs
 - Timezone strings
 
-## 11. Test via Unit Tests
+## 12. Test via Unit Tests
 
 Kjør alle unit tests:
 ```bash
@@ -535,9 +606,9 @@ npm run test
 - `tests/unit/services/notification-service.test.ts`
 - `tests/unit/services/reminder-service.test.ts`
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
-### 12.1 Emails sendes ikke
+### 13.1 Emails sendes ikke
 
 1. Sjekk `RESEND_API_KEY` er satt
 2. Sjekk email_log for feilmeldinger:
@@ -548,7 +619,7 @@ npm run test
    ```
 3. Sjekk Resend dashboard for delivery status
 
-### 12.2 Reminders prosesseres ikke
+### 13.2 Reminders prosesseres ikke
 
 1. Sjekk at Edge Function er deployet:
    ```bash
@@ -560,7 +631,7 @@ npm run test
    ```
 3. Sjekk at cron job er aktivert (hvis brukt)
 
-### 12.3 Timezone issues
+### 13.3 Timezone issues
 
 1. Verifiser at timezone string er gyldig (f.eks. "Europe/Oslo")
 2. Sjekk at `date-fns-tz` er installert:
@@ -568,25 +639,29 @@ npm run test
    npm list date-fns-tz
    ```
 
-## 13. Next Steps
+## 14. Next Steps
 
 Etter testing, vurder å:
 1. Implementere UI for notification preferences
-2. Legge til SMS og WhatsApp notifications
+2. Legge til retry logic for failed emails/SMS
 3. Implementere email templates for flere event types
-4. Legge til retry logic for failed emails
-5. Implementere email analytics dashboard
+4. Legge til SMS analytics dashboard
+5. Aktivere faktisk overage-fakturering (etter observasjonsperiode)
 
-## 14. Test Checklist
+## 15. Test Checklist
 
 - [ ] Booking confirmation emails sendes
 - [ ] Booking reminder emails sendes (24h og 2h)
+- [ ] Booking SMS sendes for relevante events
 - [ ] Payment failure emails sendes
 - [ ] Notification preferences fungerer
 - [ ] Reminders scheduleres automatisk ved booking creation
 - [ ] Reminders kanselleres ved booking cancellation
 - [ ] Edge Function prosesserer reminders
+- [ ] `sms-status-webhook` oppdaterer `sms_log` status
+- [ ] `billing-sms-overage-preview` returnerer preview-data
 - [ ] Email logging fungerer
+- [ ] SMS logging/usage fungerer (`sms_log`, `sms_usage`)
 - [ ] Timezone handling fungerer
 - [ ] i18n fungerer for alle støttede språk
 - [ ] Error handling fungerer

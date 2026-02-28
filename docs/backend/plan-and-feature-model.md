@@ -52,6 +52,10 @@ CREATE TABLE plan_features (
 );
 ```
 
+`limit_value` brukes også for SMS:
+- For `SMS_NOTIFICATIONS` tolkes `limit_value` som inkludert SMS-kvote per periode.
+- Denne kvoten snapshots inn i `sms_usage` ved periodeopprettelse/bruk.
+
 ---
 
 ## Feature Keys
@@ -158,6 +162,10 @@ Includes all Pro features, plus:
 - `EXPORTS` (unlimited)
 - `CUSTOMER_HISTORY` (unlimited)
 - `MULTILINGUAL` (unlimited)
+
+Note on SMS limits:
+- Tabellen over viser feature-tilgang. Faktisk sendebehavior og kvoter håndteres av SMS policy/service-laget.
+- Se [`docs/backend/sms-architecture.md`](./sms-architecture.md) for runtime policy, usage og hard cap-flow.
 
 ---
 

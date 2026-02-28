@@ -12,6 +12,21 @@ Hovedpolicy:
 - **Fail-closed**: auth/login, billing, admin impersonation, booking mutations.
 - **Fail-open**: kun lav-risiko public-read (`public-booking-data`).
 
+## SMS-spesifikke policies
+
+Disse policyene brukes i SMS-flyten:
+
+| Endpoint type | Limit | Window | Block | Identifier |
+|---|---:|---:|---:|---|
+| `claim-sms` | 1 | 5 min | 30 min | `user_id` |
+| `manual-sms` | 5 | 1 min | 30 min | `user_id` |
+| `sms-global-abuse` | 1000 | 1 min | 30 min | `ip` |
+
+Bruk i kode:
+- Dashboard SMS service: `apps/dashboard/src/lib/services/sms/service.ts`
+- Shared policy source: `packages/shared-core/src/rate-limit/policy.ts`
+- Edge policy mirror: `supabase/supabase/functions/_shared/rate-limit-config.ts`
+
 ## Headers og blokkering
 
 Ved blokkering returneres:

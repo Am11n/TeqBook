@@ -188,8 +188,17 @@ async function checkWaitlistForCancelledSlot(salonId: string, bookingId: string)
         : null;
 
       if (bookingDate) {
-        const { handleCancellation } = await import("@/lib/services/waitlist-service");
-        handleCancellation(salonId, bookingRow.service_id, bookingDate, bookingRow.employee_id).catch(() => {});
+        fetch("/api/waitlist/process-cancellation", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            salonId,
+            serviceId: bookingRow.service_id,
+            date: bookingDate,
+            employeeId: bookingRow.employee_id,
+          }),
+        }).catch(() => {});
       }
     }
   } catch {

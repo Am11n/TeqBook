@@ -53,6 +53,15 @@ STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 
+# SMS / Twilio
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_FROM_NUMBER=
+
+# Server-side Supabase admin access (required by SMS status persistence path)
+SUPABASE_SERVICE_ROLE_KEY=
+
 # Optional
 SENTRY_DSN=
 NEXT_PUBLIC_SENTRY_DSN=
@@ -90,6 +99,10 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # NEVER exposed to client
 RESEND_API_KEY=
 EMAIL_FROM=
 EMAIL_FROM_NAME=
+
+# SMS webhook + overage preview
+TWILIO_STATUS_WEBHOOK_TOKEN=
+SMS_OVERAGE_PREVIEW_TOKEN=
 ```
 
 Se seksjonen **Edge Functions** i `environment-variables.md`.  

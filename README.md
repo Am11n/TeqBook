@@ -280,7 +280,7 @@ For detailed deployment information, see [`docs/deployment/vercel.md`](docs/depl
 - ✅ Multi-tenant architecture with RLS hardening
 - ✅ SaaS plans and billing (Stripe integration)
 - ✅ Security features (2FA, policy-driven rate limiting, protected route/API auth, Phase 3 hardening)
-- ✅ Notifications system (Email, In-App, Push, Calendar Invites)
+- ✅ Notifications system (Email, SMS, In-App, Push, Calendar Invites)
 - ✅ Calendar integrations (Google Calendar, Outlook)
 - ✅ Structured security logging (full audit trail coverage is ongoing)
 - ✅ Customer history and CLV tracking
@@ -291,7 +291,7 @@ For detailed deployment information, see [`docs/deployment/vercel.md`](docs/depl
 ### Roadmap
 
 Future phases include:
-- SMS and WhatsApp notifications
+- WhatsApp notifications
 - POS / card terminal integrations
 - Accounting system integrations (QuickBooks, Xero)
 - Native mobile apps

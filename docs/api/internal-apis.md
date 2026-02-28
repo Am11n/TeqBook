@@ -119,9 +119,26 @@ export async function createBookingWithCustomer(
 | `plan-limits-service.ts` | Plan limits | `canAddEmployee`, `getEffectiveLimit` |
 | `performance-service.ts` | Performance tracking | `trackOperation`, `getPerformanceStats` |
 | `notification-service.ts` | Unified notifications | `sendNotification`, `createReminder` |
+| `services/sms/service.ts` | SMS orchestration | `sendSms` |
+| `services/sms/policy.ts` | SMS policy resolution | `resolveSmsPolicyForSalon` |
+| `services/sms/twilio-adapter.ts` | SMS provider adapter | `TwilioAdapter.send` |
 | `in-app-notification-service.ts` | In-app notifications | `createInAppNotification`, `markAsRead` |
 | `customer-history-service.ts` | Customer history | `getCustomerHistory`, `exportToCSV` |
 | `rate-limit-service.ts` | Rate limit orchestration | `checkRateLimit`, `incrementRateLimit`, `resetRateLimit` |
+
+### SMS Internals (Current)
+
+The SMS stack is implemented as:
+- **Types/contract:** `apps/dashboard/src/lib/services/sms/types.ts`
+- **Send service:** `apps/dashboard/src/lib/services/sms/service.ts`
+- **Provider adapter:** `apps/dashboard/src/lib/services/sms/twilio-adapter.ts`
+- **Policy resolver:** `apps/dashboard/src/lib/services/sms/policy.ts`
+
+Database/RPC surfaces:
+- `sms_usage`, `sms_log`
+- `ensure_sms_usage_row_for_period`
+- `increment_sms_usage_and_log`
+- `update_sms_log_provider_result`
 
 ### Best Practices
 

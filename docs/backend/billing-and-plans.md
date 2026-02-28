@@ -73,6 +73,33 @@ CREATE TABLE plan_features (
 
 ---
 
+## SMS Quotas, Usage and Overage (Current State)
+
+SMS usage is tracked per salon and billing period using:
+- `sms_usage` (period counters, included quota snapshot, hard cap snapshot, overage estimate)
+- `sms_log` (per-message audit trail with status/provider/cost metadata)
+
+Source of truth:
+- [`docs/backend/sms-architecture.md`](./sms-architecture.md)
+- [`supabase/supabase/migrations/20260227000001_create_sms_usage_and_log.sql`](../../supabase/supabase/migrations/20260227000001_create_sms_usage_and_log.sql)
+
+### How quotas are applied
+
+- Plan-level SMS policy is resolved from `plan_features` (`SMS_NOTIFICATIONS`) and plan defaults.
+- Usage is reserved atomically via RPC (`increment_sms_usage_and_log`) before provider call.
+- Hard-cap and blocked outcomes are recorded in `sms_log` and reflected in `sms_usage`.
+
+### Overage handling (preview only)
+
+Current implementation includes preview aggregation only:
+- Edge Function: `billing-sms-overage-preview`
+- Auth: Bearer token (`SMS_OVERAGE_PREVIEW_TOKEN`)
+- Behavior: Returns overage preview payload, does not create Stripe invoice items yet
+
+This keeps billing behavior observable before enabling automated invoicing.
+
+---
+
 ## Stripe Integration
 
 ### Stripe Products and Prices
@@ -164,7 +191,7 @@ Plans can be changed via the billing settings page (`/settings/billing`).
 Plan updates are handled by the `billing-update-plan` Edge Function:
 
 ```typescript
-// supabase/functions/billing-update-plan/index.ts
+// supabase/supabase/functions/billing-update-plan/index.ts
 serve(async (req) => {
   // 1. Validate request
   // 2. Retrieve current subscription
@@ -180,7 +207,7 @@ serve(async (req) => {
 Stripe webhooks update subscription status:
 
 ```typescript
-// supabase/functions/stripe-webhook/index.ts
+// supabase/supabase/functions/stripe-webhook/index.ts
 serve(async (req) => {
   const event = stripe.webhooks.constructEvent(...);
 
@@ -362,6 +389,10 @@ STRIPE_PRICE_BUSINESS=price_...
 # Stripe Webhook Secret
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+SMS-related variables are documented in:
+- [`docs/env/environment-variables.md`](../env/environment-variables.md)
+- [`docs/env/env-setup.md`](../env/env-setup.md)
 
 ---
 
