@@ -74,6 +74,14 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "public-waitlist-intake": {
+    endpointType: "public-waitlist-intake",
+    identifierType: "ip",
+    maxAttempts: 10,
+    windowMs: FIFTEEN_MINUTES_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "admin-impersonate": {
     endpointType: "admin-impersonate",
     identifierType: "user_id",

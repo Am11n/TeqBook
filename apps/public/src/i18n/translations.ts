@@ -47,6 +47,14 @@ export type PublicBookingMessages = {
   createError: string;
   unavailableTitle: string;
   unavailableDescription: string;
+  waitlistTitle?: string;
+  waitlistDescription?: string;
+  waitlistButton?: string;
+  waitlistSubmitting?: string;
+  waitlistContactRequired?: string;
+  waitlistSuccess?: string;
+  waitlistAlreadyJoined?: string;
+  waitlistCreateError?: string;
 };
 
 export type LoginMessages = {

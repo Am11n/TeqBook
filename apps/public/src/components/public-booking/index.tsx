@@ -13,12 +13,13 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     salon, services, employees, loading, error, successMessage,
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, slots, selectedSlot, setSelectedSlot,
-    loadingSlots, canLoadSlots,
+    loadingSlots, canLoadSlots, hasAttemptedSlotLoad,
     customerName, setCustomerName,
     customerEmail, setCustomerEmail,
     customerPhone, setCustomerPhone,
+    joiningWaitlist, waitlistMessage, waitlistError,
     saving, locale, setLocale, t,
-    handleLoadSlots, handleSubmitBooking,
+    handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
   } = usePublicBooking(slug);
 
   if (loading) {
@@ -130,6 +131,24 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               ]}
             />
           </div>
+
+          {hasAttemptedSlotLoad && !loadingSlots && slots.length === 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm">
+              <p className="font-medium text-amber-900">{t.waitlistTitle || "No slots available right now"}</p>
+              <p className="mt-1 text-amber-800">{t.waitlistDescription || "Join the waitlist and the salon can contact you if something opens up."}</p>
+              <Button
+                type="button"
+                className="mt-3 w-full"
+                variant="outline"
+                disabled={!customerName || (!customerEmail && !customerPhone) || joiningWaitlist}
+                onClick={handleJoinWaitlist}
+              >
+                {joiningWaitlist ? (t.waitlistSubmitting || "Joining waitlist...") : (t.waitlistButton || "Join waitlist")}
+              </Button>
+              {waitlistError && <p className="mt-2 text-xs text-red-600">{waitlistError}</p>}
+              {waitlistMessage && <p className="mt-2 text-xs text-emerald-700">{waitlistMessage}</p>}
+            </div>
+          )}
         </section>
 
         <section className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">

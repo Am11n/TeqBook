@@ -31,12 +31,16 @@ export function usePublicBooking(slug: string) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [hasAttemptedSlotLoad, setHasAttemptedSlotLoad] = useState(false);
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const [waitlistMessage, setWaitlistMessage] = useState<string | null>(null);
+  const [waitlistError, setWaitlistError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadInitial() {
@@ -107,8 +111,11 @@ export function usePublicBooking(slug: string) {
 
     setLoadingSlots(true);
     setError(null);
+    setWaitlistError(null);
+    setWaitlistMessage(null);
     setSlots([]);
     setSelectedSlot("");
+    setHasAttemptedSlotLoad(true);
 
     const { data, error: slotsError } = await getAvailableTimeSlots(
       salon.id, employeeId, serviceId, date,
@@ -141,6 +148,52 @@ export function usePublicBooking(slug: string) {
 
     setSlots(mapped);
     setLoadingSlots(false);
+  }
+
+  async function handleJoinWaitlist(e?: FormEvent | { preventDefault?: () => void }) {
+    e?.preventDefault?.();
+    if (!salon || !serviceId || !date || !customerName) return;
+    if (!customerEmail && !customerPhone) {
+      setWaitlistError(t.waitlistContactRequired || "Please provide email or phone.");
+      return;
+    }
+
+    setJoiningWaitlist(true);
+    setWaitlistError(null);
+    setWaitlistMessage(null);
+
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salonId: salon.id,
+          serviceId,
+          employeeId: employeeId || null,
+          preferredDate: date,
+          customerName,
+          customerEmail: customerEmail || null,
+          customerPhone: customerPhone || null,
+        }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setWaitlistError(body.error || t.waitlistCreateError || t.createError);
+        setJoiningWaitlist(false);
+        return;
+      }
+
+      setWaitlistMessage(
+        body.alreadyJoined
+          ? t.waitlistAlreadyJoined || "You are already on the waitlist for this date."
+          : t.waitlistSuccess || "You're on the waitlist. The salon will contact you if a slot opens."
+      );
+    } catch {
+      setWaitlistError(t.waitlistCreateError || t.createError);
+    } finally {
+      setJoiningWaitlist(false);
+    }
   }
 
   async function handleSubmitBooking(e: FormEvent) {
@@ -224,10 +277,12 @@ export function usePublicBooking(slug: string) {
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, slots, selectedSlot, setSelectedSlot,
     loadingSlots, canLoadSlots,
+    hasAttemptedSlotLoad,
     customerName, setCustomerName,
     customerEmail, setCustomerEmail,
     customerPhone, setCustomerPhone,
+    joiningWaitlist, waitlistMessage, waitlistError,
     saving, locale, setLocale, t,
-    handleLoadSlots, handleSubmitBooking,
+    handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
   };
 }

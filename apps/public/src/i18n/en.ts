@@ -38,6 +38,17 @@ export const en: TranslationNamespaces = {
     unavailableTitle: "Cannot show booking page",
     unavailableDescription:
       "This salon does not exist or is not marked as public.",
+    waitlistTitle: "No slots available right now",
+    waitlistDescription:
+      "Join the waitlist and the salon can contact you if a slot opens up.",
+    waitlistButton: "Join waitlist",
+    waitlistSubmitting: "Joining waitlist...",
+    waitlistContactRequired: "Please provide email or phone to join the waitlist.",
+    waitlistSuccess:
+      "You're on the waitlist. The salon will contact you if a matching slot opens.",
+    waitlistAlreadyJoined:
+      "You already have an active waitlist request for this date and service.",
+    waitlistCreateError: "Could not join the waitlist right now. Please try again.",
   },
   login: {
     title: "Log in",

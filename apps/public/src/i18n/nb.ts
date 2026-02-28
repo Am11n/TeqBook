@@ -38,6 +38,17 @@ export const nb: TranslationNamespaces = {
     unavailableTitle: "Kan ikke vise bookingside",
     unavailableDescription:
       "Denne salongen finnes ikke, eller er ikke satt som offentlig.",
+    waitlistTitle: "Ingen ledige tider akkurat nå",
+    waitlistDescription:
+      "Bli med på ventelisten, så kan salongen kontakte deg hvis en tid blir ledig.",
+    waitlistButton: "Bli med på venteliste",
+    waitlistSubmitting: "Legger deg til på venteliste...",
+    waitlistContactRequired: "Legg inn e-post eller telefon for å bli med på ventelisten.",
+    waitlistSuccess:
+      "Du er lagt til på ventelisten. Salongen kontakter deg hvis en passende tid blir ledig.",
+    waitlistAlreadyJoined:
+      "Du har allerede en aktiv ventelisteforespørsel for denne datoen og tjenesten.",
+    waitlistCreateError: "Kunne ikke legge deg til på ventelisten nå. Prøv igjen.",
   },
   login: {
     title: "Logg inn",
