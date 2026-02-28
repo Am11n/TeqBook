@@ -50,12 +50,14 @@ function getBillingWindow(periodEndIso?: string | null): { start: string; end: s
 }
 
 function getPublicAppBaseUrl(): string {
-  const configured =
+  const configuredRaw =
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
     "https://teqbook.com";
-  return configured.replace(/\/+$/, "");
+  const configured = configuredRaw.trim();
+  const withProtocol = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`;
+  return withProtocol.replace(/\/+$/, "");
 }
 
 export async function processDueWaitlistReminders(maxRows = 200): Promise<{
