@@ -25,6 +25,8 @@ import {
   markAsBooked,
   cancelEntry,
   addToWaitlist,
+  markAsCooldown,
+  reactivateFromCooldown,
   type WaitlistEntry,
 } from "@/lib/services/waitlist-service";
 
@@ -191,6 +193,19 @@ export default function WaitlistPage() {
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
   };
 
+  const handleSetCooldown = async (entry: WaitlistEntry) => {
+    if (!salon?.id) return;
+    const cooldownUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    await markAsCooldown(salon.id, entry.id, cooldownUntil, "manual");
+    await loadEntries();
+  };
+
+  const handleReactivate = async (entry: WaitlistEntry) => {
+    if (!salon?.id) return;
+    await reactivateFromCooldown(salon.id, entry.id);
+    await loadEntries();
+  };
+
   const statusColors: Record<string, string> = {
     waiting: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
     notified: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
@@ -341,6 +356,16 @@ export default function WaitlistPage() {
                   {(entry.status === "waiting" || entry.status === "notified") && (
                     <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" onClick={() => handleCancel(entry)}>
                       Cancel
+                    </Button>
+                  )}
+                  {(entry.status === "waiting" || entry.status === "notified") && (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetCooldown(entry)}>
+                      Cooldown
+                    </Button>
+                  )}
+                  {entry.status === "cooldown" && (
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleReactivate(entry)}>
+                      Reactivate
                     </Button>
                   )}
                   {(entry.status === "cancelled" || entry.status === "expired" || entry.status === "booked") && (
