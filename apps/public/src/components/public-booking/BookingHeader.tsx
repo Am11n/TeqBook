@@ -4,7 +4,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@teqbook/ui";
 import type { AppLocale } from "@/i18n/translations";
 import type { BookingMode, PublicBookingEffectiveBranding, PublicBookingTokens, Salon, WaitlistEntrySource } from "./types";
 
