@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { AppLocale } from "@/i18n/translations";
-import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
-import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
-import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import { isValidIsoDate } from "./publicBookingUtils";
 import { trackPublicEvent } from "./publicBookingTelemetry";
 import type { Employee, Salon, Service } from "./types";
@@ -29,8 +26,25 @@ async function resolveInitialBookingData(
   error: string | null;
   issue: "none" | "not_found" | "missing_setup";
 }> {
-  const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
-  if (salonError || !salonData) {
+  const response = await fetch(`/api/public-booking/initial?slug=${encodeURIComponent(slug)}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+
+  if (response.status === 404) {
+    return { salon: null, services: [], employees: [], error: fallbackErrors.notFound, issue: "not_found" };
+  }
+
+  if (!response.ok) {
+    return { salon: null, services: [], employees: [], error: fallbackErrors.loadError, issue: "missing_setup" };
+  }
+
+  const payload = await response.json().catch(() => null) as
+    | { salon?: Salon | null; services?: Service[] | null; employees?: Employee[] | null }
+    | null;
+
+  const salonData = payload?.salon;
+  if (!salonData) {
     return { salon: null, services: [], employees: [], error: fallbackErrors.notFound, issue: "not_found" };
   }
 
@@ -54,30 +68,8 @@ async function resolveInitialBookingData(
       : null,
   };
 
-  const [
-    { data: servicesData, error: servicesError },
-    { data: employeesData, error: employeesError },
-  ] = await Promise.all([
-    getActiveServicesForPublicBooking(salonData.id),
-    getActiveEmployeesForPublicBooking(salonData.id),
-  ]);
-
-  if (servicesError || employeesError) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("[public-booking] Missing setup while loading booking data.", {
-        salonId: salonData.id,
-        servicesError,
-        employeesError,
-      });
-    }
-    return {
-      salon,
-      services: [],
-      employees: [],
-      error: fallbackErrors.missingSetup || servicesError || employeesError || fallbackErrors.loadError,
-      issue: "missing_setup",
-    };
-  }
+  const servicesData = payload?.services ?? [];
+  const employeesData = payload?.employees ?? [];
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[public-booking] Initial booking data loaded.", {
