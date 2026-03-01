@@ -111,7 +111,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
           <form
             onSubmit={(e) => {
               if (isWaitlistMode) {
-                handleJoinWaitlist(e);
+                e.preventDefault();
                 return;
               }
               handleLoadSlots(e);

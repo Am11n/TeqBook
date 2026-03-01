@@ -50,7 +50,7 @@ export const nb: TranslationNamespaces = {
       "Du har allerede en aktiv ventelisteforespørsel for denne datoen og tjenesten.",
     waitlistCreateError: "Kunne ikke legge deg til på ventelisten nå. Prøv igjen.",
     modeSelectorLabel: "Bestillingsmodus",
-    modeBookTime: "Book time",
+    modeBookTime: "Bestill time",
     modeWaitlist: "Gi meg beskjed når det blir ledig",
     employeeAny: "Valgfri ansatt",
     waitlistHowItWorks:
