@@ -74,7 +74,7 @@ async function resolveInitialBookingData(
       salon,
       services: [],
       employees: [],
-      error: fallbackErrors.missingSetup || servicesError ?? employeesError ?? fallbackErrors.loadError,
+      error: fallbackErrors.missingSetup || servicesError || employeesError || fallbackErrors.loadError,
       issue: "missing_setup",
     };
   }
@@ -143,7 +143,7 @@ export function useInitialBookingLoad(params: {
       setSalon(initialData.salon);
       setServices(initialData.services);
       setEmployees(initialData.employees);
-      setError(initialData.issue === "missing_setup" ? initialData.error : null);
+      setError(null);
 
       const initialLocale = resolveInitialLocale(initialData.salon);
       if (initialLocale) setLocale(initialLocale);
