@@ -7,12 +7,13 @@ type WaitlistResponse = {
   body: Record<string, unknown>;
 };
 
-function dedupeSlotsByStart<T extends { slot_start: string }>(slots: T[]): T[] {
+function dedupeSlotsByIdentity<T extends { slot_start: string; slot_end: string; employee_id?: string }>(slots: T[]): T[] {
   const seen = new Set<string>();
   const unique: T[] = [];
   for (const slot of slots) {
-    if (seen.has(slot.slot_start)) continue;
-    seen.add(slot.slot_start);
+    const identity = `${slot.employee_id ?? ""}|${slot.slot_start}|${slot.slot_end}`;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     unique.push(slot);
   }
   return unique;
@@ -38,7 +39,7 @@ export async function loadSlots(params: {
       employee_id: employeeId,
       employee_name: employees.find((employee) => employee.id === employeeId)?.full_name,
     }));
-    return { data: dedupeSlotsByStart(decorated), error: error ?? null, checkedEmployeeIds: [employeeId] };
+    return { data: dedupeSlotsByIdentity(decorated), error: error ?? null, checkedEmployeeIds: [employeeId] };
   }
 
   const employeeCandidates = employees.slice(0, maxEmployeesToCheck);
@@ -68,7 +69,7 @@ export async function loadSlots(params: {
       }
       return a.slot_start.localeCompare(b.slot_start);
     });
-  const dedupedMerged = dedupeSlotsByStart(merged);
+  const dedupedMerged = dedupeSlotsByIdentity(merged);
   return { data: dedupedMerged, error: firstError, checkedEmployeeIds };
 }
 
