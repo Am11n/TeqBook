@@ -65,6 +65,7 @@ export function usePublicBooking(slug: string) {
   const [waitlistContactError, setWaitlistContactError] = useState<string | null>(null);
   const [waitlistReceipt, setWaitlistReceipt] = useState<WaitlistReceipt | null>(null);
   const [employeeAvailability, setEmployeeAvailability] = useState<Record<string, "likely_available" | "no_times" | "unknown">>({});
+  const [employeeShiftWeekdays, setEmployeeShiftWeekdays] = useState<Record<string, number[]>>({});
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
@@ -97,6 +98,7 @@ export function usePublicBooking(slug: string) {
     setSalon,
     setServices,
     setEmployees,
+    setEmployeeShiftWeekdays,
     setLocale,
   });
 
@@ -188,7 +190,18 @@ export function usePublicBooking(slug: string) {
       return;
     }
 
-    const mappedSlots = mapAvailableSlots(data, salon.timezone);
+    const selectedDateDow = new Date(`${date}T00:00:00`).getDay();
+    const hasShiftWeekdayMap = Object.keys(employeeShiftWeekdays).length > 0 && Number.isInteger(selectedDateDow);
+    const filteredData = hasShiftWeekdayMap
+      ? data.filter((slot) => {
+          if (!slot.employee_id) return true;
+          const weekdays = employeeShiftWeekdays[slot.employee_id];
+          if (!weekdays || weekdays.length === 0) return true;
+          return weekdays.includes(selectedDateDow);
+        })
+      : data;
+
+    const mappedSlots = mapAvailableSlots(filteredData, salon.timezone);
     const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
     setSlots(uniqueSlots);
     setEmployeeAvailability((previous) => {
@@ -204,7 +217,7 @@ export function usePublicBooking(slug: string) {
       return next;
     });
     setLoadingSlots(false);
-  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
+  }, [canLoadSlots, date, employeeShiftWeekdays, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
