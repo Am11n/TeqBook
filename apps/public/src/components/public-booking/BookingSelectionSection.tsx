@@ -50,11 +50,22 @@ function getEmployeeSlotColors(employeeId: string): {
 } {
   const hue = hashString(employeeId) % 360;
   return {
-    bg: `hsl(${hue} 90% 96%)`,
-    border: `hsl(${hue} 55% 78%)`,
-    text: `hsl(${hue} 55% 28%)`,
-    dot: `hsl(${hue} 65% 45%)`,
+    bg: `hsl(${hue} 88% 90%)`,
+    border: `hsl(${hue} 58% 68%)`,
+    text: `hsl(${hue} 60% 24%)`,
+    dot: `hsl(${hue} 70% 42%)`,
   };
+}
+
+function getSlotColorKey(slot: Slot): string | null {
+  const fromEmployeeId = slot.employeeId?.trim();
+  if (fromEmployeeId) return fromEmployeeId;
+
+  // Fallback if employeeId is missing: labels are typically "HH:MM - HH:MM · Name".
+  const parts = slot.label.split("·");
+  if (parts.length < 2) return null;
+  const fromLabelName = parts[parts.length - 1]?.trim();
+  return fromLabelName || null;
 }
 
 export function BookingSelectionSection({
@@ -106,8 +117,9 @@ export function BookingSelectionSection({
   const employeeSlotColors = useMemo(() => {
     const map = new Map<string, ReturnType<typeof getEmployeeSlotColors>>();
     for (const slot of renderedSlots) {
-      if (!slot.employeeId || map.has(slot.employeeId)) continue;
-      map.set(slot.employeeId, getEmployeeSlotColors(slot.employeeId));
+      const colorKey = getSlotColorKey(slot);
+      if (!colorKey || map.has(colorKey)) continue;
+      map.set(colorKey, getEmployeeSlotColors(colorKey));
     }
     return map;
   }, [renderedSlots]);
@@ -266,7 +278,8 @@ export function BookingSelectionSection({
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {renderedSlots.map((slot, index) => {
               const isSelected = selectedSlot === slot.id;
-              const employeeColors = slot.employeeId ? employeeSlotColors.get(slot.employeeId) : null;
+              const colorKey = getSlotColorKey(slot);
+              const employeeColors = colorKey ? employeeSlotColors.get(colorKey) : null;
               return (
                 <button
                   key={`slot-${index}`}
