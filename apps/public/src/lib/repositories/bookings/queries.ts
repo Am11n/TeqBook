@@ -62,7 +62,7 @@ export async function getBookingsForCalendar(
 
 export async function getAvailableSlots(
   salonId: string,
-  employeeId: string,
+  employeeId: string | null,
   serviceId: string,
   date: string
 ): Promise<{ data: { slot_start: string; slot_end: string }[] | null; error: string | null }> {

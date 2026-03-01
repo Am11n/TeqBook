@@ -38,12 +38,12 @@ export async function getCalendarBookings(
  */
 export async function getAvailableTimeSlots(
   salonId: string,
-  employeeId: string,
+  employeeId: string | null,
   serviceId: string,
   date: string
 ): Promise<{ data: { slot_start: string; slot_end: string }[] | null; error: string | null }> {
-  if (!salonId || !employeeId || !serviceId || !date) {
-    return { data: null, error: "All parameters are required" };
+  if (!salonId || !serviceId || !date) {
+    return { data: null, error: "Salon, service and date are required" };
   }
 
   const dateObj = new Date(date);

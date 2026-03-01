@@ -1,6 +1,6 @@
 import { createBooking, getAvailableTimeSlots } from "@/lib/services/bookings-service";
 import { localISOStringToUTC } from "@/lib/utils/timezone";
-import type { Salon } from "./types";
+import type { Employee, Salon } from "./types";
 
 type WaitlistResponse = {
   ok: boolean;
@@ -9,13 +9,48 @@ type WaitlistResponse = {
 
 export async function loadSlots(params: {
   salonId: string;
-  employeeId: string;
+  employeeId: string | null;
   serviceId: string;
   date: string;
-}): Promise<{ data: { slot_start: string; slot_end: string }[] | null; error: string | null }> {
-  const { salonId, employeeId, serviceId, date } = params;
-  const { data, error } = await getAvailableTimeSlots(salonId, employeeId, serviceId, date);
-  return { data: data ?? null, error: error ?? null };
+  employees?: Employee[];
+  maxEmployeesToCheck?: number;
+}): Promise<{
+  data: { slot_start: string; slot_end: string; employee_id?: string; employee_name?: string }[] | null;
+  error: string | null;
+  checkedEmployeeIds: string[];
+}> {
+  const { salonId, employeeId, serviceId, date, employees = [], maxEmployeesToCheck = 5 } = params;
+  if (employeeId) {
+    const { data, error } = await getAvailableTimeSlots(salonId, employeeId, serviceId, date);
+    const decorated = (data ?? []).map((slot) => ({
+      ...slot,
+      employee_id: employeeId,
+      employee_name: employees.find((employee) => employee.id === employeeId)?.full_name,
+    }));
+    return { data: decorated, error: error ?? null, checkedEmployeeIds: [employeeId] };
+  }
+
+  const employeeCandidates = employees.slice(0, maxEmployeesToCheck);
+  const checkedEmployeeIds: string[] = [];
+  const results = await Promise.all(
+    employeeCandidates.map(async (employee) => {
+      checkedEmployeeIds.push(employee.id);
+      const { data, error } = await getAvailableTimeSlots(salonId, employee.id, serviceId, date);
+      if (error || !data) return { slots: [] as { slot_start: string; slot_end: string; employee_id: string; employee_name: string }[], error };
+      return {
+        slots: data.map((slot) => ({
+          ...slot,
+          employee_id: employee.id,
+          employee_name: employee.full_name,
+        })),
+        error: null,
+      };
+    })
+  );
+
+  const firstError = results.find((result) => result.error)?.error ?? null;
+  const merged = results.flatMap((result) => result.slots);
+  return { data: merged, error: firstError, checkedEmployeeIds };
 }
 
 export async function submitWaitlist(params: {
