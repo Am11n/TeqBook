@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
@@ -68,6 +68,17 @@ export function BookingSelectionSection({
   const hasNoServices = selectionStatus === "no_active_services";
   const hasNoEmployees = selectionStatus === "no_active_employees";
   const isSelectionBlocked = hasMissingSetup || hasNoServices || hasNoEmployees;
+  const renderedSlots = useMemo(() => {
+    const seen = new Map<string, number>();
+    return slots.map((slot) => {
+      const fallbackBaseId = `${slot.employeeId}|${slot.start}|${slot.end}`;
+      const baseId = slot.id?.trim() ? slot.id : fallbackBaseId;
+      const duplicateCount = seen.get(baseId) ?? 0;
+      seen.set(baseId, duplicateCount + 1);
+      const safeId = duplicateCount === 0 ? baseId : `${baseId}#${duplicateCount}`;
+      return safeId === slot.id ? slot : { ...slot, id: safeId };
+    });
+  }, [slots]);
 
   return (
     <section className="space-y-4">
@@ -219,14 +230,13 @@ export function BookingSelectionSection({
           )}
         </div>
 
-        {canShowStep2 && slots.length > 0 && (
+        {canShowStep2 && renderedSlots.length > 0 && (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {slots.map((slot, index) => {
+            {renderedSlots.map((slot) => {
               const isSelected = selectedSlot === slot.id;
-              const slotRenderKey = `${slot.id}-${index}`;
               return (
                 <button
-                  key={slotRenderKey}
+                  key={slot.id}
                   type="button"
                   onClick={() => setSelectedSlot(slot.id)}
                   className="rounded-lg border px-3 py-2 text-sm font-medium transition"
@@ -251,7 +261,7 @@ export function BookingSelectionSection({
           </div>
         )}
 
-        {canShowStep2 && !loadingSlots && slots.length === 0 && (
+        {canShowStep2 && !loadingSlots && renderedSlots.length === 0 && (
           <div
             className="rounded-xl border p-3 text-sm"
             style={{
