@@ -221,11 +221,12 @@ export function BookingSelectionSection({
 
         {canShowStep2 && slots.length > 0 && (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {slots.map((slot) => {
+            {slots.map((slot, index) => {
               const isSelected = selectedSlot === slot.id;
+              const slotRenderKey = `${slot.id}-${index}`;
               return (
                 <button
-                  key={slot.id}
+                  key={slotRenderKey}
                   type="button"
                   onClick={() => setSelectedSlot(slot.id)}
                   className="rounded-lg border px-3 py-2 text-sm font-medium transition"
