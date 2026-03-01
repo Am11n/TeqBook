@@ -7,6 +7,17 @@ type WaitlistResponse = {
   body: Record<string, unknown>;
 };
 
+function dedupeSlotsByStart<T extends { slot_start: string }>(slots: T[]): T[] {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+  for (const slot of slots) {
+    if (seen.has(slot.slot_start)) continue;
+    seen.add(slot.slot_start);
+    unique.push(slot);
+  }
+  return unique;
+}
+
 export async function loadSlots(params: {
   salonId: string;
   employeeId: string | null;
@@ -27,7 +38,7 @@ export async function loadSlots(params: {
       employee_id: employeeId,
       employee_name: employees.find((employee) => employee.id === employeeId)?.full_name,
     }));
-    return { data: decorated, error: error ?? null, checkedEmployeeIds: [employeeId] };
+    return { data: dedupeSlotsByStart(decorated), error: error ?? null, checkedEmployeeIds: [employeeId] };
   }
 
   const employeeCandidates = employees.slice(0, maxEmployeesToCheck);
@@ -57,7 +68,8 @@ export async function loadSlots(params: {
       }
       return a.slot_start.localeCompare(b.slot_start);
     });
-  return { data: merged, error: firstError, checkedEmployeeIds };
+  const dedupedMerged = dedupeSlotsByStart(merged);
+  return { data: dedupedMerged, error: firstError, checkedEmployeeIds };
 }
 
 export async function submitWaitlist(params: {
