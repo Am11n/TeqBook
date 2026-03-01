@@ -130,18 +130,18 @@ export function BookingCustomerSection({
         </div>
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_email">
-            {customerPhone.trim() ? (t.emailLabelPlain || "Email") : t.emailLabel}
+            {t.emailLabelPlain || "Email"}
           </label>
           <Input id="customer_email" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder={t.emailPlaceholder} />
         </div>
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_phone">
-            {customerEmail.trim() ? (t.phoneLabelPlain || "Phone") : t.phoneLabel}
+            {t.phoneLabelPlain || "Phone"}
           </label>
           <Input id="customer_phone" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={t.phonePlaceholder} />
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
         </div>
-        {isWaitlistMode && waitlistContactError && (
+        {waitlistContactError && (
           <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistContactError}</p>
         )}
 
@@ -180,7 +180,7 @@ export function BookingCustomerSection({
           disabled={
             isWaitlistMode
               ? (!serviceId || !date || !customerName || (!customerEmail && !customerPhone) || joiningWaitlist)
-              : (!selectedSlot || !customerName || saving)
+              : (!selectedSlot || !customerName || (!customerEmail && !customerPhone) || saving)
           }
           variant={isPrimaryStep ? "default" : "outline"}
           style={isPrimaryStep ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText } : undefined}

@@ -239,9 +239,18 @@ export function usePublicBooking(slug: string) {
     e.preventDefault();
     if (!salon || !serviceId || !employeeId || !selectedSlot) return;
 
+    const normalizedPhone = normalizePhone(customerPhone);
+    const normalizedEmail = customerEmail.trim().toLowerCase();
+    if (!normalizedEmail && !normalizedPhone) {
+      setWaitlistContactError(t.bookingContactRequired || "Please provide email or phone so we can send booking confirmation.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setSuccessMessage(null);
+    setWaitlistContactError(null);
+    setCustomerPhone(normalizedPhone);
 
     try {
       const bookingResult = await submitBooking({
@@ -250,8 +259,8 @@ export function usePublicBooking(slug: string) {
         employeeId,
         selectedSlot,
         customerName,
-        customerEmail,
-        customerPhone,
+        customerEmail: normalizedEmail,
+        customerPhone: normalizedPhone,
       });
 
       if (bookingResult.error || !bookingResult.bookingId) {

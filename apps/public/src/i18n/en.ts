@@ -66,6 +66,7 @@ export const en: TranslationNamespaces = {
     waitlistSecureLinkInfo:
       "You will receive a message with a secure confirmation link if a slot becomes available.",
     waitlistCanLeavePage: "You can leave this page now.",
+    bookingContactRequired: "Please provide email or phone so we can send booking confirmation.",
     emailLabelPlain: "Email",
     phoneLabelPlain: "Phone",
     phoneFormatHint: "Use international format, for example +47 99 99 99 99",

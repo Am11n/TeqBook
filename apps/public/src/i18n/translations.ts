@@ -70,6 +70,7 @@ export type PublicBookingMessages = {
   waitlistContactEmail?: string;
   waitlistSecureLinkInfo?: string;
   waitlistCanLeavePage?: string;
+  bookingContactRequired?: string;
   emailLabelPlain?: string;
   phoneLabelPlain?: string;
   phoneFormatHint?: string;
