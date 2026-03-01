@@ -33,6 +33,30 @@ type BookingSelectionSectionProps = {
   setSelectedSlot: (value: string) => void;
 };
 
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function getEmployeeSlotColors(employeeId: string): {
+  bg: string;
+  border: string;
+  text: string;
+  dot: string;
+} {
+  const hue = hashString(employeeId) % 360;
+  return {
+    bg: `hsl(${hue} 90% 96%)`,
+    border: `hsl(${hue} 55% 78%)`,
+    text: `hsl(${hue} 55% 28%)`,
+    dot: `hsl(${hue} 65% 45%)`,
+  };
+}
+
 export function BookingSelectionSection({
   t,
   tokens,
@@ -79,6 +103,14 @@ export function BookingSelectionSection({
       return safeId === slot.id ? slot : { ...slot, id: safeId };
     });
   }, [slots]);
+  const employeeSlotColors = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof getEmployeeSlotColors>>();
+    for (const slot of renderedSlots) {
+      if (!slot.employeeId || map.has(slot.employeeId)) continue;
+      map.set(slot.employeeId, getEmployeeSlotColors(slot.employeeId));
+    }
+    return map;
+  }, [renderedSlots]);
 
   return (
     <section className="space-y-4">
@@ -234,6 +266,7 @@ export function BookingSelectionSection({
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {renderedSlots.map((slot, index) => {
               const isSelected = selectedSlot === slot.id;
+              const employeeColors = slot.employeeId ? employeeSlotColors.get(slot.employeeId) : null;
               return (
                 <button
                   key={`slot-${index}`}
@@ -248,13 +281,22 @@ export function BookingSelectionSection({
                           borderColor: tokens.colors.primary,
                         }
                       : {
-                          backgroundColor: tokens.colors.surface,
-                          color: tokens.colors.mutedText,
-                          borderColor: tokens.colors.border,
+                          backgroundColor: employeeColors?.bg ?? tokens.colors.surface,
+                          color: employeeColors?.text ?? tokens.colors.mutedText,
+                          borderColor: employeeColors?.border ?? tokens.colors.border,
                         }
                   }
                 >
-                  {slot.label}
+                  <span className="inline-flex items-center gap-2">
+                    {employeeColors ? (
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-2 w-2 rounded-full"
+                        style={{ backgroundColor: isSelected ? tokens.colors.primaryText : employeeColors.dot }}
+                      />
+                    ) : null}
+                    <span>{slot.label}</span>
+                  </span>
                 </button>
               );
             })}
