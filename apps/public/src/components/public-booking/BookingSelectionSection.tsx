@@ -4,11 +4,14 @@ import { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
-import type { BookingMode, Employee, PublicBookingCopy, PublicBookingTokens, Service, Slot, WaitlistEntrySource } from "./types";
+import type { BookingMode, Employee, PublicBookingCopy, PublicBookingTokens, SelectionStatus, Service, Slot, WaitlistEntrySource } from "./types";
 
 type BookingSelectionSectionProps = {
   t: PublicBookingCopy;
   tokens: PublicBookingTokens;
+  selectionStatus: SelectionStatus;
+  anyEmployeeValue: string;
+  employeeAvailability: Record<string, "likely_available" | "no_times" | "unknown">;
   activeStep: 1 | 2 | 3;
   mode: BookingMode;
   serviceId: string;
@@ -34,6 +37,9 @@ type BookingSelectionSectionProps = {
 export function BookingSelectionSection({
   t,
   tokens,
+  selectionStatus,
+  anyEmployeeValue,
+  employeeAvailability,
   activeStep,
   mode,
   serviceId,
@@ -60,6 +66,10 @@ export function BookingSelectionSection({
   const selectedEmployeeName = employees.find((employee) => employee.id === employeeId)?.full_name;
   const canShowStep2 = !isWaitlistMode && hasAttemptedSlotLoad;
   const step2IsActive = activeStep === 2;
+  const hasMissingSetup = selectionStatus === "missing_setup";
+  const hasNoServices = selectionStatus === "no_active_services";
+  const hasNoEmployees = selectionStatus === "no_active_employees";
+  const isSelectionBlocked = hasMissingSetup || hasNoServices || hasNoEmployees;
 
   return (
     <section className="space-y-4">
@@ -101,12 +111,46 @@ export function BookingSelectionSection({
           }}
           className="space-y-4"
         >
+          {isSelectionBlocked && (
+            <div
+              className="rounded-xl border p-3 text-sm"
+              style={{
+                borderColor: tokens.colors.border,
+                backgroundColor: tokens.colors.warningBg,
+                color: tokens.colors.warningText,
+              }}
+            >
+              {hasMissingSetup && (
+                <p>{t.missingSetupDescription || "This salon exists, but public booking is not fully configured yet."}</p>
+              )}
+              {hasNoServices && (
+                <p>{t.noActiveServicesDescription || "This salon has not published any services yet."}</p>
+              )}
+              {hasNoEmployees && (
+                <p>{t.noActiveEmployeesDescription || "This salon has not published any employees yet."}</p>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2 text-sm">
+            <label className="font-medium" htmlFor="date">{t.dateLabel}</label>
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              disabled={isSelectionBlocked}
+            />
+          </div>
+
           <div className="space-y-2 text-sm">
             <label className="font-medium" htmlFor="service">{t.serviceLabel}</label>
             <DialogSelect
               value={serviceId}
               onChange={setServiceId}
               required
+              disabled={isSelectionBlocked || services.length === 0}
               placeholder={t.servicePlaceholder}
               options={[
                 { value: "", label: t.servicePlaceholder },
@@ -121,35 +165,22 @@ export function BookingSelectionSection({
               value={employeeId}
               onChange={setEmployeeId}
               required={!isWaitlistMode}
+              disabled={isSelectionBlocked || employees.length === 0}
               placeholder={isWaitlistMode ? (t.employeeAny || "Any employee") : t.employeePlaceholder}
               options={[
-                { value: "", label: isWaitlistMode ? (t.employeeAny || "Any employee") : t.employeePlaceholder },
-                ...employees.map((emp) => ({ value: emp.id, label: emp.full_name })),
+                { value: anyEmployeeValue, label: t.anyEmployeeRecommended || "Any employee (recommended)" },
+                ...employees.map((emp) => {
+                  const status = employeeAvailability[emp.id] ?? "unknown";
+                  const statusLabel = status === "likely_available"
+                    ? ` · ${t.likelyAvailable || "Likely available"}`
+                    : status === "no_times"
+                      ? ` · ${t.noTimesForSelectedDate || "No times found for selected date"}`
+                      : "";
+                  return { value: emp.id, label: `${emp.full_name}${statusLabel}` };
+                }),
               ]}
             />
           </div>
-
-          <div className="space-y-2 text-sm">
-            <label className="font-medium" htmlFor="date">{t.dateLabel}</label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-
-          {!isWaitlistMode && (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!canLoadSlots || loadingSlots}
-              style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText }}
-            >
-              {loadingSlots ? t.loadingSlots : t.loadSlots}
-            </Button>
-          )}
         </form>
 
         {(selectedServiceName || selectedEmployeeName || date) && (
@@ -182,8 +213,11 @@ export function BookingSelectionSection({
       >
         <div className="space-y-1">
           <h3 className="text-sm font-semibold">{t.step2Label}</h3>
-          {!canShowStep2 && (
+          {!canShowStep2 && !loadingSlots && (
             <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.noSlotsYet}</p>
+          )}
+          {loadingSlots && (
+            <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.checkingAvailability || t.loadingSlots}</p>
           )}
         </div>
 
