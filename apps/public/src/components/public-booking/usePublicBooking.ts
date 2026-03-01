@@ -67,6 +67,10 @@ export function usePublicBooking(slug: string) {
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
+  const selectedEmployeeForLoad = useMemo(
+    () => (employeeId === ANY_EMPLOYEE ? null : employeeId || null),
+    [employeeId]
+  );
 
   useInitialBookingLoad({
     slug,
@@ -107,7 +111,7 @@ export function usePublicBooking(slug: string) {
     loadingSlots,
     slotCount: slots.length,
     serviceId,
-    employeeId,
+    employeeId: selectedEmployeeForLoad || "",
     date,
     slug,
     lastKey: noSlotsTelemetryKey.current,
@@ -136,11 +140,6 @@ export function usePublicBooking(slug: string) {
       trackPublicEvent("waitlist_direct_opened", { slug });
     }
   }
-
-  const selectedEmployeeForLoad = useMemo(
-    () => (employeeId === ANY_EMPLOYEE ? null : employeeId || null),
-    [employeeId]
-  );
 
   const canLoadSlots = useMemo(() => {
     const hasEmployeeChoice = employeeId === ANY_EMPLOYEE || !!employeeId;
