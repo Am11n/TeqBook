@@ -3,10 +3,12 @@
 import { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { BookingMode, PublicBookingCopy, WaitlistReceipt } from "./types";
+import type { BookingMode, PublicBookingCopy, PublicBookingTokens, WaitlistReceipt } from "./types";
 
 type BookingCustomerSectionProps = {
   t: PublicBookingCopy;
+  tokens: PublicBookingTokens;
+  activeStep: 1 | 2 | 3;
   mode: BookingMode;
   waitlistReceipt: WaitlistReceipt | null;
   handleJoinWaitlist: (e?: FormEvent | { preventDefault?: () => void }) => void;
@@ -27,22 +29,13 @@ type BookingCustomerSectionProps = {
   selectedSlot: string;
   joiningWaitlist: boolean;
   saving: boolean;
-  primaryColor: string;
+  handleRetryLoadSlots: () => Promise<void>;
 };
-
-function withPrimaryHover(primaryColor: string) {
-  return {
-    onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = `${primaryColor}dd`;
-    },
-    onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = primaryColor;
-    },
-  };
-}
 
 export function BookingCustomerSection({
   t,
+  tokens,
+  activeStep,
   mode,
   waitlistReceipt,
   handleJoinWaitlist,
@@ -63,27 +56,51 @@ export function BookingCustomerSection({
   selectedSlot,
   joiningWaitlist,
   saving,
-  primaryColor,
+  handleRetryLoadSlots,
 }: BookingCustomerSectionProps) {
   const isWaitlistMode = mode === "waitlist";
-  const hoverHandlers = withPrimaryHover(primaryColor);
+  const isPrimaryStep = activeStep === 3;
 
   return (
-    <section className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm">
+    <section
+      className="space-y-4 rounded-2xl border p-4 shadow-sm"
+      style={{
+        backgroundColor: tokens.colors.surface,
+        borderColor: tokens.colors.border,
+        boxShadow: tokens.shadow.card,
+      }}
+    >
       <div className="space-y-1">
-        <h2 className="text-sm font-medium tracking-tight">{t.step3Title}</h2>
-        <p className="text-xs text-muted-foreground">{t.step3Description}</p>
+        <h2 className="text-sm font-semibold tracking-tight">{t.step3Title}</h2>
+        <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
       </div>
 
       {isWaitlistMode && (
-        <div id="waitlist-mode-panel" role="tabpanel" aria-labelledby="waitlist-mode-tab" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900">
+        <div
+          id="waitlist-mode-panel"
+          role="tabpanel"
+          aria-labelledby="waitlist-mode-tab"
+          className="rounded-lg border p-3 text-xs"
+          style={{
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.surface2,
+            color: tokens.colors.mutedText,
+          }}
+        >
           <p className="font-medium">{t.waitlistModeTitle || "Waitlist request"}</p>
           <p className="mt-1">{t.waitlistModeSubtitle || "We'll notify you when a matching slot becomes available."}</p>
         </div>
       )}
 
       {isWaitlistMode && waitlistReceipt && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">
+        <div
+          className="rounded-lg border p-3 text-xs"
+          style={{
+            borderColor: tokens.colors.border,
+            backgroundColor: tokens.colors.successBg,
+            color: tokens.colors.successText,
+          }}
+        >
           <p className="font-medium">
             {waitlistReceipt.alreadyJoined
               ? (t.waitlistAlreadyJoinedTitle || "You're already on the waitlist")
@@ -122,14 +139,40 @@ export function BookingCustomerSection({
             {customerEmail.trim() ? (t.phoneLabelPlain || "Phone") : t.phoneLabel}
           </label>
           <Input id="customer_phone" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={t.phonePlaceholder} />
-          <p className="text-xs text-muted-foreground">{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
+          <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
         </div>
-        {isWaitlistMode && waitlistContactError && <p className="text-sm text-red-500" aria-live="polite">{waitlistContactError}</p>}
+        {isWaitlistMode && waitlistContactError && (
+          <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistContactError}</p>
+        )}
 
-        {error && <p className="text-sm text-red-500" aria-live="polite">{error}</p>}
-        {successMessage && <p className="text-sm text-emerald-600" aria-live="polite">{successMessage}</p>}
-        {waitlistError && <p className="text-sm text-red-500" aria-live="polite">{waitlistError}</p>}
-        {waitlistMessage && <p className="text-sm text-emerald-700" aria-live="polite">{waitlistMessage}</p>}
+        {error && (
+          <div
+            className="rounded-lg border p-3 text-sm"
+            style={{
+              borderColor: tokens.colors.border,
+              backgroundColor: tokens.colors.errorBg,
+              color: tokens.colors.errorText,
+            }}
+            aria-live="polite"
+          >
+            <p>{error}</p>
+            {!isWaitlistMode && (
+              <Button
+                type="button"
+                className="mt-3 w-full"
+                variant="outline"
+                onClick={() => {
+                  void handleRetryLoadSlots();
+                }}
+              >
+                Retry loading times
+              </Button>
+            )}
+          </div>
+        )}
+        {successMessage && <p className="text-sm" style={{ color: tokens.colors.successText }} aria-live="polite">{successMessage}</p>}
+        {waitlistError && <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistError}</p>}
+        {waitlistMessage && <p className="text-sm" style={{ color: tokens.colors.successText }} aria-live="polite">{waitlistMessage}</p>}
 
         <Button
           type="submit"
@@ -139,8 +182,8 @@ export function BookingCustomerSection({
               ? (!serviceId || !date || !customerName || (!customerEmail && !customerPhone) || joiningWaitlist)
               : (!selectedSlot || !customerName || saving)
           }
-          style={{ backgroundColor: primaryColor, color: "white" }}
-          {...hoverHandlers}
+          variant={isPrimaryStep ? "default" : "outline"}
+          style={isPrimaryStep ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText } : undefined}
         >
           {isWaitlistMode
             ? (joiningWaitlist ? (t.waitlistSubmitting || "Submitting...") : (t.modeWaitlist || "Notify me when available"))
@@ -148,7 +191,7 @@ export function BookingCustomerSection({
         </Button>
       </form>
 
-      <p className="text-xs text-muted-foreground">{t.payInfo}</p>
+      <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.payInfo}</p>
     </section>
   );
 }

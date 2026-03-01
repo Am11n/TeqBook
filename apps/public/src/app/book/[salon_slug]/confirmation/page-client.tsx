@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { useLocale } from "@/components/locale-provider";
 import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide-react";
 import type { Booking } from "@/lib/types";
 import { type Salon, createDateFormatter, createTimeFormatter } from "./confirmation-types";
+import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components/public-booking/publicBookingUtils";
 
 export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug: string }) {
   const { locale } = useLocale();
@@ -46,6 +48,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         setSalon({
           id: salonData.id,
           name: salonData.name,
+          plan: salonData.plan || "starter",
           whatsapp_number: salonData.whatsapp_number || null,
           timezone: salonData.timezone || null,
           theme: salonData.theme || null,
@@ -110,6 +113,8 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   const tz = salon?.timezone || "UTC";
   const formatDate = createDateFormatter(tz, locale);
   const formatTime = createTimeFormatter(tz, locale);
+  const effectiveBranding = salon ? computeEffectiveBranding(salon) : null;
+  const tokens = effectiveBranding ? buildPublicBookingTokens(effectiveBranding) : null;
 
   if (loading) {
     return (
@@ -136,13 +141,26 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     );
   }
 
-  const primaryColor = salon.theme?.primary || "#3b82f6";
+  if (!tokens || !effectiveBranding) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   const isCancelled = booking.status === "cancelled";
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12 bg-background">
-      <Card className="p-6 max-w-2xl w-full">
+    <div
+      className="flex min-h-screen items-center justify-center px-4 py-12"
+      style={{ backgroundColor: tokens.colors.surface2, fontFamily: tokens.typography.fontFamily }}
+    >
+      <Card className="w-full max-w-2xl p-6" style={{ borderColor: tokens.colors.border, boxShadow: tokens.shadow.card }}>
         <div className="text-center mb-6">
+          <div className="mb-3 flex justify-center">
+            <Image src={effectiveBranding.logoUrl} alt={salon.name} width={36} height={36} className="h-9 w-auto object-contain" />
+          </div>
           {isCancelled ? (
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
           ) : (
@@ -224,7 +242,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                 <Button
                   onClick={() => router.push(`/book/${slug}`)}
                   className="flex-1"
-                  style={{ backgroundColor: primaryColor }}
+                  style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText }}
                 >
                   Book Another
                 </Button>

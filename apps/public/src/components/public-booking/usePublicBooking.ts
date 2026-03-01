@@ -7,6 +7,8 @@ import { translations } from "@/i18n/translations";
 import type {
   BookingMode,
   Employee,
+  PublicBookingEffectiveBranding,
+  PublicBookingTokens,
   Salon,
   Service,
   Slot,
@@ -16,6 +18,8 @@ import type {
 import { loadSlots, submitBooking, submitWaitlist } from "./publicBookingHandlers";
 import { useInitialBookingLoad, useNoSlotsTelemetry, useQueryPrefill } from "./publicBookingEffects";
 import {
+  buildPublicBookingTokens,
+  computeEffectiveBranding,
   formatPreferredDate,
   mapAvailableSlots,
   maskEmail,
@@ -119,6 +123,7 @@ export function usePublicBooking(slug: string) {
     setWaitlistReceipt(null);
     setHasAttemptedSlotLoad(false);
     setSelectedSlot("");
+    setSlots([]);
 
     if (nextMode === "waitlist" && source === "direct") {
       trackPublicEvent("waitlist_direct_opened", { slug });
@@ -127,8 +132,7 @@ export function usePublicBooking(slug: string) {
 
   const canLoadSlots = useMemo(() => !!(salon && serviceId && employeeId && date), [salon, serviceId, employeeId, date]);
 
-  async function handleLoadSlots(e: FormEvent) {
-    e.preventDefault();
+  async function requestSlots() {
     if (!salon || !canLoadSlots) return;
 
     setLoadingSlots(true);
@@ -156,6 +160,11 @@ export function usePublicBooking(slug: string) {
 
     setSlots(mapAvailableSlots(data));
     setLoadingSlots(false);
+  }
+
+  async function handleLoadSlots(e: FormEvent) {
+    e.preventDefault();
+    await requestSlots();
   }
 
   async function handleJoinWaitlist(e?: FormEvent | { preventDefault?: () => void }, source?: WaitlistEntrySource) {
@@ -263,13 +272,31 @@ export function usePublicBooking(slug: string) {
     }
   }
 
+  const effectiveBranding: PublicBookingEffectiveBranding | null = useMemo(
+    () => (salon ? computeEffectiveBranding(salon) : null),
+    [salon]
+  );
+
+  const tokens: PublicBookingTokens | null = useMemo(
+    () => (effectiveBranding ? buildPublicBookingTokens(effectiveBranding) : null),
+    [effectiveBranding]
+  );
+
+  const activeStep = useMemo<1 | 2 | 3>(() => {
+    if (mode === "waitlist") return 3;
+    if (!hasAttemptedSlotLoad) return 1;
+    if (!selectedSlot) return 2;
+    return 3;
+  }, [mode, hasAttemptedSlotLoad, selectedSlot]);
+
   return {
     salon, services, employees, loading, error, successMessage,
+    effectiveBranding, tokens, activeStep,
     serviceId, setServiceId, employeeId, setEmployeeId, date, setDate, slots, selectedSlot, setSelectedSlot,
     loadingSlots, canLoadSlots, hasAttemptedSlotLoad,
     customerName, setCustomerName, customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
     joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
     mode, saving, locale, setLocale, t,
-    handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
+    handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots: requestSlots,
   };
 }

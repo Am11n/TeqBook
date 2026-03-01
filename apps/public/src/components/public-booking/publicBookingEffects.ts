@@ -36,12 +36,21 @@ async function resolveInitialBookingData(
   const salon: Salon = {
     id: salonData.id,
     name: salonData.name,
+    plan: salonData.plan || "starter",
     whatsapp_number: salonData.whatsapp_number || null,
     supported_languages: salonData.supported_languages || null,
     default_language: salonData.default_language || null,
     preferred_language: salonData.preferred_language || null,
     timezone: salonData.timezone || null,
-    theme: salonData.theme || null,
+    theme: salonData.theme
+      ? {
+          primary: salonData.theme.primary,
+          secondary: salonData.theme.secondary,
+          font: salonData.theme.font,
+          logo_url: salonData.theme.logo_url,
+          headerVariant: salonData.theme.headerVariant,
+        }
+      : null,
   };
 
   const [

@@ -11,6 +11,7 @@ export type SalonTheme = {
   secondary?: string;
   font?: string;
   logo_url?: string;
+  headerVariant?: "standard" | "compact";
   presets?: string[];
 };
 

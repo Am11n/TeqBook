@@ -3,12 +3,14 @@ import { formatDateInTimezone, formatTimeInTimezone } from "@/lib/utils/timezone
 export type Salon = {
   id: string;
   name: string;
+  plan?: "starter" | "pro" | "business" | null;
   whatsapp_number?: string | null;
   timezone?: string | null;
   theme?: {
     primary?: string;
     font?: string;
     logo_url?: string;
+    headerVariant?: "standard" | "compact";
   } | null;
 };
 

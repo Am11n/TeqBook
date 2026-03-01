@@ -57,6 +57,7 @@ export async function updateSalonSettings(
       secondary?: string;
       font?: string;
       logo_url?: string;
+      headerVariant?: "standard" | "compact";
       presets?: string[];
     } | null;
   },
@@ -113,6 +114,7 @@ export async function updateSalon(
       secondary?: string;
       font?: string;
       logo_url?: string;
+      headerVariant?: "standard" | "compact";
       presets?: string[];
     } | null;
   },
