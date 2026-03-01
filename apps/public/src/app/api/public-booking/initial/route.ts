@@ -68,11 +68,44 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const employeeIds = (employees ?? []).map((employee) => employee.id);
+    let employeeShiftWeekdays: Record<string, number[]> = {};
+
+    if (employeeIds.length > 0) {
+      const { data: shiftRows, error: shiftsError } = await supabase
+        .from("shifts")
+        .select("employee_id, weekday")
+        .eq("salon_id", salon.id)
+        .in("employee_id", employeeIds);
+
+      if (shiftsError) {
+        return NextResponse.json(
+          {
+            error: "Failed to load public booking setup",
+            details: {
+              shifts: shiftsError.message,
+            },
+          },
+          { status: 500 }
+        );
+      }
+
+      employeeShiftWeekdays = (shiftRows ?? []).reduce<Record<string, number[]>>((acc, row) => {
+        const employeeId = row.employee_id as string;
+        const weekday = Number(row.weekday);
+        if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) return acc;
+        if (!acc[employeeId]) acc[employeeId] = [];
+        if (!acc[employeeId].includes(weekday)) acc[employeeId].push(weekday);
+        return acc;
+      }, {});
+    }
+
     return NextResponse.json(
       {
         salon,
         services: services ?? [],
         employees: employees ?? [],
+        employeeShiftWeekdays,
       },
       { status: 200 }
     );
