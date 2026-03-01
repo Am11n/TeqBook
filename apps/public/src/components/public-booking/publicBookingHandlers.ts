@@ -19,7 +19,7 @@ export async function loadSlots(params: {
   error: string | null;
   checkedEmployeeIds: string[];
 }> {
-  const { salonId, employeeId, serviceId, date, employees = [], maxEmployeesToCheck = 5 } = params;
+  const { salonId, employeeId, serviceId, date, employees = [], maxEmployeesToCheck = Number.POSITIVE_INFINITY } = params;
   if (employeeId) {
     const { data, error } = await getAvailableTimeSlots(salonId, employeeId, serviceId, date);
     const decorated = (data ?? []).map((slot) => ({
@@ -49,7 +49,14 @@ export async function loadSlots(params: {
   );
 
   const firstError = results.find((result) => result.error)?.error ?? null;
-  const merged = results.flatMap((result) => result.slots);
+  const merged = results
+    .flatMap((result) => result.slots)
+    .sort((a, b) => {
+      if (a.slot_start === b.slot_start) {
+        return (a.employee_name ?? "").localeCompare(b.employee_name ?? "");
+      }
+      return a.slot_start.localeCompare(b.slot_start);
+    });
   return { data: merged, error: firstError, checkedEmployeeIds };
 }
 

@@ -230,6 +230,13 @@ export function isValidIsoDate(date: string | null): date is string {
   return !!date && /^\d{4}-\d{2}-\d{2}$/.test(date);
 }
 
+export function getLocalIsoDate(baseDate = new Date()): string {
+  const year = baseDate.getFullYear();
+  const month = `${baseDate.getMonth() + 1}`.padStart(2, "0");
+  const day = `${baseDate.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function mapAvailableSlots(data: RawAvailableSlot[]): Slot[] {
   return data.map((slot) => {
     const startDate = new Date(slot.slot_start);

@@ -23,6 +23,7 @@ import {
   buildPublicBookingTokens,
   computeEffectiveBranding,
   formatPreferredDate,
+  getLocalIsoDate,
   mapAvailableSlots,
   maskEmail,
   maskPhone,
@@ -45,7 +46,7 @@ export function usePublicBooking(slug: string) {
 
   const [serviceId, setServiceId] = useState("");
   const [employeeId, setEmployeeId] = useState<string>("");
-  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string>(() => getLocalIsoDate());
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -165,6 +166,7 @@ export function usePublicBooking(slug: string) {
       serviceId,
       date,
       employees,
+      maxEmployeesToCheck: selectedEmployeeForLoad ? 1 : employees.length,
     });
 
     if (slotsError || !data) {
