@@ -49,6 +49,26 @@ export const en: TranslationNamespaces = {
     waitlistAlreadyJoined:
       "You already have an active waitlist request for this date and service.",
     waitlistCreateError: "Could not join the waitlist right now. Please try again.",
+    modeSelectorLabel: "Booking mode",
+    modeBookTime: "Book time",
+    modeWaitlist: "Notify me when available",
+    employeeAny: "Any employee",
+    waitlistHowItWorks:
+      "When a slot becomes available, we will send you a link by SMS or email.",
+    waitlistResponseWindow: "You typically have 15 minutes to confirm.",
+    waitlistDeadlineHint: "Confirm before the deadline to secure the appointment.",
+    waitlistModeTitle: "Waitlist request",
+    waitlistModeSubtitle: "We'll notify you when a matching slot becomes available.",
+    waitlistSuccessTitle: "You're on the waitlist",
+    waitlistAlreadyJoinedTitle: "You're already on the waitlist",
+    waitlistContactSms: "SMS",
+    waitlistContactEmail: "Email",
+    waitlistSecureLinkInfo:
+      "You will receive a message with a secure confirmation link if a slot becomes available.",
+    waitlistCanLeavePage: "You can leave this page now.",
+    emailLabelPlain: "Email",
+    phoneLabelPlain: "Phone",
+    phoneFormatHint: "Use international format, for example +47 99 99 99 99",
   },
   login: {
     title: "Log in",

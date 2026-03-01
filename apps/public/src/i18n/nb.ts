@@ -49,6 +49,26 @@ export const nb: TranslationNamespaces = {
     waitlistAlreadyJoined:
       "Du har allerede en aktiv ventelisteforespørsel for denne datoen og tjenesten.",
     waitlistCreateError: "Kunne ikke legge deg til på ventelisten nå. Prøv igjen.",
+    modeSelectorLabel: "Bestillingsmodus",
+    modeBookTime: "Book time",
+    modeWaitlist: "Gi meg beskjed når det blir ledig",
+    employeeAny: "Valgfri ansatt",
+    waitlistHowItWorks:
+      "Når en time blir ledig, sender vi deg en lenke på SMS eller e-post.",
+    waitlistResponseWindow: "Du har vanligvis 15 minutter på å bekrefte.",
+    waitlistDeadlineHint: "Bekreft innen fristen for å sikre timen.",
+    waitlistModeTitle: "Ventelisteforespørsel",
+    waitlistModeSubtitle: "Vi varsler deg når en passende time blir ledig.",
+    waitlistSuccessTitle: "Du er registrert på venteliste",
+    waitlistAlreadyJoinedTitle: "Du står allerede på venteliste",
+    waitlistContactSms: "SMS",
+    waitlistContactEmail: "E-post",
+    waitlistSecureLinkInfo:
+      "Du får en melding med en sikker bekreftelseslenke hvis en time blir ledig.",
+    waitlistCanLeavePage: "Du kan forlate siden nå.",
+    emailLabelPlain: "E-post",
+    phoneLabelPlain: "Telefon",
+    phoneFormatHint: "Bruk internasjonalt format, for eksempel +47 99 99 99 99",
   },
   login: {
     title: "Logg inn",
