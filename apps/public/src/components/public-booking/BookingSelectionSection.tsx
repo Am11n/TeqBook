@@ -22,7 +22,6 @@ type BookingSelectionSectionProps = {
   setDate: (value: string) => void;
   services: Service[];
   employees: Employee[];
-  canLoadSlots: boolean;
   loadingSlots: boolean;
   handleModeChange: (mode: BookingMode, source?: WaitlistEntrySource) => void;
   handleLoadSlots: (e: FormEvent) => void;
@@ -50,7 +49,6 @@ export function BookingSelectionSection({
   setDate,
   services,
   employees,
-  canLoadSlots,
   loadingSlots,
   handleModeChange,
   handleLoadSlots,

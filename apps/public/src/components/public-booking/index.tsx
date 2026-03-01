@@ -10,10 +10,10 @@ import type { PublicBookingPageProps } from "./types";
 export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const {
     salon, services, employees, loading, error, successMessage,
-    effectiveBranding, tokens, activeStep,
+    effectiveBranding, tokens, activeStep, selectionStatus, employeeAvailability, ANY_EMPLOYEE_VALUE,
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, slots, selectedSlot, setSelectedSlot,
-    loadingSlots, canLoadSlots, hasAttemptedSlotLoad,
+    loadingSlots, hasAttemptedSlotLoad,
     customerName, setCustomerName,
     customerEmail, setCustomerEmail,
     customerPhone, setCustomerPhone,
@@ -36,7 +36,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     );
   }
 
-  if (error || !salon || !effectiveBranding || !tokens) {
+  if (!salon || !effectiveBranding || !tokens || selectionStatus === "not_found" || selectionStatus === "error") {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md">
@@ -74,6 +74,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         <BookingSelectionSection
           t={t}
           tokens={tokens}
+          selectionStatus={selectionStatus}
+          anyEmployeeValue={ANY_EMPLOYEE_VALUE}
+          employeeAvailability={employeeAvailability}
           activeStep={activeStep}
           mode={mode}
           serviceId={serviceId}
@@ -84,7 +87,6 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
           setDate={setDate}
           services={services}
           employees={employees}
-          canLoadSlots={canLoadSlots}
           loadingSlots={loadingSlots}
           handleModeChange={handleModeChange}
           handleLoadSlots={handleLoadSlots}

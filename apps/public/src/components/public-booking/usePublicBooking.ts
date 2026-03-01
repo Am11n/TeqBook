@@ -219,7 +219,7 @@ export function usePublicBooking(slug: string) {
     const submitSource = source ?? waitlistEntrySource;
     trackPublicEvent(
       submitSource === "no-slots" ? "waitlist_no_slots_submitted" : "waitlist_direct_submitted",
-      { slug, serviceId, employeeId: employeeId || null, date }
+      { slug, serviceId, employeeId: selectedEmployeeForLoad, date }
     );
 
     try {
