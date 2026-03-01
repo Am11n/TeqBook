@@ -42,19 +42,30 @@ function hashString(value: string): number {
   return Math.abs(hash);
 }
 
+const EMPLOYEE_SLOT_COLOR_PALETTE: Array<{
+  bg: string;
+  border: string;
+  text: string;
+  dot: string;
+}> = [
+  { bg: "#E8F1FF", border: "#7AA2FF", text: "#123A8F", dot: "#2B6EF2" }, // blue
+  { bg: "#EAFBF3", border: "#6DD9A7", text: "#0D6A44", dot: "#1AA56A" }, // green
+  { bg: "#FFF0E8", border: "#FFB184", text: "#9A3D0D", dot: "#E36A2A" }, // orange
+  { bg: "#F3ECFF", border: "#B99CFF", text: "#4B2A9A", dot: "#7B4DE3" }, // purple
+  { bg: "#FFEAF1", border: "#FF9CC1", text: "#9B1C52", dot: "#DD3E7E" }, // pink
+  { bg: "#E9FAFB", border: "#84DDE4", text: "#0E6671", dot: "#1C9EAA" }, // cyan
+  { bg: "#FFF8E8", border: "#EBCB7A", text: "#7F620F", dot: "#B98A14" }, // amber
+  { bg: "#EEF3F7", border: "#A8BBCB", text: "#334B60", dot: "#5A738A" }, // slate
+];
+
 function getEmployeeSlotColors(employeeId: string): {
   bg: string;
   border: string;
   text: string;
   dot: string;
 } {
-  const hue = hashString(employeeId) % 360;
-  return {
-    bg: `hsl(${hue} 88% 90%)`,
-    border: `hsl(${hue} 58% 68%)`,
-    text: `hsl(${hue} 60% 24%)`,
-    dot: `hsl(${hue} 70% 42%)`,
-  };
+  const colorIndex = hashString(employeeId) % EMPLOYEE_SLOT_COLOR_PALETTE.length;
+  return EMPLOYEE_SLOT_COLOR_PALETTE[colorIndex];
 }
 
 function getSlotColorKey(slot: Slot): string | null {
