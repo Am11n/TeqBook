@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAvailableTimeSlots, createBooking } from "@/lib/services/bookings-service";
 import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
@@ -10,6 +10,60 @@ import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { localISOStringToUTC } from "@/lib/utils/timezone";
 import type { Salon, Service, Employee, Slot } from "./types";
+
+type BookingMode = "book" | "waitlist";
+type WaitlistEntrySource = "direct" | "no-slots";
+
+type WaitlistReceipt = {
+  alreadyJoined: boolean;
+  serviceName: string;
+  formattedDate: string;
+  maskedEmail: string | null;
+  maskedPhone: string | null;
+};
+
+function trackPublicEvent(event: string, payload?: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+
+  type GTag = (command: string, eventName: string, params?: Record<string, unknown>) => void;
+  const maybeGtag = (window as Window & { gtag?: GTag }).gtag;
+  if (typeof maybeGtag === "function") {
+    maybeGtag("event", event, payload);
+  }
+}
+
+function normalizePhone(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const hasLeadingPlus = trimmed.startsWith("+");
+  const digitsOnly = trimmed.replace(/\D/g, "");
+  if (!digitsOnly) return "";
+  return hasLeadingPlus ? `+${digitsOnly}` : digitsOnly;
+}
+
+function maskEmail(email: string | null): string | null {
+  if (!email) return null;
+  const [name, domain] = email.split("@");
+  if (!name || !domain) return email;
+  const maskedName = name.length <= 1 ? "*" : `${name[0]}***`;
+  return `${maskedName}@${domain}`;
+}
+
+function maskPhone(phone: string | null): string | null {
+  if (!phone) return null;
+  const visible = phone.slice(-2);
+  return `${phone.slice(0, Math.max(0, phone.length - 2)).replace(/[0-9]/g, "•")}${visible}`;
+}
+
+function formatPreferredDate(date: string, locale: AppLocale): string {
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
+}
+
+function isValidIsoDate(date: string | null): date is string {
+  return !!date && /^\d{4}-\d{2}-\d{2}$/.test(date);
+}
 
 export function usePublicBooking(slug: string) {
   const searchParams = useSearchParams();
@@ -32,6 +86,8 @@ export function usePublicBooking(slug: string) {
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [hasAttemptedSlotLoad, setHasAttemptedSlotLoad] = useState(false);
+  const [mode, setMode] = useState<BookingMode>("book");
+  const [waitlistEntrySource, setWaitlistEntrySource] = useState<WaitlistEntrySource>("direct");
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -41,6 +97,11 @@ export function usePublicBooking(slug: string) {
   const [joiningWaitlist, setJoiningWaitlist] = useState(false);
   const [waitlistMessage, setWaitlistMessage] = useState<string | null>(null);
   const [waitlistError, setWaitlistError] = useState<string | null>(null);
+  const [waitlistContactError, setWaitlistContactError] = useState<string | null>(null);
+  const [waitlistReceipt, setWaitlistReceipt] = useState<WaitlistReceipt | null>(null);
+
+  const hasAppliedQueryPrefill = useRef(false);
+  const noSlotsTelemetryKey = useRef<string | null>(null);
 
   useEffect(() => {
     async function loadInitial() {
@@ -100,6 +161,63 @@ export function usePublicBooking(slug: string) {
     loadInitial();
   }, [slug, t.notFound, t.loadError, setLocale]);
 
+  useEffect(() => {
+    if (loading || hasAppliedQueryPrefill.current) return;
+
+    const modeParam = searchParams.get("mode");
+    if (modeParam === "waitlist") {
+      setMode("waitlist");
+      setWaitlistEntrySource("direct");
+      trackPublicEvent("waitlist_direct_opened", { slug });
+    }
+
+    const serviceParam = searchParams.get("serviceId");
+    if (serviceParam && services.some((service) => service.id === serviceParam)) {
+      setServiceId(serviceParam);
+    }
+
+    const employeeParam = searchParams.get("employeeId");
+    if (employeeParam && employees.some((employee) => employee.id === employeeParam)) {
+      setEmployeeId(employeeParam);
+    }
+
+    const dateParam = searchParams.get("date");
+    if (isValidIsoDate(dateParam)) {
+      setDate(dateParam);
+    }
+
+    hasAppliedQueryPrefill.current = true;
+  }, [loading, searchParams, services, employees, slug]);
+
+  useEffect(() => {
+    if (mode !== "book") return;
+    if (!hasAttemptedSlotLoad || loadingSlots || slots.length !== 0) return;
+
+    const key = `${serviceId}:${employeeId}:${date}`;
+    if (noSlotsTelemetryKey.current === key) return;
+    noSlotsTelemetryKey.current = key;
+    trackPublicEvent("waitlist_no_slots_prompt_shown", { slug, serviceId, employeeId: employeeId || null, date });
+  }, [mode, hasAttemptedSlotLoad, loadingSlots, slots.length, serviceId, employeeId, date, slug]);
+
+  function handleModeChange(nextMode: BookingMode, source: WaitlistEntrySource = "direct") {
+    if (nextMode === mode) return;
+
+    setMode(nextMode);
+    setWaitlistEntrySource(source);
+    setError(null);
+    setSuccessMessage(null);
+    setWaitlistError(null);
+    setWaitlistMessage(null);
+    setWaitlistContactError(null);
+    setWaitlistReceipt(null);
+    setHasAttemptedSlotLoad(false);
+    setSelectedSlot("");
+
+    if (nextMode === "waitlist" && source === "direct") {
+      trackPublicEvent("waitlist_direct_opened", { slug });
+    }
+  }
+
   const canLoadSlots = useMemo(
     () => !!(salon && serviceId && employeeId && date),
     [salon, serviceId, employeeId, date],
@@ -113,6 +231,8 @@ export function usePublicBooking(slug: string) {
     setError(null);
     setWaitlistError(null);
     setWaitlistMessage(null);
+    setWaitlistContactError(null);
+    setWaitlistReceipt(null);
     setSlots([]);
     setSelectedSlot("");
     setHasAttemptedSlotLoad(true);
@@ -150,17 +270,33 @@ export function usePublicBooking(slug: string) {
     setLoadingSlots(false);
   }
 
-  async function handleJoinWaitlist(e?: FormEvent | { preventDefault?: () => void }) {
+  async function handleJoinWaitlist(
+    e?: FormEvent | { preventDefault?: () => void },
+    source?: WaitlistEntrySource
+  ) {
     e?.preventDefault?.();
     if (!salon || !serviceId || !date || !customerName) return;
-    if (!customerEmail && !customerPhone) {
-      setWaitlistError(t.waitlistContactRequired || "Please provide email or phone.");
+
+    const normalizedPhone = normalizePhone(customerPhone);
+    const normalizedEmail = customerEmail.trim().toLowerCase();
+
+    if (!normalizedEmail && !normalizedPhone) {
+      setWaitlistContactError(t.waitlistContactRequired || "Please provide email or phone.");
       return;
     }
 
+    setCustomerPhone(normalizedPhone);
     setJoiningWaitlist(true);
     setWaitlistError(null);
     setWaitlistMessage(null);
+    setWaitlistContactError(null);
+    setWaitlistReceipt(null);
+
+    const submitSource = source ?? waitlistEntrySource;
+    trackPublicEvent(
+      submitSource === "no-slots" ? "waitlist_no_slots_submitted" : "waitlist_direct_submitted",
+      { slug, serviceId, employeeId: employeeId || null, date }
+    );
 
     try {
       const response = await fetch("/api/waitlist", {
@@ -172,8 +308,8 @@ export function usePublicBooking(slug: string) {
           employeeId: employeeId || null,
           preferredDate: date,
           customerName,
-          customerEmail: customerEmail || null,
-          customerPhone: customerPhone || null,
+          customerEmail: normalizedEmail || null,
+          customerPhone: normalizedPhone || null,
         }),
       });
 
@@ -184,10 +320,23 @@ export function usePublicBooking(slug: string) {
         return;
       }
 
+      const selectedService = services.find((service) => service.id === serviceId);
+      const serviceName = selectedService?.name || (t.servicePlaceholder || "Selected service");
+      const formattedDate = formatPreferredDate(date, locale);
+      const alreadyJoined = !!body.alreadyJoined;
+
+      setWaitlistReceipt({
+        alreadyJoined,
+        serviceName,
+        formattedDate,
+        maskedEmail: maskEmail(normalizedEmail || null),
+        maskedPhone: maskPhone(normalizedPhone || null),
+      });
+
       setWaitlistMessage(
-        body.alreadyJoined
-          ? t.waitlistAlreadyJoined || "You are already on the waitlist for this date."
-          : t.waitlistSuccess || "You're on the waitlist. The salon will contact you if a slot opens."
+        alreadyJoined
+          ? `${t.waitlistAlreadyJoined || "You are already on the waitlist."} ${serviceName} - ${formattedDate}`
+          : t.waitlistSuccess || "You're on the waitlist. The salon will contact you if a matching slot opens."
       );
     } catch {
       setWaitlistError(t.waitlistCreateError || t.createError);
@@ -281,8 +430,9 @@ export function usePublicBooking(slug: string) {
     customerName, setCustomerName,
     customerEmail, setCustomerEmail,
     customerPhone, setCustomerPhone,
-    joiningWaitlist, waitlistMessage, waitlistError,
+    joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
+    mode,
     saving, locale, setLocale, t,
-    handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
+    handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
   };
 }

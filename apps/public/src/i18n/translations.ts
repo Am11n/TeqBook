@@ -55,6 +55,24 @@ export type PublicBookingMessages = {
   waitlistSuccess?: string;
   waitlistAlreadyJoined?: string;
   waitlistCreateError?: string;
+  modeSelectorLabel?: string;
+  modeBookTime?: string;
+  modeWaitlist?: string;
+  employeeAny?: string;
+  waitlistHowItWorks?: string;
+  waitlistResponseWindow?: string;
+  waitlistDeadlineHint?: string;
+  waitlistModeTitle?: string;
+  waitlistModeSubtitle?: string;
+  waitlistSuccessTitle?: string;
+  waitlistAlreadyJoinedTitle?: string;
+  waitlistContactSms?: string;
+  waitlistContactEmail?: string;
+  waitlistSecureLinkInfo?: string;
+  waitlistCanLeavePage?: string;
+  emailLabelPlain?: string;
+  phoneLabelPlain?: string;
+  phoneFormatHint?: string;
 };
 
 export type LoginMessages = {
