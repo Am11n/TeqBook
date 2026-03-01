@@ -47,6 +47,14 @@ export type PublicBookingMessages = {
   createError: string;
   unavailableTitle: string;
   unavailableDescription: string;
+  missingSetupTitle?: string;
+  missingSetupDescription?: string;
+  noActiveServicesDescription?: string;
+  noActiveEmployeesDescription?: string;
+  anyEmployeeRecommended?: string;
+  checkingAvailability?: string;
+  likelyAvailable?: string;
+  noTimesForSelectedDate?: string;
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistButton?: string;

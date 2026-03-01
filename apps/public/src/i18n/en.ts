@@ -38,6 +38,15 @@ export const en: TranslationNamespaces = {
     unavailableTitle: "Cannot show booking page",
     unavailableDescription:
       "This salon does not exist or is not marked as public.",
+    missingSetupTitle: "Booking setup is incomplete",
+    missingSetupDescription:
+      "This salon exists, but public booking is not fully configured yet.",
+    noActiveServicesDescription: "This salon has not published any services yet.",
+    noActiveEmployeesDescription: "This salon has not published any employees yet.",
+    anyEmployeeRecommended: "Any employee (recommended)",
+    checkingAvailability: "Checking available times...",
+    likelyAvailable: "Likely available",
+    noTimesForSelectedDate: "No times found for selected date",
     waitlistTitle: "No slots available right now",
     waitlistDescription:
       "Join the waitlist and the salon can contact you if a slot opens up.",

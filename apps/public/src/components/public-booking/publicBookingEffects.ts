@@ -21,16 +21,17 @@ function resolveInitialLocale(salon: Salon): AppLocale | null {
 
 async function resolveInitialBookingData(
   slug: string,
-  fallbackErrors: { notFound: string; loadError: string },
+  fallbackErrors: { notFound: string; missingSetup: string; loadError: string },
 ): Promise<{
   salon: Salon | null;
   services: Service[];
   employees: Employee[];
   error: string | null;
+  issue: "none" | "not_found" | "missing_setup";
 }> {
   const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
   if (salonError || !salonData) {
-    return { salon: null, services: [], employees: [], error: fallbackErrors.notFound };
+    return { salon: null, services: [], employees: [], error: fallbackErrors.notFound, issue: "not_found" };
   }
 
   const salon: Salon = {
@@ -62,12 +63,28 @@ async function resolveInitialBookingData(
   ]);
 
   if (servicesError || employeesError) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[public-booking] Missing setup while loading booking data.", {
+        salonId: salonData.id,
+        servicesError,
+        employeesError,
+      });
+    }
     return {
-      salon: null,
+      salon,
       services: [],
       employees: [],
-      error: servicesError ?? employeesError ?? fallbackErrors.loadError,
+      error: fallbackErrors.missingSetup || servicesError ?? employeesError ?? fallbackErrors.loadError,
+      issue: "missing_setup",
     };
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[public-booking] Initial booking data loaded.", {
+      salonId: salonData.id,
+      servicesCount: servicesData?.length ?? 0,
+      employeesCount: employeesData?.length ?? 0,
+    });
   }
 
   return {
@@ -75,15 +92,18 @@ async function resolveInitialBookingData(
     services: servicesData ?? [],
     employees: employeesData ?? [],
     error: null,
+    issue: "none",
   };
 }
 
 export function useInitialBookingLoad(params: {
   slug: string;
   notFoundText: string;
+  missingSetupText: string;
   loadErrorText: string;
   setLoading: (value: boolean) => void;
   setError: (value: string | null) => void;
+  setLoadIssue: (value: "none" | "not_found" | "missing_setup") => void;
   setSalon: (value: Salon | null) => void;
   setServices: (value: Service[]) => void;
   setEmployees: (value: Employee[]) => void;
@@ -92,9 +112,11 @@ export function useInitialBookingLoad(params: {
   const {
     slug,
     notFoundText,
+    missingSetupText,
     loadErrorText,
     setLoading,
     setError,
+    setLoadIssue,
     setSalon,
     setServices,
     setEmployees,
@@ -107,10 +129,12 @@ export function useInitialBookingLoad(params: {
       setError(null);
       const initialData = await resolveInitialBookingData(slug, {
         notFound: notFoundText,
+        missingSetup: missingSetupText,
         loadError: loadErrorText,
       });
+      setLoadIssue(initialData.issue);
 
-      if (initialData.error || !initialData.salon) {
+      if (!initialData.salon) {
         setError(initialData.error);
         setLoading(false);
         return;
@@ -119,6 +143,7 @@ export function useInitialBookingLoad(params: {
       setSalon(initialData.salon);
       setServices(initialData.services);
       setEmployees(initialData.employees);
+      setError(initialData.issue === "missing_setup" ? initialData.error : null);
 
       const initialLocale = resolveInitialLocale(initialData.salon);
       if (initialLocale) setLocale(initialLocale);
@@ -129,9 +154,11 @@ export function useInitialBookingLoad(params: {
   }, [
     slug,
     notFoundText,
+    missingSetupText,
     loadErrorText,
     setLoading,
     setError,
+    setLoadIssue,
     setSalon,
     setServices,
     setEmployees,
