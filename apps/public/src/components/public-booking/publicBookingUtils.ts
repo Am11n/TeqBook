@@ -238,17 +238,22 @@ export function getLocalIsoDate(baseDate = new Date()): string {
 }
 
 export function mapAvailableSlots(data: RawAvailableSlot[]): Slot[] {
+  const seenIds = new Map<string, number>();
+
   return data.map((slot) => {
     const startDate = new Date(slot.slot_start);
     const endDate = new Date(slot.slot_end);
     const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
     const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
+    const employeeId = slot.employee_id ?? "";
+    const baseId = `${employeeId}|${slot.slot_start}|${slot.slot_end}`;
+    const duplicateCount = seenIds.get(baseId) ?? 0;
+    seenIds.set(baseId, duplicateCount + 1);
+    const id = duplicateCount === 0 ? baseId : `${baseId}#${duplicateCount}`;
 
     if (startMatch && endMatch) {
       const rangeLabel = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
       const label = slot.employee_name ? `${rangeLabel} · ${slot.employee_name}` : rangeLabel;
-      const employeeId = slot.employee_id ?? "";
-      const id = `${employeeId}|${slot.slot_start}`;
       return { id, start: slot.slot_start, end: slot.slot_end, label, employeeId };
     }
 
@@ -258,8 +263,6 @@ export function mapAvailableSlots(data: RawAvailableSlot[]): Slot[] {
     const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
     const rangeLabel = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
     const label = slot.employee_name ? `${rangeLabel} · ${slot.employee_name}` : rangeLabel;
-    const employeeId = slot.employee_id ?? "";
-    const id = `${employeeId}|${slot.slot_start}`;
     return { id, start: slot.slot_start, end: slot.slot_end, label, employeeId };
   });
 }
