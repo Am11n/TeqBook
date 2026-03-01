@@ -118,6 +118,11 @@ async function checkAndIncrementBookingRateLimit(
 }
 
 function toUtcStartTime(selectedSlot: string, salonTimezone: string | null | undefined): string {
+  // If the slot already includes a timezone designator, trust it as UTC-aware.
+  if (/[zZ]$|[+-]\d{2}:\d{2}$/.test(selectedSlot)) {
+    return selectedSlot;
+  }
+
   if (!salonTimezone || salonTimezone === "UTC") {
     return selectedSlot;
   }

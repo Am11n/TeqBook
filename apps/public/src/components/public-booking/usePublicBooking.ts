@@ -188,7 +188,7 @@ export function usePublicBooking(slug: string) {
       return;
     }
 
-    const mappedSlots = mapAvailableSlots(data);
+    const mappedSlots = mapAvailableSlots(data, salon.timezone);
     const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
     setSlots(uniqueSlots);
     setEmployeeAvailability((previous) => {
