@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import type {
-  ANY_EMPLOYEE_VALUE,
   BookingMode,
   Employee,
   PublicBookingEffectiveBranding,
@@ -380,7 +379,7 @@ export function usePublicBooking(slug: string) {
   return {
     salon, services, employees, loading, error, successMessage,
     effectiveBranding, tokens, activeStep, selectionStatus, loadIssue, employeeAvailability,
-    ANY_EMPLOYEE_VALUE: ANY_EMPLOYEE as typeof ANY_EMPLOYEE_VALUE,
+    ANY_EMPLOYEE_VALUE: ANY_EMPLOYEE,
     serviceId, setServiceId, employeeId, setEmployeeId, date, setDate, slots, selectedSlot, setSelectedSlot,
     loadingSlots, canLoadSlots, hasAttemptedSlotLoad,
     customerName, setCustomerName, customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
