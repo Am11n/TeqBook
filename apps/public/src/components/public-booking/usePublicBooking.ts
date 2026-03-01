@@ -68,6 +68,19 @@ export function usePublicBooking(slug: string) {
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
+
+  const ensureUniqueSlotIds = useCallback((incomingSlots: Slot[]): Slot[] => {
+    const seen = new Map<string, number>();
+    return incomingSlots.map((slot) => {
+      const fallbackBaseId = `${slot.employeeId}|${slot.start}|${slot.end}`;
+      const baseId = slot.id?.trim() ? slot.id : fallbackBaseId;
+      const duplicateCount = seen.get(baseId) ?? 0;
+      seen.set(baseId, duplicateCount + 1);
+      const uniqueId = duplicateCount === 0 ? baseId : `${baseId}#${duplicateCount}`;
+      return uniqueId === slot.id ? slot : { ...slot, id: uniqueId };
+    });
+  }, []);
+
   const selectedEmployeeForLoad = useMemo(
     () => (employeeId === ANY_EMPLOYEE ? null : employeeId || null),
     [employeeId]
@@ -176,21 +189,22 @@ export function usePublicBooking(slug: string) {
     }
 
     const mappedSlots = mapAvailableSlots(data);
-    setSlots(mappedSlots);
+    const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
+    setSlots(uniqueSlots);
     setEmployeeAvailability((previous) => {
       const next = { ...previous };
       if (selectedEmployeeForLoad) {
-        next[selectedEmployeeForLoad] = mappedSlots.length > 0 ? "likely_available" : "no_times";
+        next[selectedEmployeeForLoad] = uniqueSlots.length > 0 ? "likely_available" : "no_times";
         return next;
       }
       for (const checkedId of checkedEmployeeIds) {
-        const hasSlots = mappedSlots.some((slot) => slot.employeeId === checkedId);
+        const hasSlots = uniqueSlots.some((slot) => slot.employeeId === checkedId);
         next[checkedId] = hasSlots ? "likely_available" : "no_times";
       }
       return next;
     });
     setLoadingSlots(false);
-  }, [canLoadSlots, date, employees, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
+  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
