@@ -97,12 +97,24 @@ export type Employee = {
 };
 
 export type Slot = {
+  id: string;
   start: string;
   end: string;
   label: string;
+  employeeId: string;
 };
 
 export type BookingMode = "book" | "waitlist";
+export type SelectionStatus =
+  | "loading"
+  | "ready"
+  | "missing_setup"
+  | "no_active_services"
+  | "no_active_employees"
+  | "not_found"
+  | "error";
+
+export const ANY_EMPLOYEE_VALUE = "__any_employee__";
 
 export type WaitlistEntrySource = "direct" | "no-slots";
 

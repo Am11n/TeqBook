@@ -4,6 +4,8 @@ import type { PublicBookingEffectiveBranding, PublicBookingTokens, Salon, Slot }
 type RawAvailableSlot = {
   slot_start: string;
   slot_end: string;
+  employee_id?: string;
+  employee_name?: string;
 };
 
 const TEQBOOK_PRIMARY = "#6d5efc";
@@ -236,15 +238,21 @@ export function mapAvailableSlots(data: RawAvailableSlot[]): Slot[] {
     const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
 
     if (startMatch && endMatch) {
-      const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
-      return { start: slot.slot_start, end: slot.slot_end, label };
+      const rangeLabel = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
+      const label = slot.employee_name ? `${rangeLabel} · ${slot.employee_name}` : rangeLabel;
+      const employeeId = slot.employee_id ?? "";
+      const id = `${employeeId}|${slot.slot_start}`;
+      return { id, start: slot.slot_start, end: slot.slot_end, label, employeeId };
     }
 
     const startHours = startDate.getHours().toString().padStart(2, "0");
     const startMinutes = startDate.getMinutes().toString().padStart(2, "0");
     const endHours = endDate.getHours().toString().padStart(2, "0");
     const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
-    const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
-    return { start: slot.slot_start, end: slot.slot_end, label };
+    const rangeLabel = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
+    const label = slot.employee_name ? `${rangeLabel} · ${slot.employee_name}` : rangeLabel;
+    const employeeId = slot.employee_id ?? "";
+    const id = `${employeeId}|${slot.slot_start}`;
+    return { id, start: slot.slot_start, end: slot.slot_end, label, employeeId };
   });
 }
