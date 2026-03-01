@@ -1,69 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getAvailableTimeSlots, createBooking } from "@/lib/services/bookings-service";
-import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
-import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
-import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import { useLocale } from "@/components/locale-provider";
-import { translations, type AppLocale } from "@/i18n/translations";
-import { localISOStringToUTC } from "@/lib/utils/timezone";
-import type { Salon, Service, Employee, Slot } from "./types";
-
-type BookingMode = "book" | "waitlist";
-type WaitlistEntrySource = "direct" | "no-slots";
-
-type WaitlistReceipt = {
-  alreadyJoined: boolean;
-  serviceName: string;
-  formattedDate: string;
-  maskedEmail: string | null;
-  maskedPhone: string | null;
-};
-
-function trackPublicEvent(event: string, payload?: Record<string, unknown>) {
-  if (typeof window === "undefined") return;
-
-  type GTag = (command: string, eventName: string, params?: Record<string, unknown>) => void;
-  const maybeGtag = (window as Window & { gtag?: GTag }).gtag;
-  if (typeof maybeGtag === "function") {
-    maybeGtag("event", event, payload);
-  }
-}
-
-function normalizePhone(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return "";
-  const hasLeadingPlus = trimmed.startsWith("+");
-  const digitsOnly = trimmed.replace(/\D/g, "");
-  if (!digitsOnly) return "";
-  return hasLeadingPlus ? `+${digitsOnly}` : digitsOnly;
-}
-
-function maskEmail(email: string | null): string | null {
-  if (!email) return null;
-  const [name, domain] = email.split("@");
-  if (!name || !domain) return email;
-  const maskedName = name.length <= 1 ? "*" : `${name[0]}***`;
-  return `${maskedName}@${domain}`;
-}
-
-function maskPhone(phone: string | null): string | null {
-  if (!phone) return null;
-  const visible = phone.slice(-2);
-  return `${phone.slice(0, Math.max(0, phone.length - 2)).replace(/[0-9]/g, "•")}${visible}`;
-}
-
-function formatPreferredDate(date: string, locale: AppLocale): string {
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
-}
-
-function isValidIsoDate(date: string | null): date is string {
-  return !!date && /^\d{4}-\d{2}-\d{2}$/.test(date);
-}
+import { translations } from "@/i18n/translations";
+import type {
+  BookingMode,
+  Employee,
+  Salon,
+  Service,
+  Slot,
+  WaitlistEntrySource,
+  WaitlistReceipt,
+} from "./types";
+import { loadSlots, submitBooking, submitWaitlist } from "./publicBookingHandlers";
+import { useInitialBookingLoad, useNoSlotsTelemetry, useQueryPrefill } from "./publicBookingEffects";
+import {
+  formatPreferredDate,
+  mapAvailableSlots,
+  maskEmail,
+  maskPhone,
+  normalizePhone,
+} from "./publicBookingUtils";
+import { trackPublicEvent } from "./publicBookingTelemetry";
 
 export function usePublicBooking(slug: string) {
   const searchParams = useSearchParams();
@@ -79,9 +38,7 @@ export function usePublicBooking(slug: string) {
 
   const [serviceId, setServiceId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
-  const [date, setDate] = useState<string>(() =>
-    new Date().toISOString().slice(0, 10),
-  );
+  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -103,101 +60,51 @@ export function usePublicBooking(slug: string) {
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
 
-  useEffect(() => {
-    async function loadInitial() {
-      setLoading(true);
-      setError(null);
+  useInitialBookingLoad({
+    slug,
+    notFoundText: t.notFound,
+    loadErrorText: t.loadError,
+    setLoading,
+    setError,
+    setSalon,
+    setServices,
+    setEmployees,
+    setLocale,
+  });
 
-      const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
-      if (salonError || !salonData) {
-        setError(t.notFound);
-        setLoading(false);
-        return;
-      }
-
-      setSalon({
-        id: salonData.id,
-        name: salonData.name,
-        whatsapp_number: salonData.whatsapp_number || null,
-        supported_languages: salonData.supported_languages || null,
-        default_language: salonData.default_language || null,
-        preferred_language: salonData.preferred_language || null,
-        timezone: salonData.timezone || null,
-        theme: salonData.theme || null,
-      });
-
-      const storedLocale = typeof window !== 'undefined' 
-        ? localStorage.getItem(`booking-locale-${salonData.id}`) 
-        : null;
-      
-      const initialLocale = storedLocale && 
-        salonData.supported_languages?.includes(storedLocale)
-        ? storedLocale as AppLocale
-        : (salonData.default_language || salonData.preferred_language || 'en') as AppLocale;
-      
-      if (initialLocale && salonData.supported_languages?.includes(initialLocale)) {
-        setLocale(initialLocale);
-      }
-
-      const [
-        { data: servicesData, error: servicesError },
-        { data: employeesData, error: employeesError },
-      ] = await Promise.all([
-        getActiveServicesForPublicBooking(salonData.id),
-        getActiveEmployeesForPublicBooking(salonData.id),
-      ]);
-
-      if (servicesError || employeesError) {
-        setError(servicesError ?? employeesError ?? t.loadError);
-        setLoading(false);
-        return;
-      }
-
-      setServices(servicesData ?? []);
-      setEmployees(employeesData ?? []);
-      setLoading(false);
-    }
-
-    loadInitial();
-  }, [slug, t.notFound, t.loadError, setLocale]);
-
-  useEffect(() => {
-    if (loading || hasAppliedQueryPrefill.current) return;
-
-    const modeParam = searchParams.get("mode");
-    if (modeParam === "waitlist") {
+  useQueryPrefill({
+    loading,
+    hasApplied: hasAppliedQueryPrefill.current,
+    searchParams,
+    services,
+    employees,
+    slug,
+    setModeWaitlist: () => {
       setMode("waitlist");
       setWaitlistEntrySource("direct");
-      trackPublicEvent("waitlist_direct_opened", { slug });
-    }
+    },
+    setServiceId,
+    setEmployeeId,
+    setDate,
+    markApplied: () => {
+      hasAppliedQueryPrefill.current = true;
+    },
+  });
 
-    const serviceParam = searchParams.get("serviceId");
-    if (serviceParam && services.some((service) => service.id === serviceParam)) {
-      setServiceId(serviceParam);
-    }
-
-    const employeeParam = searchParams.get("employeeId");
-    if (employeeParam && employees.some((employee) => employee.id === employeeParam)) {
-      setEmployeeId(employeeParam);
-    }
-
-    const dateParam = searchParams.get("date");
-    if (isValidIsoDate(dateParam)) {
-      setDate(dateParam);
-    }
-
-    hasAppliedQueryPrefill.current = true;
-  }, [loading, searchParams, services, employees, slug]);
-
-  useEffect(() => {
-    if (mode !== "book") return;
-    if (!hasAttemptedSlotLoad || loadingSlots || slots.length !== 0) return;
-
-    const key = `${serviceId}:${employeeId}:${date}`;
-    if (noSlotsTelemetryKey.current === key) return;
-    noSlotsTelemetryKey.current = key;
-    trackPublicEvent("waitlist_no_slots_prompt_shown", { slug, serviceId, employeeId: employeeId || null, date });
-  }, [mode, hasAttemptedSlotLoad, loadingSlots, slots.length, serviceId, employeeId, date, slug]);
+  useNoSlotsTelemetry({
+    mode,
+    hasAttemptedSlotLoad,
+    loadingSlots,
+    slotCount: slots.length,
+    serviceId,
+    employeeId,
+    date,
+    slug,
+    lastKey: noSlotsTelemetryKey.current,
+    setLastKey: (value) => {
+      noSlotsTelemetryKey.current = value;
+    },
+  });
 
   function handleModeChange(nextMode: BookingMode, source: WaitlistEntrySource = "direct") {
     if (nextMode === mode) return;
@@ -218,10 +125,7 @@ export function usePublicBooking(slug: string) {
     }
   }
 
-  const canLoadSlots = useMemo(
-    () => !!(salon && serviceId && employeeId && date),
-    [salon, serviceId, employeeId, date],
-  );
+  const canLoadSlots = useMemo(() => !!(salon && serviceId && employeeId && date), [salon, serviceId, employeeId, date]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
@@ -237,9 +141,12 @@ export function usePublicBooking(slug: string) {
     setSelectedSlot("");
     setHasAttemptedSlotLoad(true);
 
-    const { data, error: slotsError } = await getAvailableTimeSlots(
-      salon.id, employeeId, serviceId, date,
-    );
+    const { data, error: slotsError } = await loadSlots({
+      salonId: salon.id,
+      employeeId,
+      serviceId,
+      date,
+    });
 
     if (slotsError || !data) {
       setError(slotsError ?? t.loadError);
@@ -247,33 +154,11 @@ export function usePublicBooking(slug: string) {
       return;
     }
 
-    const mapped = data.map((slot) => {
-      const startDate = new Date(slot.slot_start);
-      const endDate = new Date(slot.slot_end);
-      const startMatch = slot.slot_start.match(/T(\d{2}):(\d{2})/);
-      const endMatch = slot.slot_end.match(/T(\d{2}):(\d{2})/);
-      
-      if (startMatch && endMatch) {
-        const label = `${startMatch[1]}:${startMatch[2]} – ${endMatch[1]}:${endMatch[2]}`;
-        return { start: slot.slot_start, end: slot.slot_end, label };
-      }
-      
-      const startHours = startDate.getHours().toString().padStart(2, "0");
-      const startMinutes = startDate.getMinutes().toString().padStart(2, "0");
-      const endHours = endDate.getHours().toString().padStart(2, "0");
-      const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
-      const label = `${startHours}:${startMinutes} – ${endHours}:${endMinutes}`;
-      return { start: slot.slot_start, end: slot.slot_end, label };
-    });
-
-    setSlots(mapped);
+    setSlots(mapAvailableSlots(data));
     setLoadingSlots(false);
   }
 
-  async function handleJoinWaitlist(
-    e?: FormEvent | { preventDefault?: () => void },
-    source?: WaitlistEntrySource
-  ) {
+  async function handleJoinWaitlist(e?: FormEvent | { preventDefault?: () => void }, source?: WaitlistEntrySource) {
     e?.preventDefault?.();
     if (!salon || !serviceId || !date || !customerName) return;
 
@@ -299,23 +184,19 @@ export function usePublicBooking(slug: string) {
     );
 
     try {
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          salonId: salon.id,
-          serviceId,
-          employeeId: employeeId || null,
-          preferredDate: date,
-          customerName,
-          customerEmail: normalizedEmail || null,
-          customerPhone: normalizedPhone || null,
-        }),
+      const response = await submitWaitlist({
+        salonId: salon.id,
+        serviceId,
+        employeeId: employeeId || null,
+        preferredDate: date,
+        customerName,
+        customerEmail: normalizedEmail || null,
+        customerPhone: normalizedPhone || null,
       });
 
-      const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setWaitlistError(body.error || t.waitlistCreateError || t.createError);
+        const errorText = String(response.body.error ?? "");
+        setWaitlistError(errorText || t.waitlistCreateError || t.createError);
         setJoiningWaitlist(false);
         return;
       }
@@ -323,7 +204,7 @@ export function usePublicBooking(slug: string) {
       const selectedService = services.find((service) => service.id === serviceId);
       const serviceName = selectedService?.name || (t.servicePlaceholder || "Selected service");
       const formattedDate = formatPreferredDate(date, locale);
-      const alreadyJoined = !!body.alreadyJoined;
+      const alreadyJoined = !!response.body.alreadyJoined;
 
       setWaitlistReceipt({
         alreadyJoined,
@@ -354,63 +235,24 @@ export function usePublicBooking(slug: string) {
     setSuccessMessage(null);
 
     try {
-      const { checkRateLimit, incrementRateLimit } = await import("@/lib/services/rate-limit-service");
-      const identifier = customerEmail || "anonymous";
-      const rateLimitCheck = await checkRateLimit(identifier, "booking", {
-        identifierType: customerEmail ? "email" : "ip",
+      const bookingResult = await submitBooking({
+        salon,
+        serviceId,
+        employeeId,
+        selectedSlot,
+        customerName,
+        customerEmail,
+        customerPhone,
       });
 
-      if (!rateLimitCheck.allowed) {
-        const { getTimeUntilReset, formatTimeRemaining } = await import("@/lib/services/rate-limit-service");
-        const timeRemaining = getTimeUntilReset(rateLimitCheck.resetTime);
-        setError(`Too many booking attempts. Please try again in ${formatTimeRemaining(timeRemaining)}.`);
-        setSaving(false);
-        return;
-      }
-
-      await incrementRateLimit(identifier, "booking", {
-        identifierType: customerEmail ? "email" : "ip",
-      });
-    } catch (rateLimitError) {
-      console.error("Error checking rate limit:", rateLimitError);
-    }
-
-    try {
-      let startTimeUTC = selectedSlot;
-      const salonTimezone = salon.timezone || "UTC";
-
-      if (salonTimezone !== "UTC") {
-        try {
-          const timeMatch = selectedSlot.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
-          if (timeMatch) {
-            startTimeUTC = localISOStringToUTC(timeMatch[1], salonTimezone);
-          }
-        } catch (tzError) {
-          console.warn("Failed to convert public booking slot time to UTC, using as-is:", tzError);
-          startTimeUTC = selectedSlot;
-        }
-      }
-
-      const { data: bookingData, error: bookingError } = await createBooking({
-        salon_id: salon.id,
-        employee_id: employeeId,
-        service_id: serviceId,
-        start_time: startTimeUTC,
-        customer_full_name: customerName,
-        customer_email: customerEmail || null,
-        customer_phone: customerPhone || null,
-        customer_notes: null,
-        is_walk_in: false,
-      });
-
-      if (bookingError || !bookingData) {
-        setError(bookingError || t.createError);
+      if (bookingResult.error || !bookingResult.bookingId) {
+        setError(bookingResult.error || t.createError);
         setSaving(false);
         return;
       }
 
       if (!isPreview) {
-        window.location.href = `/book/${slug}/confirmation?bookingId=${bookingData.id}`;
+        window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
       } else {
         setSuccessMessage(t.submitLabel || "Booking created successfully!");
         setSaving(false);
@@ -423,16 +265,11 @@ export function usePublicBooking(slug: string) {
 
   return {
     salon, services, employees, loading, error, successMessage,
-    serviceId, setServiceId, employeeId, setEmployeeId,
-    date, setDate, slots, selectedSlot, setSelectedSlot,
-    loadingSlots, canLoadSlots,
-    hasAttemptedSlotLoad,
-    customerName, setCustomerName,
-    customerEmail, setCustomerEmail,
-    customerPhone, setCustomerPhone,
+    serviceId, setServiceId, employeeId, setEmployeeId, date, setDate, slots, selectedSlot, setSelectedSlot,
+    loadingSlots, canLoadSlots, hasAttemptedSlotLoad,
+    customerName, setCustomerName, customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
     joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
-    mode,
-    saving, locale, setLocale, t,
+    mode, saving, locale, setLocale, t,
     handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist,
   };
 }

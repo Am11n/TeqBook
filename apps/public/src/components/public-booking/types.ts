@@ -33,3 +33,15 @@ export type Slot = {
   end: string;
   label: string;
 };
+
+export type BookingMode = "book" | "waitlist";
+
+export type WaitlistEntrySource = "direct" | "no-slots";
+
+export type WaitlistReceipt = {
+  alreadyJoined: boolean;
+  serviceName: string;
+  formattedDate: string;
+  maskedEmail: string | null;
+  maskedPhone: string | null;
+};
