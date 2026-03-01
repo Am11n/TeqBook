@@ -1,5 +1,10 @@
 import Image from "next/image";
-import { DialogSelect } from "@/components/ui/dialog-select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { AppLocale } from "@/i18n/translations";
 import type { BookingMode, PublicBookingEffectiveBranding, PublicBookingTokens, Salon, WaitlistEntrySource } from "./types";
 
@@ -20,6 +25,26 @@ const LANG_LABELS: Record<AppLocale, string> = {
   ur: "اردو",
   hi: "हिन्दी",
 };
+
+const LANG_FLAGS: Record<AppLocale, string> = {
+  nb: "🇳🇴",
+  en: "🇬🇧",
+  ar: "🇸🇦",
+  so: "🇸🇴",
+  ti: "🇪🇷",
+  am: "🇪🇹",
+  tr: "🇹🇷",
+  pl: "🇵🇱",
+  vi: "🇻🇳",
+  tl: "🇵🇭",
+  zh: "🇨🇳",
+  fa: "🇮🇷",
+  dar: "🇦🇫",
+  ur: "🇵🇰",
+  hi: "🇮🇳",
+};
+
+const APP_LOCALES = Object.keys(LANG_LABELS) as AppLocale[];
 
 type BookingHeaderProps = {
   salon: Salon;
@@ -53,6 +78,9 @@ export function BookingHeader({
   payInSalonBadge,
 }: BookingHeaderProps) {
   const logoUrl = effectiveBranding.logoUrl;
+  const supportedLocales = (salon.supported_languages ?? [])
+    .filter((lang): lang is AppLocale => APP_LOCALES.includes(lang as AppLocale));
+  const currentLocale = supportedLocales.includes(locale) ? locale : (supportedLocales[0] ?? "en");
 
   return (
     <header
@@ -113,21 +141,42 @@ export function BookingHeader({
                 Chat on WhatsApp
               </a>
             )}
-            {salon.supported_languages && salon.supported_languages.length > 0 && (
-              <DialogSelect
-                value={locale}
-                onChange={(v) => {
-                  const newLocale = v as AppLocale;
-                  setLocale(newLocale);
-                  if (typeof window !== "undefined" && salon.id) {
-                    localStorage.setItem(`booking-locale-${salon.id}`, newLocale);
-                  }
-                }}
-                options={salon.supported_languages.map((lang) => ({
-                  value: lang,
-                  label: LANG_LABELS[lang as AppLocale] || lang,
-                }))}
-              />
+            {supportedLocales.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-9 items-center gap-2 rounded-lg px-2.5 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2"
+                    style={{
+                      border: `1px solid ${tokens.colors.border}`,
+                      backgroundColor: tokens.colors.surface2,
+                      color: tokens.colors.mutedText,
+                    }}
+                    aria-label="Language"
+                    title="Language"
+                  >
+                    <span className="text-sm leading-none">{LANG_FLAGS[currentLocale] || "🌐"}</span>
+                    <span>{LANG_LABELS[currentLocale] || currentLocale.toUpperCase()}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-44">
+                  {supportedLocales.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setLocale(lang);
+                        if (typeof window !== "undefined" && salon.id) {
+                          localStorage.setItem(`booking-locale-${salon.id}`, lang);
+                        }
+                      }}
+                    >
+                      <span className="mr-2">{LANG_FLAGS[lang] || "🌐"}</span>
+                      <span>{LANG_LABELS[lang] || lang}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
