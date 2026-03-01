@@ -1,3 +1,5 @@
+import { translations, type AppLocale } from "@/i18n/translations";
+
 export type PublicBookingPageProps = {
   slug: string;
 };
@@ -45,3 +47,5 @@ export type WaitlistReceipt = {
   maskedEmail: string | null;
   maskedPhone: string | null;
 };
+
+export type PublicBookingCopy = (typeof translations)[AppLocale]["publicBooking"];

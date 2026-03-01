@@ -2,11 +2,6 @@ import { createBooking, getAvailableTimeSlots } from "@/lib/services/bookings-se
 import { localISOStringToUTC } from "@/lib/utils/timezone";
 import type { Salon } from "./types";
 
-type RateLimitResult = {
-  allowed: boolean;
-  resetTime: string;
-};
-
 type WaitlistResponse = {
   ok: boolean;
   body: Record<string, unknown>;
@@ -49,9 +44,9 @@ async function checkAndIncrementBookingRateLimit(
   try {
     const { checkRateLimit, incrementRateLimit, getTimeUntilReset, formatTimeRemaining } =
       await import("@/lib/services/rate-limit-service");
-    const rateLimitCheck = (await checkRateLimit(identifier, "booking", {
+    const rateLimitCheck = await checkRateLimit(identifier, "booking", {
       identifierType,
-    })) as RateLimitResult;
+    });
 
     if (!rateLimitCheck.allowed) {
       const timeRemaining = getTimeUntilReset(rateLimitCheck.resetTime);
