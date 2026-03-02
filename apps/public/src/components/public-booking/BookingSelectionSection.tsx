@@ -125,16 +125,6 @@ export function BookingSelectionSection({
       return safeId === slot.id ? slot : { ...slot, id: safeId };
     });
   }, [slots]);
-  const employeeSlotColors = useMemo(() => {
-    const map = new Map<string, ReturnType<typeof getEmployeeSlotColors>>();
-    for (const slot of renderedSlots) {
-      const colorKey = getSlotColorKey(slot);
-      if (!colorKey || map.has(colorKey)) continue;
-      map.set(colorKey, getEmployeeSlotColors(colorKey));
-    }
-    return map;
-  }, [renderedSlots]);
-
   return (
     <section className="space-y-4">
       <article
@@ -289,8 +279,8 @@ export function BookingSelectionSection({
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {renderedSlots.map((slot, index) => {
               const isSelected = selectedSlot === slot.id;
-              const colorKey = getSlotColorKey(slot);
-              const employeeColors = colorKey ? employeeSlotColors.get(colorKey) : null;
+              const colorKey = getSlotColorKey(slot) ?? `slot-${index}`;
+              const employeeColors = getEmployeeSlotColors(colorKey);
               return (
                 <button
                   key={`slot-${index}`}
@@ -305,20 +295,18 @@ export function BookingSelectionSection({
                           borderColor: tokens.colors.primary,
                         }
                       : {
-                          backgroundColor: employeeColors?.bg ?? tokens.colors.surface,
-                          color: employeeColors?.text ?? tokens.colors.mutedText,
-                          borderColor: employeeColors?.border ?? tokens.colors.border,
+                          backgroundColor: employeeColors.bg,
+                          color: employeeColors.text,
+                          borderColor: employeeColors.border,
                         }
                   }
                 >
                   <span className="inline-flex items-center gap-2">
-                    {employeeColors ? (
-                      <span
-                        aria-hidden="true"
-                        className="inline-block h-2 w-2 rounded-full"
-                        style={{ backgroundColor: isSelected ? tokens.colors.primaryText : employeeColors.dot }}
-                      />
-                    ) : null}
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{ backgroundColor: isSelected ? tokens.colors.primaryText : employeeColors.dot }}
+                    />
                     <span>{slot.label}</span>
                   </span>
                 </button>
