@@ -158,9 +158,10 @@ export function usePublicBooking(slug: string) {
   }
 
   const canLoadSlots = useMemo(() => {
-    const hasEmployeeChoice = employeeId === ANY_EMPLOYEE || !!employeeId;
-    return !!(salon && serviceId && date && hasEmployeeChoice);
-  }, [salon, serviceId, date, employeeId]);
+    // Treat empty employee selection as "Any employee" for immediate slot loading.
+    const hasEmployeesToCheck = employees.length > 0;
+    return !!(salon && serviceId && date && hasEmployeesToCheck);
+  }, [salon, serviceId, date, employees.length]);
 
   const requestSlots = useCallback(async () => {
     if (!salon || !canLoadSlots) return;
@@ -190,18 +191,7 @@ export function usePublicBooking(slug: string) {
       return;
     }
 
-    const selectedDateDow = new Date(`${date}T00:00:00`).getDay();
-    const hasShiftWeekdayMap = Object.keys(employeeShiftWeekdays).length > 0 && Number.isInteger(selectedDateDow);
-    const filteredData = hasShiftWeekdayMap
-      ? data.filter((slot) => {
-          if (!slot.employee_id) return true;
-          const weekdays = employeeShiftWeekdays[slot.employee_id];
-          if (!weekdays || weekdays.length === 0) return true;
-          return weekdays.includes(selectedDateDow);
-        })
-      : data;
-
-    const mappedSlots = mapAvailableSlots(filteredData, salon.timezone);
+    const mappedSlots = mapAvailableSlots(data, salon.timezone);
     const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
     setSlots(uniqueSlots);
     setEmployeeAvailability((previous) => {
@@ -217,7 +207,7 @@ export function usePublicBooking(slug: string) {
       return next;
     });
     setLoadingSlots(false);
-  }, [canLoadSlots, date, employeeShiftWeekdays, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
+  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
@@ -400,7 +390,7 @@ export function usePublicBooking(slug: string) {
 
     const debounceHandle = setTimeout(() => {
       void requestSlots();
-    }, 300);
+    }, 150);
     return () => clearTimeout(debounceHandle);
   }, [date, mode, requestSlots, salon, selectionStatus, serviceId, employeeId]);
 

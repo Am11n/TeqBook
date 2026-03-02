@@ -48,14 +48,14 @@ const EMPLOYEE_SLOT_COLOR_PALETTE: Array<{
   text: string;
   dot: string;
 }> = [
-  { bg: "#E8F1FF", border: "#7AA2FF", text: "#123A8F", dot: "#2B6EF2" }, // blue
-  { bg: "#EAFBF3", border: "#6DD9A7", text: "#0D6A44", dot: "#1AA56A" }, // green
-  { bg: "#FFF0E8", border: "#FFB184", text: "#9A3D0D", dot: "#E36A2A" }, // orange
-  { bg: "#F3ECFF", border: "#B99CFF", text: "#4B2A9A", dot: "#7B4DE3" }, // purple
-  { bg: "#FFEAF1", border: "#FF9CC1", text: "#9B1C52", dot: "#DD3E7E" }, // pink
-  { bg: "#E9FAFB", border: "#84DDE4", text: "#0E6671", dot: "#1C9EAA" }, // cyan
-  { bg: "#FFF8E8", border: "#EBCB7A", text: "#7F620F", dot: "#B98A14" }, // amber
-  { bg: "#EEF3F7", border: "#A8BBCB", text: "#334B60", dot: "#5A738A" }, // slate
+  { bg: "#D9E8FF", border: "#4B7BFF", text: "#0E2F86", dot: "#2458E6" }, // blue
+  { bg: "#DDF7E9", border: "#33B979", text: "#0D633E", dot: "#17945E" }, // green
+  { bg: "#FFE2D1", border: "#F07A3C", text: "#8A330B", dot: "#D85D1D" }, // orange
+  { bg: "#E8DCFF", border: "#8D63F6", text: "#46248F", dot: "#6B43DA" }, // purple
+  { bg: "#FFDCEB", border: "#E55B98", text: "#8C1A4A", dot: "#C83877" }, // pink
+  { bg: "#D9F3F5", border: "#2BA7B4", text: "#0D5E67", dot: "#1A8894" }, // cyan
+  { bg: "#FFF0CC", border: "#D29B19", text: "#78590E", dot: "#B88212" }, // amber
+  { bg: "#E3EBF2", border: "#6786A3", text: "#2D465D", dot: "#4E6D89" }, // slate
 ];
 
 function getEmployeeSlotColors(employeeId: string): {
