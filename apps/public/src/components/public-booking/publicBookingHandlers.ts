@@ -145,6 +145,13 @@ function toUtcStartTime(selectedSlot: string, salonTimezone: string | null | und
   }
 }
 
+function isSameInstant(leftIso: string, rightIso: string): boolean {
+  const leftMs = Date.parse(leftIso);
+  const rightMs = Date.parse(rightIso);
+  if (Number.isNaN(leftMs) || Number.isNaN(rightMs)) return leftIso === rightIso;
+  return leftMs === rightMs;
+}
+
 export async function submitBooking(params: {
   salon: Salon;
   serviceId: string;
@@ -161,6 +168,18 @@ export async function submitBooking(params: {
   const rateLimit = await checkAndIncrementBookingRateLimit(identifier, identifierType);
   if (rateLimit.blockedMessage) {
     return { bookingId: null, error: rateLimit.blockedMessage };
+  }
+
+  const slotDate = selectedSlot.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(slotDate)) {
+    const { data: freshSlots, error: refreshError } = await getAvailableTimeSlots(salon.id, employeeId, serviceId, slotDate);
+    if (refreshError) {
+      return { bookingId: null, error: "Could not confirm this slot right now. Please refresh and try again." };
+    }
+    const stillAvailable = (freshSlots ?? []).some((slot) => isSameInstant(slot.slot_start, selectedSlot));
+    if (!stillAvailable) {
+      return { bookingId: null, error: "This time is no longer available. Please choose another slot." };
+    }
   }
 
   const startTimeUTC = toUtcStartTime(selectedSlot, salon.timezone);

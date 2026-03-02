@@ -82,6 +82,15 @@ export function usePublicBooking(slug: string) {
     });
   }, []);
 
+  const filterOutUnavailableSlots = useCallback((incomingSlots: Slot[]): Slot[] => {
+    const now = Date.now();
+    return incomingSlots.filter((slot) => {
+      const startMs = Date.parse(slot.start);
+      if (Number.isNaN(startMs)) return false;
+      return startMs > now;
+    });
+  }, []);
+
   const selectedEmployeeForLoad = useMemo(
     () => (employeeId === ANY_EMPLOYEE ? null : employeeId || null),
     [employeeId]
@@ -193,21 +202,22 @@ export function usePublicBooking(slug: string) {
 
     const mappedSlots = mapAvailableSlots(data, salon.timezone);
     const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
-    setSlots(uniqueSlots);
+    const availableSlots = filterOutUnavailableSlots(uniqueSlots);
+    setSlots(availableSlots);
     setEmployeeAvailability((previous) => {
       const next = { ...previous };
       if (selectedEmployeeForLoad) {
-        next[selectedEmployeeForLoad] = uniqueSlots.length > 0 ? "likely_available" : "no_times";
+        next[selectedEmployeeForLoad] = availableSlots.length > 0 ? "likely_available" : "no_times";
         return next;
       }
       for (const checkedId of checkedEmployeeIds) {
-        const hasSlots = uniqueSlots.some((slot) => slot.employeeId === checkedId);
+        const hasSlots = availableSlots.some((slot) => slot.employeeId === checkedId);
         next[checkedId] = hasSlots ? "likely_available" : "no_times";
       }
       return next;
     });
     setLoadingSlots(false);
-  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
+  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, filterOutUnavailableSlots, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
