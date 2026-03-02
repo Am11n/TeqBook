@@ -44,21 +44,28 @@ export async function loadSlots(params: {
 
   const employeeCandidates = employees.slice(0, maxEmployeesToCheck);
   const checkedEmployeeIds: string[] = [];
-  const results = await Promise.all(
-    employeeCandidates.map(async (employee) => {
-      checkedEmployeeIds.push(employee.id);
-      const { data, error } = await getAvailableTimeSlots(salonId, employee.id, serviceId, date);
-      if (error || !data) return { slots: [] as { slot_start: string; slot_end: string; employee_id: string; employee_name: string }[], error };
-      return {
-        slots: data.map((slot) => ({
-          ...slot,
-          employee_id: employee.id,
-          employee_name: employee.full_name,
-        })),
-        error: null,
-      };
-    })
-  );
+  const results: Array<{
+    slots: { slot_start: string; slot_end: string; employee_id: string; employee_name: string }[];
+    error: string | null;
+  }> = [];
+
+  // Query each employee sequentially to avoid partial/stale multi-RPC results in Any-employee mode.
+  for (const employee of employeeCandidates) {
+    checkedEmployeeIds.push(employee.id);
+    const { data, error } = await getAvailableTimeSlots(salonId, employee.id, serviceId, date);
+    if (error || !data) {
+      results.push({ slots: [], error });
+      continue;
+    }
+    results.push({
+      slots: data.map((slot) => ({
+        ...slot,
+        employee_id: employee.id,
+        employee_name: employee.full_name,
+      })),
+      error: null,
+    });
+  }
 
   const firstError = results.find((result) => result.error)?.error ?? null;
   const merged = results
