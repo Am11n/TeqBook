@@ -1,21 +1,19 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
 import { BookingFlowSection } from "./BookingFlowSection";
 import { ServiceCard } from "./ServiceCard";
 import { TimeSlotButton } from "./TimeSlotButton";
-import type { BookingMode, Employee, PublicBookingCopy, PublicBookingTokens, SelectionStatus, Service, Slot, WaitlistEntrySource } from "./types";
+import type { BookingMode, Employee, PublicBookingCopy, SelectionStatus, Service, Slot, WaitlistEntrySource } from "./types";
 
 type BookingSelectionSectionProps = {
   t: PublicBookingCopy;
-  tokens: PublicBookingTokens;
   selectionStatus: SelectionStatus;
   anyEmployeeValue: string;
   employeeAvailability: Record<string, "likely_available" | "no_times" | "unknown">;
-  activeStep: 1 | 2 | 3;
   mode: BookingMode;
   serviceId: string;
   setServiceId: (value: string) => void;
@@ -27,7 +25,6 @@ type BookingSelectionSectionProps = {
   employees: Employee[];
   loadingSlots: boolean;
   handleModeChange: (mode: BookingMode, source?: WaitlistEntrySource) => void;
-  handleLoadSlots: (e: FormEvent) => void;
   handleRetryLoadSlots: () => Promise<void>;
   hasAttemptedSlotLoad: boolean;
   error: string | null;
@@ -56,11 +53,9 @@ function getGroupKey(slot: Slot): GroupKey {
 
 export function BookingSelectionSection({
   t,
-  tokens,
   selectionStatus,
   anyEmployeeValue,
   employeeAvailability,
-  activeStep,
   mode,
   serviceId,
   setServiceId,
@@ -72,7 +67,6 @@ export function BookingSelectionSection({
   employees,
   loadingSlots,
   handleModeChange,
-  handleLoadSlots,
   handleRetryLoadSlots,
   hasAttemptedSlotLoad,
   error,
@@ -85,7 +79,7 @@ export function BookingSelectionSection({
   const selectedServiceName = selectedService?.name || null;
   const selectedEmployeeName = employees.find((employee) => employee.id === employeeId)?.full_name;
   const canShowStep2 = !isWaitlistMode && hasAttemptedSlotLoad;
-  const step2IsActive = activeStep === 2;
+  const step2IsActive = canShowStep2;
   const hasMissingSetup = selectionStatus === "missing_setup";
   const hasNoServices = selectionStatus === "no_active_services";
   const hasNoEmployees = selectionStatus === "no_active_employees";
