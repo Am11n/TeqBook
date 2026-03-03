@@ -8,7 +8,7 @@ type RawAvailableSlot = {
   employee_name?: string;
 };
 
-const TEQBOOK_PRIMARY = "#6d5efc";
+const TEQBOOK_PRIMARY = "#2563eb";
 const TEQBOOK_FONT = "Inter, system-ui, -apple-system, Segoe UI, sans-serif";
 const TEQBOOK_LOGO = "/Favikon.svg";
 const TEQBOOK_HEADER_VARIANT = "standard" as const;
@@ -149,15 +149,15 @@ export function buildPublicBookingTokens(branding: PublicBookingEffectiveBrandin
       primaryHover,
       primaryText,
       surface: "#ffffff",
-      surface2: "#f7f8fc",
-      border: "#e3e6ef",
-      mutedText: "#667085",
+      surface2: "#f8f9fb",
+      border: "#e2e8f0",
+      mutedText: "#64748b",
       successBg: "#ecfdf3",
-      successText: "#0f6b3d",
-      errorBg: "#fef3f2",
-      errorText: "#b42318",
-      warningBg: "#fffaeb",
-      warningText: "#b54708",
+      successText: "#166534",
+      errorBg: "#fef2f2",
+      errorText: "#b91c1c",
+      warningBg: "#fff7ed",
+      warningText: "#c2410c",
     },
     typography: {
       fontFamily: branding.fontFamily,
