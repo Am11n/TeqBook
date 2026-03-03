@@ -42,7 +42,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
     mode,
     saving, locale, setLocale, t,
-    handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots,
+    handleModeChange, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots,
   } = usePublicBooking(slug);
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
@@ -189,11 +189,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             <div className="space-y-4">
               <BookingSelectionSection
                 t={t}
-                tokens={tokens}
                 selectionStatus={selectionStatus}
                 anyEmployeeValue={ANY_EMPLOYEE_VALUE}
                 employeeAvailability={employeeAvailability}
-                activeStep={activeStep}
                 mode={mode}
                 serviceId={serviceId}
                 setServiceId={setServiceId}
@@ -205,7 +203,6 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 employees={employees}
                 loadingSlots={loadingSlots}
                 handleModeChange={handleModeChange}
-                handleLoadSlots={handleLoadSlots}
                 handleRetryLoadSlots={handleRetryLoadSlots}
                 hasAttemptedSlotLoad={hasAttemptedSlotLoad}
                 error={error}
