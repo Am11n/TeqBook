@@ -7,7 +7,7 @@ export const en: TranslationNamespaces = {
     loadingSalon: "Loading salon…",
     headerSubtitle: "Book an appointment – pay physically in the salon.",
     payInSalonBadge: "Pay in salon",
-    step1Title: "1. Choose treatment",
+    step1Title: "Choose service",
     step1Description:
       "Start by choosing a service, then employee and time.",
     serviceLabel: "Service",
@@ -17,10 +17,10 @@ export const en: TranslationNamespaces = {
     dateLabel: "Date",
     loadSlots: "Load available times",
     loadingSlots: "Loading available times…",
-    step2Label: "2. Choose time",
+    step2Label: "Choose time",
     noSlotsYet: "Load available times first",
     selectSlotPlaceholder: "Select a time…",
-    step3Title: "3. Your details",
+    step3Title: "Your details",
     step3Description:
       "We use this to confirm your booking and optionally send a reminder. Payment always happens in the salon.",
     nameLabel: "Name",
