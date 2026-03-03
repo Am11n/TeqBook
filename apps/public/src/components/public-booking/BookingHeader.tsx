@@ -84,7 +84,7 @@ export function BookingHeader({
 
   return (
     <header
-      className="sticky top-0 z-20 border-b px-4 py-4 backdrop-blur sm:px-6"
+      className="relative sticky top-0 z-20 border-b px-4 py-4 backdrop-blur-md sm:px-6"
       style={{
         backgroundColor: tokens.colors.surface,
         borderColor: tokens.colors.border,
@@ -228,6 +228,14 @@ export function BookingHeader({
         </div>
         <span className="sr-only">Step {activeStep} of 3</span>
       </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
+        style={{
+          background: "linear-gradient(90deg, transparent, var(--pb-primary), transparent)",
+          opacity: 0.35,
+        }}
+      />
     </header>
   );
 }
