@@ -46,32 +46,6 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const previousDateRef = useRef(date);
   const previousSlotRef = useRef(selectedSlot);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background px-4 py-6 sm:px-6">
-        <div className="mx-auto w-full max-w-3xl space-y-4">
-          <div className="h-28 animate-pulse rounded-2xl border bg-muted/40" />
-          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
-          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
-          <p className="text-center text-sm text-muted-foreground">{t.loadingSalon}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!salon || !effectiveBranding || !tokens || selectionStatus === "not_found" || selectionStatus === "error") {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <EmptyState
-            title={t.unavailableTitle}
-            description={error ?? t.unavailableDescription}
-          />
-        </div>
-      </div>
-    );
-  }
-
   const selectedService = services.find((service) => service.id === serviceId) || null;
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
@@ -127,10 +101,36 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     previousSlotRef.current = selectedSlot;
   }, [selectedSlot]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background px-4 py-6 sm:px-6">
+        <div className="mx-auto w-full max-w-3xl space-y-4">
+          <div className="h-28 animate-pulse rounded-2xl border bg-muted/40" />
+          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
+          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
+          <p className="text-center text-sm text-muted-foreground">{t.loadingSalon}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!salon || !effectiveBranding || !tokens || selectionStatus === "not_found" || selectionStatus === "error") {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <EmptyState
+            title={t.unavailableTitle}
+            description={error ?? t.unavailableDescription}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex min-h-screen flex-col"
-      style={{ fontFamily: tokens.typography.fontFamily, backgroundColor: tokens.colors.surface2 } as React.CSSProperties}
+      style={{ fontFamily: tokens.typography.fontFamily, backgroundColor: tokens.colors.surface2 }}
     >
       <BookingHeader
         salon={salon}
