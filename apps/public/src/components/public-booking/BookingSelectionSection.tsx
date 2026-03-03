@@ -342,7 +342,6 @@ export function BookingSelectionSection({
       </article>
 
       <article
-        id="time-section"
         id="book-mode-panel"
         role="tabpanel"
         aria-labelledby="book-mode-tab"
@@ -396,7 +395,7 @@ export function BookingSelectionSection({
                           key={`${groupKey}-${index}`}
                           type="button"
                           onClick={() => setSelectedSlot(slot.id)}
-                          className="rounded-lg border px-3 py-2 text-left transition-all duration-150 hover:-translate-y-[1px]"
+                          className="rounded-lg border px-3 py-2 text-left transition-all duration-150 hover:-translate-y-[1px] hover:bg-muted/30"
                           style={
                             isSelected
                               ? {
@@ -459,8 +458,12 @@ export function BookingSelectionSection({
                 className="w-full"
                 variant="outline"
                 onClick={() => {
-                  setDate("");
-                  setDate(new Date().toISOString().slice(0, 10));
+                  const current = date ? new Date(`${date}T00:00:00`) : new Date();
+                  current.setDate(current.getDate() + 1);
+                  const year = current.getFullYear();
+                  const month = `${current.getMonth() + 1}`.padStart(2, "0");
+                  const day = `${current.getDate()}`.padStart(2, "0");
+                  setDate(`${year}-${month}-${day}`);
                   void handleRetryLoadSlots();
                 }}
               >

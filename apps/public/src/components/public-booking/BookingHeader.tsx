@@ -201,7 +201,7 @@ export function BookingHeader({
             style={
               mode === "book"
                 ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText }
-                : { backgroundColor: "transparent", color: tokens.colors.mutedText, border: `1px solid ${tokens.colors.border}` }
+                : { backgroundColor: "transparent", color: tokens.colors.mutedText }
             }
           >
             {modeBookTimeLabel}
@@ -220,15 +220,13 @@ export function BookingHeader({
             style={
               mode === "waitlist"
                 ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText }
-                : { backgroundColor: "transparent", color: tokens.colors.mutedText, border: `1px solid ${tokens.colors.border}` }
+                : { backgroundColor: "transparent", color: tokens.colors.mutedText }
             }
           >
             {modeWaitlistLabel}
           </button>
         </div>
-        <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
-          Step {activeStep} of 3
-        </p>
+        <span className="sr-only">Step {activeStep} of 3</span>
       </div>
     </header>
   );
