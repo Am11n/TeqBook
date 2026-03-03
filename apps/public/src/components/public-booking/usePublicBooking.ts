@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import type {
@@ -33,6 +33,8 @@ import { trackPublicEvent } from "./publicBookingTelemetry";
 
 export function usePublicBooking(slug: string) {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const isPreview = searchParams.get("preview") === "true";
   const { locale, setLocale } = useLocale();
   const t = translations[locale].publicBooking;
@@ -69,6 +71,11 @@ export function usePublicBooking(slug: string) {
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
+  const slotRequestIdRef = useRef(0);
+  const stepCompletedRef = useRef<Set<string>>(new Set());
+  const pageStartRef = useRef<number>(Date.now());
+  const ctaEnabledTrackedRef = useRef(false);
+  const furthestStepRef = useRef<"service" | "date" | "slot" | "details">("service");
 
   const ensureUniqueSlotIds = useCallback((incomingSlots: Slot[]): Slot[] => {
     const seen = new Map<string, number>();
@@ -164,6 +171,9 @@ export function usePublicBooking(slug: string) {
     if (nextMode === "waitlist" && source === "direct") {
       trackPublicEvent("waitlist_direct_opened", { slug });
     }
+    if (nextMode === "waitlist" && source === "no-slots") {
+      trackPublicEvent("booking_flow_dropoff_hint", { slug, reason: "waitlist_opened" });
+    }
   }
 
   const canLoadSlots = useMemo(() => {
@@ -174,6 +184,7 @@ export function usePublicBooking(slug: string) {
 
   const requestSlots = useCallback(async () => {
     if (!salon || !canLoadSlots) return;
+    const currentRequestId = ++slotRequestIdRef.current;
 
     setLoadingSlots(true);
     setError(null);
@@ -195,11 +206,13 @@ export function usePublicBooking(slug: string) {
     });
 
     if (slotsError || !data) {
+      if (currentRequestId !== slotRequestIdRef.current) return;
       setError(slotsError ?? t.loadError);
       setLoadingSlots(false);
       return;
     }
 
+    if (currentRequestId !== slotRequestIdRef.current) return;
     const mappedSlots = mapAvailableSlots(data, salon.timezone);
     const uniqueSlots = ensureUniqueSlotIds(mappedSlots);
     const availableSlots = filterOutUnavailableSlots(uniqueSlots);
@@ -326,6 +339,9 @@ export function usePublicBooking(slug: string) {
       });
 
       if (bookingResult.error || !bookingResult.bookingId) {
+        if ((bookingResult.error || "").toLowerCase().includes("no longer available")) {
+          setSelectedSlot("");
+        }
         setError(bookingResult.error || t.createError);
         setSaving(false);
         return;
@@ -403,6 +419,80 @@ export function usePublicBooking(slug: string) {
     }, 150);
     return () => clearTimeout(debounceHandle);
   }, [date, mode, requestSlots, salon, selectionStatus, serviceId, employeeId]);
+
+  useEffect(() => {
+    if (loading || !hasAppliedQueryPrefill.current) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("mode", mode);
+    if (serviceId) params.set("serviceId", serviceId); else params.delete("serviceId");
+    if (employeeId) params.set("employeeId", employeeId); else params.delete("employeeId");
+    if (date) params.set("date", date); else params.delete("date");
+    params.delete("selectedSlot");
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next === current) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [date, employeeId, loading, mode, pathname, router, searchParams, serviceId]);
+
+  useEffect(() => {
+    const nextStep: "service" | "date" | "slot" | "details" = !serviceId
+      ? "service"
+      : !date
+        ? "date"
+        : !selectedSlot
+          ? "slot"
+          : "details";
+    const order = ["service", "date", "slot", "details"] as const;
+    if (order.indexOf(nextStep) > order.indexOf(furthestStepRef.current)) {
+      furthestStepRef.current = nextStep;
+    }
+  }, [date, selectedSlot, serviceId]);
+
+  useEffect(() => {
+    const milestones: Array<{ key: "service" | "date" | "slot" | "details"; done: boolean }> = [
+      { key: "service", done: !!serviceId },
+      { key: "date", done: !!serviceId && !!date },
+      { key: "slot", done: !!selectedSlot },
+      { key: "details", done: !!customerName.trim() && (!!customerEmail.trim() || !!customerPhone.trim()) },
+    ];
+    for (const milestone of milestones) {
+      if (!milestone.done || stepCompletedRef.current.has(milestone.key)) continue;
+      stepCompletedRef.current.add(milestone.key);
+      trackPublicEvent("booking_flow_step_completed", { slug, step: milestone.key });
+    }
+  }, [customerEmail, customerName, customerPhone, date, selectedSlot, serviceId, slug]);
+
+  useEffect(() => {
+    const ctaEnabled = !!serviceId && !!date && !!selectedSlot;
+    if (!ctaEnabled || ctaEnabledTrackedRef.current) return;
+    ctaEnabledTrackedRef.current = true;
+    trackPublicEvent("booking_cta_enabled_time", {
+      slug,
+      elapsedMs: Date.now() - pageStartRef.current,
+    });
+  }, [date, selectedSlot, serviceId, slug]);
+
+  useEffect(() => {
+    const onHidden = () => {
+      if (document.visibilityState !== "hidden") return;
+      trackPublicEvent("booking_flow_abandon", {
+        slug,
+        furthestStep: furthestStepRef.current,
+      });
+    };
+    const onPageHide = () => {
+      trackPublicEvent("booking_flow_abandon", {
+        slug,
+        furthestStep: furthestStepRef.current,
+      });
+    };
+    document.addEventListener("visibilitychange", onHidden);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onHidden);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [slug]);
 
   return {
     salon, services, employees, loading, error, successMessage,

@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { BookingHeader } from "./BookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
+import { MobileSummaryBar } from "./MobileSummaryBar";
 import { BookingSelectionSection } from "./BookingSelectionSection";
 import { BookingSummaryCard } from "./BookingSummaryCard";
 import { PublicBookingLayout } from "./PublicBookingLayout";
+import { buildPublicBookingCssVars } from "./publicBookingTokens";
 import { usePublicBooking } from "./usePublicBooking";
 import type { PublicBookingPageProps } from "./types";
 
@@ -45,6 +47,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
   const previousSlotRef = useRef(selectedSlot);
+  const pageLoadedRef = useRef(false);
 
   const selectedService = services.find((service) => service.id === serviceId) || null;
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
@@ -72,12 +75,15 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   const scrollToSection = (sectionId: string) => {
     if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(max-width: 1023px)").matches) return;
     const target = document.getElementById(sectionId);
     if (!target || isSectionVisible(target)) return;
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   useEffect(() => {
+    if (!pageLoadedRef.current) return;
     if (previousServiceIdRef.current !== serviceId && serviceId) {
       scrollToSection("date-section");
     }
@@ -85,6 +91,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   }, [serviceId]);
 
   useEffect(() => {
+    if (!pageLoadedRef.current) return;
     const previousDate = previousDateRef.current;
     if (serviceId && previousDate !== date && date) {
       scrollToSection("book-mode-panel");
@@ -93,6 +100,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   }, [date, serviceId]);
 
   useEffect(() => {
+    if (!pageLoadedRef.current) return;
     const previousSlot = previousSlotRef.current;
     const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches;
     if (isMobile && previousSlot !== selectedSlot && selectedSlot) {
@@ -100,6 +108,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     }
     previousSlotRef.current = selectedSlot;
   }, [selectedSlot]);
+
+  useEffect(() => {
+    pageLoadedRef.current = true;
+  }, []);
 
   if (loading) {
     return (
@@ -130,7 +142,12 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   return (
     <div
       className="flex min-h-screen flex-col"
-      style={{ fontFamily: tokens.typography.fontFamily, backgroundColor: tokens.colors.surface2 }}
+      style={{
+        ...buildPublicBookingCssVars(tokens),
+        fontFamily: tokens.typography.fontFamily,
+        background:
+          "radial-gradient(1200px 500px at 15% -10%, color-mix(in srgb, var(--pb-primary) 10%, transparent), transparent), var(--pb-bg)",
+      }}
     >
       <BookingHeader
         salon={salon}
@@ -151,15 +168,22 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       <main className="flex flex-1 flex-col">
         <PublicBookingLayout
           top={(
-            <div
-              className="sticky top-20 z-10 rounded-xl border px-3 py-2 text-xs lg:hidden"
-              style={{ backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }}
-            >
-              <span className="font-medium">{t.summaryTitle || "Your booking"}:</span>{" "}
-              <span style={{ color: tokens.colors.mutedText }}>
-                {[selectedService?.name, summaryDateLabel, parsedSlot?.timeRange].filter(Boolean).join(" • ") || (t.nextLabel || "Next")}
-              </span>
-            </div>
+            <MobileSummaryBar
+              summaryText={
+                [selectedService?.name, parsedSlot?.timeRange || summaryDateLabel, parsedSlot?.employeeName]
+                  .filter(Boolean)
+                  .join(" • ") || `${t.summaryTitle || "Your booking"}`
+              }
+              ctaLabel={summaryCtaLabel}
+              disabled={!canSubmitBooking}
+              onClick={() => {
+                if (!selectedSlot) {
+                  scrollToSection("book-mode-panel");
+                  return;
+                }
+                scrollToSection("details-section");
+              }}
+            />
           )}
           left={(
             <div className="space-y-4">
@@ -246,9 +270,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   }
                 }}
                 editActions={[
-                  { label: t.editService || "Edit service", onClick: () => scrollToSection("service-section") },
-                  { label: t.editDate || "Edit date", onClick: () => scrollToSection("date-section") },
-                  { label: t.editTime || "Edit time", onClick: () => scrollToSection("book-mode-panel") },
+                  { key: "service", label: t.editService || "Change", onClick: () => scrollToSection("service-section") },
+                  { key: "date", label: t.editDate || "Change", onClick: () => scrollToSection("date-section") },
+                  { key: "time", label: t.editTime || "Change", onClick: () => scrollToSection("book-mode-panel") },
                 ]}
               />
             </div>
