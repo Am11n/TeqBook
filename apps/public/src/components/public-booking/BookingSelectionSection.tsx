@@ -88,7 +88,7 @@ export function BookingSelectionSection({
   const [serviceSearchValue, setServiceSearchValue] = useState("");
   const [debouncedServiceSearch, setDebouncedServiceSearch] = useState("");
   const selectedEmployeeIsSpecific = !!employeeId && employeeId !== anyEmployeeValue;
-  const [expandedSection, setExpandedSection] = useState<"service" | "date" | "time">("service");
+  const [manualSection, setManualSection] = useState<"service" | "date" | "time" | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -163,28 +163,15 @@ export function BookingSelectionSection({
   const recommendedSlotId = renderedSlots[0]?.id || "";
   const canCompleteService = Boolean(serviceId);
   const canCompleteDate = Boolean(serviceId && date);
-  const canCompleteTime = Boolean(canCompleteDate && selectedSlot);
 
-  useEffect(() => {
-    if (isDesktop) return;
-    if (canCompleteTime) return;
-    if (canCompleteDate) {
-      setExpandedSection("time");
-      return;
-    }
-    if (canCompleteService) {
-      setExpandedSection("date");
-      return;
-    }
-    setExpandedSection("service");
-  }, [isDesktop, canCompleteService, canCompleteDate, canCompleteTime]);
-
-  const sectionExpanded = (section: "service" | "date" | "time") => isDesktop || expandedSection === section;
+  const autoSection: "service" | "date" | "time" = canCompleteDate ? "time" : canCompleteService ? "date" : "service";
+  const resolvedSection = manualSection ?? autoSection;
+  const sectionExpanded = (section: "service" | "date" | "time") => isDesktop || resolvedSection === section;
 
   const updateSectionByInteraction = (section: "service" | "date" | "time") => {
     setHasInteracted(true);
     if (isDesktop) return;
-    setExpandedSection(section);
+    setManualSection(section);
   };
 
   return (
@@ -246,7 +233,7 @@ export function BookingSelectionSection({
                   onSelect={(id) => {
                     setHasInteracted(true);
                     setServiceId(id);
-                    if (!isDesktop) setExpandedSection("date");
+                    if (!isDesktop) setManualSection("date");
                   }}
                 />
               );
@@ -279,7 +266,7 @@ export function BookingSelectionSection({
               onChange={(e) => {
                 setHasInteracted(true);
                 setDate(e.target.value);
-                if (!isDesktop && serviceId && e.target.value) setExpandedSection("time");
+                if (!isDesktop && serviceId && e.target.value) setManualSection("time");
               }}
               required
               disabled={isSelectionBlocked}
