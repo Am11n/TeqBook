@@ -53,6 +53,7 @@ export function BookingSummaryCard({
         : !detailsReady
           ? (t.step3Title || "Your details")
           : (t.submitLabel || "Confirm booking");
+  const shouldSubmit = canSubmitBooking && detailsReady;
 
   return (
     <section
@@ -94,8 +95,8 @@ export function BookingSummaryCard({
 
       {isBookMode ? (
         <Button
-          type="submit"
-          form={detailsFormId}
+          type={shouldSubmit ? "submit" : "button"}
+          form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
           className="w-full transition-all duration-150"
           disabled={!canSubmitBooking}
