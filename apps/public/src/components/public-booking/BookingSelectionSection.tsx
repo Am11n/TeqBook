@@ -4,6 +4,9 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
+import { BookingFlowSection } from "./BookingFlowSection";
+import { ServiceCard } from "./ServiceCard";
+import { TimeSlotButton } from "./TimeSlotButton";
 import type { BookingMode, Employee, PublicBookingCopy, PublicBookingTokens, SelectionStatus, Service, Slot, WaitlistEntrySource } from "./types";
 
 type BookingSelectionSectionProps = {
@@ -78,7 +81,8 @@ export function BookingSelectionSection({
   setSelectedSlot,
 }: BookingSelectionSectionProps) {
   const isWaitlistMode = mode === "waitlist";
-  const selectedServiceName = services.find((service) => service.id === serviceId)?.name;
+  const selectedService = services.find((service) => service.id === serviceId) || null;
+  const selectedServiceName = selectedService?.name || null;
   const selectedEmployeeName = employees.find((employee) => employee.id === employeeId)?.full_name;
   const canShowStep2 = !isWaitlistMode && hasAttemptedSlotLoad;
   const step2IsActive = activeStep === 2;
@@ -90,6 +94,9 @@ export function BookingSelectionSection({
   const [serviceSearchValue, setServiceSearchValue] = useState("");
   const [debouncedServiceSearch, setDebouncedServiceSearch] = useState("");
   const selectedEmployeeIsSpecific = !!employeeId && employeeId !== anyEmployeeValue;
+  const [expandedSection, setExpandedSection] = useState<"service" | "date" | "time">("service");
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     const debounceHandle = setTimeout(() => {
@@ -97,6 +104,15 @@ export function BookingSelectionSection({
     }, 180);
     return () => clearTimeout(debounceHandle);
   }, [serviceSearchValue]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setIsDesktop(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
 
   const sortedServices = useMemo(() => {
     const copy = [...services];
@@ -150,159 +166,140 @@ export function BookingSelectionSection({
         .replace("{employee}", selectedEmployeeName)
     : null;
 
+  const recommendedSlotId = renderedSlots[0]?.id || "";
+  const canCompleteService = Boolean(serviceId);
+  const canCompleteDate = Boolean(serviceId && date);
+  const canCompleteTime = Boolean(canCompleteDate && selectedSlot);
+
+  useEffect(() => {
+    if (isDesktop) return;
+    if (canCompleteTime) return;
+    if (canCompleteDate) {
+      setExpandedSection("time");
+      return;
+    }
+    if (canCompleteService) {
+      setExpandedSection("date");
+      return;
+    }
+    setExpandedSection("service");
+  }, [isDesktop, canCompleteService, canCompleteDate, canCompleteTime]);
+
+  const sectionExpanded = (section: "service" | "date" | "time") => isDesktop || expandedSection === section;
+
+  const updateSectionByInteraction = (section: "service" | "date" | "time") => {
+    setHasInteracted(true);
+    if (isDesktop) return;
+    setExpandedSection(section);
+  };
+
   return (
-    <section className="space-y-4">
-      <article
-        id="service-section"
-        className="space-y-4 rounded-2xl border p-4 shadow-sm"
-        style={{
-          backgroundColor: tokens.colors.surface,
-          borderColor: tokens.colors.border,
-          boxShadow: tokens.shadow.card,
-        }}
-      >
-        <div className="space-y-1">
-          <h2 className="text-sm font-semibold tracking-tight">{t.step1Title}</h2>
-          <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.step1Description}</p>
-        </div>
-
-        {isWaitlistMode && (
-          <div
-            className="rounded-xl border p-3 text-xs"
-            style={{
-              borderColor: tokens.colors.border,
-              backgroundColor: tokens.colors.surface2,
-              color: tokens.colors.mutedText,
-            }}
-          >
-            <p>{t.waitlistHowItWorks || "When a slot becomes available, we will send you a link by SMS or email."}</p>
-            <p className="mt-1">{t.waitlistResponseWindow || "You typically have 15 minutes to confirm."}</p>
-            <p className="mt-1">{t.waitlistDeadlineHint || "Confirm before the deadline to secure the appointment."}</p>
-          </div>
-        )}
-
-        <form
-          onSubmit={(e) => {
-            if (isWaitlistMode) {
-              e.preventDefault();
-              return;
-            }
-            handleLoadSlots(e);
+    <section className="space-y-6">
+      {isSelectionBlocked && (
+        <div
+          className="rounded-[var(--pb-radius-md)] border p-3 text-sm"
+          style={{
+            borderColor: "var(--pb-border)",
+            backgroundColor: "var(--pb-warning-bg)",
+            color: "var(--pb-warning-text)",
           }}
-          className="space-y-4"
         >
-          {isSelectionBlocked && (
-            <div
-              className="rounded-xl border p-3 text-sm"
-              style={{
-                borderColor: tokens.colors.border,
-                backgroundColor: tokens.colors.warningBg,
-                color: tokens.colors.warningText,
+          {hasMissingSetup && <p>{t.missingSetupDescription || "This salon exists, but public booking is not fully configured yet."}</p>}
+          {hasNoServices && <p>{t.noActiveServicesDescription || "This salon has not published any services yet."}</p>}
+          {hasNoEmployees && <p>{t.noActiveEmployeesDescription || "This salon has not published any employees yet."}</p>}
+        </div>
+      )}
+
+      <BookingFlowSection
+        id="service-section"
+        title={t.serviceLabel || "Service"}
+        subtitle={t.step1Description}
+        isExpanded={sectionExpanded("service")}
+        summary={selectedServiceName || undefined}
+        onChange={() => updateSectionByInteraction("service")}
+      >
+        <div className="space-y-3">
+          {shouldShowServiceSearch && (
+            <Input
+              type="search"
+              value={serviceSearchValue}
+              onChange={(event) => {
+                setHasInteracted(true);
+                setServiceSearchValue(event.target.value);
               }}
-            >
-              {hasMissingSetup && (
-                <p>{t.missingSetupDescription || "This salon exists, but public booking is not fully configured yet."}</p>
-              )}
-              {hasNoServices && (
-                <p>{t.noActiveServicesDescription || "This salon has not published any services yet."}</p>
-              )}
-              {hasNoEmployees && (
-                <p>{t.noActiveEmployeesDescription || "This salon has not published any employees yet."}</p>
-              )}
-            </div>
+              placeholder={t.searchServicesPlaceholder || "Search services"}
+              disabled={isSelectionBlocked}
+            />
           )}
 
-          <div className="space-y-2 text-sm">
-            <label className="font-medium">{t.serviceLabel}</label>
-            {shouldShowServiceSearch && (
-              <Input
-                type="search"
-                value={serviceSearchValue}
-                onChange={(event) => setServiceSearchValue(event.target.value)}
-                placeholder={t.searchServicesPlaceholder || "Search services"}
-                disabled={isSelectionBlocked}
-              />
-            )}
-            {loadingSlots && !hasAttemptedSlotLoad && (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="h-16 animate-pulse rounded-xl border bg-muted/30" />
-                ))}
-              </div>
-            )}
-            {!loadingSlots || hasAttemptedSlotLoad ? (
-              visibleServices.length > 0 ? (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {visibleServices.map((service) => {
-                    const isSelected = service.id === serviceId;
-                    const durationLabel = typeof service.duration_minutes === "number" && service.duration_minutes > 0
-                      ? `${service.duration_minutes} min`
-                      : (t.durationLabel ? `Approx. ${t.durationLabel.toLowerCase()}` : "Approx. duration");
-                    const priceLabel = typeof service.price_cents === "number" && service.price_cents > 0
-                      ? new Intl.NumberFormat("en-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(service.price_cents / 100)
-                      : null;
-                    return (
-                      <button
-                        key={service.id}
-                        type="button"
-                        onClick={() => setServiceId(service.id)}
-                        disabled={isSelectionBlocked}
-                        className="rounded-xl border px-3 py-3 text-left transition-all duration-150 hover:-translate-y-[1px] hover:shadow-sm"
-                        style={
-                          isSelected
-                            ? {
-                                borderColor: tokens.colors.primary,
-                                boxShadow: tokens.shadow.card,
-                                transform: "scale(1.02)",
-                                backgroundColor: tokens.colors.surface,
-                              }
-                            : {
-                                borderColor: tokens.colors.border,
-                                backgroundColor: tokens.colors.surface,
-                              }
-                        }
-                      >
-                        <p className="text-sm font-medium">{service.name}</p>
-                        <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: tokens.colors.mutedText }}>
-                          <span>{durationLabel}</span>
-                          {priceLabel ? <span>• {priceLabel}</span> : null}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div
-                  className="rounded-xl border p-3 text-sm"
-                  style={{
-                    borderColor: tokens.colors.border,
-                    backgroundColor: tokens.colors.surface2,
-                    color: tokens.colors.mutedText,
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {visibleServices.map((service) => {
+              const durationLabel = typeof service.duration_minutes === "number" && service.duration_minutes > 0
+                ? `${service.duration_minutes} min`
+                : "Approx. duration";
+              const priceLabel = typeof service.price_cents === "number" && service.price_cents > 0
+                ? new Intl.NumberFormat("en-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(service.price_cents / 100)
+                : null;
+              const meta = priceLabel ? `${durationLabel} • ${priceLabel}` : durationLabel;
+              return (
+                <ServiceCard
+                  key={service.id}
+                  id={service.id}
+                  title={service.name}
+                  meta={meta}
+                  selected={service.id === serviceId}
+                  disabled={isSelectionBlocked}
+                  onSelect={(id) => {
+                    setHasInteracted(true);
+                    setServiceId(id);
+                    if (!isDesktop) setExpandedSection("date");
                   }}
-                >
-                  {t.noServiceSearchResults || "No services match your search."}
-                </div>
-              )
-            ) : null}
+                />
+              );
+            })}
           </div>
 
-          <div id="date-section" className="space-y-2 text-sm">
-            <label className="font-medium" htmlFor="date">{t.dateLabel}</label>
+          {visibleServices.length === 0 && (
+            <p className="text-sm text-[var(--pb-muted)]">
+              {t.noServiceSearchResults || "No services match your search."}
+            </p>
+          )}
+        </div>
+      </BookingFlowSection>
+
+      <BookingFlowSection
+        id="date-section"
+        title={t.dateLabel || "Date"}
+        subtitle={selectedEmployeeName ? `${t.employeeLabel || "Employee"}: ${selectedEmployeeName}` : undefined}
+        isExpanded={sectionExpanded("date")}
+        summary={date || undefined}
+        onChange={() => updateSectionByInteraction("date")}
+      >
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-2 text-sm">
+            <label className="font-medium text-[var(--pb-text)]" htmlFor="date">{t.dateLabel}</label>
             <Input
               id="date"
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => {
+                setHasInteracted(true);
+                setDate(e.target.value);
+                if (!isDesktop && serviceId && e.target.value) setExpandedSection("time");
+              }}
               required
               disabled={isSelectionBlocked}
             />
           </div>
 
           <div className="space-y-2 text-sm">
-            <label className="font-medium" htmlFor="employee">{t.employeeLabel}</label>
+            <label className="font-medium text-[var(--pb-text)]" htmlFor="employee">{t.employeeLabel}</label>
             <DialogSelect
               value={employeeId}
-              onChange={setEmployeeId}
+              onChange={(value) => {
+                setHasInteracted(true);
+                setEmployeeId(value);
+              }}
               required={!isWaitlistMode}
               disabled={isSelectionBlocked || employees.length === 0}
               placeholder={isWaitlistMode ? (t.employeeAny || "Any employee") : t.employeePlaceholder}
@@ -319,111 +316,78 @@ export function BookingSelectionSection({
                 }),
               ]}
             />
-            <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
+            <p className="text-xs text-[var(--pb-muted)]">
               {t.bestAvailableHint || "You'll get the first available barber at your chosen time."}
             </p>
           </div>
-        </form>
+        </div>
+      </BookingFlowSection>
 
-        {(selectedServiceName || selectedEmployeeName || date) && (
-          <div
-            className="rounded-xl border p-3 text-xs"
-            style={{
-              borderColor: tokens.colors.border,
-              backgroundColor: tokens.colors.surface2,
-              color: tokens.colors.mutedText,
-            }}
-          >
-            {selectedServiceName && <p>Service: {selectedServiceName}</p>}
-            {selectedEmployeeName && <p className="mt-1">Employee: {selectedEmployeeName}</p>}
-            {date && <p className="mt-1">Date: {date}</p>}
-          </div>
-        )}
-      </article>
-
-      <article
-        id="book-mode-panel"
-        role="tabpanel"
-        aria-labelledby="book-mode-tab"
-        className="space-y-3 rounded-2xl border p-4 shadow-sm"
-        style={{
-          backgroundColor: canShowStep2 ? tokens.colors.surface : tokens.colors.surface2,
-          borderColor: tokens.colors.border,
-          boxShadow: tokens.shadow.card,
-          opacity: canShowStep2 ? 1 : 0.75,
-        }}
-      >
+      <article id="book-mode-panel" role="tabpanel" aria-labelledby="book-mode-tab" className="space-y-3">
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">{t.step2Label}</h3>
+          <h3 className="text-[20px] font-semibold text-[var(--pb-text)]">{t.step2Label}</h3>
           {onlyShowingForEmployeeText && (
-            <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
+            <p className="text-xs text-[var(--pb-muted)]">
               {onlyShowingForEmployeeText}
             </p>
           )}
           {!canShowStep2 && !loadingSlots && (
-            <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.noSlotsYet}</p>
+            <p className="text-xs text-[var(--pb-muted)]">{t.noSlotsYet}</p>
           )}
           {loadingSlots && (
-            <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.checkingAvailability || t.loadingSlots}</p>
+            <p className="text-xs text-[var(--pb-muted)]">{t.checkingAvailability || t.loadingSlots}</p>
           )}
         </div>
 
         {loadingSlots && canShowStep2 && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="h-14 animate-pulse rounded-lg border bg-muted/30" />
+              <div key={item} className="h-12 animate-pulse rounded-[var(--pb-radius-sm)] border bg-[var(--pb-surface-muted)]" />
             ))}
           </div>
         )}
 
         {canShowStep2 && !loadingSlots && renderedSlots.length > 0 && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (!recommendedSlotId) return;
+                  setHasInteracted(true);
+                  setSelectedSlot(recommendedSlotId);
+                }}
+              >
+                Next available
+              </Button>
+            </div>
             {groupedOrder.map((groupKey) => {
               const groupSlots = groupedSlots[groupKey];
               if (groupSlots.length === 0) return null;
               return (
-                <div key={groupKey} className="space-y-2">
-                  <p className="text-[11px] font-medium uppercase tracking-wide" style={{ color: tokens.colors.mutedText }}>
+                <div key={groupKey} className="space-y-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--pb-muted)]">
                     {groupedLabels[groupKey]}
                   </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {groupSlots.map((slot, index) => {
                       const isSelected = selectedSlot === slot.id;
                       const slotDisplay = parseSlotLabel(slot.label);
                       return (
-                        <button
+                        <TimeSlotButton
                           key={`${groupKey}-${index}`}
-                          type="button"
-                          onClick={() => setSelectedSlot(slot.id)}
-                          className="rounded-lg border px-3 py-2 text-left transition-all duration-150 hover:-translate-y-[1px] hover:bg-muted/30"
-                          style={
-                            isSelected
-                              ? {
-                                  backgroundColor: tokens.colors.primary,
-                                  color: tokens.colors.primaryText,
-                                  borderColor: tokens.colors.primary,
-                                  transform: "scale(1.01)",
-                                }
-                              : {
-                                  backgroundColor: tokens.colors.surface,
-                                  borderColor: tokens.colors.border,
-                                  color: "#101828",
-                                }
-                          }
-                        >
-                          <span className="block text-xs font-semibold">{slotDisplay.timeRange}</span>
-                          {slotDisplay.employeeName && (
-                            <span
-                              className="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium"
-                              style={{
-                                border: `1px solid ${isSelected ? tokens.colors.primaryText : tokens.colors.border}`,
-                                color: isSelected ? tokens.colors.primaryText : tokens.colors.mutedText,
-                              }}
-                            >
-                              {slotDisplay.employeeName}
-                            </span>
-                          )}
-                        </button>
+                          id={slot.id}
+                          timeRange={slotDisplay.timeRange}
+                          employeeName={slotDisplay.employeeName}
+                          selected={isSelected}
+                          recommended={slot.id === recommendedSlotId}
+                          onSelect={(id) => {
+                            setHasInteracted(true);
+                            setSelectedSlot(id);
+                          }}
+                        />
                       );
                     })}
                   </div>
@@ -435,28 +399,19 @@ export function BookingSelectionSection({
 
         {canShowStep2 && !loadingSlots && renderedSlots.length === 0 && (
           <div
-            className="rounded-xl border p-3 text-sm"
+            className="rounded-[var(--pb-radius-md)] border p-3 text-sm"
             style={{
-              borderColor: tokens.colors.border,
-              backgroundColor: tokens.colors.warningBg,
-              color: tokens.colors.warningText,
+              borderColor: "var(--pb-border)",
+              backgroundColor: "var(--pb-warning-bg)",
+              color: "var(--pb-warning-text)",
             }}
           >
             <p className="font-medium">{t.waitlistTitle || "No slots available right now"}</p>
             <p className="mt-1">{t.waitlistDescription || "Join the waitlist and the salon can contact you if something opens up."}</p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-3 flex flex-col gap-2">
               <Button
                 type="button"
                 className="w-full"
-                variant="outline"
-                onClick={() => handleModeChange("waitlist", "no-slots")}
-              >
-                {t.modeWaitlist || "Notify me when available"}
-              </Button>
-              <Button
-                type="button"
-                className="w-full"
-                variant="outline"
                 onClick={() => {
                   const current = date ? new Date(`${date}T00:00:00`) : new Date();
                   current.setDate(current.getDate() + 1);
@@ -467,7 +422,27 @@ export function BookingSelectionSection({
                   void handleRetryLoadSlots();
                 }}
               >
-                {t.tryAnotherDay || "Try another day"}
+                {t.tryAnotherDay || "Try tomorrow"}
+              </Button>
+              <Button
+                type="button"
+                className="w-full"
+                variant="outline"
+                onClick={() => {
+                  const dateInput = document.getElementById("date") as HTMLInputElement | null;
+                  dateInput?.focus();
+                  dateInput?.showPicker?.();
+                }}
+              >
+                Show more days
+              </Button>
+              <Button
+                type="button"
+                className="w-full"
+                variant="outline"
+                onClick={() => handleModeChange("waitlist", "no-slots")}
+              >
+                {t.modeWaitlist || "Notify me when available"}
               </Button>
             </div>
           </div>
@@ -475,11 +450,11 @@ export function BookingSelectionSection({
 
         {step2IsActive && error && (
           <div
-            className="rounded-xl border p-3 text-sm"
+            className="rounded-[var(--pb-radius-md)] border p-3 text-sm"
             style={{
-              borderColor: tokens.colors.border,
-              backgroundColor: tokens.colors.errorBg,
-              color: tokens.colors.errorText,
+              borderColor: "var(--pb-border)",
+              backgroundColor: "var(--pb-error-bg)",
+              color: "var(--pb-error-text)",
             }}
           >
             <p>{error}</p>
@@ -496,6 +471,9 @@ export function BookingSelectionSection({
           </div>
         )}
       </article>
+
+      {/* Hidden progressive-state hint for reduced-motion/auto-scroll guards */}
+      {!isDesktop && hasInteracted ? <span className="sr-only">Mobile guided mode enabled</span> : null}
     </section>
   );
 }
