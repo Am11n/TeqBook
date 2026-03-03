@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { BookingMode, PublicBookingCopy, PublicBookingTokens } from "./types";
 
 type EditAction = {
+  key: "service" | "date" | "time";
   label: string;
   onClick: () => void;
 };
@@ -54,55 +55,65 @@ export function BookingSummaryCard({
           ? (t.step3Title || "Your details")
           : (t.submitLabel || "Confirm booking");
   const shouldSubmit = canSubmitBooking && detailsReady;
+  const readyLabel = shouldSubmit ? "Ready" : null;
+  const actionByKey = new Map(editActions.map((action) => [action.key, action]));
 
   return (
     <section
-      className="space-y-4 rounded-2xl border p-4"
+      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-4"
       style={{
-        backgroundColor: tokens.colors.surface2,
-        borderColor: tokens.colors.border,
+        backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 88%, var(--pb-surface) 12%)",
+        borderColor: "var(--pb-border)",
+        boxShadow: "var(--pb-shadow-1)",
       }}
     >
-      <div className="space-y-1">
-        <h2 className="text-sm font-semibold tracking-tight">{t.summaryTitle || "Your booking"}</h2>
-        <p className="text-[11px] uppercase tracking-wide" style={{ color: tokens.colors.mutedText }}>
+      <div className="space-y-2">
+        <h2 className="text-base font-semibold tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
+        <p
+          className="inline-flex rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide"
+          style={{ borderColor: "var(--pb-border)", color: "var(--pb-muted)" }}
+        >
           {(t.nextLabel || "Next")}: {nextAction}
         </p>
+        {readyLabel ? (
+          <p className="text-xs font-medium text-[var(--pb-primary)] transition-all duration-150">{readyLabel}</p>
+        ) : null}
       </div>
 
       <dl className="space-y-2 text-sm">
-        <SummaryRow label={t.serviceLabel || "Service"} value={serviceName} muted={tokens.colors.mutedText} />
-        <SummaryRow label={t.dateLabel || "Date"} value={dateLabel} muted={tokens.colors.mutedText} />
-        <SummaryRow label={t.timeLabel || "Time"} value={timeLabel} muted={tokens.colors.mutedText} />
+        <SummaryRow
+          label={t.serviceLabel || "Service"}
+          value={serviceName}
+          muted={tokens.colors.mutedText}
+          action={actionByKey.get("service")}
+        />
+        <SummaryRow
+          label={t.dateLabel || "Date"}
+          value={dateLabel}
+          muted={tokens.colors.mutedText}
+          action={actionByKey.get("date")}
+        />
+        <SummaryRow
+          label={t.timeLabel || "Time"}
+          value={timeLabel}
+          muted={tokens.colors.mutedText}
+          action={actionByKey.get("time")}
+        />
         <SummaryRow label={t.employeeLabel || "Employee"} value={employeeLabel} muted={tokens.colors.mutedText} />
         {durationLabel ? <SummaryRow label={t.durationLabel || "Duration"} value={durationLabel} muted={tokens.colors.mutedText} /> : null}
         {priceLabel ? <SummaryRow label={t.priceLabel || "Price"} value={priceLabel} muted={tokens.colors.mutedText} /> : null}
       </dl>
-
-      <div className="flex flex-wrap gap-2">
-        {editActions.map((action) => (
-          <button
-            key={action.label}
-            type="button"
-            onClick={action.onClick}
-            className="text-xs underline underline-offset-2 transition hover:opacity-80"
-            style={{ color: tokens.colors.mutedText }}
-          >
-            {action.label}
-          </button>
-        ))}
-      </div>
 
       {isBookMode ? (
         <Button
           type={shouldSubmit ? "submit" : "button"}
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
-          className="w-full transition-all duration-150"
+          className="h-12 w-full text-sm font-semibold transition-all duration-150"
           disabled={!canSubmitBooking}
           style={{
-            backgroundColor: canSubmitBooking ? tokens.colors.primary : undefined,
-            color: canSubmitBooking ? tokens.colors.primaryText : undefined,
+            backgroundColor: canSubmitBooking ? "var(--pb-primary)" : undefined,
+            color: canSubmitBooking ? "var(--pb-primary-text)" : undefined,
           }}
         >
           {ctaLabel}
@@ -116,13 +127,28 @@ type SummaryRowProps = {
   label: string;
   value: string | null;
   muted: string;
+  action?: EditAction;
 };
 
-function SummaryRow({ label, value, muted }: SummaryRowProps) {
+function SummaryRow({ label, value, muted, action }: SummaryRowProps) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-xs" style={{ color: muted }}>{label}</dt>
-      <dd className="text-right text-xs font-medium">{value || "—"}</dd>
+      <dt className="text-xs" style={{ color: muted }}>
+        {label}
+      </dt>
+      <dd className="flex items-center gap-2 text-right text-xs font-medium">
+        <span>{value || "—"}</span>
+        {action ? (
+          <button
+            type="button"
+            onClick={action.onClick}
+            className="text-[11px] underline underline-offset-2 transition hover:opacity-80"
+            style={{ color: muted }}
+          >
+            {action.label}
+          </button>
+        ) : null}
+      </dd>
     </div>
   );
 }
