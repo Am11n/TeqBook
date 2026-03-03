@@ -82,6 +82,26 @@ export type PublicBookingMessages = {
   emailLabelPlain?: string;
   phoneLabelPlain?: string;
   phoneFormatHint?: string;
+  summaryTitle?: string;
+  nextLabel?: string;
+  timeLabel?: string;
+  durationLabel?: string;
+  priceLabel?: string;
+  selectTimeToContinueLabel?: string;
+  enterDetailsLabel?: string;
+  confirmBookingLabel?: string;
+  bestAvailableRecommended?: string;
+  bestAvailableHint?: string;
+  showingTimesForEmployee?: string;
+  searchServicesPlaceholder?: string;
+  noServiceSearchResults?: string;
+  tryAnotherDay?: string;
+  editService?: string;
+  editDate?: string;
+  editTime?: string;
+  morningLabel?: string;
+  afternoonLabel?: string;
+  eveningLabel?: string;
 };
 
 export type LoginMessages = {

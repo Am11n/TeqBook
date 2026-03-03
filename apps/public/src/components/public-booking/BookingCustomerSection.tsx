@@ -30,6 +30,8 @@ type BookingCustomerSectionProps = {
   joiningWaitlist: boolean;
   saving: boolean;
   handleRetryLoadSlots: () => Promise<void>;
+  detailsFormId: string;
+  showBookingSubmitButton?: boolean;
 };
 
 export function BookingCustomerSection({
@@ -57,12 +59,15 @@ export function BookingCustomerSection({
   joiningWaitlist,
   saving,
   handleRetryLoadSlots,
+  detailsFormId,
+  showBookingSubmitButton = false,
 }: BookingCustomerSectionProps) {
   const isWaitlistMode = mode === "waitlist";
   const isPrimaryStep = activeStep === 3;
 
   return (
     <section
+      id="details-section"
       className="space-y-4 rounded-2xl border p-4 shadow-sm"
       style={{
         backgroundColor: tokens.colors.surface,
@@ -115,6 +120,7 @@ export function BookingCustomerSection({
       )}
 
       <form
+        id={detailsFormId}
         onSubmit={(e) => {
           if (isWaitlistMode) {
             handleJoinWaitlist(e);
@@ -174,21 +180,23 @@ export function BookingCustomerSection({
         {waitlistError && <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistError}</p>}
         {waitlistMessage && <p className="text-sm" style={{ color: tokens.colors.successText }} aria-live="polite">{waitlistMessage}</p>}
 
-        <Button
-          type="submit"
-          className="mt-1 w-full"
-          disabled={
-            isWaitlistMode
-              ? (!serviceId || !date || !customerName || (!customerEmail && !customerPhone) || joiningWaitlist)
-              : (!selectedSlot || !customerName || (!customerEmail && !customerPhone) || saving)
-          }
-          variant={isPrimaryStep ? "default" : "outline"}
-          style={isPrimaryStep ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText } : undefined}
-        >
-          {isWaitlistMode
-            ? (joiningWaitlist ? (t.waitlistSubmitting || "Submitting...") : (t.modeWaitlist || "Notify me when available"))
-            : (saving ? t.submitSaving : t.submitLabel)}
-        </Button>
+        {(isWaitlistMode || showBookingSubmitButton) && (
+          <Button
+            type="submit"
+            className="mt-1 w-full"
+            disabled={
+              isWaitlistMode
+                ? (!serviceId || !date || !customerName || (!customerEmail && !customerPhone) || joiningWaitlist)
+                : (!selectedSlot || !customerName || (!customerEmail && !customerPhone) || saving)
+            }
+            variant={isPrimaryStep ? "default" : "outline"}
+            style={isPrimaryStep ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText } : undefined}
+          >
+            {isWaitlistMode
+              ? (joiningWaitlist ? (t.waitlistSubmitting || "Submitting...") : (t.modeWaitlist || "Notify me when available"))
+              : (saving ? t.submitSaving : t.submitLabel)}
+          </Button>
+        )}
       </form>
 
       <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.payInfo}</p>

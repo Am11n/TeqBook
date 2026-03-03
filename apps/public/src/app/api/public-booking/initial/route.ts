@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const [{ data: services, error: servicesError }, { data: employees, error: employeesError }] = await Promise.all([
       supabase
         .from("services")
-        .select("id, name")
+        .select("id, name, duration_minutes, price_cents")
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true, nullsFirst: false })

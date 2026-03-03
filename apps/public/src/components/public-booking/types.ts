@@ -89,6 +89,9 @@ export type PublicBookingTokens = {
 export type Service = {
   id: string;
   name: string;
+  duration_minutes?: number | null;
+  price_cents?: number | null;
+  featured?: boolean | null;
 };
 
 export type Employee = {
