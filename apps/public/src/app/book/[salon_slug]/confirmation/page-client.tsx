@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
-import { getBookingById } from "@/lib/repositories/bookings";
 import { cancelBooking } from "@/lib/services/bookings-service";
 import { useLocale } from "@/components/locale-provider";
 import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide-react";
@@ -54,23 +53,28 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           theme: salonData.theme || null,
         });
 
-        // Load booking - we need to create a function to get booking by ID publicly
-        // For now, we'll need to add this to the repository
-        const { data: bookingData, error: bookingError } = await getBookingById(bookingId);
-        if (bookingError || !bookingData) {
-          setError(bookingError || "Booking not found");
+        const confirmationResponse = await fetch(
+          `/api/public-booking/confirmation?slug=${encodeURIComponent(slug)}&bookingId=${encodeURIComponent(bookingId)}`,
+          { method: "GET", headers: { Accept: "application/json" } }
+        );
+        const confirmationPayload = await confirmationResponse.json().catch(() => null) as
+          | { booking?: (Booking & { salon_id: string }) | null; error?: string }
+          | null;
+
+        if (!confirmationResponse.ok || !confirmationPayload?.booking) {
+          setError(confirmationPayload?.error || "Booking not found");
           setLoading(false);
           return;
         }
 
         // Verify booking belongs to salon
-        if (bookingData.salon_id !== salonData.id) {
+        if (confirmationPayload.booking.salon_id !== salonData.id) {
           setError("Booking does not belong to this salon");
           setLoading(false);
           return;
         }
 
-        setBooking(bookingData as Booking);
+        setBooking(confirmationPayload.booking as Booking);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load booking");
       } finally {
@@ -96,11 +100,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         return;
       }
 
-      // Reload booking to get updated status
-      const { data: updatedBooking } = await getBookingById(booking.id);
-      if (updatedBooking) {
-        setBooking(updatedBooking as Booking);
-      }
+      setBooking((prev) => (prev ? { ...prev, status: "cancelled" } as Booking : prev));
       setShowCancelForm(false);
       setCancellationReason("");
     } catch (err) {
