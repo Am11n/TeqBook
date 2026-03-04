@@ -198,7 +198,14 @@ export function useQueryPrefill(params: {
 
     if (searchParams.get("mode") === "waitlist") {
       setModeWaitlist();
-      trackPublicEvent("waitlist_direct_opened", { slug });
+      trackPublicEvent("waitlist_direct_opened", {
+        salon_slug: slug,
+        mode: "waitlist",
+        step: "service",
+        has_employee_selected: false,
+        service_count: services.length,
+        slot_count_shown: 0,
+      });
     }
 
     const serviceParam = searchParams.get("serviceId");

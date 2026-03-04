@@ -181,11 +181,12 @@ export function usePublicBooking(slug: string) {
     setEmployeeAvailability({});
 
     if (nextMode === "waitlist" && source === "direct") {
-      trackPublicEvent("waitlist_direct_opened", telemetryContext);
+      trackPublicEvent("waitlist_direct_opened", { ...telemetryContext, mode: nextMode, step: "service" });
     }
     if (nextMode === "waitlist" && source === "no-slots") {
       trackPublicEvent("booking_flow_dropoff_hint", {
         ...telemetryContext,
+        mode: nextMode,
         step: "slot",
         reason: "waitlist_opened",
       });
