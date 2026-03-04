@@ -10,6 +10,7 @@ import { Field } from "@/components/form/Field";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { Upload, X, Eye } from "lucide-react";
 import type { BrandingPreset } from "@/lib/utils/branding/branding-utils";
+import type { ThemePackDefinition } from "@teqbook/shared/branding";
 
 interface BrandingFormProps {
   primaryColor: string;
@@ -22,6 +23,10 @@ interface BrandingFormProps {
   setLogoUrl: (url: string) => void;
   logoPreview: string | null;
   setLogoPreview: (preview: string | null) => void;
+  themePackId: string;
+  setThemePackId: (value: string) => void;
+  themePacks: readonly ThemePackDefinition[];
+  isStarterPlan: boolean;
   uploadingLogo: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   presets: BrandingPreset[];
@@ -53,6 +58,10 @@ export function BrandingForm({
   setLogoUrl,
   logoPreview,
   setLogoPreview,
+  themePackId,
+  setThemePackId,
+  themePacks,
+  isStarterPlan,
   uploadingLogo,
   fileInputRef,
   presets,
@@ -71,7 +80,11 @@ export function BrandingForm({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold mb-2">{translations.brandingTitle}</h3>
-          <p className="text-sm text-muted-foreground">{translations.brandingDescription}</p>
+          <p className="text-sm text-muted-foreground">
+            {isStarterPlan
+              ? "TeqBook Standard Branding is active. Upgrade to customize branding."
+              : translations.brandingDescription}
+          </p>
         </div>
         {!showPreview && (
           <Button type="button" variant="outline" onClick={onShowPreview}>
@@ -82,6 +95,25 @@ export function BrandingForm({
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
+        <Field label="Theme Pack" htmlFor="themePack">
+          <DialogSelect
+            value={themePackId}
+            onChange={setThemePackId}
+            className="max-w-md"
+            disabled={isStarterPlan}
+            options={themePacks.map((pack) => ({
+              value: pack.id,
+              label: pack.name,
+            }))}
+          />
+        </Field>
+
+        {isStarterPlan && (
+          <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+            Upgrade to Pro or Business to unlock Theme Packs and branding overrides.
+          </div>
+        )}
+
         {/* Preset Themes */}
         <div className="space-y-2">
           <Label>Preset Themes</Label>
@@ -93,6 +125,7 @@ export function BrandingForm({
                 variant="outline"
                 size="sm"
                 onClick={() => onApplyPreset(preset)}
+                disabled={isStarterPlan}
                 className="text-xs"
               >
                 {preset.name}
@@ -109,6 +142,7 @@ export function BrandingForm({
                 type="color"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
+                disabled={isStarterPlan}
                 className="w-20 h-10"
               />
               <Input
@@ -116,6 +150,7 @@ export function BrandingForm({
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
                 placeholder="#3b82f6"
+                disabled={isStarterPlan}
                 className="max-w-xs"
               />
             </div>
@@ -131,6 +166,7 @@ export function BrandingForm({
                 type="color"
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
+                disabled={isStarterPlan}
                 className="w-20 h-10"
               />
               <Input
@@ -138,6 +174,7 @@ export function BrandingForm({
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
                 placeholder="#8b5cf6"
+                disabled={isStarterPlan}
                 className="max-w-xs"
               />
             </div>
@@ -149,6 +186,7 @@ export function BrandingForm({
               value={fontFamily}
               onChange={setFontFamily}
               className="max-w-md"
+              disabled={isStarterPlan}
               options={[
                 { value: "Inter", label: "Inter" },
                 { value: "Roboto", label: "Roboto" },
@@ -197,7 +235,7 @@ export function BrandingForm({
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingLogo}
+                  disabled={uploadingLogo || isStarterPlan}
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   {uploadingLogo ? "Uploading..." : "Upload Logo"}
@@ -212,6 +250,7 @@ export function BrandingForm({
                     setLogoPreview(e.target.value || null);
                   }}
                   placeholder="https://example.com/logo.png"
+                  disabled={isStarterPlan}
                   className="max-w-md"
                 />
               </div>
@@ -232,7 +271,7 @@ export function BrandingForm({
           </div>
         )}
 
-        <Button type="submit" disabled={saving} className="w-full max-w-md">
+        <Button type="submit" disabled={saving || isStarterPlan} className="w-full max-w-md">
           {saving ? translations.saving : translations.saveButton}
         </Button>
       </form>

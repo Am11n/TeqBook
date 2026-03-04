@@ -60,6 +60,24 @@ export async function updateSalonSettings(
       logo_url?: string;
       presets?: string[];
     } | null;
+    theme_pack_id?: string | null;
+    theme_pack_version?: number | null;
+    theme_pack_hash?: string | null;
+    theme_pack_snapshot?: {
+      id: string;
+      version: number;
+      hash: string;
+      tokens: {
+        primaryColor: string;
+        secondaryColor: string;
+        fontFamily: string;
+        radiusScale: "standard" | "rounded";
+        shadowScale: "soft" | "medium";
+        headerVariant: "standard" | "compact";
+        motionPreset: "standard" | "calm";
+      };
+    } | null;
+    theme_overrides?: Record<string, unknown> | null;
     business_address?: string | null;
     org_number?: string | null;
     cancellation_hours?: number | null;
@@ -122,6 +140,24 @@ export async function updateSalon(
       logo_url?: string;
       presets?: string[];
     } | null;
+    theme_pack_id?: string | null;
+    theme_pack_version?: number | null;
+    theme_pack_hash?: string | null;
+    theme_pack_snapshot?: {
+      id: string;
+      version: number;
+      hash: string;
+      tokens: {
+        primaryColor: string;
+        secondaryColor: string;
+        fontFamily: string;
+        radiusScale: "standard" | "rounded";
+        shadowScale: "soft" | "medium";
+        headerVariant: "standard" | "compact";
+        motionPreset: "standard" | "calm";
+      };
+    } | null;
+    theme_overrides?: Record<string, unknown> | null;
     business_address?: string | null;
     org_number?: string | null;
     cancellation_hours?: number | null;

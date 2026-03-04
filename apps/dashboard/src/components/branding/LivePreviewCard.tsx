@@ -37,10 +37,15 @@ export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) 
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">Live Preview</h3>
+          <h3 className="text-lg font-semibold mb-2">Draft Preview</h3>
           <p className="text-sm text-muted-foreground">
-            See how your booking page will look with the current theme settings
+            Preview uses current form values. Live page uses saved settings.
           </p>
+          {salon.plan === "starter" && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Starter plan is locked to TeqBook Standard Branding. Upgrade to customize branding.
+            </p>
+          )}
         </div>
         <Button type="button" variant="outline" onClick={onHide}>
           <Eye className="mr-2 h-4 w-4" />
@@ -51,14 +56,14 @@ export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) 
         <BookingPreview salonSlug={salon.slug} theme={theme} />
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-        <span>Preview shows how your booking page will look with the current theme settings</span>
+        <span>Draft preview (unsaved). Live page only reflects persisted settings.</span>
         <a
           href={`/book/${salon.slug}?preview=true`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
         >
-          Open in new tab
+          Open live page (saved)
         </a>
       </div>
     </Card>

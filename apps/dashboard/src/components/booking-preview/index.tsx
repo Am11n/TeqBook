@@ -18,7 +18,7 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, customerName, setCustomerName,
     customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
-    primaryColor, fontFamily, logoUrl, canLoadSlots,
+    effectiveBranding, tokens, canLoadSlots,
     handleLoadSlots, handleSubmitBooking,
   } = useBookingPreview(salonSlug, theme);
 
@@ -30,7 +30,7 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
     );
   }
 
-  if (error || !salon) {
+  if (error || !salon || !effectiveBranding || !tokens) {
     return (
       <div className="flex min-h-[600px] items-center justify-center px-4">
         <p className="text-sm text-destructive">{error || "Preview not available"}</p>
@@ -45,20 +45,25 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
   };
 
   const styledButton = {
-    backgroundColor: primaryColor,
-    color: "white",
+    backgroundColor: tokens.colors.primary,
+    color: tokens.colors.primaryText,
   };
 
   return (
-    <div className="flex min-h-[600px] flex-col bg-background" style={{ fontFamily } as React.CSSProperties}>
-      <header className="border-b bg-card/80 px-4 py-4 backdrop-blur sm:px-6">
+    <div className="flex min-h-[600px] flex-col bg-background" style={{ fontFamily: tokens.typography.fontFamily, backgroundColor: tokens.colors.surface2 } as React.CSSProperties}>
+      <header className="border-b bg-card/80 px-4 py-4 backdrop-blur sm:px-6" style={{ borderColor: tokens.colors.border }}>
         <div className="mx-auto flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            {logoUrl && <Image src={logoUrl} alt={salon.name} width={32} height={32} className="mb-2 h-8 w-auto object-contain" />}
+            {effectiveBranding.logoUrl && <Image src={effectiveBranding.logoUrl} alt={salon.name} width={32} height={32} className="mb-2 h-8 w-auto object-contain" />}
             <h1 className="text-lg font-semibold tracking-tight">{salon.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <p className="text-xs text-muted-foreground">{t.headerSubtitle}</p>
               <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-amber-800">{t.payInSalonBadge}</span>
+              {effectiveBranding.plan === "starter" && (
+                <span className="rounded-full border px-2 py-0.5 text-xs font-medium uppercase tracking-wide" style={{ borderColor: tokens.colors.border, color: tokens.colors.mutedText }}>
+                  Locked
+                </span>
+              )}
             </div>
           </div>
           <div className="mt-2 flex items-center gap-2 text-xs sm:mt-0">
@@ -102,7 +107,7 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
               <label className="font-medium" htmlFor="preview-date">{t.dateLabel}</label>
               <Input id="preview-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
-            <Button type="submit" className="w-full" disabled={!canLoadSlots} style={styledButton} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${primaryColor}dd`; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}>{t.loadSlots}</Button>
+            <Button type="submit" className="w-full" disabled={!canLoadSlots} style={styledButton}>{t.loadSlots}</Button>
           </form>
           <div className="space-y-2 text-sm">
             <label className="font-medium" htmlFor="preview-slot">{t.step2Label}</label>
@@ -128,7 +133,7 @@ export function BookingPreview({ salonSlug, theme }: BookingPreviewProps) {
               <label className="font-medium" htmlFor="preview-customer_phone">{t.phoneLabel}</label>
               <Input id="preview-customer_phone" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={t.phonePlaceholder} />
             </div>
-            <Button type="submit" className="mt-1 w-full" disabled={!customerName} style={styledButton} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${primaryColor}dd`; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = primaryColor; }}>{t.submitLabel}</Button>
+            <Button type="submit" className="mt-1 w-full" disabled={!customerName} style={styledButton}>{t.submitLabel}</Button>
           </form>
           <p className="text-xs text-muted-foreground">{t.payInfo}</p>
         </section>

@@ -15,6 +15,38 @@ export type SalonTheme = {
   presets?: string[];
 };
 
+export type ThemePackSnapshot = {
+  id: string;
+  version: number;
+  hash: string;
+  tokens: {
+    primaryColor: string;
+    secondaryColor: string;
+    fontFamily: string;
+    radiusScale: "standard" | "rounded";
+    shadowScale: "soft" | "medium";
+    headerVariant: "standard" | "compact";
+    motionPreset: "standard" | "calm";
+  };
+};
+
+export type ThemeOverrides = {
+  logoUrl?: string;
+  colors?: {
+    primary?: string;
+    secondary?: string;
+  };
+  typography?: {
+    fontFamily?: string;
+  };
+  components?: {
+    headerVariant?: "standard" | "compact";
+  };
+  radiusScale?: "standard" | "rounded";
+  shadowScale?: "soft" | "medium";
+  motionPreset?: "standard" | "calm";
+};
+
 export type Salon = {
   id: string;
   name: string;
@@ -28,6 +60,11 @@ export type Salon = {
   timezone?: string | null; // IANA timezone identifier (e.g., "Europe/Oslo")
   currency?: string | null; // ISO 4217 currency code (e.g. "NOK", "USD", "EUR")
   theme?: SalonTheme | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: ThemePackSnapshot | null;
+  theme_overrides?: ThemeOverrides | null;
   plan?: "starter" | "pro" | "business" | null;
   // Billing fields (for future Stripe integration)
   billing_customer_id?: string | null;
@@ -56,7 +93,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -87,7 +124,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -165,6 +202,11 @@ export async function updateSalon(
     timezone?: string | null;
     currency?: string | null;
     theme?: SalonTheme | null;
+    theme_pack_id?: string | null;
+    theme_pack_version?: number | null;
+    theme_pack_hash?: string | null;
+    theme_pack_snapshot?: ThemePackSnapshot | null;
+    theme_overrides?: ThemeOverrides | null;
     business_address?: string | null;
     org_number?: string | null;
     cancellation_hours?: number | null;

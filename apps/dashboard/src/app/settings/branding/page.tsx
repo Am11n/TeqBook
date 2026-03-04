@@ -7,7 +7,6 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useBranding } from "@/lib/hooks/branding/useBranding";
 import { LivePreviewCard } from "@/components/branding/LivePreviewCard";
 import { BrandingForm } from "@/components/branding/BrandingForm";
-import { FeatureGate } from "@/components/feature-gate";
 
 export default function BrandingSettingsPage() {
   const { locale } = useLocale();
@@ -16,9 +15,9 @@ export default function BrandingSettingsPage() {
   const t = translations[appLocale].settings;
 
   const branding = useBranding();
+  const isStarterPlan = (salon?.plan || "starter") === "starter";
 
   return (
-    <FeatureGate feature="BRANDING" wrapInShell={false}>
     <div className="space-y-6">
       {branding.showPreview && (
         <LivePreviewCard
@@ -44,6 +43,10 @@ export default function BrandingSettingsPage() {
         setLogoUrl={branding.setLogoUrl}
         logoPreview={branding.logoPreview}
         setLogoPreview={branding.setLogoPreview}
+        themePackId={branding.themePackId}
+        setThemePackId={branding.setThemePackId}
+        themePacks={branding.themePacks}
+        isStarterPlan={isStarterPlan}
         uploadingLogo={branding.uploadingLogo}
         fileInputRef={branding.fileInputRef}
         presets={branding.presets}
@@ -64,6 +67,5 @@ export default function BrandingSettingsPage() {
         }}
       />
     </div>
-    </FeatureGate>
   );
 }

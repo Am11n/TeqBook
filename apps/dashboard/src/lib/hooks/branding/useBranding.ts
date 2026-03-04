@@ -3,6 +3,13 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { updateSalon } from "@/lib/services/salons-service";
 import { uploadLogo } from "@/lib/services/storage-service";
 import { BRANDING_PRESETS, type BrandingPreset } from "@/lib/utils/branding/branding-utils";
+import {
+  THEME_PACKS,
+  createThemePackSnapshot,
+  findThemePackById,
+  sanitizeLogoUrl,
+  validateThemeOverrides,
+} from "@teqbook/shared/branding";
 
 export function useBranding() {
   const { salon, refreshSalon } = useCurrentSalon();
@@ -20,6 +27,7 @@ export function useBranding() {
   const [fontFamily, setFontFamily] = useState("Inter");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [themePackId, setThemePackId] = useState(THEME_PACKS[0]?.id || "");
 
   // Load existing branding settings
   useEffect(() => {
@@ -29,6 +37,7 @@ export function useBranding() {
       setFontFamily(salon.theme?.font || "Inter");
       setLogoUrl(salon.theme?.logo_url || "");
       setLogoPreview(salon.theme?.logo_url || null);
+      setThemePackId(salon.theme_pack_id || THEME_PACKS[0]?.id || "");
     }
   }, [salon]);
 
@@ -71,18 +80,60 @@ export function useBranding() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!salon?.id) return;
+    if (salon.plan === "starter") {
+      setError("Upgrade to Pro or Business to customize branding.");
+      return;
+    }
 
     setSaving(true);
     setError(null);
     setSaved(false);
 
     try {
+      const selectedPack = findThemePackById(themePackId) || THEME_PACKS[0] || null;
+      if (!selectedPack) {
+        setError("No theme packs available.");
+        setSaving(false);
+        return;
+      }
+
+      const validatedLogoUrl = logoUrl.trim().length === 0 ? undefined : sanitizeLogoUrl(logoUrl);
+      if (logoUrl.trim().length > 0 && !validatedLogoUrl) {
+        setError("Logo URL must be a valid https URL.");
+        setSaving(false);
+        return;
+      }
+
+      const overrides = {
+        logoUrl: validatedLogoUrl,
+        colors: {
+          primary: primaryColor,
+          secondary: secondaryColor,
+        },
+        typography: {
+          fontFamily,
+        },
+      };
+
+      const overrideValidation = validateThemeOverrides(salon.plan === "business" ? "business" : "pro", overrides);
+      if (!overrideValidation.ok) {
+        setError(overrideValidation.issues?.join(" ") || "Invalid branding overrides.");
+        setSaving(false);
+        return;
+      }
+
+      const snapshot = createThemePackSnapshot(selectedPack);
       const { error: updateError } = await updateSalon(salon.id, {
+        theme_pack_id: selectedPack.id,
+        theme_pack_version: snapshot?.version || selectedPack.version,
+        theme_pack_hash: snapshot?.hash || null,
+        theme_pack_snapshot: snapshot,
+        theme_overrides: overrideValidation.value || {},
         theme: {
           primary: primaryColor,
           secondary: secondaryColor,
           font: fontFamily,
-          logo_url: logoUrl || undefined,
+          logo_url: validatedLogoUrl || undefined,
         },
       });
 
@@ -120,11 +171,14 @@ export function useBranding() {
     setLogoUrl,
     logoPreview,
     setLogoPreview,
+    themePackId,
+    setThemePackId,
     applyPreset,
     handleLogoUpload,
     handleSubmit,
     setError,
     presets: BRANDING_PRESETS,
+    themePacks: THEME_PACKS,
   };
 }
 

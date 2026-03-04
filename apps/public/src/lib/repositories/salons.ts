@@ -27,6 +27,11 @@ export type Salon = {
   default_language?: string | null;
   timezone?: string | null; // IANA timezone identifier (e.g., "Europe/Oslo")
   theme?: SalonTheme | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: Record<string, unknown> | null;
+  theme_overrides?: Record<string, unknown> | null;
   plan?: "starter" | "pro" | "business" | null;
   // Billing fields (for future Stripe integration)
   billing_customer_id?: string | null;
@@ -50,7 +55,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, time_format")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -81,7 +86,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, time_format")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -156,6 +161,11 @@ export async function updateSalon(
     default_language?: string | null;
     timezone?: string | null;
     theme?: SalonTheme | null;
+    theme_pack_id?: string | null;
+    theme_pack_version?: number | null;
+    theme_pack_hash?: string | null;
+    theme_pack_snapshot?: Record<string, unknown> | null;
+    theme_overrides?: Record<string, unknown> | null;
   }
 ): Promise<{ error: string | null }> {
   try {

@@ -199,6 +199,11 @@ export type Salon = {
     logo_url?: string;
     presets?: string[];
   } | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: Record<string, unknown> | null;
+  theme_overrides?: Record<string, unknown> | null;
   plan?: PlanType | null;
   billing_customer_id?: string | null;
   billing_subscription_id?: string | null;
