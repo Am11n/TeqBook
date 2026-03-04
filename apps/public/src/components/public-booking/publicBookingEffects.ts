@@ -68,6 +68,11 @@ async function resolveInitialBookingData(
           headerVariant: salonData.theme.headerVariant,
         }
       : null,
+    theme_pack_id: salonData.theme_pack_id || null,
+    theme_pack_version: salonData.theme_pack_version || null,
+    theme_pack_hash: salonData.theme_pack_hash || null,
+    theme_pack_snapshot: salonData.theme_pack_snapshot || null,
+    theme_overrides: salonData.theme_overrides || null,
   };
 
   const servicesData = payload?.services ?? [];

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     const { data: salon, error: salonError } = await supabase
       .from("salons")
-      .select("id, name, plan, whatsapp_number, supported_languages, default_language, preferred_language, timezone, theme")
+      .select("id, name, plan, whatsapp_number, supported_languages, default_language, preferred_language, timezone, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
