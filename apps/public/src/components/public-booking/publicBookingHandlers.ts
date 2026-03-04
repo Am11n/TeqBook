@@ -26,14 +26,21 @@ export async function loadSlots(params: {
   date: string;
   employees?: Employee[];
   maxEmployeesToCheck?: number;
+  signal?: AbortSignal;
 }): Promise<{
   data: { slot_start: string; slot_end: string; employee_id?: string; employee_name?: string }[] | null;
   error: string | null;
   checkedEmployeeIds: string[];
 }> {
-  const { salonId, employeeId, serviceId, date, employees = [], maxEmployeesToCheck = Number.POSITIVE_INFINITY } = params;
+  const { salonId, employeeId, serviceId, date, employees = [], maxEmployeesToCheck = Number.POSITIVE_INFINITY, signal } = params;
+  if (signal?.aborted) {
+    return { data: null, error: null, checkedEmployeeIds: [] };
+  }
   if (employeeId) {
     const { data, error } = await getAvailableTimeSlots(salonId, employeeId, serviceId, date);
+    if (signal?.aborted) {
+      return { data: null, error: null, checkedEmployeeIds: [employeeId] };
+    }
     const decorated = (data ?? []).map((slot) => ({
       ...slot,
       employee_id: employeeId,
@@ -51,8 +58,10 @@ export async function loadSlots(params: {
 
   // Query each employee sequentially to avoid partial/stale multi-RPC results in Any-employee mode.
   for (const employee of employeeCandidates) {
+    if (signal?.aborted) break;
     checkedEmployeeIds.push(employee.id);
     const { data, error } = await getAvailableTimeSlots(salonId, employee.id, serviceId, date);
+    if (signal?.aborted) break;
     if (error || !data) {
       results.push({ slots: [], error });
       continue;

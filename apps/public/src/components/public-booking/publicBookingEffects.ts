@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { AppLocale } from "@/i18n/translations";
-import { isValidIsoDate } from "./publicBookingUtils";
+import { getLocalIsoDate, isValidIsoDate } from "./publicBookingUtils";
 import { trackPublicEvent } from "./publicBookingTelemetry";
+import { ANY_EMPLOYEE_VALUE } from "./types";
 import type { Employee, Salon, Service } from "./types";
 
 function resolveInitialLocale(salon: Salon): AppLocale | null {
@@ -208,11 +209,14 @@ export function useQueryPrefill(params: {
     const employeeParam = searchParams.get("employeeId");
     if (employeeParam && employees.some((employee) => employee.id === employeeParam)) {
       setEmployeeId(employeeParam);
+    } else if (employeeParam && employees.length > 0) {
+      setEmployeeId(ANY_EMPLOYEE_VALUE);
     }
 
     const dateParam = searchParams.get("date");
     if (isValidIsoDate(dateParam)) {
-      setDate(dateParam);
+      const today = getLocalIsoDate();
+      setDate(dateParam < today ? today : dateParam);
     }
 
     markApplied();
