@@ -8,10 +8,16 @@ export type Salon = {
   timezone?: string | null;
   theme?: {
     primary?: string;
+    secondary?: string;
     font?: string;
     logo_url?: string;
     headerVariant?: "standard" | "compact";
   } | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: Record<string, unknown> | null;
+  theme_overrides?: Record<string, unknown> | null;
 };
 
 export function createDateFormatter(timezone: string, locale: string) {

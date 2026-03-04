@@ -52,6 +52,11 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           whatsapp_number: salonData.whatsapp_number || null,
           timezone: salonData.timezone || null,
           theme: salonData.theme || null,
+          theme_pack_id: salonData.theme_pack_id || null,
+          theme_pack_version: salonData.theme_pack_version || null,
+          theme_pack_hash: salonData.theme_pack_hash || null,
+          theme_pack_snapshot: salonData.theme_pack_snapshot || null,
+          theme_overrides: salonData.theme_overrides || null,
         });
 
         const confirmationResponse = await fetch(
