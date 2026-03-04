@@ -124,29 +124,17 @@ export function BookingSelectionSection({
     return sortedServices.filter((service) => service.name.toLowerCase().includes(debouncedServiceSearch));
   }, [debouncedServiceSearch, sortedServices]);
 
-  const renderedSlots = useMemo(() => {
-    const seen = new Map<string, number>();
-    return slots.map((slot) => {
-      const fallbackBaseId = `${slot.employeeId}|${slot.start}|${slot.end}`;
-      const baseId = slot.id?.trim() ? slot.id : fallbackBaseId;
-      const duplicateCount = seen.get(baseId) ?? 0;
-      seen.set(baseId, duplicateCount + 1);
-      const safeId = duplicateCount === 0 ? baseId : `${baseId}#${duplicateCount}`;
-      return safeId === slot.id ? slot : { ...slot, id: safeId };
-    });
-  }, [slots]);
-
   const groupedSlots = useMemo(() => {
     const groups: Record<GroupKey, Slot[]> = {
       morning: [],
       afternoon: [],
       evening: [],
     };
-    for (const slot of renderedSlots) {
+    for (const slot of slots) {
       groups[getGroupKey(slot)].push(slot);
     }
     return groups;
-  }, [renderedSlots]);
+  }, [slots]);
 
   const groupedOrder: GroupKey[] = ["morning", "afternoon", "evening"];
   const groupedLabels: Record<GroupKey, string> = {
@@ -160,7 +148,7 @@ export function BookingSelectionSection({
         .replace("{employee}", selectedEmployeeName)
     : null;
 
-  const recommendedSlotId = renderedSlots[0]?.id || "";
+  const recommendedSlotId = slots[0]?.id || "";
   const localToday = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -340,7 +328,7 @@ export function BookingSelectionSection({
           </div>
         )}
 
-        {canShowStep2 && !loadingSlots && renderedSlots.length > 0 && (
+        {canShowStep2 && !loadingSlots && slots.length > 0 && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -390,7 +378,7 @@ export function BookingSelectionSection({
           </div>
         )}
 
-        {canShowStep2 && !loadingSlots && renderedSlots.length === 0 && (
+        {canShowStep2 && !loadingSlots && slots.length === 0 && (
           <div
             className="rounded-[var(--pb-radius-md)] border p-3 text-sm"
             style={{
