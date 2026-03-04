@@ -9,7 +9,7 @@
     "start": "next start -p 3001",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --max-warnings 9999 && npm run lint:booking-token-gate",
-    "lint:booking-token-gate": "sh -c 'if rg -n --glob \"*.tsx\" \"#[0-9a-fA-F]{3,8}\" src/components/public-booking; then echo \"Inline hex colors are not allowed in public-booking TSX components.\"; exit 1; fi'",
+    "lint:booking-token-gate": "node -e \"const fs=require('fs');const path=require('path');const root='src/components/public-booking';const files=[];const walk=(dir)=>{for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,entry.name);if(entry.isDirectory()) walk(full);else if(full.endsWith('.tsx')) files.push(full);}};walk(root);const re=/#(?:[0-9a-fA-F]{3,8})\\b/g;const bad=[];for(const file of files){const content=fs.readFileSync(file,'utf8');if(re.test(content)) bad.push(file);re.lastIndex=0;}if(bad.length){console.error('Inline hex colors are not allowed in public-booking TSX components.');console.error(bad.join('\\n'));process.exit(1);}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "test": "vitest",
     "test:run": "vitest --run"
