@@ -20,15 +20,47 @@ export type Salon = {
     logo_url?: string;
     headerVariant?: "standard" | "compact";
   } | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: {
+    id?: string;
+    version?: number;
+    hash?: string;
+    tokens?: {
+      primaryColor?: string;
+      secondaryColor?: string;
+      fontFamily?: string;
+      radiusScale?: "standard" | "rounded";
+      shadowScale?: "soft" | "medium";
+      headerVariant?: "standard" | "compact";
+      motionPreset?: "standard" | "calm";
+    };
+  } | null;
+  theme_overrides?: {
+    logoUrl?: string;
+    colors?: { primary?: string; secondary?: string };
+    typography?: { fontFamily?: string };
+    components?: { headerVariant?: "standard" | "compact" };
+    radiusScale?: "standard" | "rounded";
+    shadowScale?: "soft" | "medium";
+    motionPreset?: "standard" | "calm";
+  } | null;
 };
 
-export type PublicBrandingSource = "teqbook-default" | "salon-theme";
+export type PublicBrandingSource =
+  | "teqbook-default"
+  | "theme-pack-snapshot"
+  | "theme-pack-library"
+  | "legacy-theme"
+  | "pro-neutral-default";
 
 export type PublicBookingEffectiveBranding = {
   plan: "starter" | "pro" | "business";
   source: PublicBrandingSource;
   logoUrl: string;
   primaryColor: string;
+  secondaryColor: string;
   fontFamily: string;
   headerVariant: "standard" | "compact";
 };
