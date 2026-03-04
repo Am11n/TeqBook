@@ -1,5 +1,10 @@
 import type { AppLocale } from "@/i18n/translations";
 import type { PublicBookingEffectiveBranding, PublicBookingTokens, Salon, Slot } from "./types";
+import {
+  TEQBOOK_LOGO,
+  buildPublicBookingTokens as buildSharedPublicBookingTokens,
+  resolveEffectiveBranding,
+} from "@teqbook/shared/branding";
 
 type RawAvailableSlot = {
   slot_start: string;
@@ -8,203 +13,56 @@ type RawAvailableSlot = {
   employee_name?: string;
 };
 
-const TEQBOOK_PRIMARY = "#2563eb";
-const TEQBOOK_FONT = "Inter, system-ui, -apple-system, Segoe UI, sans-serif";
-const TEQBOOK_LOGO = "/Favikon.svg";
-const TEQBOOK_HEADER_VARIANT = "standard" as const;
-const PRIMARY_TEXT_LIGHT = "#ffffff";
-const PRIMARY_TEXT_DARK = "#101828";
-
-type Rgb = { r: number; g: number; b: number };
-
-function normalizeHexColor(input?: string | null): string | null {
-  if (!input) return null;
-  const trimmed = input.trim();
-  const fullHex = /^#([a-fA-F0-9]{6})$/;
-  const shortHex = /^#([a-fA-F0-9]{3})$/;
-
-  if (fullHex.test(trimmed)) return trimmed.toLowerCase();
-
-  const shortMatch = trimmed.match(shortHex);
-  if (!shortMatch) return null;
-  const [r, g, b] = shortMatch[1].split("");
-  return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-}
-
-function hexToRgb(hex: string): Rgb {
-  return {
-    r: Number.parseInt(hex.slice(1, 3), 16),
-    g: Number.parseInt(hex.slice(3, 5), 16),
-    b: Number.parseInt(hex.slice(5, 7), 16),
-  };
-}
-
-function rgba(hex: string, alpha: number): string {
-  const rgb = hexToRgb(hex);
-  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
-}
-
-function channelToLinear(channel: number): number {
-  const value = channel / 255;
-  return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-function luminance(hex: string): number {
-  const { r, g, b } = hexToRgb(hex);
-  const [lr, lg, lb] = [channelToLinear(r), channelToLinear(g), channelToLinear(b)];
-  return (0.2126 * lr) + (0.7152 * lg) + (0.0722 * lb);
-}
-
-function contrastRatio(a: string, b: string): number {
-  const light = Math.max(luminance(a), luminance(b));
-  const dark = Math.min(luminance(a), luminance(b));
-  return (light + 0.05) / (dark + 0.05);
-}
-
-function mix(hex: string, baseHex: string, weight: number): string {
-  const rgb = hexToRgb(hex);
-  const base = hexToRgb(baseHex);
-  const ratio = Math.max(0, Math.min(1, weight));
-  const mixChannel = (a: number, b: number) => Math.round((a * (1 - ratio)) + (b * ratio));
-
-  const toHex = (value: number) => value.toString(16).padStart(2, "0");
-  return `#${toHex(mixChannel(rgb.r, base.r))}${toHex(mixChannel(rgb.g, base.g))}${toHex(mixChannel(rgb.b, base.b))}`;
-}
-
-function darken(hex: string, amount = 0.12): string {
-  return mix(hex, "#000000", amount);
-}
-
-function pickPrimaryTextColor(primaryHex: string): string {
-  const lightContrast = contrastRatio(primaryHex, PRIMARY_TEXT_LIGHT);
-  const darkContrast = contrastRatio(primaryHex, PRIMARY_TEXT_DARK);
-  return lightContrast >= darkContrast ? PRIMARY_TEXT_LIGHT : PRIMARY_TEXT_DARK;
-}
-
-function isAccessiblePrimary(primaryHex: string, surfaceHex: string): boolean {
-  const primaryText = pickPrimaryTextColor(primaryHex);
-  const contrastWithText = contrastRatio(primaryHex, primaryText);
-  const contrastWithSurface = contrastRatio(primaryHex, surfaceHex);
-  return contrastWithText >= 4.5 && contrastWithSurface >= 3;
-}
-
-function resolvePlan(plan?: Salon["plan"]): "starter" | "pro" | "business" {
-  if (plan === "pro" || plan === "business") return plan;
-  return "starter";
-}
-
 export function computeEffectiveBranding(salon: Salon): PublicBookingEffectiveBranding {
-  const plan = resolvePlan(salon.plan);
-
-  if (plan === "starter") {
-    return {
-      plan,
-      source: "teqbook-default",
-      logoUrl: TEQBOOK_LOGO,
-      primaryColor: TEQBOOK_PRIMARY,
-      fontFamily: TEQBOOK_FONT,
-      headerVariant: TEQBOOK_HEADER_VARIANT,
-    };
-  }
-
-  const theme = salon.theme ?? null;
-  const maybePrimary = normalizeHexColor(theme?.primary ?? null);
-  const primaryColor = maybePrimary && isAccessiblePrimary(maybePrimary, "#ffffff")
-    ? maybePrimary
-    : TEQBOOK_PRIMARY;
-
-  const logoUrl = theme?.logo_url?.trim() || TEQBOOK_LOGO;
-  const fontFamily = theme?.font?.trim() || TEQBOOK_FONT;
-  const headerVariant = theme?.headerVariant === "compact" ? "compact" : TEQBOOK_HEADER_VARIANT;
-
-  const hasMissingBranding = !theme?.logo_url || !theme?.primary || !theme?.font;
-  const wasColorAdjusted = primaryColor !== maybePrimary;
-
-  if (process.env.NODE_ENV !== "production" && (hasMissingBranding || wasColorAdjusted)) {
-    const reasons: string[] = [];
-    if (hasMissingBranding) reasons.push("missing_logo_or_primary_or_font");
-    if (wasColorAdjusted) reasons.push("inaccessible_primary_fallback");
-    console.warn(`[public-booking] Pro/Business branding fallback for salon "${salon.id}" (${reasons.join(", ")}).`);
-  }
+  const resolved = resolveEffectiveBranding({
+    plan: salon.plan,
+    theme_pack_id: salon.theme_pack_id,
+    theme_pack_version: salon.theme_pack_version,
+    theme_pack_hash: salon.theme_pack_hash,
+    theme_pack_snapshot: salon.theme_pack_snapshot
+      ? {
+          id: salon.theme_pack_snapshot.id || salon.theme_pack_id || "unknown-pack",
+          version: salon.theme_pack_snapshot.version || salon.theme_pack_version || 1,
+          hash: salon.theme_pack_snapshot.hash || salon.theme_pack_hash || "unknown-hash",
+          tokens: {
+            primaryColor: salon.theme_pack_snapshot.tokens?.primaryColor || "#2563eb",
+            secondaryColor: salon.theme_pack_snapshot.tokens?.secondaryColor || "#dbeafe",
+            fontFamily: salon.theme_pack_snapshot.tokens?.fontFamily || "Inter",
+            radiusScale: salon.theme_pack_snapshot.tokens?.radiusScale || "standard",
+            shadowScale: salon.theme_pack_snapshot.tokens?.shadowScale || "soft",
+            headerVariant: salon.theme_pack_snapshot.tokens?.headerVariant || "standard",
+            motionPreset: salon.theme_pack_snapshot.tokens?.motionPreset || "standard",
+          },
+        }
+      : null,
+    theme_overrides: salon.theme_overrides || null,
+    theme: salon.theme || null,
+  });
 
   return {
-    plan,
-    source: "salon-theme",
-    logoUrl,
-    primaryColor,
-    fontFamily,
-    headerVariant,
+    plan: resolved.plan,
+    source: resolved.source,
+    logoUrl: resolved.logoUrl || TEQBOOK_LOGO,
+    primaryColor: resolved.primaryColor,
+    secondaryColor: resolved.secondaryColor,
+    fontFamily: resolved.fontFamily,
+    headerVariant: resolved.headerVariant,
   };
 }
 
 export function buildPublicBookingTokens(branding: PublicBookingEffectiveBranding): PublicBookingTokens {
-  const primary = branding.primaryColor;
-  const primaryText = pickPrimaryTextColor(primary);
-  const primaryHover = darken(primary, 0.14);
-  const focusColor = rgba(primary, 0.35);
-
-  return {
-    colors: {
-      primary,
-      primaryHover,
-      primaryText,
-      text: "#0f172a",
-      surface: "#ffffff",
-      surface2: "#f8f9fb",
-      border: "#e2e8f0",
-      mutedText: "#64748b",
-      successBg: "#ecfdf3",
-      successText: "#166534",
-      errorBg: "#fef2f2",
-      errorText: "#b91c1c",
-      warningBg: "#fff7ed",
-      warningText: "#c2410c",
-    },
-    typography: {
-      fontFamily: branding.fontFamily,
-      fontSizeScale: {
-        xs: "0.75rem",
-        sm: "0.875rem",
-        base: "1rem",
-        lg: "1.125rem",
-        xl: "1.5rem",
-      },
-      fontWeight: {
-        regular: 400,
-        medium: 500,
-        semibold: 600,
-      },
-    },
-    radius: {
-      sm: "0.5rem",
-      md: "0.75rem",
-      lg: "1rem",
-    },
-    shadow: {
-      level1: "0 8px 24px rgba(16,24,40,0.06)",
-      level2: "0 16px 34px rgba(16,24,40,0.08)",
-      card: "0 8px 24px rgba(16,24,40,0.06)",
-      focus: `0 0 0 3px ${focusColor}`,
-    },
-    spacing: {
-      xs: "0.25rem",
-      sm: "0.5rem",
-      md: "0.75rem",
-      lg: "1rem",
-      xl: "1.5rem",
-    },
-    focusRing: {
-      color: focusColor,
-      width: "3px",
-    },
-    motion: {
-      durationFast: "120ms",
-      durationStandard: "170ms",
-      easeOut: "cubic-bezier(0, 0, 0.2, 1)",
-      easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
-      ctaReadyPulse: "pb-ready-pulse 1400ms ease-in-out infinite",
-    },
-  };
+  return buildSharedPublicBookingTokens({
+    plan: branding.plan,
+    source: branding.source,
+    logoUrl: branding.logoUrl,
+    primaryColor: branding.primaryColor,
+    secondaryColor: branding.secondaryColor,
+    fontFamily: branding.fontFamily,
+    headerVariant: branding.headerVariant,
+    radiusScale: "standard",
+    shadowScale: "soft",
+    motionPreset: "standard",
+  });
 }
 
 export function normalizePhone(raw: string): string {

@@ -63,6 +63,9 @@ export type PublicBookingEffectiveBranding = {
   secondaryColor: string;
   fontFamily: string;
   headerVariant: "standard" | "compact";
+  radiusScale: "standard" | "rounded";
+  shadowScale: "soft" | "medium";
+  motionPreset: "standard" | "calm";
 };
 
 export type PublicBookingTokens = {
