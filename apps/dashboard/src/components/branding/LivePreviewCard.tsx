@@ -3,7 +3,6 @@
 import { Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookingPreview } from "@/components/booking-preview";
 import type { Salon } from "@/lib/types";
 
 interface LivePreviewCardProps {
@@ -15,6 +14,22 @@ interface LivePreviewCardProps {
     logo_url?: string;
   };
   onHide: () => void;
+}
+
+function buildPublicBookingPreviewUrl(salonSlug: string): string {
+  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configuredAppUrl) {
+    return `${configuredAppUrl.replace(/\/$/, "")}/book/${salonSlug}?preview=true`;
+  }
+
+  if (typeof window !== "undefined") {
+    const current = new URL(window.location.href);
+    // Local dev: dashboard runs on :3002 while public runs on :3001.
+    if (current.port === "3002") current.port = "3001";
+    return `${current.origin}/book/${salonSlug}?preview=true`;
+  }
+
+  return `/book/${salonSlug}?preview=true`;
 }
 
 export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) {
@@ -32,6 +47,8 @@ export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) 
       </Card>
     );
   }
+
+  const previewUrl = buildPublicBookingPreviewUrl(salon.slug);
 
   return (
     <Card className="p-6">
@@ -53,12 +70,18 @@ export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) 
         </Button>
       </div>
       <div className="border rounded-lg overflow-hidden bg-muted/50">
-        <BookingPreview salonSlug={salon.slug} theme={theme} />
+        <iframe
+          title="Public booking live preview"
+          src={previewUrl}
+          className="h-[820px] w-full bg-background"
+        />
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-        <span>Draft preview (unsaved). Live page only reflects persisted settings.</span>
+        <span>
+          This preview renders the real public booking page. Save changes to refresh branding here.
+        </span>
         <a
-          href={`/book/${salon.slug}?preview=true`}
+          href={previewUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
