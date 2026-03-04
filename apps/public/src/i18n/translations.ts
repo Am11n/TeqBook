@@ -106,6 +106,8 @@ export type PublicBookingMessages = {
   nextAvailableToday?: string;
   joinWaitlist?: string;
   mobileChangeSelectionLabel?: string;
+  nameRequiredHint?: string;
+  contactRequiredHint?: string;
 };
 
 export type LoginMessages = {

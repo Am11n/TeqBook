@@ -64,11 +64,13 @@ export function BookingCustomerSection({
 }: BookingCustomerSectionProps) {
   const isWaitlistMode = mode === "waitlist";
   const isPrimaryStep = activeStep === 3;
+  const hasName = customerName.trim().length > 0;
+  const hasContact = customerEmail.trim().length > 0 || customerPhone.trim().length > 0;
 
   return (
     <section
       id="details-section"
-      className="space-y-4 rounded-2xl border p-4 shadow-sm"
+      className="space-y-4 rounded-[var(--pb-radius-md)] border p-4 shadow-sm"
       style={{
         backgroundColor: tokens.colors.surface,
         borderColor: tokens.colors.border,
@@ -133,6 +135,11 @@ export function BookingCustomerSection({
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_name">{t.nameLabel}</label>
           <Input id="customer_name" type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+          {!hasName ? (
+            <p className="text-xs text-[var(--pb-muted)]">
+              {t.nameRequiredHint || "Add your name to continue."}
+            </p>
+          ) : null}
         </div>
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_email">
@@ -146,6 +153,11 @@ export function BookingCustomerSection({
           </label>
           <Input id="customer_phone" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={t.phonePlaceholder} />
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
+          {!hasContact ? (
+            <p className="text-xs text-[var(--pb-muted)]">
+              {t.contactRequiredHint || "Add email or phone so we can confirm your booking."}
+            </p>
+          ) : null}
         </div>
         {waitlistContactError && (
           <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistContactError}</p>
