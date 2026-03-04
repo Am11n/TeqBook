@@ -72,6 +72,7 @@ export function usePublicBooking(slug: string) {
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
   const slotRequestIdRef = useRef(0);
+  const slotAbortControllerRef = useRef<AbortController | null>(null);
   const stepCompletedRef = useRef<Set<string>>(new Set());
   const pageStartRef = useRef<number>(Date.now());
   const ctaEnabledTrackedRef = useRef(false);
@@ -102,6 +103,14 @@ export function usePublicBooking(slug: string) {
     () => (employeeId === ANY_EMPLOYEE ? null : employeeId || null),
     [employeeId]
   );
+  const telemetryContext = useMemo(() => ({
+    salon_slug: slug,
+    plan: salon?.plan || "starter",
+    mode,
+    has_employee_selected: Boolean(selectedEmployeeForLoad),
+    service_count: services.length,
+    slot_count_shown: slots.length,
+  }), [mode, salon?.plan, selectedEmployeeForLoad, services.length, slots.length, slug]);
 
   useInitialBookingLoad({
     slug,
@@ -169,10 +178,14 @@ export function usePublicBooking(slug: string) {
     setEmployeeAvailability({});
 
     if (nextMode === "waitlist" && source === "direct") {
-      trackPublicEvent("waitlist_direct_opened", { slug });
+      trackPublicEvent("waitlist_direct_opened", telemetryContext);
     }
     if (nextMode === "waitlist" && source === "no-slots") {
-      trackPublicEvent("booking_flow_dropoff_hint", { slug, reason: "waitlist_opened" });
+      trackPublicEvent("booking_flow_dropoff_hint", {
+        ...telemetryContext,
+        step: "slot",
+        reason: "waitlist_opened",
+      });
     }
   }
 
@@ -185,6 +198,9 @@ export function usePublicBooking(slug: string) {
   const requestSlots = useCallback(async () => {
     if (!salon || !canLoadSlots) return;
     const currentRequestId = ++slotRequestIdRef.current;
+    slotAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    slotAbortControllerRef.current = abortController;
 
     setLoadingSlots(true);
     setError(null);
@@ -203,8 +219,10 @@ export function usePublicBooking(slug: string) {
       date,
       employees,
       maxEmployeesToCheck: selectedEmployeeForLoad ? 1 : employees.length,
+      signal: abortController.signal,
     });
 
+    if (abortController.signal.aborted) return;
     if (slotsError || !data) {
       if (currentRequestId !== slotRequestIdRef.current) return;
       setError(slotsError ?? t.loadError);
@@ -259,7 +277,13 @@ export function usePublicBooking(slug: string) {
     const submitSource = source ?? waitlistEntrySource;
     trackPublicEvent(
       submitSource === "no-slots" ? "waitlist_no_slots_submitted" : "waitlist_direct_submitted",
-      { slug, serviceId, employeeId: selectedEmployeeForLoad, date }
+      {
+        ...telemetryContext,
+        step: "details",
+        serviceId,
+        employeeId: selectedEmployeeForLoad,
+        date,
+      }
     );
 
     try {
@@ -458,31 +482,37 @@ export function usePublicBooking(slug: string) {
     for (const milestone of milestones) {
       if (!milestone.done || stepCompletedRef.current.has(milestone.key)) continue;
       stepCompletedRef.current.add(milestone.key);
-      trackPublicEvent("booking_flow_step_completed", { slug, step: milestone.key });
+      trackPublicEvent("booking_flow_step_completed", {
+        ...telemetryContext,
+        step: milestone.key,
+      });
     }
-  }, [customerEmail, customerName, customerPhone, date, selectedSlot, serviceId, slug]);
+  }, [customerEmail, customerName, customerPhone, date, selectedSlot, serviceId, telemetryContext]);
 
   useEffect(() => {
     const ctaEnabled = !!serviceId && !!date && !!selectedSlot;
     if (!ctaEnabled || ctaEnabledTrackedRef.current) return;
     ctaEnabledTrackedRef.current = true;
     trackPublicEvent("booking_cta_enabled_time", {
-      slug,
+      ...telemetryContext,
+      step: "details",
       elapsedMs: Date.now() - pageStartRef.current,
     });
-  }, [date, selectedSlot, serviceId, slug]);
+  }, [date, selectedSlot, serviceId, telemetryContext]);
 
   useEffect(() => {
     const onHidden = () => {
       if (document.visibilityState !== "hidden") return;
       trackPublicEvent("booking_flow_abandon", {
-        slug,
+        ...telemetryContext,
+        step: furthestStepRef.current,
         furthestStep: furthestStepRef.current,
       });
     };
     const onPageHide = () => {
       trackPublicEvent("booking_flow_abandon", {
-        slug,
+        ...telemetryContext,
+        step: furthestStepRef.current,
         furthestStep: furthestStepRef.current,
       });
     };
@@ -492,7 +522,13 @@ export function usePublicBooking(slug: string) {
       document.removeEventListener("visibilitychange", onHidden);
       window.removeEventListener("pagehide", onPageHide);
     };
-  }, [slug]);
+  }, [telemetryContext]);
+
+  useEffect(() => {
+    return () => {
+      slotAbortControllerRef.current?.abort();
+    };
+  }, []);
 
   return {
     salon, services, employees, loading, error, successMessage,

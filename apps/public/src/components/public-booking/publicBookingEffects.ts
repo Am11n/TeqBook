@@ -244,6 +244,9 @@ export function useNoSlotsTelemetry(params: {
   employeeId: string;
   date: string;
   slug: string;
+  plan: string;
+  hasEmployeeSelected: boolean;
+  serviceCount: number;
   lastKey: string | null;
   setLastKey: (value: string) => void;
 }) {
@@ -256,6 +259,9 @@ export function useNoSlotsTelemetry(params: {
     employeeId,
     date,
     slug,
+    plan,
+    hasEmployeeSelected,
+    serviceCount,
     lastKey,
     setLastKey,
   } = params;
@@ -269,7 +275,13 @@ export function useNoSlotsTelemetry(params: {
     setLastKey(key);
 
     trackPublicEvent("waitlist_no_slots_prompt_shown", {
-      slug,
+      salon_slug: slug,
+      plan,
+      mode,
+      step: "slot",
+      has_employee_selected: hasEmployeeSelected,
+      service_count: serviceCount,
+      slot_count_shown: slotCount,
       serviceId,
       employeeId: employeeId || null,
       date,
@@ -283,6 +295,9 @@ export function useNoSlotsTelemetry(params: {
     employeeId,
     date,
     slug,
+    plan,
+    hasEmployeeSelected,
+    serviceCount,
     lastKey,
     setLastKey,
   ]);
