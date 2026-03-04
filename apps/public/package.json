@@ -8,7 +8,8 @@
     "build:skip-typecheck": "next build",
     "start": "next start -p 3001",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --max-warnings 9999",
+    "lint": "eslint src --max-warnings 9999 && npm run lint:booking-token-gate",
+    "lint:booking-token-gate": "sh -c 'if rg -n --glob \"*.tsx\" \"#[0-9a-fA-F]{3,8}\" src/components/public-booking; then echo \"Inline hex colors are not allowed in public-booking TSX components.\"; exit 1; fi'",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "test": "vitest",
     "test:run": "vitest --run"
