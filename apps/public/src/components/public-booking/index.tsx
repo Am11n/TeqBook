@@ -197,6 +197,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               ctaLabel={summaryCtaLabel}
               disabled={!canSubmitBooking}
               onClick={() => {
+                if (canSubmitBooking && detailsReady && mode === "book") {
+                  const detailsForm = document.getElementById(DETAILS_FORM_ID) as HTMLFormElement | null;
+                  detailsForm?.requestSubmit();
+                  return;
+                }
                 if (!selectedSlot) {
                   scrollToSection("book-mode-panel");
                   return;
