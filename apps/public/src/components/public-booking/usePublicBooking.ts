@@ -67,7 +67,7 @@ export function usePublicBooking(slug: string) {
   const [waitlistContactError, setWaitlistContactError] = useState<string | null>(null);
   const [waitlistReceipt, setWaitlistReceipt] = useState<WaitlistReceipt | null>(null);
   const [employeeAvailability, setEmployeeAvailability] = useState<Record<string, "likely_available" | "no_times" | "unknown">>({});
-  const [employeeShiftWeekdays, setEmployeeShiftWeekdays] = useState<Record<string, number[]>>({});
+  const [, setEmployeeShiftWeekdays] = useState<Record<string, number[]>>({});
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
