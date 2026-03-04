@@ -93,6 +93,15 @@ const nextConfig: NextConfig = {
   // Security headers - stricter for public app (no auth cookies needed)
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
+    const dashboardAppUrl = process.env.DASHBOARD_APP_URL?.replace(/\/$/, "");
+    const frameAncestors = new Set<string>(["'self'"]);
+    if (isDevelopment) {
+      frameAncestors.add("http://localhost:3002");
+      frameAncestors.add("http://127.0.0.1:3002");
+    }
+    if (dashboardAppUrl) {
+      frameAncestors.add(dashboardAppUrl);
+    }
 
     const cspDirectives = [
       "default-src 'self'",
@@ -106,6 +115,7 @@ const nextConfig: NextConfig = {
         ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co"
         : "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       "frame-src 'self'",
+      `frame-ancestors ${Array.from(frameAncestors).join(" ")}`,
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -139,7 +149,8 @@ const nextConfig: NextConfig = {
     return [
       ...cacheHeaders,
       {
-        source: "/:path*",
+        // Booking pages must be embeddable in Dashboard branding preview iframe.
+        source: "/book/:path*",
         headers: [
           {
             key: "X-DNS-Prefetch-Control",
@@ -154,9 +165,42 @@ const nextConfig: NextConfig = {
               },
             ]),
           {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: cspDirectives.join("; "),
+          },
+        ],
+      },
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          ...(isDevelopment
+            ? []
+            : [
+              {
+                key: "Strict-Transport-Security",
+                value: "max-age=63072000; includeSubDomains; preload",
+              },
+            ]),
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
