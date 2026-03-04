@@ -47,6 +47,9 @@ export function computeEffectiveBranding(salon: Salon): PublicBookingEffectiveBr
     secondaryColor: resolved.secondaryColor,
     fontFamily: resolved.fontFamily,
     headerVariant: resolved.headerVariant,
+    radiusScale: resolved.radiusScale,
+    shadowScale: resolved.shadowScale,
+    motionPreset: resolved.motionPreset,
   };
 }
 
@@ -59,9 +62,9 @@ export function buildPublicBookingTokens(branding: PublicBookingEffectiveBrandin
     secondaryColor: branding.secondaryColor,
     fontFamily: branding.fontFamily,
     headerVariant: branding.headerVariant,
-    radiusScale: "standard",
-    shadowScale: "soft",
-    motionPreset: "standard",
+    radiusScale: branding.radiusScale,
+    shadowScale: branding.shadowScale,
+    motionPreset: branding.motionPreset,
   });
 }
 

@@ -1,19 +1,26 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useMemo, useState, FormEvent } from "react";
 import { getSalonBySlugForPublic } from "@/lib/services/salons-service";
 import { getActiveServicesForPublicBooking } from "@/lib/services/services-service";
 import { getActiveEmployeesForPublicBooking } from "@/lib/services/employees-service";
 import { useLocale } from "@/components/locale-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
+import { TEQBOOK_LOGO, buildPublicBookingTokens, resolveEffectiveBranding } from "@teqbook/shared/branding";
 
 export type Salon = {
   id: string;
   name: string;
+  plan?: "starter" | "pro" | "business" | null;
   whatsapp_number?: string | null;
   supported_languages?: string[] | null;
   default_language?: string | null;
   preferred_language?: string | null;
+  theme_pack_id?: string | null;
+  theme_pack_version?: number | null;
+  theme_pack_hash?: string | null;
+  theme_pack_snapshot?: Record<string, unknown> | null;
+  theme_overrides?: Record<string, unknown> | null;
   theme?: { primary?: string; secondary?: string; font?: string; logo_url?: string } | null;
 };
 
@@ -40,9 +47,50 @@ export function useBookingPreview(
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
 
-  const primaryColor = theme?.primary || salon?.theme?.primary || "#3b82f6";
-  const fontFamily = theme?.font || salon?.theme?.font || "Inter";
-  const logoUrl = theme?.logo_url || salon?.theme?.logo_url;
+  const effectiveBranding = useMemo(() => {
+    if (!salon) return null;
+    const resolved = resolveEffectiveBranding({
+      plan: salon.plan,
+      theme_pack_id: salon.theme_pack_id,
+      theme_pack_version: salon.theme_pack_version,
+      theme_pack_hash: salon.theme_pack_hash,
+      theme_pack_snapshot: (salon.theme_pack_snapshot as {
+        id: string;
+        version: number;
+        hash: string;
+        tokens: {
+          primaryColor: string;
+          secondaryColor: string;
+          fontFamily: string;
+          radiusScale: "standard" | "rounded";
+          shadowScale: "soft" | "medium";
+          headerVariant: "standard" | "compact";
+          motionPreset: "standard" | "calm";
+        };
+      } | null),
+      theme_overrides: {
+        logoUrl: theme?.logo_url,
+        colors: {
+          primary: theme?.primary,
+          secondary: theme?.secondary,
+        },
+        typography: {
+          fontFamily: theme?.font,
+        },
+      },
+      theme: salon.theme,
+    });
+
+    return {
+      ...resolved,
+      logoUrl: resolved.logoUrl || TEQBOOK_LOGO,
+    };
+  }, [salon, theme?.font, theme?.logo_url, theme?.primary, theme?.secondary]);
+
+  const tokens = useMemo(
+    () => (effectiveBranding ? buildPublicBookingTokens(effectiveBranding) : null),
+    [effectiveBranding]
+  );
 
   useEffect(() => {
     async function loadData() {
@@ -54,10 +102,16 @@ export function useBookingPreview(
 
         setSalon({
           id: salonData.id, name: salonData.name,
+          plan: salonData.plan || "starter",
           whatsapp_number: salonData.whatsapp_number || null,
           supported_languages: salonData.supported_languages || null,
           default_language: salonData.default_language || null,
           preferred_language: salonData.preferred_language || null,
+          theme_pack_id: salonData.theme_pack_id || null,
+          theme_pack_version: salonData.theme_pack_version || null,
+          theme_pack_hash: salonData.theme_pack_hash || null,
+          theme_pack_snapshot: salonData.theme_pack_snapshot || null,
+          theme_overrides: salonData.theme_overrides || null,
           theme: salonData.theme || null,
         });
 
@@ -93,7 +147,7 @@ export function useBookingPreview(
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, customerName, setCustomerName,
     customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
-    primaryColor, fontFamily, logoUrl, canLoadSlots,
+    effectiveBranding, tokens, canLoadSlots,
     handleLoadSlots, handleSubmitBooking,
   };
 }
