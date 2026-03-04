@@ -82,6 +82,10 @@ export const en: TranslationNamespaces = {
     morningLabel: "Morning",
     afternoonLabel: "Afternoon",
     eveningLabel: "Evening",
+    nextAvailable: "Next available",
+    nextAvailableToday: "Next available today",
+    joinWaitlist: "Join waitlist",
+    mobileChangeSelectionLabel: "Change selection",
     waitlistHowItWorks:
       "When a slot becomes available, we will send you a link by SMS or email.",
     waitlistResponseWindow: "You typically have 15 minutes to confirm.",

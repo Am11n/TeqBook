@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@teqbook/ui";
 import { EmptyState } from "@/components/empty-state";
 import { BookingHeader } from "./BookingHeader";
