@@ -76,7 +76,7 @@ export function BookingSummaryCard({
           {(t.nextLabel || "Next")}: {nextAction}
         </p>
         {readyLabel ? (
-          <p className="text-xs font-medium text-[var(--pb-primary)] transition-all duration-150">{readyLabel}</p>
+          <p className="text-xs font-medium text-[var(--pb-primary)] motion-safe:animate-[var(--pb-cta-ready-pulse)]">{readyLabel}</p>
         ) : null}
       </div>
 
@@ -109,7 +109,7 @@ export function BookingSummaryCard({
           type={shouldSubmit ? "submit" : "button"}
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
-          className="h-12 w-full text-sm font-semibold transition-all duration-150"
+          className="h-12 w-full text-sm font-semibold transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
           disabled={!canSubmitBooking}
           style={{
             backgroundColor: canSubmitBooking ? "var(--pb-primary)" : undefined,

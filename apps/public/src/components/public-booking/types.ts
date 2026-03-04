@@ -38,6 +38,7 @@ export type PublicBookingTokens = {
     primary: string;
     primaryHover: string;
     primaryText: string;
+    text: string;
     surface: string;
     surface2: string;
     border: string;
@@ -70,6 +71,8 @@ export type PublicBookingTokens = {
     lg: string;
   };
   shadow: {
+    level1: string;
+    level2: string;
     card: string;
     focus: string;
   };
@@ -83,6 +86,13 @@ export type PublicBookingTokens = {
   focusRing: {
     color: string;
     width: string;
+  };
+  motion: {
+    durationFast: string;
+    durationStandard: string;
+    easeOut: string;
+    easeInOut: string;
+    ctaReadyPulse: string;
   };
 };
 

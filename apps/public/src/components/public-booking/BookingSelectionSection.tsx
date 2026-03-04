@@ -161,6 +161,14 @@ export function BookingSelectionSection({
     : null;
 
   const recommendedSlotId = renderedSlots[0]?.id || "";
+  const localToday = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = `${now.getMonth() + 1}`.padStart(2, "0");
+    const day = `${now.getDate()}`.padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+  const isToday = date === localToday;
   const canCompleteService = Boolean(serviceId);
   const canCompleteDate = Boolean(serviceId && date);
 
@@ -198,6 +206,8 @@ export function BookingSelectionSection({
         isExpanded={sectionExpanded("service")}
         summary={selectedServiceName || undefined}
         onChange={() => updateSectionByInteraction("service")}
+        changeLabel={t.editService || "Change service"}
+        showInlineChange={isDesktop}
       >
         <div className="space-y-3">
           {shouldShowServiceSearch && (
@@ -255,6 +265,8 @@ export function BookingSelectionSection({
         isExpanded={sectionExpanded("date")}
         summary={date || undefined}
         onChange={() => updateSectionByInteraction("date")}
+        changeLabel={t.editDate || "Change date"}
+        showInlineChange={isDesktop}
       >
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2 text-sm">
@@ -341,7 +353,7 @@ export function BookingSelectionSection({
                   setSelectedSlot(recommendedSlotId);
                 }}
               >
-                Next available
+                {isToday ? (t.nextAvailableToday || "Next available today") : (t.nextAvailable || "Next available")}
               </Button>
             </div>
             {groupedOrder.map((groupKey) => {
@@ -403,7 +415,7 @@ export function BookingSelectionSection({
                   void handleRetryLoadSlots();
                 }}
               >
-                {t.tryAnotherDay || "Try tomorrow"}
+                {t.tryAnotherDay || "Try another day"}
               </Button>
               <Button
                 type="button"
@@ -423,7 +435,7 @@ export function BookingSelectionSection({
                 variant="outline"
                 onClick={() => handleModeChange("waitlist", "no-slots")}
               >
-                {t.modeWaitlist || "Notify me when available"}
+                {t.joinWaitlist || t.modeWaitlist || "Join waitlist"}
               </Button>
             </div>
           </div>

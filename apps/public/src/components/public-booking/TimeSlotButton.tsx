@@ -23,7 +23,7 @@ export function TimeSlotButton({
       role="radio"
       aria-checked={selected}
       onClick={() => onSelect(id)}
-      className="min-h-12 rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] hover:-translate-y-[1px]"
+      className="min-h-12 rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left outline-none transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] hover:-translate-y-[1px] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
       style={{
         borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
         backgroundColor: selected ? "var(--pb-primary)" : "var(--pb-surface)",

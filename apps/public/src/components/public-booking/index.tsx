@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@teqbook/ui";
 import { EmptyState } from "@/components/empty-state";
 import { BookingHeader } from "./BookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
@@ -44,6 +46,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     saving, locale, setLocale, t,
     handleModeChange, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots,
   } = usePublicBooking(slug);
+  const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
   const previousSlotRef = useRef(selectedSlot);
@@ -110,6 +113,13 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   }, [selectedSlot]);
 
   useEffect(() => {
+    if (!pageLoadedRef.current) return;
+    if (error && /no longer available/i.test(error)) {
+      scrollToSection("book-mode-panel");
+    }
+  }, [error]);
+
+  useEffect(() => {
     pageLoadedRef.current = true;
   }, []);
 
@@ -149,6 +159,17 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
           "radial-gradient(1200px 500px at 15% -10%, color-mix(in srgb, var(--pb-primary) 10%, transparent), transparent), var(--pb-bg)",
       }}
     >
+      <style jsx global>{`
+        @keyframes pb-ready-pulse {
+          0%,
+          100% {
+            opacity: 0.75;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+      `}</style>
       <BookingHeader
         salon={salon}
         mode={mode}
@@ -183,6 +204,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 }
                 scrollToSection("details-section");
               }}
+              onChangeClick={() => setMobileChangeOpen(true)}
+              changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
             />
           )}
           left={(
@@ -267,15 +290,57 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   }
                 }}
                 editActions={[
-                  { key: "service", label: t.editService || "Change", onClick: () => scrollToSection("service-section") },
-                  { key: "date", label: t.editDate || "Change", onClick: () => scrollToSection("date-section") },
-                  { key: "time", label: t.editTime || "Change", onClick: () => scrollToSection("book-mode-panel") },
+                  { key: "service", label: t.editService || "Change service", onClick: () => scrollToSection("service-section") },
+                  { key: "date", label: t.editDate || "Change date", onClick: () => scrollToSection("date-section") },
+                  { key: "time", label: t.editTime || "Change time", onClick: () => scrollToSection("book-mode-panel") },
                 ]}
               />
             </div>
           )}
         />
       </main>
+      <Dialog open={mobileChangeOpen} onOpenChange={setMobileChangeOpen}>
+        <DialogContent className="max-w-md lg:hidden">
+          <DialogHeader>
+            <DialogTitle>{t.mobileChangeSelectionLabel || "Change selection"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <button
+              type="button"
+              className="w-full rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left text-sm"
+              style={{ borderColor: "var(--pb-border)" }}
+              onClick={() => {
+                setMobileChangeOpen(false);
+                scrollToSection("service-section");
+              }}
+            >
+              {t.editService || "Change service"}
+            </button>
+            <button
+              type="button"
+              className="w-full rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left text-sm"
+              style={{ borderColor: "var(--pb-border)" }}
+              onClick={() => {
+                setMobileChangeOpen(false);
+                scrollToSection("date-section");
+              }}
+            >
+              {t.editDate || "Change date"}
+            </button>
+            <button
+              type="button"
+              className="w-full rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left text-sm"
+              style={{ borderColor: "var(--pb-border)" }}
+              onClick={() => {
+                setMobileChangeOpen(false);
+                scrollToSection("book-mode-panel");
+              }}
+            >
+              {t.editTime || "Change time"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

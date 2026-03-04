@@ -148,6 +148,7 @@ export function buildPublicBookingTokens(branding: PublicBookingEffectiveBrandin
       primary,
       primaryHover,
       primaryText,
+      text: "#0f172a",
       surface: "#ffffff",
       surface2: "#f8f9fb",
       border: "#e2e8f0",
@@ -180,6 +181,8 @@ export function buildPublicBookingTokens(branding: PublicBookingEffectiveBrandin
       lg: "1rem",
     },
     shadow: {
+      level1: "0 8px 24px rgba(16,24,40,0.06)",
+      level2: "0 16px 34px rgba(16,24,40,0.08)",
       card: "0 8px 24px rgba(16,24,40,0.06)",
       focus: `0 0 0 3px ${focusColor}`,
     },
@@ -193,6 +196,13 @@ export function buildPublicBookingTokens(branding: PublicBookingEffectiveBrandin
     focusRing: {
       color: focusColor,
       width: "3px",
+    },
+    motion: {
+      durationFast: "120ms",
+      durationStandard: "170ms",
+      easeOut: "cubic-bezier(0, 0, 0.2, 1)",
+      easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+      ctaReadyPulse: "pb-ready-pulse 1400ms ease-in-out infinite",
     },
   };
 }
