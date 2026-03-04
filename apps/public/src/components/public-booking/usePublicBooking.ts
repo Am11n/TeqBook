@@ -155,6 +155,9 @@ export function usePublicBooking(slug: string) {
     employeeId: selectedEmployeeForLoad || "",
     date,
     slug,
+    plan: salon?.plan || "starter",
+    hasEmployeeSelected: Boolean(selectedEmployeeForLoad),
+    serviceCount: services.length,
     lastKey: noSlotsTelemetryKey.current,
     setLastKey: (value) => {
       noSlotsTelemetryKey.current = value;

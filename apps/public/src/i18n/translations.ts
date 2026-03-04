@@ -102,6 +102,10 @@ export type PublicBookingMessages = {
   morningLabel?: string;
   afternoonLabel?: string;
   eveningLabel?: string;
+  nextAvailable?: string;
+  nextAvailableToday?: string;
+  joinWaitlist?: string;
+  mobileChangeSelectionLabel?: string;
 };
 
 export type LoginMessages = {
