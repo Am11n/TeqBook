@@ -43,8 +43,30 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
     mode,
     saving, locale, setLocale, t,
-    handleModeChange, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots,
+    handleModeChange, handleSubmitBooking, handleSubmitBookingDirect, handleJoinWaitlist, handleRetryLoadSlots,
   } = usePublicBooking(slug);
+  const handlePrimaryBookingCta = () => {
+    if (!serviceId) {
+      scrollToSection("service-section");
+      return;
+    }
+    if (!date) {
+      scrollToSection("date-section");
+      return;
+    }
+    if (!selectedSlot) {
+      scrollToSection("book-mode-panel");
+      return;
+    }
+    if (!detailsReady) {
+      scrollToSection("details-section");
+      return;
+    }
+    if (mode === "book" && !saving) {
+      void handleSubmitBookingDirect();
+    }
+  };
+
   const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
@@ -197,16 +219,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               ctaLabel={summaryCtaLabel}
               disabled={!canSubmitBooking}
               onClick={() => {
-                if (canSubmitBooking && detailsReady && mode === "book") {
-                  const detailsForm = document.getElementById(DETAILS_FORM_ID) as HTMLFormElement | null;
-                  detailsForm?.requestSubmit();
-                  return;
-                }
-                if (!selectedSlot) {
-                  scrollToSection("book-mode-panel");
-                  return;
-                }
-                scrollToSection("details-section");
+                handlePrimaryBookingCta();
               }}
               onChangeClick={() => setMobileChangeOpen(true)}
               changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
@@ -285,13 +298,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 detailsReady={detailsReady}
                 detailsFormId={DETAILS_FORM_ID}
                 onSubmitBooking={() => {
-                  if (!selectedSlot) {
-                    scrollToSection("book-mode-panel");
-                    return;
-                  }
-                  if (!detailsReady) {
-                    scrollToSection("details-section");
-                  }
+                  handlePrimaryBookingCta();
                 }}
                 editActions={[
                   { key: "service", label: t.editService || "Change service", onClick: () => scrollToSection("service-section") },

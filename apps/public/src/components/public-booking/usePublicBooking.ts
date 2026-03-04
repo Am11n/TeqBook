@@ -333,12 +333,19 @@ export function usePublicBooking(slug: string) {
     }
   }
 
-  async function handleSubmitBooking(e: FormEvent) {
-    e.preventDefault();
+  async function submitBookingDirect() {
     if (!salon || !serviceId || !selectedSlot) return;
     const selectedSlotData = slots.find((slot) => slot.id === selectedSlot);
-    if (!selectedSlotData?.employeeId) {
-      setError(t.loadError);
+    const selectedSlotFromId = (() => {
+      const [employeeIdFromKey, startFromKey] = selectedSlot.split("|");
+      if (!employeeIdFromKey || !startFromKey) return null;
+      return { employeeId: employeeIdFromKey, start: startFromKey };
+    })();
+    const slotEmployeeId = selectedSlotData?.employeeId || selectedSlotFromId?.employeeId || "";
+    const slotStart = selectedSlotData?.start || selectedSlotFromId?.start || "";
+    if (!slotEmployeeId || !slotStart) {
+      setError("That time is no longer available. Please choose another slot.");
+      setSelectedSlot("");
       return;
     }
 
@@ -359,8 +366,8 @@ export function usePublicBooking(slug: string) {
       const bookingResult = await submitBooking({
         salon,
         serviceId,
-        employeeId: selectedSlotData.employeeId,
-        selectedSlot: selectedSlotData.start,
+        employeeId: slotEmployeeId,
+        selectedSlot: slotStart,
         customerName,
         customerEmail: normalizedEmail,
         customerPhone: normalizedPhone,
@@ -385,6 +392,11 @@ export function usePublicBooking(slug: string) {
       setError(t.createError);
       setSaving(false);
     }
+  }
+
+  async function handleSubmitBooking(e: FormEvent) {
+    e.preventDefault();
+    await submitBookingDirect();
   }
 
   const effectiveBranding: PublicBookingEffectiveBranding | null = useMemo(
@@ -543,6 +555,6 @@ export function usePublicBooking(slug: string) {
     customerName, setCustomerName, customerEmail, setCustomerEmail, customerPhone, setCustomerPhone,
     joiningWaitlist, waitlistMessage, waitlistError, waitlistContactError, waitlistReceipt,
     mode, saving, locale, setLocale, t,
-    handleModeChange, handleLoadSlots, handleSubmitBooking, handleJoinWaitlist, handleRetryLoadSlots: requestSlots,
+    handleModeChange, handleLoadSlots, handleSubmitBooking, handleSubmitBookingDirect: submitBookingDirect, handleJoinWaitlist, handleRetryLoadSlots: requestSlots,
   };
 }
