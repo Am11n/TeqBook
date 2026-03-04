@@ -19,7 +19,8 @@ type BookingSummaryCardProps = {
   employeeLabel: string | null;
   durationLabel: string | null;
   priceLabel: string | null;
-  canSubmitBooking: boolean;
+  ctaDisabled: boolean;
+  readyToSubmit: boolean;
   ctaLabel: string;
   detailsReady: boolean;
   detailsFormId: string;
@@ -37,7 +38,8 @@ export function BookingSummaryCard({
   employeeLabel,
   durationLabel,
   priceLabel,
-  canSubmitBooking,
+  ctaDisabled,
+  readyToSubmit,
   ctaLabel,
   detailsReady,
   detailsFormId,
@@ -54,7 +56,7 @@ export function BookingSummaryCard({
         : !detailsReady
           ? (t.step3Title || "Your details")
           : (t.submitLabel || "Confirm booking");
-  const shouldSubmit = canSubmitBooking && detailsReady;
+  const shouldSubmit = readyToSubmit && detailsReady;
   const readyLabel = shouldSubmit ? "Ready" : null;
   const actionByKey = new Map(editActions.map((action) => [action.key, action]));
 
@@ -110,10 +112,10 @@ export function BookingSummaryCard({
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
           className="h-12 w-full text-sm font-semibold transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
-          disabled={!canSubmitBooking}
+          disabled={ctaDisabled}
           style={{
-            backgroundColor: canSubmitBooking ? "var(--pb-primary)" : undefined,
-            color: canSubmitBooking ? "var(--pb-primary-text)" : undefined,
+            backgroundColor: !ctaDisabled ? "var(--pb-primary)" : undefined,
+            color: !ctaDisabled ? "var(--pb-primary-text)" : undefined,
           }}
         >
           {ctaLabel}

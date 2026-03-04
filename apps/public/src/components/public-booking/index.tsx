@@ -45,6 +45,14 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     saving, locale, setLocale, t,
     handleModeChange, handleSubmitBooking, handleSubmitBookingDirect, handleJoinWaitlist, handleRetryLoadSlots,
   } = usePublicBooking(slug);
+  const safeSubmitBooking = () => {
+    if (typeof handleSubmitBookingDirect === "function") {
+      void handleSubmitBookingDirect();
+      return;
+    }
+    const detailsForm = document.getElementById(DETAILS_FORM_ID) as HTMLFormElement | null;
+    detailsForm?.requestSubmit();
+  };
   const handlePrimaryBookingCta = () => {
     if (!serviceId) {
       scrollToSection("service-section");
@@ -63,7 +71,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       return;
     }
     if (mode === "book" && !saving) {
-      void handleSubmitBookingDirect();
+      safeSubmitBooking();
     }
   };
 
@@ -77,7 +85,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
-  const canSubmitBooking = Boolean(serviceId && date && selectedSlot && !saving);
+  const ctaDisabled = mode !== "book" || saving;
+  const readyToSubmitBooking = Boolean(serviceId && date && selectedSlot && detailsReady && !saving && mode === "book");
   const summaryCtaLabel = !selectedSlot
     ? (t.selectTimeToContinueLabel || "Select a time to continue")
     : !detailsReady
@@ -217,7 +226,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   .join(" • ") || `${t.summaryTitle || "Your booking"}`
               }
               ctaLabel={summaryCtaLabel}
-              disabled={!canSubmitBooking}
+              disabled={ctaDisabled}
               onClick={() => {
                 handlePrimaryBookingCta();
               }}
@@ -293,7 +302,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 employeeLabel={parsedSlot?.employeeName || null}
                 durationLabel={summaryDurationLabel}
                 priceLabel={summaryPriceLabel}
-                canSubmitBooking={canSubmitBooking}
+                ctaDisabled={ctaDisabled}
+                readyToSubmit={readyToSubmitBooking}
                 ctaLabel={summaryCtaLabel}
                 detailsReady={detailsReady}
                 detailsFormId={DETAILS_FORM_ID}
