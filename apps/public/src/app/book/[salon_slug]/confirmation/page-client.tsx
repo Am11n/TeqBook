@@ -24,6 +24,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookingDetailsError, setBookingDetailsError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [showCancelForm, setShowCancelForm] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
@@ -62,19 +63,14 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           | null;
 
         if (!confirmationResponse.ok || !confirmationPayload?.booking) {
-          setError(confirmationPayload?.error || "Booking not found");
-          setLoading(false);
-          return;
+          // Reservation-first UX: booking is already created before redirect.
+          // If details lookup fails, keep confirmation screen and show reference id.
+          setBookingDetailsError(confirmationPayload?.error || "Could not load booking details.");
+        } else if (confirmationPayload.booking.salon_id !== salonData.id) {
+          setBookingDetailsError("Booking belongs to another salon.");
+        } else {
+          setBooking(confirmationPayload.booking as Booking);
         }
-
-        // Verify booking belongs to salon
-        if (confirmationPayload.booking.salon_id !== salonData.id) {
-          setError("Booking does not belong to this salon");
-          setLoading(false);
-          return;
-        }
-
-        setBooking(confirmationPayload.booking as Booking);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load booking");
       } finally {
@@ -124,7 +120,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     );
   }
 
-  if (error || !salon || !booking) {
+  if (error || !salon) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <Card className="p-6 max-w-md w-full">
@@ -149,7 +145,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     );
   }
 
-  const isCancelled = booking.status === "cancelled";
+  const isCancelled = booking?.status === "cancelled";
 
   return (
     <div
@@ -180,10 +176,19 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <Calendar className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">{formatDate(booking.start_time)}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
-              </p>
+              {booking ? (
+                <>
+                  <p className="text-sm font-medium">{formatDate(booking.start_time)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium">Reservation received</p>
+                  <p className="text-xs text-muted-foreground">Reference: {bookingId}</p>
+                </>
+              )}
             </div>
           </div>
 
@@ -192,7 +197,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
             <div>
               <p className="text-sm font-medium">Service</p>
               <p className="text-xs text-muted-foreground">
-                {booking.services?.name || "Unknown service"}
+                {booking?.services?.name || "Will be confirmed shortly"}
               </p>
             </div>
           </div>
@@ -202,7 +207,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
             <div>
               <p className="text-sm font-medium">Employee</p>
               <p className="text-xs text-muted-foreground">
-                {booking.employees?.full_name || "Unknown employee"}
+                {booking?.employees?.full_name || "Best available"}
               </p>
             </div>
           </div>
@@ -216,18 +221,18 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                 className={`mt-1 ${
                   isCancelled
                     ? "border-destructive text-destructive"
-                    : booking.status === "confirmed"
+                    : booking?.status === "confirmed"
                       ? "border-green-600 text-green-600"
                       : ""
                 }`}
               >
-                {booking.status}
+                {booking?.status || "confirmed"}
               </Badge>
             </div>
           </div>
         </div>
 
-        {!isCancelled && (
+        {!isCancelled && booking && (
           <div className="space-y-4">
             {!showCancelForm ? (
               <div className="flex gap-3">
@@ -287,9 +292,9 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           </div>
         )}
 
-        {error && (
+        {(error || bookingDetailsError) && (
           <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive">{error || bookingDetailsError}</p>
           </div>
         )}
 
