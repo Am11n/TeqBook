@@ -6,6 +6,7 @@ import { BRANDING_PRESETS, type BrandingPreset } from "@/lib/utils/branding/bran
 import {
   THEME_PACKS,
   createThemePackSnapshot,
+  type ThemePackDefinition,
   findThemePackById,
   sanitizeLogoUrl,
   validateThemeOverrides,
@@ -29,17 +30,60 @@ export function useBranding() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [themePackId, setThemePackId] = useState(THEME_PACKS[0]?.id || "");
 
+  function resolvePackForSalon(nextSalon: typeof salon): ThemePackDefinition | null {
+    const snapshotPackId = (nextSalon?.theme_pack_snapshot as { id?: string } | null)?.id;
+    return (
+      findThemePackById(snapshotPackId || nextSalon?.theme_pack_id || "") ||
+      THEME_PACKS[0] ||
+      null
+    );
+  }
+
   // Load existing branding settings
   useEffect(() => {
     if (salon) {
-      setPrimaryColor(salon.theme?.primary || "#3b82f6");
-      setSecondaryColor(salon.theme?.secondary || "#8b5cf6");
-      setFontFamily(salon.theme?.font || "Inter");
-      setLogoUrl(salon.theme?.logo_url || "");
-      setLogoPreview(salon.theme?.logo_url || null);
-      setThemePackId(salon.theme_pack_id || THEME_PACKS[0]?.id || "");
+      const pack = resolvePackForSalon(salon);
+      const overrides = (salon.theme_overrides || {}) as {
+        logoUrl?: string;
+        colors?: { primary?: string; secondary?: string };
+        typography?: { fontFamily?: string };
+      };
+
+      setPrimaryColor(
+        overrides.colors?.primary ||
+        pack?.tokens.primaryColor ||
+        salon.theme?.primary ||
+        "#3b82f6"
+      );
+      setSecondaryColor(
+        overrides.colors?.secondary ||
+        pack?.tokens.secondaryColor ||
+        salon.theme?.secondary ||
+        "#8b5cf6"
+      );
+      setFontFamily(
+        overrides.typography?.fontFamily ||
+        pack?.tokens.fontFamily ||
+        salon.theme?.font ||
+        "Inter"
+      );
+      const resolvedLogo = overrides.logoUrl || salon.theme?.logo_url || "";
+      setLogoUrl(resolvedLogo);
+      setLogoPreview(resolvedLogo || null);
+      setThemePackId(pack?.id || THEME_PACKS[0]?.id || "");
     }
   }, [salon]);
+
+  function handleThemePackChange(nextPackId: string) {
+    const pack = findThemePackById(nextPackId);
+    setThemePackId(nextPackId);
+    if (!pack) return;
+    // Selecting a pack should show the pack baseline immediately.
+    setPrimaryColor(pack.tokens.primaryColor);
+    setSecondaryColor(pack.tokens.secondaryColor);
+    setFontFamily(pack.tokens.fontFamily);
+    setError(null);
+  }
 
   function applyPreset(preset: BrandingPreset) {
     setPrimaryColor(preset.primary);
@@ -105,13 +149,16 @@ export function useBranding() {
       }
 
       const overrides = {
-        logoUrl: validatedLogoUrl,
+        logoUrl: validatedLogoUrl || undefined,
         colors: {
-          primary: primaryColor,
-          secondary: secondaryColor,
+          primary: primaryColor !== selectedPack.tokens.primaryColor ? primaryColor : undefined,
+          secondary:
+            salon.plan === "business" && secondaryColor !== selectedPack.tokens.secondaryColor
+              ? secondaryColor
+              : undefined,
         },
         typography: {
-          fontFamily,
+          fontFamily: fontFamily !== selectedPack.tokens.fontFamily ? fontFamily : undefined,
         },
       };
 
@@ -129,6 +176,7 @@ export function useBranding() {
         theme_pack_hash: snapshot?.hash || null,
         theme_pack_snapshot: snapshot,
         theme_overrides: overrideValidation.value || {},
+        // Keep legacy theme synced for compatibility, but runtime uses snapshot + overrides.
         theme: {
           primary: primaryColor,
           secondary: secondaryColor,
@@ -172,7 +220,7 @@ export function useBranding() {
     logoPreview,
     setLogoPreview,
     themePackId,
-    setThemePackId,
+    setThemePackId: handleThemePackChange,
     applyPreset,
     handleLogoUpload,
     handleSubmit,
