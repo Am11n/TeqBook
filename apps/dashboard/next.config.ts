@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   // Dashboard app: standard Next.js config
   images: {
     unoptimized: false,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
   },
   trailingSlash: true,
   // Avoid redirect loop when proxied from Public (teqbook.com/dashboard/): do not redirect /dashboard ↔ /dashboard/
