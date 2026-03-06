@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -160,7 +159,15 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
       <Card className="w-full max-w-2xl p-6" style={{ borderColor: tokens.colors.border, boxShadow: tokens.shadow.card }}>
         <div className="text-center mb-6">
           <div className="mb-3 flex justify-center">
-            <Image src={effectiveBranding.logoUrl} alt={salon.name} width={36} height={36} className="h-9 w-auto object-contain" />
+            <img
+              src={effectiveBranding.logoUrl}
+              alt={salon.name}
+              width={36}
+              height={36}
+              loading="lazy"
+              decoding="async"
+              className="h-9 w-auto object-contain"
+            />
           </div>
           {isCancelled ? (
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />

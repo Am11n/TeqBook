@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,11 +93,13 @@ export function BookingHeader({
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             {logoUrl && (
-              <Image
+              <img
                 src={logoUrl}
                 alt={salon.name}
                 width={36}
                 height={36}
+                loading="lazy"
+                decoding="async"
                 className="mb-2 h-9 w-auto object-contain"
               />
             )}
