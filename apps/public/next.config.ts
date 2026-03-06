@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   // Public app: optimized for SEO and performance
   images: {
     unoptimized: false,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
   },
   trailingSlash: true,
   // Avoid participating in redirect loop with proxied Dashboard/Admin
