@@ -9,6 +9,8 @@ const supabaseHost = (() => {
   }
 })();
 
+const fallbackSupabaseHosts = ["qacgwgecrsinwjvuiobd.supabase.co"];
+
 const nextConfig: NextConfig = {
   // Public app uses local UI components (apps/public/src/components/ui/) to avoid Turbopack HMR bug with @teqbook/ui
   transpilePackages: ["@teqbook/shared"],
@@ -16,10 +18,16 @@ const nextConfig: NextConfig = {
   // Public app: optimized for SEO and performance
   images: {
     unoptimized: false,
+    domains: Array.from(
+      new Set([
+        ...fallbackSupabaseHosts,
+        ...(supabaseHost ? [supabaseHost] : []),
+      ])
+    ),
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "*.supabase.co",
       },
       ...(supabaseHost
         ? [

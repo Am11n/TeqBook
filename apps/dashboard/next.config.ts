@@ -9,6 +9,8 @@ const supabaseHost = (() => {
   }
 })();
 
+const fallbackSupabaseHosts = ["qacgwgecrsinwjvuiobd.supabase.co"];
+
 const nextConfig: NextConfig = {
   // Served at teqbook.com/dashboard when behind Public app rewrites.
   // On Vercel, always use /dashboard as basePath so asset URLs are correct.
@@ -18,10 +20,16 @@ const nextConfig: NextConfig = {
   // Dashboard app: standard Next.js config
   images: {
     unoptimized: false,
+    domains: Array.from(
+      new Set([
+        ...fallbackSupabaseHosts,
+        ...(supabaseHost ? [supabaseHost] : []),
+      ])
+    ),
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "*.supabase.co",
       },
       ...(supabaseHost
         ? [
