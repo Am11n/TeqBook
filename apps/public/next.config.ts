@@ -1,5 +1,14 @@
 import type { NextConfig } from "next";
 
+const supabaseHost = (() => {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return url ? new URL(url).hostname : null;
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
   // Public app uses local UI components (apps/public/src/components/ui/) to avoid Turbopack HMR bug with @teqbook/ui
   transpilePackages: ["@teqbook/shared"],
@@ -10,8 +19,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*.supabase.co",
+        hostname: "**.supabase.co",
       },
+      ...(supabaseHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseHost,
+            },
+          ]
+        : []),
     ],
   },
   trailingSlash: true,
