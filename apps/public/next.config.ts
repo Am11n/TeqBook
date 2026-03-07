@@ -11,6 +11,29 @@ const supabaseHost = (() => {
 
 const fallbackSupabaseHosts = ["qacgwgecrsinwjvuiobd.supabase.co"];
 
+function normalizeProxyTarget(rawUrl: string | undefined, basePath: "/dashboard" | "/admin"): string | null {
+  if (!rawUrl) return null;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+
+  try {
+    const parsed = new URL(trimmed);
+    let pathname = parsed.pathname.replace(/\/+$/, "");
+
+    // Allow users to set either origin or origin + basePath in env.
+    if (pathname === basePath) {
+      pathname = "";
+    } else if (pathname.endsWith(basePath)) {
+      pathname = pathname.slice(0, -basePath.length);
+    }
+
+    return `${parsed.origin}${pathname}`;
+  } catch {
+    // Keep fallback permissive for non-URL env values in local setups.
+    return trimmed.replace(/\/+$/, "").replace(new RegExp(`${basePath}$`), "");
+  }
+}
+
 const nextConfig: NextConfig = {
   // Public app uses local UI components (apps/public/src/components/ui/) to avoid Turbopack HMR bug with @teqbook/ui
   transpilePackages: ["@teqbook/shared"],
@@ -71,8 +94,8 @@ const nextConfig: NextConfig = {
   // Single domain: teqbook.com → Public, teqbook.com/dashboard → Dashboard, teqbook.com/admin → Admin
   // VIKTIG: Sett DASHBOARD_APP_URL og ADMIN_APP_URL i Vercel (Public-prosjektet) og redeploy Public – rewrites leses ved build.
   async rewrites() {
-    const dashboardUrl = process.env.DASHBOARD_APP_URL?.replace(/\/$/, "");
-    const adminUrl = process.env.ADMIN_APP_URL?.replace(/\/$/, "");
+    const dashboardUrl = normalizeProxyTarget(process.env.DASHBOARD_APP_URL, "/dashboard");
+    const adminUrl = normalizeProxyTarget(process.env.ADMIN_APP_URL, "/admin");
     if (process.env.CI !== undefined || process.env.VERCEL === "1") {
       console.log("[teqbook-public] rewrites: DASHBOARD_APP_URL=" + (dashboardUrl ? "set" : "MISSING") + " ADMIN_APP_URL=" + (adminUrl ? "set" : "MISSING"));
     }
