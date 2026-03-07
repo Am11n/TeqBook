@@ -99,6 +99,23 @@ const nextConfig: NextConfig = {
   // Security headers - standard for authenticated app
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
+    const frameSources = new Set<string>([
+      "'self'",
+      "https://js.stripe.com",
+      "https://hooks.stripe.com",
+    ]);
+    if (isDevelopment) {
+      frameSources.add("http://localhost:3001");
+      frameSources.add("http://127.0.0.1:3001");
+    }
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+      if (appUrl) {
+        frameSources.add(new URL(appUrl).origin);
+      }
+    } catch {
+      // Ignore invalid env URL and keep safe defaults.
+    }
 
     const cspDirectives = [
       "default-src 'self'",
@@ -111,7 +128,7 @@ const nextConfig: NextConfig = {
       isDevelopment
         ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com"
         : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
-      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+      `frame-src ${Array.from(frameSources).join(" ")}`,
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
