@@ -25,6 +25,12 @@ function buildPublicBookingPreviewUrl(salonSlug: string): string {
       current.hostname === "localhost" ||
       current.hostname === "127.0.0.1";
 
+    // On non-local hosts (e.g. teqbook.com), always use same-origin /book route.
+    // This avoids cross-origin iframe/CSP mismatch between proxied dashboard/public apps.
+    if (!isCurrentLocal) {
+      return `${current.origin}/book/${salonSlug}?preview=true`;
+    }
+
     if (configuredAppUrl) {
       try {
         const configured = new URL(configuredAppUrl);
