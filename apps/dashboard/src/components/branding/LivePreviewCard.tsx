@@ -18,15 +18,36 @@ interface LivePreviewCardProps {
 
 function buildPublicBookingPreviewUrl(salonSlug: string): string {
   const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (configuredAppUrl) {
-    return `${configuredAppUrl.replace(/\/$/, "")}/book/${salonSlug}?preview=true`;
-  }
 
   if (typeof window !== "undefined") {
     const current = new URL(window.location.href);
+    const isCurrentLocal =
+      current.hostname === "localhost" ||
+      current.hostname === "127.0.0.1";
+
+    if (configuredAppUrl) {
+      try {
+        const configured = new URL(configuredAppUrl);
+        const isConfiguredLocal =
+          configured.hostname === "localhost" ||
+          configured.hostname === "127.0.0.1";
+
+        // Ignore localhost app URL on non-local pages (e.g. teqbook.com/dashboard).
+        if (!(isConfiguredLocal && !isCurrentLocal)) {
+          return `${configured.origin}/book/${salonSlug}?preview=true`;
+        }
+      } catch {
+        // Fall through to runtime-derived origin below.
+      }
+    }
+
     // Local dev: dashboard runs on :3002 while public runs on :3001.
     if (current.port === "3002") current.port = "3001";
     return `${current.origin}/book/${salonSlug}?preview=true`;
+  }
+
+  if (configuredAppUrl) {
+    return `${configuredAppUrl.replace(/\/$/, "")}/book/${salonSlug}?preview=true`;
   }
 
   return `/book/${salonSlug}?preview=true`;
