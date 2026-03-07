@@ -99,18 +99,24 @@ const nextConfig: NextConfig = {
     if (process.env.CI !== undefined || process.env.VERCEL === "1") {
       console.log("[teqbook-public] rewrites: DASHBOARD_APP_URL=" + (dashboardUrl ? "set" : "MISSING") + " ADMIN_APP_URL=" + (adminUrl ? "set" : "MISSING"));
     }
-    const rewrites: { source: string; destination: string }[] = [];
+    const proxiedRoutes: { source: string; destination: string }[] = [];
     if (dashboardUrl) {
-      rewrites.push({ source: "/dashboard", destination: `${dashboardUrl}/dashboard` });
-      rewrites.push({ source: "/dashboard/", destination: `${dashboardUrl}/dashboard/` });
-      rewrites.push({ source: "/dashboard/:path*", destination: `${dashboardUrl}/dashboard/:path*` });
+      proxiedRoutes.push({ source: "/dashboard", destination: `${dashboardUrl}/dashboard` });
+      proxiedRoutes.push({ source: "/dashboard/", destination: `${dashboardUrl}/dashboard/` });
+      proxiedRoutes.push({ source: "/dashboard/:path*", destination: `${dashboardUrl}/dashboard/:path*` });
     }
     if (adminUrl) {
-      rewrites.push({ source: "/admin", destination: `${adminUrl}/admin` });
-      rewrites.push({ source: "/admin/", destination: `${adminUrl}/admin/` });
-      rewrites.push({ source: "/admin/:path*", destination: `${adminUrl}/admin/:path*` });
+      proxiedRoutes.push({ source: "/admin", destination: `${adminUrl}/admin` });
+      proxiedRoutes.push({ source: "/admin/", destination: `${adminUrl}/admin/` });
+      proxiedRoutes.push({ source: "/admin/:path*", destination: `${adminUrl}/admin/:path*` });
     }
-    return rewrites;
+    return {
+      // Ensure proxy routes match before App Router file-system handling,
+      // including RSC requests like /dashboard/?_rsc=...
+      beforeFiles: proxiedRoutes,
+      afterFiles: [],
+      fallback: proxiedRoutes,
+    };
   },
 
   // Use Turbopack (Next 16 default). Custom webpack config below is ignored when using Turbopack.
