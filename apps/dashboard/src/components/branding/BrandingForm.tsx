@@ -207,6 +207,7 @@ export function BrandingForm({
                     src={logoPreview}
                     alt="Logo preview"
                     fill
+                    sizes="128px"
                     className="object-contain p-2"
                   />
                   <Button
