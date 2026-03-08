@@ -34,6 +34,17 @@ function normalizeProxyTarget(rawUrl: string | undefined, basePath: "/dashboard"
   }
 }
 
+function toOrigin(rawUrl: string | undefined): string | null {
+  if (!rawUrl) return null;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+  try {
+    return new URL(trimmed).origin;
+  } catch {
+    return null;
+  }
+}
+
 const nextConfig: NextConfig = {
   // Public app uses local UI components (apps/public/src/components/ui/) to avoid Turbopack HMR bug with @teqbook/ui
   transpilePackages: ["@teqbook/shared"],
@@ -153,14 +164,18 @@ const nextConfig: NextConfig = {
   // Security headers - stricter for public app (no auth cookies needed)
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
-    const dashboardAppUrl = process.env.DASHBOARD_APP_URL?.replace(/\/$/, "");
+    const dashboardAppOrigin = toOrigin(process.env.DASHBOARD_APP_URL);
+    const publicAppOrigin = toOrigin(process.env.NEXT_PUBLIC_APP_URL);
     const frameAncestors = new Set<string>(["'self'"]);
     if (isDevelopment) {
       frameAncestors.add("http://localhost:3002");
       frameAncestors.add("http://127.0.0.1:3002");
     }
-    if (dashboardAppUrl) {
-      frameAncestors.add(dashboardAppUrl);
+    if (dashboardAppOrigin) {
+      frameAncestors.add(dashboardAppOrigin);
+    }
+    if (publicAppOrigin) {
+      frameAncestors.add(publicAppOrigin);
     }
 
     const cspDirectives = [
