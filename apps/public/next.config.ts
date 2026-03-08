@@ -177,6 +177,11 @@ const nextConfig: NextConfig = {
     if (publicAppOrigin) {
       frameAncestors.add(publicAppOrigin);
     }
+    if (!isDevelopment) {
+      // Allow first-party dashboard embedding on primary production domains.
+      frameAncestors.add("https://teqbook.com");
+      frameAncestors.add("https://www.teqbook.com");
+    }
 
     const cspDirectives = [
       "default-src 'self'",
