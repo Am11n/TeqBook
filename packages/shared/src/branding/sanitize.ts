@@ -9,6 +9,11 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function sanitizeAngle(input: number | null | undefined): number | undefined {
+  if (typeof input !== "number" || !Number.isFinite(input)) return undefined;
+  return clamp(Math.round(input), 0, 360);
+}
+
 function toHexChannel(value: number): string {
   return clamp(Math.round(value), 0, 255).toString(16).padStart(2, "0");
 }
@@ -109,6 +114,7 @@ export function sanitizeOverridesForRender(
   if (!overrides || plan === "starter") return {};
   const pageBackgroundMode =
     overrides.appearance?.pageBackgroundMode === "gradient" ? "gradient" : "solid";
+  const backgroundMode = overrides.appearance?.backgroundMode || "default";
 
   return {
     logoUrl: sanitizeLogoUrl(overrides.logoUrl),
@@ -121,11 +127,20 @@ export function sanitizeOverridesForRender(
     },
     components: {
       headerVariant: overrides.components?.headerVariant,
+      surfaceStyle: overrides.components?.surfaceStyle,
+      buttonStyle: overrides.components?.buttonStyle,
+      slotStyle: overrides.components?.slotStyle,
+      headerStyle: overrides.components?.headerStyle,
     },
     appearance: {
       pageBackground: sanitizeColor(overrides.appearance?.pageBackground),
       cardBackground: sanitizeColor(overrides.appearance?.cardBackground),
       pageBackgroundMode,
+      backgroundMode,
+      backgroundColor: sanitizeColor(overrides.appearance?.backgroundColor),
+      gradientStart: sanitizeColor(overrides.appearance?.gradientStart),
+      gradientEnd: sanitizeColor(overrides.appearance?.gradientEnd),
+      gradientAngle: sanitizeAngle(overrides.appearance?.gradientAngle),
     },
     radiusScale: overrides.radiusScale,
     shadowScale: overrides.shadowScale,

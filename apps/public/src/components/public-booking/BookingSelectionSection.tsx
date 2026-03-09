@@ -337,6 +337,7 @@ export function BookingSelectionSection({
                 type="button"
                 size="sm"
                 variant="outline"
+                style={{ borderRadius: "var(--pb-button-radius)" }}
                 onClick={() => {
                   if (!recommendedSlotId) return;
                   setHasInteracted(true);
@@ -395,6 +396,7 @@ export function BookingSelectionSection({
               <Button
                 type="button"
                 className="w-full"
+                style={{ borderRadius: "var(--pb-button-radius)", boxShadow: "var(--pb-button-shadow)" }}
                 onClick={() => {
                   const current = date ? new Date(`${date}T00:00:00`) : new Date();
                   current.setDate(current.getDate() + 1);
@@ -411,6 +413,7 @@ export function BookingSelectionSection({
                 type="button"
                 className="w-full"
                 variant="outline"
+                style={{ borderRadius: "var(--pb-button-radius)" }}
                 onClick={() => {
                   const dateInput = document.getElementById("date") as HTMLInputElement | null;
                   dateInput?.focus();
@@ -423,6 +426,7 @@ export function BookingSelectionSection({
                 type="button"
                 className="w-full"
                 variant="outline"
+                style={{ borderRadius: "var(--pb-button-radius)" }}
                 onClick={() => handleModeChange("waitlist", "no-slots")}
               >
                 {t.joinWaitlist || t.modeWaitlist || "Join waitlist"}
@@ -445,6 +449,7 @@ export function BookingSelectionSection({
               type="button"
               className="mt-3 w-full"
               variant="outline"
+              style={{ borderRadius: "var(--pb-button-radius)" }}
               onClick={() => {
                 void handleRetryLoadSlots();
               }}

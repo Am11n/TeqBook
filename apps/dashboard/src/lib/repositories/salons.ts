@@ -41,6 +41,20 @@ export type ThemeOverrides = {
   };
   components?: {
     headerVariant?: "standard" | "compact";
+    surfaceStyle?: "soft" | "elevated" | "flat";
+    buttonStyle?: "rounded" | "soft" | "sharp";
+    slotStyle?: "minimal" | "pill" | "card";
+    headerStyle?: "compact" | "standard" | "branded";
+  };
+  appearance?: {
+    pageBackground?: string;
+    cardBackground?: string;
+    pageBackgroundMode?: "solid" | "gradient";
+    backgroundMode?: "default" | "solid" | "soft_gradient";
+    backgroundColor?: string;
+    gradientStart?: string;
+    gradientEnd?: string;
+    gradientAngle?: number;
   };
   radiusScale?: "standard" | "rounded";
   shadowScale?: "soft" | "medium";

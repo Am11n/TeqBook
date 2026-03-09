@@ -3,6 +3,11 @@ export type HeaderVariant = "standard" | "compact";
 export type RadiusScale = "standard" | "rounded";
 export type ShadowScale = "soft" | "medium";
 export type MotionPreset = "standard" | "calm";
+export type BackgroundMode = "default" | "solid" | "soft_gradient";
+export type SurfaceStyle = "soft" | "elevated" | "flat";
+export type ButtonStyle = "rounded" | "soft" | "sharp";
+export type SlotStyle = "minimal" | "pill" | "card";
+export type HeaderStyle = "compact" | "standard" | "branded";
 
 export type BrandingPackTokens = {
   primaryColor: string;

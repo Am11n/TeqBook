@@ -21,6 +21,7 @@ export function useBranding() {
   const [error, setError] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
 
   // Default colors for user's custom theme (not design tokens)
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
@@ -29,6 +30,15 @@ export function useBranding() {
   const [logoUrl, setLogoUrl] = useState("");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [themePackId, setThemePackId] = useState(THEME_PACKS[0]?.id || "");
+  const [backgroundMode, setBackgroundMode] = useState<"default" | "solid" | "soft_gradient">("default");
+  const [backgroundColor, setBackgroundColor] = useState("#f5f6f8");
+  const [gradientStart, setGradientStart] = useState("#dbeafe");
+  const [gradientEnd, setGradientEnd] = useState("#f5f6f8");
+  const [gradientAngle, setGradientAngle] = useState("180");
+  const [surfaceStyle, setSurfaceStyle] = useState<"soft" | "elevated" | "flat">("soft");
+  const [buttonStyle, setButtonStyle] = useState<"rounded" | "soft" | "sharp">("soft");
+  const [slotStyle, setSlotStyle] = useState<"minimal" | "pill" | "card">("minimal");
+  const [headerStyle, setHeaderStyle] = useState<"compact" | "standard" | "branded">("standard");
 
   function resolvePackForSalon(nextSalon: typeof salon): ThemePackDefinition | null {
     const snapshotPackId = (nextSalon?.theme_pack_snapshot as { id?: string } | null)?.id;
@@ -47,6 +57,19 @@ export function useBranding() {
         logoUrl?: string;
         colors?: { primary?: string; secondary?: string };
         typography?: { fontFamily?: string };
+        appearance?: {
+          backgroundMode?: "default" | "solid" | "soft_gradient";
+          backgroundColor?: string;
+          gradientStart?: string;
+          gradientEnd?: string;
+          gradientAngle?: number;
+        };
+        components?: {
+          surfaceStyle?: "soft" | "elevated" | "flat";
+          buttonStyle?: "rounded" | "soft" | "sharp";
+          slotStyle?: "minimal" | "pill" | "card";
+          headerStyle?: "compact" | "standard" | "branded";
+        };
       };
 
       setPrimaryColor(
@@ -71,6 +94,15 @@ export function useBranding() {
       setLogoUrl(resolvedLogo);
       setLogoPreview(resolvedLogo || null);
       setThemePackId(pack?.id || THEME_PACKS[0]?.id || "");
+      setBackgroundMode(overrides.appearance?.backgroundMode || "default");
+      setBackgroundColor(overrides.appearance?.backgroundColor || "#f5f6f8");
+      setGradientStart(overrides.appearance?.gradientStart || "#dbeafe");
+      setGradientEnd(overrides.appearance?.gradientEnd || "#f5f6f8");
+      setGradientAngle(String(overrides.appearance?.gradientAngle ?? 180));
+      setSurfaceStyle(overrides.components?.surfaceStyle || "soft");
+      setButtonStyle(overrides.components?.buttonStyle || "soft");
+      setSlotStyle(overrides.components?.slotStyle || "minimal");
+      setHeaderStyle(overrides.components?.headerStyle || "standard");
     }
   }, [salon]);
 
@@ -82,6 +114,11 @@ export function useBranding() {
     setPrimaryColor(pack.tokens.primaryColor);
     setSecondaryColor(pack.tokens.secondaryColor);
     setFontFamily(pack.tokens.fontFamily);
+    setBackgroundMode("default");
+    setSurfaceStyle("soft");
+    setButtonStyle("soft");
+    setSlotStyle("minimal");
+    setHeaderStyle(pack.tokens.headerVariant === "compact" ? "compact" : "standard");
     setError(null);
   }
 
@@ -160,6 +197,27 @@ export function useBranding() {
         typography: {
           fontFamily: fontFamily !== selectedPack.tokens.fontFamily ? fontFamily : undefined,
         },
+        appearance: {
+          backgroundMode: backgroundMode !== "default" ? backgroundMode : undefined,
+          backgroundColor: backgroundMode === "solid" ? backgroundColor : undefined,
+          gradientStart: backgroundMode === "soft_gradient" ? gradientStart : undefined,
+          gradientEnd: backgroundMode === "soft_gradient" ? gradientEnd : undefined,
+          gradientAngle: backgroundMode === "soft_gradient"
+            ? (() => {
+              const parsed = Number.parseInt(gradientAngle, 10);
+              return Number.isFinite(parsed) ? Math.max(0, Math.min(360, parsed)) : 180;
+            })()
+            : undefined,
+        },
+        components: {
+          surfaceStyle: surfaceStyle !== "soft" ? surfaceStyle : undefined,
+          buttonStyle: buttonStyle !== "soft" ? buttonStyle : undefined,
+          slotStyle: slotStyle !== "minimal" ? slotStyle : undefined,
+          headerStyle:
+            headerStyle !== (selectedPack.tokens.headerVariant === "compact" ? "compact" : "standard")
+              ? headerStyle
+              : undefined,
+        },
       };
 
       const overrideValidation = validateThemeOverrides(salon.plan === "business" ? "business" : "pro", overrides);
@@ -192,6 +250,7 @@ export function useBranding() {
       }
 
       await refreshSalon();
+      setPreviewRefreshKey((value) => value + 1);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -208,6 +267,7 @@ export function useBranding() {
     uploadingLogo,
     showPreview,
     setShowPreview,
+    previewRefreshKey,
     fileInputRef,
     primaryColor,
     setPrimaryColor,
@@ -221,6 +281,24 @@ export function useBranding() {
     setLogoPreview,
     themePackId,
     setThemePackId: handleThemePackChange,
+    backgroundMode,
+    setBackgroundMode,
+    backgroundColor,
+    setBackgroundColor,
+    gradientStart,
+    setGradientStart,
+    gradientEnd,
+    setGradientEnd,
+    gradientAngle,
+    setGradientAngle,
+    surfaceStyle,
+    setSurfaceStyle,
+    buttonStyle,
+    setButtonStyle,
+    slotStyle,
+    setSlotStyle,
+    headerStyle,
+    setHeaderStyle,
     applyPreset,
     handleLogoUpload,
     handleSubmit,

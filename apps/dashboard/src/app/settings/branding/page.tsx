@@ -29,6 +29,7 @@ export default function BrandingSettingsPage() {
             logo_url: branding.logoUrl || undefined,
           }}
           onHide={() => branding.setShowPreview(false)}
+          previewRefreshKey={branding.previewRefreshKey}
         />
       )}
 
@@ -45,6 +46,24 @@ export default function BrandingSettingsPage() {
         setLogoPreview={branding.setLogoPreview}
         themePackId={branding.themePackId}
         setThemePackId={branding.setThemePackId}
+        backgroundMode={branding.backgroundMode}
+        setBackgroundMode={branding.setBackgroundMode}
+        backgroundColor={branding.backgroundColor}
+        setBackgroundColor={branding.setBackgroundColor}
+        gradientStart={branding.gradientStart}
+        setGradientStart={branding.setGradientStart}
+        gradientEnd={branding.gradientEnd}
+        setGradientEnd={branding.setGradientEnd}
+        gradientAngle={branding.gradientAngle}
+        setGradientAngle={branding.setGradientAngle}
+        surfaceStyle={branding.surfaceStyle}
+        setSurfaceStyle={branding.setSurfaceStyle}
+        buttonStyle={branding.buttonStyle}
+        setButtonStyle={branding.setButtonStyle}
+        slotStyle={branding.slotStyle}
+        setSlotStyle={branding.setSlotStyle}
+        headerStyle={branding.headerStyle}
+        setHeaderStyle={branding.setHeaderStyle}
         themePacks={branding.themePacks}
         isStarterPlan={isStarterPlan}
         uploadingLogo={branding.uploadingLogo}

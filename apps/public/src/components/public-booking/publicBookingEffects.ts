@@ -6,6 +6,14 @@ import { trackPublicEvent } from "./publicBookingTelemetry";
 import { ANY_EMPLOYEE_VALUE } from "./types";
 import type { Employee, Salon, Service } from "./types";
 
+function normalizePlan(rawPlan: unknown): "starter" | "pro" | "business" {
+  if (typeof rawPlan !== "string") return "starter";
+  const normalized = rawPlan.trim().toLowerCase();
+  if (normalized === "business" || normalized.startsWith("business")) return "business";
+  if (normalized === "pro" || normalized.startsWith("pro")) return "pro";
+  return "starter";
+}
+
 function resolveInitialLocale(salon: Salon): AppLocale | null {
   if (typeof window === "undefined") return null;
 
@@ -31,6 +39,7 @@ async function resolveInitialBookingData(
   const response = await fetch(`/api/public-booking/initial?slug=${encodeURIComponent(slug)}`, {
     method: "GET",
     headers: { Accept: "application/json" },
+    cache: "no-store",
   });
 
   if (response.status === 404) {
@@ -53,7 +62,7 @@ async function resolveInitialBookingData(
   const salon: Salon = {
     id: salonData.id,
     name: salonData.name,
-    plan: salonData.plan || "starter",
+    plan: normalizePlan(salonData.plan),
     whatsapp_number: salonData.whatsapp_number || null,
     supported_languages: salonData.supported_languages || null,
     default_language: salonData.default_language || null,

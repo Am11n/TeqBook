@@ -100,6 +100,24 @@ export type PublicBookingTokens = {
     card: string;
     focus: string;
   };
+  button: {
+    radius: string;
+    shadow: string;
+    hoverLift: string;
+  };
+  slot: {
+    radius: string;
+    baseShadow: string;
+    selectedShadow: string;
+    selectedBg: string;
+    selectedText: string;
+    selectedBorder: string;
+  };
+  header: {
+    logoSize: string;
+    verticalPadding: string;
+    accentOpacity: number;
+  };
   spacing: {
     xs: string;
     sm: string;
@@ -125,20 +143,32 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
   const primaryText = pickPrimaryTextColor(primary);
   const primaryHover = darken(primary, 0.14);
   const focusColor = rgba(primary, 0.35);
-  const pageBackgroundBase = branding.pageBackground || "#f5f6f8";
+  const pageBackgroundBase = branding.backgroundColor || branding.pageBackground || "#f5f6f8";
   const cardBackground = branding.cardBackground || "#ffffff";
-  const pageBackground =
-    branding.pageBackgroundMode === "gradient"
-      ? `linear-gradient(180deg, ${mix(primary, pageBackgroundBase, 0.86)} 0%, ${pageBackgroundBase} 100%)`
-      : pageBackgroundBase;
+  const gradientStart = branding.gradientStart || mix(primary, pageBackgroundBase, 0.84);
+  const gradientEnd = branding.gradientEnd || pageBackgroundBase;
+  const pageBackground = branding.backgroundMode === "soft_gradient"
+    ? `linear-gradient(${branding.gradientAngle}deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
+    : pageBackgroundBase;
 
+  const radiusBySurface = branding.surfaceStyle === "elevated"
+    ? { sm: "0.75rem", md: "1rem", lg: "1.25rem" }
+    : branding.surfaceStyle === "flat"
+      ? { sm: "0.5rem", md: "0.625rem", lg: "0.75rem" }
+      : { sm: "0.625rem", md: "0.75rem", lg: "1rem" };
   const radius =
     branding.radiusScale === "rounded"
       ? { sm: "0.75rem", md: "1rem", lg: "1.25rem" }
-      : { sm: "0.5rem", md: "0.75rem", lg: "1rem" };
+      : radiusBySurface;
 
   const shadow =
-    branding.shadowScale === "medium"
+    branding.surfaceStyle === "flat"
+      ? {
+          level1: "none",
+          level2: "none",
+          card: "none",
+        }
+      : branding.shadowScale === "medium" || branding.surfaceStyle === "elevated"
       ? {
           level1: "0 10px 26px rgba(16,24,40,0.08)",
           level2: "0 20px 40px rgba(16,24,40,0.12)",
@@ -166,6 +196,48 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
           easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
           ctaReadyPulse: "pb-ready-pulse 1400ms ease-in-out infinite",
         };
+
+  const button =
+    branding.buttonStyle === "rounded"
+      ? { radius: "9999px", shadow: "var(--pb-shadow-1)", hoverLift: "translateY(-1px)" }
+      : branding.buttonStyle === "sharp"
+        ? { radius: "0.375rem", shadow: "none", hoverLift: "translateY(0)" }
+        : { radius: "0.75rem", shadow: "0 6px 16px rgba(16,24,40,0.08)", hoverLift: "translateY(-1px)" };
+
+  const slot =
+    branding.slotStyle === "pill"
+      ? {
+          radius: "9999px",
+          baseShadow: "none",
+          selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%)",
+          selectedBg: "var(--pb-primary)",
+          selectedText: "var(--pb-primary-text)",
+          selectedBorder: "var(--pb-primary)",
+        }
+      : branding.slotStyle === "card"
+        ? {
+            radius: "0.875rem",
+            baseShadow: "var(--pb-shadow-1)",
+            selectedShadow: "var(--pb-shadow-2)",
+            selectedBg: "color-mix(in srgb, var(--pb-primary) 10%, var(--pb-surface) 90%)",
+            selectedText: "var(--pb-text)",
+            selectedBorder: "var(--pb-primary)",
+          }
+        : {
+            radius: "0.625rem",
+            baseShadow: "none",
+            selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%)",
+            selectedBg: "var(--pb-surface)",
+            selectedText: "var(--pb-text)",
+            selectedBorder: "var(--pb-primary)",
+          };
+
+  const header =
+    branding.headerStyle === "compact"
+      ? { logoSize: "32px", verticalPadding: "0.75rem", accentOpacity: 0.2 }
+      : branding.headerStyle === "branded"
+        ? { logoSize: "52px", verticalPadding: "1rem", accentOpacity: 0.55 }
+        : { logoSize: "40px", verticalPadding: "1rem", accentOpacity: 0.35 };
 
   return {
     colors: {
@@ -207,6 +279,9 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
       ...shadow,
       focus: `0 0 0 3px ${focusColor}`,
     },
+    button,
+    slot,
+    header,
     spacing: {
       xs: "0.25rem",
       sm: "0.5rem",

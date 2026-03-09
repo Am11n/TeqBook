@@ -1,5 +1,10 @@
 import {
+  type BackgroundMode,
+  type ButtonStyle,
+  type HeaderStyle,
   PRO_NEUTRAL_DEFAULT,
+  type SlotStyle,
+  type SurfaceStyle,
   TEQBOOK_DEFAULT,
   type AllowedFont,
   type BrandingPackTokens,
@@ -29,7 +34,7 @@ export type ThemePackSnapshot = {
 } | null;
 
 export type ResolveEffectiveBrandingInput = {
-  plan: BrandingPlan | null | undefined;
+  plan: BrandingPlan | string | null | undefined;
   theme_pack_id?: string | null;
   theme_pack_version?: number | null;
   theme_pack_hash?: string | null;
@@ -55,7 +60,16 @@ export type EffectiveBranding = {
   pageBackground: string;
   cardBackground: string;
   pageBackgroundMode: "solid" | "gradient";
+  backgroundMode: BackgroundMode;
+  backgroundColor: string;
+  gradientStart?: string;
+  gradientEnd?: string;
+  gradientAngle: number;
   headerVariant: HeaderVariant;
+  surfaceStyle: SurfaceStyle;
+  buttonStyle: ButtonStyle;
+  slotStyle: SlotStyle;
+  headerStyle: HeaderStyle;
   radiusScale: RadiusScale;
   shadowScale: ShadowScale;
   motionPreset: MotionPreset;
@@ -88,8 +102,11 @@ function cloneTokens(tokens: BrandingPackTokens): BrandingPackTokens {
   };
 }
 
-function resolvePlan(plan: BrandingPlan | null | undefined): BrandingPlan {
-  if (plan === "business" || plan === "pro") return plan;
+function resolvePlan(plan: BrandingPlan | string | null | undefined): BrandingPlan {
+  if (typeof plan !== "string") return "starter";
+  const normalized = plan.trim().toLowerCase();
+  if (normalized === "business" || normalized.startsWith("business")) return "business";
+  if (normalized === "pro" || normalized.startsWith("pro")) return "pro";
   return "starter";
 }
 
@@ -114,7 +131,16 @@ function createBaseFromPack(pack: ThemePackDefinition): EffectiveBranding {
     pageBackground: "#f5f6f8",
     cardBackground: "#ffffff",
     pageBackgroundMode: "solid",
+    backgroundMode: "default",
+    backgroundColor: "#f5f6f8",
+    gradientStart: undefined,
+    gradientEnd: undefined,
+    gradientAngle: 180,
     headerVariant: pack.tokens.headerVariant,
+    surfaceStyle: "soft",
+    buttonStyle: "soft",
+    slotStyle: "minimal",
+    headerStyle: pack.tokens.headerVariant === "compact" ? "compact" : "standard",
     radiusScale: pack.tokens.radiusScale,
     shadowScale: pack.tokens.shadowScale,
     motionPreset: pack.tokens.motionPreset,
@@ -133,7 +159,16 @@ function fallbackBranding(plan: BrandingPlan): EffectiveBranding {
     pageBackground: "#f5f6f8",
     cardBackground: "#ffffff",
     pageBackgroundMode: "solid",
+    backgroundMode: "default",
+    backgroundColor: "#f5f6f8",
+    gradientStart: undefined,
+    gradientEnd: undefined,
+    gradientAngle: 180,
     headerVariant: PRO_NEUTRAL_DEFAULT.headerVariant,
+    surfaceStyle: "soft",
+    buttonStyle: "soft",
+    slotStyle: "minimal",
+    headerStyle: "standard",
     radiusScale: PRO_NEUTRAL_DEFAULT.radiusScale,
     shadowScale: PRO_NEUTRAL_DEFAULT.shadowScale,
     motionPreset: PRO_NEUTRAL_DEFAULT.motionPreset,
@@ -173,7 +208,16 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       pageBackground: "#f5f6f8",
       cardBackground: "#ffffff",
       pageBackgroundMode: "solid",
+      backgroundMode: "default",
+      backgroundColor: "#f5f6f8",
+      gradientStart: undefined,
+      gradientEnd: undefined,
+      gradientAngle: 180,
       headerVariant: TEQBOOK_DEFAULT.headerVariant,
+      surfaceStyle: "soft",
+      buttonStyle: "soft",
+      slotStyle: "minimal",
+      headerStyle: "standard",
       radiusScale: TEQBOOK_DEFAULT.radiusScale,
       shadowScale: TEQBOOK_DEFAULT.shadowScale,
       motionPreset: TEQBOOK_DEFAULT.motionPreset,
@@ -191,7 +235,16 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       pageBackground: "#f5f6f8",
       cardBackground: "#ffffff",
       pageBackgroundMode: "solid",
+      backgroundMode: "default",
+      backgroundColor: "#f5f6f8",
+      gradientStart: undefined,
+      gradientEnd: undefined,
+      gradientAngle: 180,
       headerVariant: input.theme_pack_snapshot.tokens.headerVariant,
+      surfaceStyle: "soft",
+      buttonStyle: "soft",
+      slotStyle: "minimal",
+      headerStyle: input.theme_pack_snapshot.tokens.headerVariant === "compact" ? "compact" : "standard",
       radiusScale: input.theme_pack_snapshot.tokens.radiusScale,
       shadowScale: input.theme_pack_snapshot.tokens.shadowScale,
       motionPreset: input.theme_pack_snapshot.tokens.motionPreset,
@@ -219,15 +272,27 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
   }
 
   const validatedOverrides = validateThemeOverrides(plan, input.theme_overrides);
-  const safeOverrides = validatedOverrides.ok ? sanitizeOverridesForRender(plan, validatedOverrides.value) : {};
+  const safeOverrides = validatedOverrides.ok
+    ? sanitizeOverridesForRender(plan, validatedOverrides.value)
+    : sanitizeOverridesForRender(plan, input.theme_overrides as ThemeOverrides | null | undefined);
+  const legacyFallback = mapLegacyToBase(input.theme ?? null);
 
   const merged: EffectiveBranding = {
     ...base,
     plan,
-    primaryColor: sanitizeColor(safeOverrides.colors?.primary) ?? sanitizeColor(base.primaryColor) ?? PRO_NEUTRAL_DEFAULT.primaryColor,
-    secondaryColor: sanitizeColor(safeOverrides.colors?.secondary) ?? sanitizeColor(base.secondaryColor) ?? PRO_NEUTRAL_DEFAULT.secondaryColor,
+    primaryColor:
+      sanitizeColor(safeOverrides.colors?.primary)
+      ?? sanitizeColor(base.primaryColor)
+      ?? sanitizeColor(legacyFallback.primaryColor)
+      ?? PRO_NEUTRAL_DEFAULT.primaryColor,
+    secondaryColor:
+      sanitizeColor(safeOverrides.colors?.secondary)
+      ?? sanitizeColor(base.secondaryColor)
+      ?? sanitizeColor(legacyFallback.secondaryColor)
+      ?? PRO_NEUTRAL_DEFAULT.secondaryColor,
     fontFamily: sanitizeFont(safeOverrides.typography?.fontFamily)
       ?? sanitizeFont(String(base.fontFamily))
+      ?? sanitizeFont(String(legacyFallback.fontFamily))
       ?? PRO_NEUTRAL_DEFAULT.fontFamily,
     pageBackground:
       sanitizeColor(safeOverrides.appearance?.pageBackground)
@@ -238,8 +303,29 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       ?? sanitizeColor(base.cardBackground)
       ?? "#ffffff",
     pageBackgroundMode: safeOverrides.appearance?.pageBackgroundMode ?? base.pageBackgroundMode ?? "solid",
-    logoUrl: sanitizeLogoUrl(safeOverrides.logoUrl) ?? sanitizeLogoUrl(base.logoUrl),
+    backgroundMode: safeOverrides.appearance?.backgroundMode ?? base.backgroundMode ?? "default",
+    backgroundColor:
+      sanitizeColor(safeOverrides.appearance?.backgroundColor)
+      ?? sanitizeColor(base.backgroundColor)
+      ?? "#f5f6f8",
+    gradientStart:
+      sanitizeColor(safeOverrides.appearance?.gradientStart)
+      ?? sanitizeColor(base.gradientStart)
+      ?? undefined,
+    gradientEnd:
+      sanitizeColor(safeOverrides.appearance?.gradientEnd)
+      ?? sanitizeColor(base.gradientEnd)
+      ?? undefined,
+    gradientAngle: safeOverrides.appearance?.gradientAngle ?? base.gradientAngle ?? 180,
+    logoUrl:
+      sanitizeLogoUrl(safeOverrides.logoUrl)
+      ?? sanitizeLogoUrl(base.logoUrl)
+      ?? sanitizeLogoUrl(legacyFallback.logoUrl),
     headerVariant: safeOverrides.components?.headerVariant ?? base.headerVariant,
+    surfaceStyle: safeOverrides.components?.surfaceStyle ?? base.surfaceStyle ?? "soft",
+    buttonStyle: safeOverrides.components?.buttonStyle ?? base.buttonStyle ?? "soft",
+    slotStyle: safeOverrides.components?.slotStyle ?? base.slotStyle ?? "minimal",
+    headerStyle: safeOverrides.components?.headerStyle ?? base.headerStyle ?? "standard",
     radiusScale: safeOverrides.radiusScale ?? base.radiusScale,
     shadowScale: safeOverrides.shadowScale ?? base.shadowScale,
     motionPreset: safeOverrides.motionPreset ?? base.motionPreset,

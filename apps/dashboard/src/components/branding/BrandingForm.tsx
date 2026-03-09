@@ -25,6 +25,24 @@ interface BrandingFormProps {
   setLogoPreview: (preview: string | null) => void;
   themePackId: string;
   setThemePackId: (value: string) => void;
+  backgroundMode: "default" | "solid" | "soft_gradient";
+  setBackgroundMode: (value: "default" | "solid" | "soft_gradient") => void;
+  backgroundColor: string;
+  setBackgroundColor: (value: string) => void;
+  gradientStart: string;
+  setGradientStart: (value: string) => void;
+  gradientEnd: string;
+  setGradientEnd: (value: string) => void;
+  gradientAngle: string;
+  setGradientAngle: (value: string) => void;
+  surfaceStyle: "soft" | "elevated" | "flat";
+  setSurfaceStyle: (value: "soft" | "elevated" | "flat") => void;
+  buttonStyle: "rounded" | "soft" | "sharp";
+  setButtonStyle: (value: "rounded" | "soft" | "sharp") => void;
+  slotStyle: "minimal" | "pill" | "card";
+  setSlotStyle: (value: "minimal" | "pill" | "card") => void;
+  headerStyle: "compact" | "standard" | "branded";
+  setHeaderStyle: (value: "compact" | "standard" | "branded") => void;
   themePacks: readonly ThemePackDefinition[];
   isStarterPlan: boolean;
   uploadingLogo: boolean;
@@ -60,6 +78,24 @@ export function BrandingForm({
   setLogoPreview,
   themePackId,
   setThemePackId,
+  backgroundMode,
+  setBackgroundMode,
+  backgroundColor,
+  setBackgroundColor,
+  gradientStart,
+  setGradientStart,
+  gradientEnd,
+  setGradientEnd,
+  gradientAngle,
+  setGradientAngle,
+  surfaceStyle,
+  setSurfaceStyle,
+  buttonStyle,
+  setButtonStyle,
+  slotStyle,
+  setSlotStyle,
+  headerStyle,
+  setHeaderStyle,
   themePacks,
   isStarterPlan,
   uploadingLogo,
@@ -197,6 +233,144 @@ export function BrandingForm({
               ]}
             />
             <p className="text-xs text-muted-foreground mt-1">Font family for the booking page</p>
+          </Field>
+
+          <Field label="Page Background" htmlFor="backgroundMode">
+            <div className="space-y-3">
+              <DialogSelect
+                value={backgroundMode}
+                onChange={(value) => setBackgroundMode(value as "default" | "solid" | "soft_gradient")}
+                className="max-w-md"
+                disabled={isStarterPlan}
+                options={[
+                  { value: "default", label: "Default" },
+                  { value: "solid", label: "Solid color" },
+                  { value: "soft_gradient", label: "Soft gradient" },
+                ]}
+              />
+              {backgroundMode === "solid" && (
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    disabled={isStarterPlan}
+                    className="w-20 h-10"
+                  />
+                  <Input
+                    type="text"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    disabled={isStarterPlan}
+                    className="max-w-xs"
+                  />
+                </div>
+              )}
+              {backgroundMode === "soft_gradient" && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="color"
+                      value={gradientStart}
+                      onChange={(e) => setGradientStart(e.target.value)}
+                      disabled={isStarterPlan}
+                      className="w-20 h-10"
+                    />
+                    <Input
+                      type="text"
+                      value={gradientStart}
+                      onChange={(e) => setGradientStart(e.target.value)}
+                      disabled={isStarterPlan}
+                      className="max-w-xs"
+                      placeholder="#dbeafe"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="color"
+                      value={gradientEnd}
+                      onChange={(e) => setGradientEnd(e.target.value)}
+                      disabled={isStarterPlan}
+                      className="w-20 h-10"
+                    />
+                    <Input
+                      type="text"
+                      value={gradientEnd}
+                      onChange={(e) => setGradientEnd(e.target.value)}
+                      disabled={isStarterPlan}
+                      className="max-w-xs"
+                      placeholder="#f5f6f8"
+                    />
+                  </div>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={360}
+                    value={gradientAngle}
+                    onChange={(e) => setGradientAngle(e.target.value)}
+                    disabled={isStarterPlan}
+                    className="max-w-xs"
+                    placeholder="180"
+                  />
+                </div>
+              )}
+            </div>
+          </Field>
+
+          <Field label="Surface Style" htmlFor="surfaceStyle">
+            <DialogSelect
+              value={surfaceStyle}
+              onChange={(value) => setSurfaceStyle(value as "soft" | "elevated" | "flat")}
+              className="max-w-md"
+              disabled={isStarterPlan}
+              options={[
+                { value: "soft", label: "Soft" },
+                { value: "elevated", label: "Elevated" },
+                { value: "flat", label: "Flat" },
+              ]}
+            />
+          </Field>
+
+          <Field label="Button Style" htmlFor="buttonStyle">
+            <DialogSelect
+              value={buttonStyle}
+              onChange={(value) => setButtonStyle(value as "rounded" | "soft" | "sharp")}
+              className="max-w-md"
+              disabled={isStarterPlan}
+              options={[
+                { value: "rounded", label: "Rounded" },
+                { value: "soft", label: "Soft" },
+                { value: "sharp", label: "Sharp" },
+              ]}
+            />
+          </Field>
+
+          <Field label="Slot Style" htmlFor="slotStyle">
+            <DialogSelect
+              value={slotStyle}
+              onChange={(value) => setSlotStyle(value as "minimal" | "pill" | "card")}
+              className="max-w-md"
+              disabled={isStarterPlan}
+              options={[
+                { value: "minimal", label: "Minimal" },
+                { value: "pill", label: "Pill" },
+                { value: "card", label: "Card" },
+              ]}
+            />
+          </Field>
+
+          <Field label="Header Style" htmlFor="headerStyle">
+            <DialogSelect
+              value={headerStyle}
+              onChange={(value) => setHeaderStyle(value as "compact" | "standard" | "branded")}
+              className="max-w-md"
+              disabled={isStarterPlan}
+              options={[
+                { value: "compact", label: "Compact" },
+                { value: "standard", label: "Standard" },
+                { value: "branded", label: "Branded" },
+              ]}
+            />
           </Field>
 
           <Field label="Logo" htmlFor="logo">

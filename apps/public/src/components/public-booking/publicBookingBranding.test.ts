@@ -31,6 +31,19 @@ describe("public booking branding resolver", () => {
     expect(resolved.fontFamily).toBe(TEQBOOK_DEFAULT.fontFamily);
   });
 
+  it("normalizes non-canonical business plan strings", () => {
+    const resolved = resolveEffectiveBranding({
+      plan: "Business",
+      theme_overrides: {
+        colors: { primary: "#317481" },
+      },
+    });
+
+    expect(resolved.plan).toBe("business");
+    expect(resolved.primaryColor).toBe("#317481");
+    expect(resolved.source).toBe("pro-neutral-default");
+  });
+
   it("resolves pro pack and keeps deterministic metadata", () => {
     const pack = findThemePackById("nail-gloss");
     expect(pack).toBeTruthy();
@@ -81,6 +94,77 @@ describe("public booking branding resolver", () => {
     expect(validation.ok).toBe(false);
     expect(validation.issues?.join(" ")).toContain("requires Business");
   });
+
+  it("accepts all six v1 controls on pro", () => {
+    const validation = validateThemeOverrides("pro", {
+      colors: {
+        primary: "#317481",
+      },
+      appearance: {
+        backgroundMode: "soft_gradient",
+        gradientStart: "#0f2027",
+        gradientEnd: "#2c5364",
+        gradientAngle: 160,
+      },
+      components: {
+        surfaceStyle: "elevated",
+        buttonStyle: "rounded",
+        slotStyle: "pill",
+        headerStyle: "branded",
+      },
+    });
+
+    expect(validation.ok).toBe(true);
+  });
+
+  it("maps six controls into stable token outputs", () => {
+    const resolved = resolveEffectiveBranding({
+      plan: "pro",
+      theme_pack_id: "barber-bold",
+      theme_pack_snapshot: createThemePackSnapshot(findThemePackById("barber-bold")!),
+      theme_overrides: {
+        colors: { primary: "#317481" },
+        appearance: {
+          backgroundMode: "soft_gradient",
+          gradientStart: "#0f2027",
+          gradientEnd: "#2c5364",
+          gradientAngle: 170,
+        },
+        components: {
+          surfaceStyle: "elevated",
+          buttonStyle: "rounded",
+          slotStyle: "pill",
+          headerStyle: "branded",
+        },
+      },
+    });
+
+    const tokens = buildSharedTokens(resolved);
+    expect(tokens.colors.pageBackground).toContain("linear-gradient");
+    expect(tokens.button.radius).toBe("9999px");
+    expect(tokens.slot.radius).toBe("9999px");
+    expect(tokens.header.logoSize).toBe("52px");
+  });
+
+  it("falls back to legacy theme when override object has unknown keys", () => {
+    const resolved = resolveEffectiveBranding({
+      plan: "business",
+      theme_pack_id: "barber-bold",
+      theme_pack_snapshot: createThemePackSnapshot(findThemePackById("barber-bold")!),
+      theme_overrides: {
+        colors: { primary: "#317481" },
+        // Simulate stale persisted key from older schema versions.
+        unknownContainer: { stale: true },
+      } as unknown as Record<string, unknown>,
+      theme: {
+        primary: "#317481",
+        logo_url: "https://example.com/logo.png",
+      },
+    });
+
+    expect(resolved.primaryColor).toBe("#317481");
+    expect(resolved.logoUrl).toBe("https://example.com/logo.png");
+  });
 });
 
 describe("public/dashboard parity wrapper", () => {
@@ -114,7 +198,19 @@ describe("public/dashboard parity wrapper", () => {
       primaryColor: sharedResolved.primaryColor,
       secondaryColor: sharedResolved.secondaryColor,
       fontFamily: sharedResolved.fontFamily,
+      pageBackground: sharedResolved.pageBackground,
+      cardBackground: sharedResolved.cardBackground,
+      pageBackgroundMode: sharedResolved.pageBackgroundMode,
+      backgroundMode: sharedResolved.backgroundMode,
+      backgroundColor: sharedResolved.backgroundColor,
+      gradientStart: sharedResolved.gradientStart,
+      gradientEnd: sharedResolved.gradientEnd,
+      gradientAngle: sharedResolved.gradientAngle,
       headerVariant: sharedResolved.headerVariant,
+      surfaceStyle: sharedResolved.surfaceStyle,
+      buttonStyle: sharedResolved.buttonStyle,
+      slotStyle: sharedResolved.slotStyle,
+      headerStyle: sharedResolved.headerStyle,
       radiusScale: sharedResolved.radiusScale,
       shadowScale: sharedResolved.shadowScale,
       motionPreset: sharedResolved.motionPreset,

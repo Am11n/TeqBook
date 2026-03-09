@@ -62,7 +62,7 @@ export function BookingSummaryCard({
 
   return (
     <section
-      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6 shadow-md"
+      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6"
       style={{
         backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 88%, var(--pb-surface) 12%)",
         borderColor: "var(--pb-border)",
@@ -129,11 +129,13 @@ export function BookingSummaryCard({
           type={shouldSubmit ? "submit" : "button"}
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
-          className="h-11 w-full rounded-[10px] text-sm font-semibold shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
+          className="h-11 w-full text-sm font-semibold transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] enabled:hover:[transform:var(--pb-button-hover-lift)] motion-reduce:transition-none"
           disabled={ctaDisabled}
           style={{
             backgroundColor: !ctaDisabled ? "var(--pb-primary)" : undefined,
             color: !ctaDisabled ? "var(--pb-primary-text)" : undefined,
+            borderRadius: "var(--pb-button-radius)",
+            boxShadow: !ctaDisabled ? "var(--pb-button-shadow)" : undefined,
           }}
         >
           {ctaLabel}

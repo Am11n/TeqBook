@@ -41,11 +41,22 @@ export type Salon = {
     logoUrl?: string;
     colors?: { primary?: string; secondary?: string };
     typography?: { fontFamily?: string };
-    components?: { headerVariant?: "standard" | "compact" };
     appearance?: {
       pageBackground?: string;
       cardBackground?: string;
       pageBackgroundMode?: "solid" | "gradient";
+      backgroundMode?: "default" | "solid" | "soft_gradient";
+      backgroundColor?: string;
+      gradientStart?: string;
+      gradientEnd?: string;
+      gradientAngle?: number;
+    };
+    components?: {
+      headerVariant?: "standard" | "compact";
+      surfaceStyle?: "soft" | "elevated" | "flat";
+      buttonStyle?: "rounded" | "soft" | "sharp";
+      slotStyle?: "minimal" | "pill" | "card";
+      headerStyle?: "compact" | "standard" | "branded";
     };
     radiusScale?: "standard" | "rounded";
     shadowScale?: "soft" | "medium";
@@ -70,7 +81,16 @@ export type PublicBookingEffectiveBranding = {
   pageBackground: string;
   cardBackground: string;
   pageBackgroundMode: "solid" | "gradient";
+  backgroundMode: "default" | "solid" | "soft_gradient";
+  backgroundColor: string;
+  gradientStart?: string;
+  gradientEnd?: string;
+  gradientAngle: number;
   headerVariant: "standard" | "compact";
+  surfaceStyle: "soft" | "elevated" | "flat";
+  buttonStyle: "rounded" | "soft" | "sharp";
+  slotStyle: "minimal" | "pill" | "card";
+  headerStyle: "compact" | "standard" | "branded";
   radiusScale: "standard" | "rounded";
   shadowScale: "soft" | "medium";
   motionPreset: "standard" | "calm";
@@ -121,6 +141,24 @@ export type PublicBookingTokens = {
     level2: string;
     card: string;
     focus: string;
+  };
+  button: {
+    radius: string;
+    shadow: string;
+    hoverLift: string;
+  };
+  slot: {
+    radius: string;
+    baseShadow: string;
+    selectedShadow: string;
+    selectedBg: string;
+    selectedText: string;
+    selectedBorder: string;
+  };
+  header: {
+    logoSize: string;
+    verticalPadding: string;
+    accentOpacity: number;
   };
   spacing: {
     xs: string;

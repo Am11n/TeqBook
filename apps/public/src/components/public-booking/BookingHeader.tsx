@@ -83,10 +83,12 @@ export function BookingHeader({
 
   return (
     <header
-      className="relative sticky top-0 z-20 border-b px-4 py-4 backdrop-blur-md sm:px-6"
+      className="relative sticky top-0 z-20 border-b px-4 backdrop-blur-md sm:px-6"
       style={{
         backgroundColor: tokens.colors.surface,
         borderColor: tokens.colors.border,
+        paddingTop: "var(--pb-header-vertical-padding)",
+        paddingBottom: "var(--pb-header-vertical-padding)",
       }}
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -96,11 +98,12 @@ export function BookingHeader({
               <img
                 src={logoUrl}
                 alt={salon.name}
-                width={40}
-                height={40}
+                width={52}
+                height={52}
                 loading="lazy"
                 decoding="async"
-                className="h-10 w-auto object-contain"
+                className="w-auto object-contain"
+                style={{ height: "var(--pb-header-logo-size)" }}
               />
             )}
             <h1 className="break-words text-xl font-semibold leading-tight tracking-tight">
@@ -234,7 +237,7 @@ export function BookingHeader({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
         style={{
           background: "linear-gradient(90deg, transparent, var(--pb-primary), transparent)",
-          opacity: 0.35,
+          opacity: "var(--pb-header-accent-opacity)",
         }}
       />
     </header>

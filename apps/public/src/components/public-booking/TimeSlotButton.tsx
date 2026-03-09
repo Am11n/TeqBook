@@ -36,18 +36,18 @@ export function TimeSlotButton({
       aria-label={`${timeRange}${employeeName ? `, ${employeeName}` : ""}${unavailable ? ", unavailable" : ""}`}
       onClick={() => onSelect(id)}
       disabled={isDisabled}
-      className="min-h-12 rounded-[var(--pb-radius-sm)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] enabled:hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none"
+      className="min-h-12 rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none"
       style={{
-        borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
+        borderColor: selected ? "var(--pb-slot-selected-border)" : "var(--pb-border)",
         backgroundColor: selected
-          ? "var(--pb-primary)"
+          ? "var(--pb-slot-selected-bg)"
           : unavailable
             ? "var(--pb-surface-muted)"
             : "var(--pb-surface)",
-        color: selected ? "var(--pb-primary-text)" : unavailable ? "var(--pb-muted)" : "var(--pb-text)",
+        color: selected ? "var(--pb-slot-selected-text)" : unavailable ? "var(--pb-muted)" : "var(--pb-text)",
         boxShadow: selected
-          ? "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%), var(--pb-shadow-1)"
-          : "none",
+          ? "var(--pb-slot-selected-shadow)"
+          : "var(--pb-slot-shadow)",
         transform: selected ? "translateY(-1px)" : "translateY(0)",
         opacity: isDisabled && !selected ? 0.4 : 1,
         cursor: isDisabled ? "not-allowed" : "pointer",

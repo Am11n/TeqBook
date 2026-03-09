@@ -14,9 +14,10 @@ interface LivePreviewCardProps {
     logo_url?: string;
   };
   onHide: () => void;
+  previewRefreshKey?: number;
 }
 
-function buildPublicBookingPreviewUrl(salonSlug: string): string {
+function buildPublicBookingPreviewUrl(salonSlug: string, previewRefreshKey = 0): string {
   const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
 
   if (typeof window !== "undefined") {
@@ -28,7 +29,7 @@ function buildPublicBookingPreviewUrl(salonSlug: string): string {
     // On non-local hosts (e.g. teqbook.com), always use same-origin /book route.
     // This avoids cross-origin iframe/CSP mismatch between proxied dashboard/public apps.
     if (!isCurrentLocal) {
-      return `${current.origin}/book/${salonSlug}?preview=true`;
+      return `${current.origin}/book/${salonSlug}?preview=true&refresh=${previewRefreshKey}`;
     }
 
     if (configuredAppUrl) {
@@ -40,7 +41,7 @@ function buildPublicBookingPreviewUrl(salonSlug: string): string {
 
         // Ignore localhost app URL on non-local pages (e.g. teqbook.com/dashboard).
         if (!(isConfiguredLocal && !isCurrentLocal)) {
-          return `${configured.origin}/book/${salonSlug}?preview=true`;
+          return `${configured.origin}/book/${salonSlug}?preview=true&refresh=${previewRefreshKey}`;
         }
       } catch {
         // Fall through to runtime-derived origin below.
@@ -49,17 +50,17 @@ function buildPublicBookingPreviewUrl(salonSlug: string): string {
 
     // Local dev: dashboard runs on :3002 while public runs on :3001.
     if (current.port === "3002") current.port = "3001";
-    return `${current.origin}/book/${salonSlug}?preview=true`;
+    return `${current.origin}/book/${salonSlug}?preview=true&refresh=${previewRefreshKey}`;
   }
 
   if (configuredAppUrl) {
-    return `${configuredAppUrl.replace(/\/$/, "")}/book/${salonSlug}?preview=true`;
+    return `${configuredAppUrl.replace(/\/$/, "")}/book/${salonSlug}?preview=true&refresh=${previewRefreshKey}`;
   }
 
-  return `/book/${salonSlug}?preview=true`;
+  return `/book/${salonSlug}?preview=true&refresh=${previewRefreshKey}`;
 }
 
-export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) {
+export function LivePreviewCard({ salon, theme, onHide, previewRefreshKey = 0 }: LivePreviewCardProps) {
   if (!salon?.slug) {
     return (
       <Card className="p-6">
@@ -75,7 +76,7 @@ export function LivePreviewCard({ salon, theme, onHide }: LivePreviewCardProps) 
     );
   }
 
-  const previewUrl = buildPublicBookingPreviewUrl(salon.slug);
+  const previewUrl = buildPublicBookingPreviewUrl(salon.slug, previewRefreshKey);
 
   return (
     <Card className="p-6">

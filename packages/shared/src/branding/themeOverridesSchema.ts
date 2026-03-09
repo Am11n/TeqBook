@@ -12,12 +12,21 @@ const TypographySchema = z.object({
 
 const ComponentsSchema = z.object({
   headerVariant: z.enum(["standard", "compact"]).optional(),
+  surfaceStyle: z.enum(["soft", "elevated", "flat"]).optional(),
+  buttonStyle: z.enum(["rounded", "soft", "sharp"]).optional(),
+  slotStyle: z.enum(["minimal", "pill", "card"]).optional(),
+  headerStyle: z.enum(["compact", "standard", "branded"]).optional(),
 }).partial();
 
 const AppearanceSchema = z.object({
   pageBackground: z.string().optional(),
   cardBackground: z.string().optional(),
   pageBackgroundMode: z.enum(["solid", "gradient"]).optional(),
+  backgroundMode: z.enum(["default", "solid", "soft_gradient"]).optional(),
+  backgroundColor: z.string().optional(),
+  gradientStart: z.string().optional(),
+  gradientEnd: z.string().optional(),
+  gradientAngle: z.number().int().min(0).max(360).optional(),
 }).partial();
 
 export const ThemeOverridesSchema = z.object({
@@ -35,11 +44,24 @@ export type ThemeOverrides = z.infer<typeof ThemeOverridesSchema>;
 
 const PRO_ALLOWED_PATHS = new Set<string>([
   "logoUrl",
+  "colors",
   "colors.primary",
+  "typography",
   "typography.fontFamily",
+  "appearance",
   "appearance.pageBackground",
   "appearance.cardBackground",
   "appearance.pageBackgroundMode",
+  "appearance.backgroundMode",
+  "appearance.backgroundColor",
+  "appearance.gradientStart",
+  "appearance.gradientEnd",
+  "appearance.gradientAngle",
+  "components",
+  "components.surfaceStyle",
+  "components.buttonStyle",
+  "components.slotStyle",
+  "components.headerStyle",
 ]);
 
 const BUSINESS_ONLY_PATHS = new Set<string>([

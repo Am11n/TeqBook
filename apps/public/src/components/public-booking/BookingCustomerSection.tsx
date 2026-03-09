@@ -210,6 +210,7 @@ export function BookingCustomerSection({
                 type="button"
                 className="mt-3 w-full"
                 variant="outline"
+                style={{ borderRadius: "var(--pb-button-radius)" }}
                 onClick={() => {
                   void handleRetryLoadSlots();
                 }}
@@ -233,7 +234,14 @@ export function BookingCustomerSection({
                 : (!selectedSlot || !customerName || (!customerEmail && !customerPhone) || saving)
             }
             variant={isPrimaryStep ? "default" : "outline"}
-            style={isPrimaryStep ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText } : undefined}
+            style={{
+              borderRadius: "var(--pb-button-radius)",
+              ...(isPrimaryStep ? {
+                backgroundColor: tokens.colors.primary,
+                color: tokens.colors.primaryText,
+                boxShadow: "var(--pb-button-shadow)",
+              } : {}),
+            }}
           >
             {isWaitlistMode
               ? (joiningWaitlist ? (t.waitlistSubmitting || "Submitting...") : (t.modeWaitlist || "Notify me when available"))
