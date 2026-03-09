@@ -42,7 +42,8 @@ export function useBookings({ translations }: UseBookingsOptions) {
 
   // Use ref to track if we're currently loading to prevent infinite loops
   const isLoadingRef = useRef(false);
-  const lastSalonIdRef = useRef<string | null>(null);
+  const lastLoadedSalonIdRef = useRef<string | null>(null);
+  const hasInventoryFeature = mounted && hasFeature("INVENTORY");
 
   const loadBookings = useCallback(async () => {
     // Prevent concurrent loads
@@ -50,13 +51,7 @@ export function useBookings({ translations }: UseBookingsOptions) {
       return;
     }
 
-    // Prevent reloading if salon hasn't changed
-    if (lastSalonIdRef.current === salon?.id && salon?.id) {
-      return;
-    }
-
     isLoadingRef.current = true;
-    lastSalonIdRef.current = salon?.id || null;
     setLoading(true);
     setError(null);
 
@@ -79,13 +74,12 @@ export function useBookings({ translations }: UseBookingsOptions) {
         getEmployeesForCurrentSalon(salon.id),
         getActiveServicesForCurrentSalon(salon.id),
         // Only load products if INVENTORY feature is available
-        mounted && hasFeature("INVENTORY")
+        hasInventoryFeature
           ? getProductsForSalon(salon.id, { activeOnly: true })
           : Promise.resolve({ data: [], error: null }),
         getShiftsForCurrentSalon(salon.id),
       ]);
 
-      const hasInventoryFeature = mounted && hasFeature("INVENTORY");
       if (
         bookingsError ||
         employeesError ||
@@ -137,17 +131,18 @@ export function useBookings({ translations }: UseBookingsOptions) {
       );
       setServices((servicesData ?? []).map((s) => ({ id: s.id, name: s.name })));
       // Only set products if INVENTORY feature is available
-      if (mounted && hasFeature("INVENTORY")) {
+      if (hasInventoryFeature) {
         setProducts(productsData ?? []);
       } else {
         setProducts([]);
       }
       setShifts(shiftsData ?? []);
+      lastLoadedSalonIdRef.current = salon.id;
       setLoading(false);
     } finally {
       isLoadingRef.current = false;
     }
-  }, [salon?.id, mounted, hasFeature]);
+  }, [salon?.id, hasInventoryFeature, translations.noSalon, translations.loadError]);
 
   useEffect(() => {
     if (!isReady) {
@@ -162,13 +157,13 @@ export function useBookings({ translations }: UseBookingsOptions) {
       return;
     }
 
-    // Only load if salon ID has changed or we haven't loaded yet
-    if (salon?.id && (lastSalonIdRef.current !== salon.id || !isLoadingRef.current)) {
+    // Auto-load on first ready state, salon switch, or feature-availability changes.
+    if (salon?.id && (lastLoadedSalonIdRef.current !== salon.id || !isLoadingRef.current)) {
       loadBookings();
     }
   }, [isReady, salon?.id, salonLoading, salonError, loadBookings]);
 
-  const hasInventory = mounted && hasFeature("INVENTORY");
+  const hasInventory = hasInventoryFeature;
 
   const addBooking = useCallback((booking: Booking) => {
     setBookings((prev) => [...prev, booking]);

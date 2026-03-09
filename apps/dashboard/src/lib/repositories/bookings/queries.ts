@@ -6,20 +6,26 @@ export async function getBookingsForCurrentSalon(
   options?: { page?: number; pageSize?: number }
 ): Promise<{ data: Booking[] | null; error: string | null; total?: number }> {
   try {
-    const page = options?.page ?? 0;
-    const pageSize = options?.pageSize ?? 50;
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("bookings")
       .select(
         "id, employee_id, start_time, end_time, status, is_walk_in, notes, customers(full_name, email), employees(full_name), services(name)",
         { count: "exact" }
       )
       .eq("salon_id", salonId)
-      .order("start_time", { ascending: true })
-      .range(from, to);
+      .order("start_time", { ascending: true });
+
+    // If paging options are provided, use server-side paging.
+    // Otherwise, fetch the full dataset for the bookings page.
+    if (typeof options?.page === "number" || typeof options?.pageSize === "number") {
+      const page = options?.page ?? 0;
+      const pageSize = options?.pageSize ?? 50;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      query = query.range(from, to);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) return { data: null, error: error.message };
     return { data: data as unknown as Booking[], error: null, total: count ?? undefined };
