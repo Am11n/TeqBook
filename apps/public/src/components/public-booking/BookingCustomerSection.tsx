@@ -144,7 +144,14 @@ export function BookingCustomerSection({
       >
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_name">{t.nameLabel}</label>
-          <Input id="customer_name" type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+          <Input
+            id="customer_name"
+            type="text"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            required
+            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+          />
           {!hasName ? (
             <p className="text-xs text-[var(--pb-muted)]">
               {t.nameRequiredHint || "Add your name to continue."}
@@ -155,13 +162,27 @@ export function BookingCustomerSection({
           <label className="font-medium" htmlFor="customer_email">
             {t.emailLabelPlain || "Email"}
           </label>
-          <Input id="customer_email" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder={t.emailPlaceholder} />
+          <Input
+            id="customer_email"
+            type="email"
+            value={customerEmail}
+            onChange={(e) => setCustomerEmail(e.target.value)}
+            placeholder={t.emailPlaceholder}
+            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+          />
         </div>
         <div className="space-y-1 text-sm">
           <label className="font-medium" htmlFor="customer_phone">
             {t.phoneLabelPlain || "Phone"}
           </label>
-          <Input id="customer_phone" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={t.phonePlaceholder} />
+          <Input
+            id="customer_phone"
+            type="tel"
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            placeholder={t.phonePlaceholder}
+            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+          />
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
           {!hasContact ? (
             <p className="text-xs text-[var(--pb-muted)]">

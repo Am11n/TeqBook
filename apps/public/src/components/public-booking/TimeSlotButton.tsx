@@ -45,8 +45,10 @@ export function TimeSlotButton({
             ? "var(--pb-surface-muted)"
             : "var(--pb-surface)",
         color: selected ? "var(--pb-primary-text)" : unavailable ? "var(--pb-muted)" : "var(--pb-text)",
-        boxShadow: selected ? "var(--pb-shadow-1)" : "none",
-        opacity: isDisabled && !selected ? 0.7 : 1,
+        boxShadow: selected
+          ? "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%), var(--pb-shadow-1)"
+          : "none",
+        opacity: isDisabled && !selected ? 0.4 : 1,
         cursor: isDisabled ? "not-allowed" : "pointer",
       }}
     >

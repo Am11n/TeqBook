@@ -14,11 +14,18 @@ const ComponentsSchema = z.object({
   headerVariant: z.enum(["standard", "compact"]).optional(),
 }).partial();
 
+const AppearanceSchema = z.object({
+  pageBackground: z.string().optional(),
+  cardBackground: z.string().optional(),
+  pageBackgroundMode: z.enum(["solid", "gradient"]).optional(),
+}).partial();
+
 export const ThemeOverridesSchema = z.object({
   logoUrl: z.string().optional(),
   colors: ColorsSchema.optional(),
   typography: TypographySchema.optional(),
   components: ComponentsSchema.optional(),
+  appearance: AppearanceSchema.optional(),
   radiusScale: z.enum(["standard", "rounded"]).optional(),
   shadowScale: z.enum(["soft", "medium"]).optional(),
   motionPreset: z.enum(["standard", "calm"]).optional(),
@@ -30,6 +37,9 @@ const PRO_ALLOWED_PATHS = new Set<string>([
   "logoUrl",
   "colors.primary",
   "typography.fontFamily",
+  "appearance.pageBackground",
+  "appearance.cardBackground",
+  "appearance.pageBackgroundMode",
 ]);
 
 const BUSINESS_ONLY_PATHS = new Set<string>([

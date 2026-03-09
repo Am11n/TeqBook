@@ -42,6 +42,11 @@ export type Salon = {
     colors?: { primary?: string; secondary?: string };
     typography?: { fontFamily?: string };
     components?: { headerVariant?: "standard" | "compact" };
+    appearance?: {
+      pageBackground?: string;
+      cardBackground?: string;
+      pageBackgroundMode?: "solid" | "gradient";
+    };
     radiusScale?: "standard" | "rounded";
     shadowScale?: "soft" | "medium";
     motionPreset?: "standard" | "calm";
@@ -62,6 +67,9 @@ export type PublicBookingEffectiveBranding = {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
+  pageBackground: string;
+  cardBackground: string;
+  pageBackgroundMode: "solid" | "gradient";
   headerVariant: "standard" | "compact";
   radiusScale: "standard" | "rounded";
   shadowScale: "soft" | "medium";
@@ -73,6 +81,9 @@ export type PublicBookingTokens = {
     primary: string;
     primaryHover: string;
     primaryText: string;
+    pageBackground: string;
+    pageBackgroundBase: string;
+    cardBackground: string;
     text: string;
     surface: string;
     surface2: string;

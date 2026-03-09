@@ -59,6 +59,9 @@ export type PublicBookingTokens = {
     primary: string;
     primaryHover: string;
     primaryText: string;
+    pageBackground: string;
+    pageBackgroundBase: string;
+    cardBackground: string;
     text: string;
     surface: string;
     surface2: string;
@@ -122,6 +125,12 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
   const primaryText = pickPrimaryTextColor(primary);
   const primaryHover = darken(primary, 0.14);
   const focusColor = rgba(primary, 0.35);
+  const pageBackgroundBase = branding.pageBackground || "#f5f6f8";
+  const cardBackground = branding.cardBackground || "#ffffff";
+  const pageBackground =
+    branding.pageBackgroundMode === "gradient"
+      ? `linear-gradient(180deg, ${mix(primary, pageBackgroundBase, 0.86)} 0%, ${pageBackgroundBase} 100%)`
+      : pageBackgroundBase;
 
   const radius =
     branding.radiusScale === "rounded"
@@ -163,9 +172,12 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
       primary,
       primaryHover,
       primaryText,
+      pageBackground,
+      pageBackgroundBase,
+      cardBackground,
       text: "#0f172a",
-      surface: "#ffffff",
-      surface2: "#f8f9fb",
+      surface: cardBackground,
+      surface2: mix(cardBackground, pageBackgroundBase, 0.45),
       border: "#e2e8f0",
       mutedText: "#64748b",
       successBg: "#ecfdf3",

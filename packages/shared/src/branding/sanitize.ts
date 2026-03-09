@@ -107,6 +107,9 @@ export function sanitizeOverridesForRender(
   overrides: ThemeOverrides | null | undefined
 ): ThemeOverrides {
   if (!overrides || plan === "starter") return {};
+  const pageBackgroundMode =
+    overrides.appearance?.pageBackgroundMode === "gradient" ? "gradient" : "solid";
+
   return {
     logoUrl: sanitizeLogoUrl(overrides.logoUrl),
     colors: {
@@ -118,6 +121,11 @@ export function sanitizeOverridesForRender(
     },
     components: {
       headerVariant: overrides.components?.headerVariant,
+    },
+    appearance: {
+      pageBackground: sanitizeColor(overrides.appearance?.pageBackground),
+      cardBackground: sanitizeColor(overrides.appearance?.cardBackground),
+      pageBackgroundMode,
     },
     radiusScale: overrides.radiusScale,
     shadowScale: overrides.shadowScale,

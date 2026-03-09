@@ -185,8 +185,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       style={{
         ...buildPublicBookingCssVars(tokens),
         fontFamily: tokens.typography.fontFamily,
-        background:
-          "radial-gradient(1200px 500px at 15% -10%, color-mix(in srgb, var(--pb-primary) 10%, transparent), transparent), var(--pb-bg)",
+        background: "var(--pb-page-bg)",
       }}
     >
       <style jsx global>{`

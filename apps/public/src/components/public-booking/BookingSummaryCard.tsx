@@ -62,7 +62,7 @@ export function BookingSummaryCard({
 
   return (
     <section
-      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-5 shadow-md"
+      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6 shadow-lg"
       style={{
         backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 88%, var(--pb-surface) 12%)",
         borderColor: "var(--pb-border)",
@@ -113,7 +113,7 @@ export function BookingSummaryCard({
           type={shouldSubmit ? "submit" : "button"}
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
-          className="h-12 w-full text-sm font-semibold shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
+          className="h-11 w-full rounded-[10px] text-sm font-semibold shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
           disabled={ctaDisabled}
           style={{
             backgroundColor: !ctaDisabled ? "var(--pb-primary)" : undefined,

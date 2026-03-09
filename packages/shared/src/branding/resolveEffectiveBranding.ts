@@ -52,6 +52,9 @@ export type EffectiveBranding = {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: AllowedFont | string;
+  pageBackground: string;
+  cardBackground: string;
+  pageBackgroundMode: "solid" | "gradient";
   headerVariant: HeaderVariant;
   radiusScale: RadiusScale;
   shadowScale: ShadowScale;
@@ -108,6 +111,9 @@ function createBaseFromPack(pack: ThemePackDefinition): EffectiveBranding {
     primaryColor: pack.tokens.primaryColor,
     secondaryColor: pack.tokens.secondaryColor,
     fontFamily: pack.tokens.fontFamily,
+    pageBackground: "#f5f6f8",
+    cardBackground: "#ffffff",
+    pageBackgroundMode: "solid",
     headerVariant: pack.tokens.headerVariant,
     radiusScale: pack.tokens.radiusScale,
     shadowScale: pack.tokens.shadowScale,
@@ -124,6 +130,9 @@ function fallbackBranding(plan: BrandingPlan): EffectiveBranding {
     primaryColor: PRO_NEUTRAL_DEFAULT.primaryColor,
     secondaryColor: PRO_NEUTRAL_DEFAULT.secondaryColor,
     fontFamily: PRO_NEUTRAL_DEFAULT.fontFamily,
+    pageBackground: "#f5f6f8",
+    cardBackground: "#ffffff",
+    pageBackgroundMode: "solid",
     headerVariant: PRO_NEUTRAL_DEFAULT.headerVariant,
     radiusScale: PRO_NEUTRAL_DEFAULT.radiusScale,
     shadowScale: PRO_NEUTRAL_DEFAULT.shadowScale,
@@ -161,6 +170,9 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       primaryColor: TEQBOOK_DEFAULT.primaryColor,
       secondaryColor: TEQBOOK_DEFAULT.secondaryColor,
       fontFamily: TEQBOOK_DEFAULT.fontFamily,
+      pageBackground: "#f5f6f8",
+      cardBackground: "#ffffff",
+      pageBackgroundMode: "solid",
       headerVariant: TEQBOOK_DEFAULT.headerVariant,
       radiusScale: TEQBOOK_DEFAULT.radiusScale,
       shadowScale: TEQBOOK_DEFAULT.shadowScale,
@@ -214,6 +226,15 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
     fontFamily: sanitizeFont(safeOverrides.typography?.fontFamily)
       ?? sanitizeFont(String(base.fontFamily))
       ?? PRO_NEUTRAL_DEFAULT.fontFamily,
+    pageBackground:
+      sanitizeColor(safeOverrides.appearance?.pageBackground)
+      ?? sanitizeColor(base.pageBackground)
+      ?? "#f5f6f8",
+    cardBackground:
+      sanitizeColor(safeOverrides.appearance?.cardBackground)
+      ?? sanitizeColor(base.cardBackground)
+      ?? "#ffffff",
+    pageBackgroundMode: safeOverrides.appearance?.pageBackgroundMode ?? base.pageBackgroundMode ?? "solid",
     logoUrl: sanitizeLogoUrl(safeOverrides.logoUrl) ?? sanitizeLogoUrl(base.logoUrl),
     headerVariant: safeOverrides.components?.headerVariant ?? base.headerVariant,
     radiusScale: safeOverrides.radiusScale ?? base.radiusScale,
