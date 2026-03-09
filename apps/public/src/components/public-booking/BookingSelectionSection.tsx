@@ -171,7 +171,7 @@ export function BookingSelectionSection({
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-8">
       {isSelectionBlocked && (
         <div
           className="rounded-[var(--pb-radius-md)] border p-3 text-sm"
@@ -197,7 +197,7 @@ export function BookingSelectionSection({
         changeLabel={t.editService || "Change service"}
         showInlineChange={isDesktop}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {shouldShowServiceSearch && (
             <Input
               type="search"
@@ -240,7 +240,9 @@ export function BookingSelectionSection({
 
           {visibleServices.length === 0 && (
             <p className="text-sm text-[var(--pb-muted)]">
-              {t.noServiceSearchResults || "No services match your search."}
+              {services.length === 0
+                ? (t.noActiveServicesDescription || "No services available right now.")
+                : (t.noServiceSearchResults || "No services match your search.")}
             </p>
           )}
         </div>
@@ -304,9 +306,9 @@ export function BookingSelectionSection({
         </div>
       </BookingFlowSection>
 
-      <article id="book-mode-panel" role="tabpanel" aria-labelledby="book-mode-tab" className="space-y-3">
+      <article id="book-mode-panel" role="tabpanel" aria-labelledby="book-mode-tab" className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-[20px] font-semibold text-[var(--pb-text)]">{t.step2Label}</h3>
+          <h3 className="text-base font-medium text-[var(--pb-text)]">{t.step2Label}</h3>
           {onlyShowingForEmployeeText && (
             <p className="text-xs text-[var(--pb-muted)]">
               {onlyShowingForEmployeeText}
@@ -321,7 +323,7 @@ export function BookingSelectionSection({
         </div>
 
         {loadingSlots && canShowStep2 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <div key={item} className="h-12 animate-pulse rounded-[var(--pb-radius-sm)] border bg-[var(--pb-surface-muted)]" />
             ))}
@@ -329,7 +331,7 @@ export function BookingSelectionSection({
         )}
 
         {canShowStep2 && !loadingSlots && slots.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -352,7 +354,7 @@ export function BookingSelectionSection({
                   <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--pb-muted)]">
                     {groupedLabels[groupKey]}
                   </p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                     {groupSlots.map((slot, index) => {
                       const isSelected = selectedSlot === slot.id;
                       const slotDisplay = parseSlotLabel(slot.label);

@@ -62,15 +62,15 @@ export function BookingSummaryCard({
 
   return (
     <section
-      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-4"
+      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-5 shadow-md"
       style={{
         backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 88%, var(--pb-surface) 12%)",
         borderColor: "var(--pb-border)",
-        boxShadow: "var(--pb-shadow-1)",
+        boxShadow: "var(--pb-shadow-2)",
       }}
     >
       <div className="space-y-2">
-        <h2 className="text-base font-semibold tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
+        <h2 className="text-base font-medium tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
         <p
           className="inline-flex rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide"
           style={{ borderColor: "var(--pb-border)", color: "var(--pb-muted)" }}
@@ -82,11 +82,12 @@ export function BookingSummaryCard({
         ) : null}
       </div>
 
-      <dl className="space-y-2 text-sm">
+      <dl className="space-y-3 text-sm">
         <SummaryRow
           label={t.serviceLabel || "Service"}
           value={serviceName}
           muted={tokens.colors.mutedText}
+          emphasize
           action={actionByKey.get("service")}
         />
         <SummaryRow
@@ -99,11 +100,12 @@ export function BookingSummaryCard({
           label={t.timeLabel || "Time"}
           value={timeLabel}
           muted={tokens.colors.mutedText}
+          emphasize
           action={actionByKey.get("time")}
         />
         <SummaryRow label={t.employeeLabel || "Employee"} value={employeeLabel} muted={tokens.colors.mutedText} />
         {durationLabel ? <SummaryRow label={t.durationLabel || "Duration"} value={durationLabel} muted={tokens.colors.mutedText} /> : null}
-        {priceLabel ? <SummaryRow label={t.priceLabel || "Price"} value={priceLabel} muted={tokens.colors.mutedText} /> : null}
+        {priceLabel ? <SummaryRow label={t.priceLabel || "Price"} value={priceLabel} muted={tokens.colors.mutedText} emphasize /> : null}
       </dl>
 
       {isBookMode ? (
@@ -111,7 +113,7 @@ export function BookingSummaryCard({
           type={shouldSubmit ? "submit" : "button"}
           form={shouldSubmit ? detailsFormId : undefined}
           onClick={onSubmitBooking}
-          className="h-12 w-full text-sm font-semibold transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
+          className="h-12 w-full text-sm font-semibold shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none"
           disabled={ctaDisabled}
           style={{
             backgroundColor: !ctaDisabled ? "var(--pb-primary)" : undefined,
@@ -130,15 +132,16 @@ type SummaryRowProps = {
   value: string | null;
   muted: string;
   action?: EditAction;
+  emphasize?: boolean;
 };
 
-function SummaryRow({ label, value, muted, action }: SummaryRowProps) {
+function SummaryRow({ label, value, muted, action, emphasize = false }: SummaryRowProps) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-xs" style={{ color: muted }}>
+      <dt className="text-sm" style={{ color: muted }}>
         {label}
       </dt>
-      <dd className="flex items-center gap-2 text-right text-xs font-medium">
+      <dd className={`flex items-center gap-2 text-right font-medium ${emphasize ? "text-base" : "text-sm"}`}>
         <span>{value || "—"}</span>
         {action ? (
           <button

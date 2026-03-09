@@ -235,7 +235,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
             />
           )}
           left={(
-            <div className="space-y-4">
+            <div className="space-y-8">
               <BookingSelectionSection
                 t={t}
                 selectionStatus={selectionStatus}
@@ -259,6 +259,33 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 selectedSlot={selectedSlot}
                 setSelectedSlot={setSelectedSlot}
               />
+
+              <div className="lg:hidden">
+                <BookingSummaryCard
+                  t={t}
+                  tokens={tokens}
+                  mode={mode}
+                  serviceName={selectedService?.name || null}
+                  dateLabel={summaryDateLabel}
+                  timeLabel={parsedSlot?.timeRange || null}
+                  employeeLabel={parsedSlot?.employeeName || null}
+                  durationLabel={summaryDurationLabel}
+                  priceLabel={summaryPriceLabel}
+                  ctaDisabled={ctaDisabled}
+                  readyToSubmit={readyToSubmitBooking}
+                  ctaLabel={summaryCtaLabel}
+                  detailsReady={detailsReady}
+                  detailsFormId={DETAILS_FORM_ID}
+                  onSubmitBooking={() => {
+                    handlePrimaryBookingCta();
+                  }}
+                  editActions={[
+                    { key: "service", label: t.editService || "Change service", onClick: () => scrollToSection("service-section") },
+                    { key: "date", label: t.editDate || "Change date", onClick: () => scrollToSection("date-section") },
+                    { key: "time", label: t.editTime || "Change time", onClick: () => scrollToSection("book-mode-panel") },
+                  ]}
+                />
+              </div>
 
               <BookingCustomerSection
                 t={t}

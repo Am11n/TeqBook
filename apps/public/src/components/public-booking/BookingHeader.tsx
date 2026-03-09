@@ -89,25 +89,25 @@ export function BookingHeader({
         borderColor: tokens.colors.border,
       }}
     >
-      <div className="mx-auto flex max-w-3xl flex-col gap-3">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
+          <div className="space-y-3">
             {logoUrl && (
               <img
                 src={logoUrl}
                 alt={salon.name}
-                width={36}
-                height={36}
+                width={40}
+                height={40}
                 loading="lazy"
                 decoding="async"
-                className="mb-2 h-9 w-auto object-contain"
+                className="h-10 w-auto object-contain"
               />
             )}
-            <h1 className="text-lg font-semibold tracking-tight">
+            <h1 className="break-words text-xl font-semibold leading-tight tracking-tight">
               {salon.name}
             </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm leading-snug" style={{ color: tokens.colors.mutedText }}>
                 {headerSubtitle}
               </p>
               <span
@@ -147,7 +147,7 @@ export function BookingHeader({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-9 items-center gap-2 rounded-lg px-2.5 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2"
+                    className="flex h-9 items-center gap-2 rounded-lg px-2.5 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)]"
                     style={{
                       border: `1px solid ${tokens.colors.border}`,
                       backgroundColor: tokens.colors.surface2,

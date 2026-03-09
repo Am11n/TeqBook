@@ -6,6 +6,9 @@ type TimeSlotButtonProps = {
   employeeName: string | null;
   selected: boolean;
   recommended?: boolean;
+  disabled?: boolean;
+  unavailable?: boolean;
+  loading?: boolean;
   onSelect: (id: string) => void;
 };
 
@@ -15,25 +18,40 @@ export function TimeSlotButton({
   employeeName,
   selected,
   recommended = false,
+  disabled = false,
+  unavailable = false,
+  loading = false,
   onSelect,
 }: TimeSlotButtonProps) {
+  const isDisabled = disabled || unavailable || loading;
+  const stateText = loading ? "Loading" : unavailable ? "Unavailable" : timeRange;
+
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      aria-label={`${timeRange}${employeeName ? `, ${employeeName}` : ""}${unavailable ? ", unavailable" : ""}`}
       onClick={() => onSelect(id)}
-      className="min-h-12 rounded-[var(--pb-radius-sm)] border px-3 py-2 text-left outline-none transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] hover:-translate-y-[1px] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      disabled={isDisabled}
+      className="min-h-12 rounded-[var(--pb-radius-sm)] border px-3 py-3 text-left outline-none transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] enabled:hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none"
       style={{
         borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
-        backgroundColor: selected ? "var(--pb-primary)" : "var(--pb-surface)",
-        color: selected ? "var(--pb-primary-text)" : "var(--pb-text)",
+        backgroundColor: selected
+          ? "var(--pb-primary)"
+          : unavailable
+            ? "var(--pb-surface-muted)"
+            : "var(--pb-surface)",
+        color: selected ? "var(--pb-primary-text)" : unavailable ? "var(--pb-muted)" : "var(--pb-text)",
         boxShadow: selected ? "var(--pb-shadow-1)" : "none",
-        transform: selected ? "scale(1.01)" : "scale(1)",
+        opacity: isDisabled && !selected ? 0.7 : 1,
+        cursor: isDisabled ? "not-allowed" : "pointer",
       }}
     >
-      <span className="block text-xs font-semibold">{timeRange}</span>
-      <span className="mt-1 flex items-center gap-2">
+      <span className="block text-sm font-medium">{stateText}</span>
+      <span className="mt-3 flex min-h-5 items-center gap-2">
         {recommended ? (
           <span
             className="inline-flex rounded-full border px-1.5 py-0.5 text-[10px] font-medium"
@@ -47,7 +65,7 @@ export function TimeSlotButton({
         ) : null}
         {employeeName ? (
           <span
-            className="inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium"
+            className="inline-flex rounded-full border px-2 py-0.5 text-[10px] font-normal"
             style={{
               borderColor: selected ? "var(--pb-primary-text)" : "var(--pb-border)",
               color: selected ? "var(--pb-primary-text)" : "var(--pb-muted)",

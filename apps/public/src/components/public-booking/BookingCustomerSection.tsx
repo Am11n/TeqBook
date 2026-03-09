@@ -66,20 +66,30 @@ export function BookingCustomerSection({
   const isPrimaryStep = activeStep === 3;
   const hasName = customerName.trim().length > 0;
   const hasContact = customerEmail.trim().length > 0 || customerPhone.trim().length > 0;
+  const hasSelectedSlot = Boolean(selectedSlot);
+  const detailsEmphasized = isWaitlistMode || hasSelectedSlot;
 
   return (
     <section
       id="details-section"
-      className="space-y-4 rounded-[var(--pb-radius-md)] border p-4 shadow-sm"
+      className="space-y-4 rounded-[var(--pb-radius-md)] border p-5 shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)]"
       style={{
-        backgroundColor: tokens.colors.surface,
+        backgroundColor: detailsEmphasized
+          ? tokens.colors.surface
+          : "color-mix(in srgb, var(--pb-surface) 78%, var(--pb-surface-muted) 22%)",
         borderColor: tokens.colors.border,
         boxShadow: tokens.shadow.card,
+        opacity: detailsEmphasized ? 1 : 0.82,
       }}
     >
-      <div className="space-y-1">
-        <h2 className="text-sm font-semibold tracking-tight">{t.step3Title}</h2>
-        <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
+      <div className="space-y-2">
+        <h2 className="text-base font-medium tracking-tight">{t.step3Title}</h2>
+        <p className="text-sm" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
+        {!detailsEmphasized && !isWaitlistMode ? (
+          <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
+            {t.selectTimeToContinueLabel || "Select a time to unlock details."}
+          </p>
+        ) : null}
       </div>
 
       {isWaitlistMode && (
@@ -192,7 +202,7 @@ export function BookingCustomerSection({
         {waitlistError && <p className="text-sm" style={{ color: tokens.colors.errorText }} aria-live="polite">{waitlistError}</p>}
         {waitlistMessage && <p className="text-sm" style={{ color: tokens.colors.successText }} aria-live="polite">{waitlistMessage}</p>}
 
-        {(isWaitlistMode || showBookingSubmitButton) && (
+        {(isWaitlistMode || (showBookingSubmitButton && detailsEmphasized)) && (
           <Button
             type="submit"
             className="mt-1 w-full"
