@@ -23,6 +23,7 @@ type BookingSummaryCardProps = {
   readyToSubmit: boolean;
   ctaLabel: string;
   detailsReady: boolean;
+  progressStep: 1 | 2 | 3 | 4;
   detailsFormId: string;
   onSubmitBooking: () => void;
   editActions: EditAction[];
@@ -42,41 +43,56 @@ export function BookingSummaryCard({
   readyToSubmit,
   ctaLabel,
   detailsReady,
+  progressStep,
   detailsFormId,
   onSubmitBooking,
   editActions,
 }: BookingSummaryCardProps) {
   const isBookMode = mode === "book";
-  const nextAction = !serviceName
-    ? (t.serviceLabel || "Service")
-    : !dateLabel
-      ? (t.dateLabel || "Date")
-      : !timeLabel
-        ? (t.step2Label || "Choose time")
-        : !detailsReady
-          ? (t.step3Title || "Your details")
-          : (t.submitLabel || "Confirm booking");
+  const nextActionByStep: Record<1 | 2 | 3 | 4, string> = {
+    1: t.serviceLabel || "Service",
+    2: t.step2Label || "Choose time",
+    3: t.step3Title || "Your details",
+    4: t.submitLabel || "Confirm booking",
+  };
+  const nextAction = nextActionByStep[progressStep];
   const shouldSubmit = readyToSubmit && detailsReady;
   const readyLabel = shouldSubmit ? "Ready" : null;
   const actionByKey = new Map(editActions.map((action) => [action.key, action]));
 
   return (
     <section
-      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6 shadow-lg"
+      className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6 shadow-md"
       style={{
         backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 88%, var(--pb-surface) 12%)",
         borderColor: "var(--pb-border)",
-        boxShadow: "var(--pb-shadow-2)",
+        boxShadow: "var(--pb-shadow-1)",
       }}
     >
-      <div className="space-y-2">
-        <h2 className="text-base font-medium tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
+      <div className="space-y-3">
+        <h2 className="text-[17px] font-semibold tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
         <p
           className="inline-flex rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide"
           style={{ borderColor: "var(--pb-border)", color: "var(--pb-muted)" }}
         >
           {(t.nextLabel || "Next")}: {nextAction}
         </p>
+        <ol className="flex items-center gap-1.5 text-[11px]">
+          {[1, 2, 3, 4].map((step) => (
+            <li
+              key={step}
+              className="rounded-full border px-2 py-0.5"
+              style={{
+                borderColor: step === progressStep ? "var(--pb-primary)" : "var(--pb-border)",
+                color: step === progressStep ? "var(--pb-primary)" : "var(--pb-muted)",
+                backgroundColor: step === progressStep ? "color-mix(in srgb, var(--pb-primary) 10%, transparent)" : "transparent",
+                fontWeight: step === progressStep ? 600 : 500,
+              }}
+            >
+              Step {step}
+            </li>
+          ))}
+        </ol>
         {readyLabel ? (
           <p className="text-xs font-medium text-[var(--pb-primary)] motion-safe:animate-[var(--pb-cta-ready-pulse)]">{readyLabel}</p>
         ) : null}
@@ -138,10 +154,10 @@ type SummaryRowProps = {
 function SummaryRow({ label, value, muted, action, emphasize = false }: SummaryRowProps) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-sm" style={{ color: muted }}>
+      <dt className="text-[13px]" style={{ color: muted }}>
         {label}
       </dt>
-      <dd className={`flex items-center gap-2 text-right font-medium ${emphasize ? "text-base" : "text-sm"}`}>
+      <dd className={`flex items-center gap-2 text-right font-medium ${emphasize ? "text-[15px]" : "text-sm"}`}>
         <span>{value || "—"}</span>
         {action ? (
           <button

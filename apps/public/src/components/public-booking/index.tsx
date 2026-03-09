@@ -85,13 +85,25 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
-  const ctaDisabled = mode !== "book" || saving;
-  const readyToSubmitBooking = Boolean(serviceId && date && selectedSlot && detailsReady && !saving && mode === "book");
-  const summaryCtaLabel = !selectedSlot
-    ? (t.selectTimeToContinueLabel || "Select a time to continue")
-    : !detailsReady
-      ? (t.enterDetailsLabel || "Enter your details")
-      : (t.confirmBookingLabel || "Confirm booking");
+  const hasAnyDetailsInput = customerName.trim().length > 0 || customerEmail.trim().length > 0 || customerPhone.trim().length > 0;
+  const summaryState = useMemo(() => {
+    if (!serviceId) {
+      return { step: 1 as const, label: "Select a service to continue", disabledForState: true };
+    }
+    if (!selectedSlot) {
+      return { step: 2 as const, label: t.selectTimeToContinueLabel || "Select a time to continue", disabledForState: true };
+    }
+    if (!detailsReady) {
+      if (hasAnyDetailsInput) {
+        return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: true };
+      }
+      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: false };
+    }
+    return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
+  }, [serviceId, selectedSlot, detailsReady, hasAnyDetailsInput, t.selectTimeToContinueLabel, t.enterDetailsLabel, t.confirmBookingLabel]);
+  const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
+  const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
+  const summaryCtaLabel = summaryState.label;
   const summaryDurationLabel = selectedService?.duration_minutes && selectedService.duration_minutes > 0
     ? `${selectedService.duration_minutes} min`
     : null;
@@ -118,10 +130,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   useEffect(() => {
     if (!pageLoadedRef.current) return;
     if (previousServiceIdRef.current !== serviceId && serviceId) {
-      scrollToSection("date-section");
+      scrollToSection(date ? "book-mode-panel" : "date-section");
     }
     previousServiceIdRef.current = serviceId;
-  }, [serviceId]);
+  }, [serviceId, date]);
 
   useEffect(() => {
     if (!pageLoadedRef.current) return;
@@ -274,6 +286,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   readyToSubmit={readyToSubmitBooking}
                   ctaLabel={summaryCtaLabel}
                   detailsReady={detailsReady}
+                  progressStep={summaryState.step}
                   detailsFormId={DETAILS_FORM_ID}
                   onSubmitBooking={() => {
                     handlePrimaryBookingCta();
@@ -332,6 +345,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 readyToSubmit={readyToSubmitBooking}
                 ctaLabel={summaryCtaLabel}
                 detailsReady={detailsReady}
+                progressStep={summaryState.step}
                 detailsFormId={DETAILS_FORM_ID}
                 onSubmitBooking={() => {
                   handlePrimaryBookingCta();
