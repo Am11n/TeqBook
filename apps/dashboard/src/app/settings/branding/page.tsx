@@ -56,6 +56,8 @@ export default function BrandingSettingsPage() {
         setGradientEnd={branding.setGradientEnd}
         gradientAngle={branding.gradientAngle}
         setGradientAngle={branding.setGradientAngle}
+        gradientDirection={branding.gradientDirection}
+        setGradientDirection={branding.setGradientDirection}
         surfaceStyle={branding.surfaceStyle}
         setSurfaceStyle={branding.setSurfaceStyle}
         buttonStyle={branding.buttonStyle}

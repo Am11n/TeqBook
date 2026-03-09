@@ -19,6 +19,18 @@ describe("public booking branding resolver", () => {
       theme_pack_snapshot: pack ? createThemePackSnapshot(pack) : null,
       theme_overrides: {
         colors: { primary: "#ff0000" },
+        appearance: {
+          backgroundMode: "soft_gradient",
+          gradientStart: "#0f2027",
+          gradientEnd: "#2c5364",
+          gradientAngle: 135,
+        },
+        components: {
+          surfaceStyle: "elevated",
+          buttonStyle: "rounded",
+          slotStyle: "pill",
+          headerStyle: "branded",
+        },
       },
       theme: {
         primary: "#00ff00",
@@ -29,6 +41,10 @@ describe("public booking branding resolver", () => {
     expect(resolved.source).toBe("teqbook-default");
     expect(resolved.primaryColor).toBe(TEQBOOK_DEFAULT.primaryColor);
     expect(resolved.fontFamily).toBe(TEQBOOK_DEFAULT.fontFamily);
+    expect(resolved.backgroundMode).toBe("default");
+    expect(resolved.surfaceStyle).toBe("soft");
+    expect(resolved.buttonStyle).toBe("soft");
+    expect(resolved.slotStyle).toBe("minimal");
   });
 
   it("normalizes non-canonical business plan strings", () => {

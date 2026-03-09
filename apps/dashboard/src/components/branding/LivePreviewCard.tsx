@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,8 @@ export function LivePreviewCard({ salon, theme, onHide, previewRefreshKey = 0 }:
   }
 
   const previewUrl = buildPublicBookingPreviewUrl(salon.slug, previewRefreshKey);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const previewWidth = previewDevice === "tablet" ? "768px" : previewDevice === "mobile" ? "390px" : "100%";
 
   return (
     <Card className="p-6">
@@ -97,12 +100,25 @@ export function LivePreviewCard({ salon, theme, onHide, previewRefreshKey = 0 }:
           Hide Preview
         </Button>
       </div>
+      <div className="mb-3 flex items-center gap-2">
+        <Button type="button" variant={previewDevice === "desktop" ? "default" : "outline"} size="sm" onClick={() => setPreviewDevice("desktop")}>
+          Desktop
+        </Button>
+        <Button type="button" variant={previewDevice === "tablet" ? "default" : "outline"} size="sm" onClick={() => setPreviewDevice("tablet")}>
+          Tablet
+        </Button>
+        <Button type="button" variant={previewDevice === "mobile" ? "default" : "outline"} size="sm" onClick={() => setPreviewDevice("mobile")}>
+          Mobile
+        </Button>
+      </div>
       <div className="border rounded-lg overflow-hidden bg-muted/50">
-        <iframe
-          title="Public booking live preview"
-          src={previewUrl}
-          className="h-[820px] w-full bg-background"
-        />
+        <div className="mx-auto transition-all duration-200" style={{ width: previewWidth, maxWidth: "100%" }}>
+          <iframe
+            title="Public booking live preview"
+            src={previewUrl}
+            className="h-[820px] w-full bg-background"
+          />
+        </div>
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
         <span>

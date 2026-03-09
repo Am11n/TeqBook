@@ -23,8 +23,8 @@ export function ServiceCard({ id, title, meta, selected, disabled = false, loadi
       disabled={isDisabled}
       className="w-full min-h-12 rounded-[var(--pb-radius-md)] border px-5 py-5 text-left outline-none transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] enabled:hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none"
       style={{
-        borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
-        backgroundColor: selected ? "color-mix(in srgb, var(--pb-primary) 9%, var(--pb-surface) 91%)" : "var(--pb-surface)",
+        borderColor: selected ? "color-mix(in srgb, var(--pb-primary) 88%, #0f172a 12%)" : "var(--pb-border)",
+        backgroundColor: selected ? "color-mix(in srgb, var(--pb-primary) 13%, var(--pb-surface) 87%)" : "var(--pb-surface)",
         boxShadow: selected ? "var(--pb-shadow-2)" : "var(--pb-shadow-1)",
         opacity: isDisabled ? 0.55 : 1,
         cursor: isDisabled ? "not-allowed" : "pointer",

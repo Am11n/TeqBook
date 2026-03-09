@@ -12,6 +12,21 @@ import {
   validateThemeOverrides,
 } from "@teqbook/shared/branding";
 
+type GradientDirection = "top_bottom" | "left_right" | "diagonal" | "custom";
+
+function directionFromAngle(angle: number): GradientDirection {
+  if (angle === 180) return "top_bottom";
+  if (angle === 90) return "left_right";
+  if (angle === 135) return "diagonal";
+  return "custom";
+}
+
+function angleFromDirection(direction: GradientDirection): number {
+  if (direction === "left_right") return 90;
+  if (direction === "diagonal") return 135;
+  return 180;
+}
+
 export function useBranding() {
   const { salon, refreshSalon } = useCurrentSalon();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,6 +50,7 @@ export function useBranding() {
   const [gradientStart, setGradientStart] = useState("#dbeafe");
   const [gradientEnd, setGradientEnd] = useState("#f5f6f8");
   const [gradientAngle, setGradientAngle] = useState("180");
+  const [gradientDirection, setGradientDirectionState] = useState<GradientDirection>("top_bottom");
   const [surfaceStyle, setSurfaceStyle] = useState<"soft" | "elevated" | "flat">("soft");
   const [buttonStyle, setButtonStyle] = useState<"rounded" | "soft" | "sharp">("soft");
   const [slotStyle, setSlotStyle] = useState<"minimal" | "pill" | "card">("minimal");
@@ -98,7 +114,9 @@ export function useBranding() {
       setBackgroundColor(overrides.appearance?.backgroundColor || "#f5f6f8");
       setGradientStart(overrides.appearance?.gradientStart || "#dbeafe");
       setGradientEnd(overrides.appearance?.gradientEnd || "#f5f6f8");
-      setGradientAngle(String(overrides.appearance?.gradientAngle ?? 180));
+      const resolvedAngle = overrides.appearance?.gradientAngle ?? 180;
+      setGradientAngle(String(resolvedAngle));
+      setGradientDirectionState(directionFromAngle(resolvedAngle));
       setSurfaceStyle(overrides.components?.surfaceStyle || "soft");
       setButtonStyle(overrides.components?.buttonStyle || "soft");
       setSlotStyle(overrides.components?.slotStyle || "minimal");
@@ -115,6 +133,8 @@ export function useBranding() {
     setSecondaryColor(pack.tokens.secondaryColor);
     setFontFamily(pack.tokens.fontFamily);
     setBackgroundMode("default");
+    setGradientDirectionState("top_bottom");
+    setGradientAngle("180");
     setSurfaceStyle("soft");
     setButtonStyle("soft");
     setSlotStyle("minimal");
@@ -126,6 +146,23 @@ export function useBranding() {
     setPrimaryColor(preset.primary);
     setSecondaryColor(preset.secondary);
     setFontFamily(preset.font);
+  }
+
+  function setGradientDirection(nextDirection: GradientDirection) {
+    setGradientDirectionState(nextDirection);
+    if (nextDirection === "custom") return;
+    setGradientAngle(String(angleFromDirection(nextDirection)));
+  }
+
+  function handleGradientAngleChange(value: string) {
+    setGradientAngle(value);
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) {
+      setGradientDirectionState("custom");
+      return;
+    }
+    const clamped = Math.max(0, Math.min(360, parsed));
+    setGradientDirectionState(directionFromAngle(clamped));
   }
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -290,7 +327,9 @@ export function useBranding() {
     gradientEnd,
     setGradientEnd,
     gradientAngle,
-    setGradientAngle,
+    setGradientAngle: handleGradientAngleChange,
+    gradientDirection,
+    setGradientDirection,
     surfaceStyle,
     setSurfaceStyle,
     buttonStyle,

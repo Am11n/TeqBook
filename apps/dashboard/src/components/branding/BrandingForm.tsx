@@ -35,6 +35,8 @@ interface BrandingFormProps {
   setGradientEnd: (value: string) => void;
   gradientAngle: string;
   setGradientAngle: (value: string) => void;
+  gradientDirection: "top_bottom" | "left_right" | "diagonal" | "custom";
+  setGradientDirection: (value: "top_bottom" | "left_right" | "diagonal" | "custom") => void;
   surfaceStyle: "soft" | "elevated" | "flat";
   setSurfaceStyle: (value: "soft" | "elevated" | "flat") => void;
   buttonStyle: "rounded" | "soft" | "sharp";
@@ -88,6 +90,8 @@ export function BrandingForm({
   setGradientEnd,
   gradientAngle,
   setGradientAngle,
+  gradientDirection,
+  setGradientDirection,
   surfaceStyle,
   setSurfaceStyle,
   buttonStyle,
@@ -111,6 +115,14 @@ export function BrandingForm({
   onShowPreview,
   translations,
 }: BrandingFormProps) {
+  function isPresetSelected(preset: BrandingPreset): boolean {
+    return (
+      preset.primary.toLowerCase() === primaryColor.toLowerCase()
+      && preset.secondary.toLowerCase() === secondaryColor.toLowerCase()
+      && preset.font === fontFamily
+    );
+  }
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -153,19 +165,32 @@ export function BrandingForm({
         {/* Preset Themes */}
         <div className="space-y-2">
           <Label>Preset Themes</Label>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {presets.map((preset) => (
-              <Button
+              <button
                 key={preset.name}
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={() => onApplyPreset(preset)}
                 disabled={isStarterPlan}
-                className="text-xs"
+                className="rounded-lg border p-3 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  borderColor: isPresetSelected(preset) ? "hsl(var(--primary))" : "hsl(var(--border))",
+                  backgroundColor: isPresetSelected(preset) ? "color-mix(in srgb, hsl(var(--primary)) 8%, white)" : "hsl(var(--card))",
+                  boxShadow: isPresetSelected(preset) ? "0 0 0 1px color-mix(in srgb, hsl(var(--primary)) 55%, transparent)" : "none",
+                }}
               >
-                {preset.name}
-              </Button>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">{preset.name}</span>
+                  {isPresetSelected(preset) ? (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">Selected</span>
+                  ) : null}
+                </div>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-4 w-8 rounded-sm border" style={{ backgroundColor: preset.primary }} />
+                  <span className="h-4 w-8 rounded-sm border" style={{ backgroundColor: preset.secondary }} />
+                </div>
+                <p className="text-xs text-muted-foreground">{preset.font}</p>
+              </button>
             ))}
           </div>
         </div>
@@ -268,6 +293,18 @@ export function BrandingForm({
               )}
               {backgroundMode === "soft_gradient" && (
                 <div className="space-y-3">
+                  <DialogSelect
+                    value={gradientDirection}
+                    onChange={(value) => setGradientDirection(value as "top_bottom" | "left_right" | "diagonal" | "custom")}
+                    className="max-w-md"
+                    disabled={isStarterPlan}
+                    options={[
+                      { value: "top_bottom", label: "Top -> Bottom" },
+                      { value: "left_right", label: "Left -> Right" },
+                      { value: "diagonal", label: "Diagonal" },
+                      { value: "custom", label: "Custom" },
+                    ]}
+                  />
                   <div className="flex items-center gap-3">
                     <Input
                       type="color"
@@ -302,16 +339,18 @@ export function BrandingForm({
                       placeholder="#f5f6f8"
                     />
                   </div>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={360}
-                    value={gradientAngle}
-                    onChange={(e) => setGradientAngle(e.target.value)}
-                    disabled={isStarterPlan}
-                    className="max-w-xs"
-                    placeholder="180"
-                  />
+                  {gradientDirection === "custom" && (
+                    <Input
+                      type="number"
+                      min={0}
+                      max={360}
+                      value={gradientAngle}
+                      onChange={(e) => setGradientAngle(e.target.value)}
+                      disabled={isStarterPlan}
+                      className="max-w-xs"
+                      placeholder="180"
+                    />
+                  )}
                 </div>
               )}
             </div>

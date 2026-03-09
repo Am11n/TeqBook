@@ -30,6 +30,11 @@ function isSectionVisible(element: HTMLElement): boolean {
   return rect.top >= 72 && rect.top <= viewportHeight * 0.6;
 }
 
+function clampCtaLabel(label: string, maxLength = 36): string {
+  if (label.length <= maxLength) return label;
+  return `${label.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
 export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const {
     salon, services, employees, loading, error, successMessage,
@@ -88,22 +93,19 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const hasAnyDetailsInput = customerName.trim().length > 0 || customerEmail.trim().length > 0 || customerPhone.trim().length > 0;
   const summaryState = useMemo(() => {
     if (!serviceId) {
-      return { step: 1 as const, label: "Select a service to continue", disabledForState: true };
+      return { step: 1 as const, label: "Select a service", disabledForState: true };
     }
     if (!selectedSlot) {
-      return { step: 2 as const, label: t.selectTimeToContinueLabel || "Select a time to continue", disabledForState: true };
+      return { step: 2 as const, label: "Choose a time", disabledForState: true };
     }
     if (!detailsReady) {
-      if (hasAnyDetailsInput) {
-        return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: true };
-      }
-      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: false };
+      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: hasAnyDetailsInput };
     }
     return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
-  }, [serviceId, selectedSlot, detailsReady, hasAnyDetailsInput, t.selectTimeToContinueLabel, t.enterDetailsLabel, t.confirmBookingLabel]);
+  }, [serviceId, selectedSlot, detailsReady, hasAnyDetailsInput, t.enterDetailsLabel, t.confirmBookingLabel]);
   const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
   const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
-  const summaryCtaLabel = summaryState.label;
+  const summaryCtaLabel = clampCtaLabel(summaryState.label);
   const summaryDurationLabel = selectedService?.duration_minutes && selectedService.duration_minutes > 0
     ? `${selectedService.duration_minutes} min`
     : null;
