@@ -16,8 +16,8 @@ export function PublicBookingLayout({ left, right, top }: PublicBookingLayoutPro
         className="grid gap-8 rounded-[var(--pb-radius-lg)] border p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start"
         style={{
           borderColor: "var(--pb-border)",
-          backgroundColor: "color-mix(in srgb, var(--pb-surface) 94%, var(--pb-surface-muted) 6%)",
-          boxShadow: "var(--pb-shadow-1)",
+          backgroundColor: "var(--pb-surface)",
+          boxShadow: "var(--pb-shadow-card)",
         }}
       >
         <div className="min-w-0 border-b pb-2 lg:border-b-0 lg:border-r lg:pr-5" style={{ borderColor: "var(--pb-border)" }}>{left}</div>

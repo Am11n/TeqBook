@@ -169,30 +169,30 @@ export async function submitBooking(params: {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-}): Promise<{ bookingId: string | null; error: string | null }> {
+}): Promise<{ bookingId: string | null; error: string | null; errorCode?: "slot_conflict" }> {
   const { salon, serviceId, employeeId, selectedSlot, customerName, customerEmail, customerPhone } = params;
 
   const identifier = customerEmail || "anonymous";
   const identifierType = customerEmail ? "email" : "ip";
   const rateLimit = await checkAndIncrementBookingRateLimit(identifier, identifierType);
   if (rateLimit.blockedMessage) {
-    return { bookingId: null, error: rateLimit.blockedMessage };
+    return { bookingId: null, error: rateLimit.blockedMessage, errorCode: undefined };
   }
 
   const slotDate = selectedSlot.slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(slotDate)) {
     const { data: freshSlots, error: refreshError } = await getAvailableTimeSlots(salon.id, employeeId, serviceId, slotDate);
     if (refreshError) {
-      return { bookingId: null, error: "Could not confirm this slot right now. Please refresh and try again." };
+      return { bookingId: null, error: "Could not confirm this slot right now. Please refresh and try again.", errorCode: undefined };
     }
     const stillAvailable = (freshSlots ?? []).some((slot) => isSameInstant(slot.slot_start, selectedSlot));
     if (!stillAvailable) {
-      return { bookingId: null, error: "This time is no longer available. Please choose another slot." };
+      return { bookingId: null, error: "This time is no longer available. Please choose another time.", errorCode: "slot_conflict" };
     }
   }
 
   const startTimeUTC = toUtcStartTime(selectedSlot, salon.timezone);
-  const { data: bookingData, error: bookingError } = await createBooking({
+  const { data: bookingData, error: bookingError, errorCode: bookingErrorCode } = await createBooking({
     salon_id: salon.id,
     employee_id: employeeId,
     service_id: serviceId,
@@ -205,8 +205,12 @@ export async function submitBooking(params: {
   });
 
   if (bookingError || !bookingData) {
-    return { bookingId: null, error: bookingError || null };
+    return {
+      bookingId: null,
+      error: bookingError || null,
+      errorCode: bookingErrorCode,
+    };
   }
 
-  return { bookingId: bookingData.id, error: null };
+  return { bookingId: bookingData.id, error: null, errorCode: undefined };
 }

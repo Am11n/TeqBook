@@ -83,8 +83,8 @@ export function BookingCustomerSection({
       }}
     >
       <div className="space-y-2">
-        <h2 className="text-base font-medium tracking-tight">{t.step3Title}</h2>
-        <p className="text-sm" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
+        <h2 className="text-base font-semibold tracking-tight">{t.step3Title}</h2>
+        <p className="text-[13px]" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
         {!detailsEmphasized && !isWaitlistMode ? (
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
             {t.selectTimeToContinueLabel || "Select a time to unlock details."}
@@ -143,14 +143,14 @@ export function BookingCustomerSection({
         className="space-y-3"
       >
         <div className="space-y-1 text-sm">
-          <label className="font-medium" htmlFor="customer_name">{t.nameLabel}</label>
+          <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_name">{t.nameLabel}</label>
           <Input
             id="customer_name"
             type="text"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             required
-            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
           {!hasName ? (
             <p className="text-xs text-[var(--pb-muted)]">
@@ -159,7 +159,7 @@ export function BookingCustomerSection({
           ) : null}
         </div>
         <div className="space-y-1 text-sm">
-          <label className="font-medium" htmlFor="customer_email">
+          <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_email">
             {t.emailLabelPlain || "Email"}
           </label>
           <Input
@@ -168,11 +168,11 @@ export function BookingCustomerSection({
             value={customerEmail}
             onChange={(e) => setCustomerEmail(e.target.value)}
             placeholder={t.emailPlaceholder}
-            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
         </div>
         <div className="space-y-1 text-sm">
-          <label className="font-medium" htmlFor="customer_phone">
+          <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_phone">
             {t.phoneLabelPlain || "Phone"}
           </label>
           <Input
@@ -181,7 +181,7 @@ export function BookingCustomerSection({
             value={customerPhone}
             onChange={(e) => setCustomerPhone(e.target.value)}
             placeholder={t.phonePlaceholder}
-            className="h-10 bg-[#f7f8fa] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
           {!hasContact ? (

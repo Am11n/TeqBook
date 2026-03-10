@@ -31,6 +31,16 @@ import {
 } from "./publicBookingUtils";
 import { trackPublicEvent } from "./publicBookingTelemetry";
 
+function isSlotConflict(errorCode?: string, errorMessage?: string | null): boolean {
+  if (errorCode === "slot_conflict") return true;
+  const normalized = (errorMessage || "").toLowerCase();
+  return (
+    normalized.includes("no longer available") ||
+    normalized.includes("already booked") ||
+    normalized.includes("time slot")
+  );
+}
+
 export function usePublicBooking(slug: string) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,6 +55,7 @@ export function usePublicBooking(slug: string) {
   const [loading, setLoading] = useState(true);
   const [loadIssue, setLoadIssue] = useState<"none" | "not_found" | "missing_setup">("none");
   const [error, setError] = useState<string | null>(null);
+  const [slotConflictActive, setSlotConflictActive] = useState(false);
 
   const [serviceId, setServiceId] = useState("");
   const [employeeId, setEmployeeId] = useState<string>("");
@@ -170,6 +181,7 @@ export function usePublicBooking(slug: string) {
     setMode(nextMode);
     setWaitlistEntrySource(source);
     setError(null);
+    setSlotConflictActive(false);
     setSuccessMessage(null);
     setWaitlistError(null);
     setWaitlistMessage(null);
@@ -208,6 +220,7 @@ export function usePublicBooking(slug: string) {
 
     setLoadingSlots(true);
     setError(null);
+    setSlotConflictActive(false);
     setWaitlistError(null);
     setWaitlistMessage(null);
     setWaitlistContactError(null);
@@ -374,14 +387,24 @@ export function usePublicBooking(slug: string) {
       });
 
       if (bookingResult.error || !bookingResult.bookingId) {
-        if ((bookingResult.error || "").toLowerCase().includes("no longer available")) {
+        const hasSlotConflict = isSlotConflict(bookingResult.errorCode, bookingResult.error);
+        if (hasSlotConflict) {
+          const conflictMessage = "This time is no longer available. Please choose another time.";
           setSelectedSlot("");
+          setSlotConflictActive(true);
+          await requestSlots();
+          setSlotConflictActive(true);
+          setError(conflictMessage);
+          setSaving(false);
+          return;
         }
+        setSlotConflictActive(false);
         setError(bookingResult.error || t.createError);
         setSaving(false);
         return;
       }
 
+      setSlotConflictActive(false);
       if (!isPreview) {
         window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
       } else {
@@ -389,6 +412,7 @@ export function usePublicBooking(slug: string) {
         setSaving(false);
       }
     } catch {
+      setSlotConflictActive(false);
       setError(t.createError);
       setSaving(false);
     }
@@ -549,6 +573,7 @@ export function usePublicBooking(slug: string) {
   return {
     salon, services, employees, loading, error, successMessage,
     effectiveBranding, tokens, activeStep, selectionStatus, loadIssue, employeeAvailability,
+    slotConflictActive,
     ANY_EMPLOYEE_VALUE: ANY_EMPLOYEE,
     serviceId, setServiceId, employeeId, setEmployeeId, date, setDate, slots, selectedSlot, setSelectedSlot,
     loadingSlots, canLoadSlots, hasAttemptedSlotLoad,

@@ -13,7 +13,7 @@ import { getCurrentUser } from "@/lib/services/auth-service";
  */
 export async function createBooking(
   input: CreateBookingInput
-): Promise<{ data: Booking | null; error: string | null }> {
+): Promise<{ data: Booking | null; error: string | null; errorCode?: "slot_conflict" }> {
   const correlationId = crypto.randomUUID();
   const logContext = {
     correlationId,
@@ -60,7 +60,8 @@ export async function createBooking(
         });
         return {
           data: null,
-          error: "This time slot is no longer available. Please select another time.",
+          error: "This time is no longer available. Please choose another time.",
+          errorCode: "slot_conflict",
         };
       }
 
@@ -103,6 +104,7 @@ export async function createBooking(
     return {
       data: null,
       error: error instanceof Error ? error.message : "Unknown error occurred",
+      errorCode: undefined,
     };
   }
 }

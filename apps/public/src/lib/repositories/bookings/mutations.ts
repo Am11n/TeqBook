@@ -3,7 +3,12 @@ import type { Booking, CreateBookingInput } from "@/lib/types";
 
 export async function createBooking(
   input: CreateBookingInput
-): Promise<{ data: Booking | null; error: string | null; conflictError?: boolean }> {
+): Promise<{
+  data: Booking | null;
+  error: string | null;
+  errorCode?: "slot_conflict";
+  conflictError?: boolean;
+}> {
   try {
     const { data, error } = await supabase.rpc("create_booking_atomic", {
       p_salon_id: input.salon_id,
@@ -21,7 +26,12 @@ export async function createBooking(
       const isConflictError =
         error?.message?.toLowerCase().includes("already booked") ||
         error?.message?.toLowerCase().includes("time slot");
-      return { data: null, error: error?.message ?? "Failed to create booking", conflictError: isConflictError };
+      return {
+        data: null,
+        error: error?.message ?? "Failed to create booking",
+        errorCode: isConflictError ? "slot_conflict" : undefined,
+        conflictError: isConflictError,
+      };
     }
 
     const booking = Array.isArray(data) ? data[0] : data;
@@ -38,6 +48,7 @@ export async function createBooking(
         services: booking.services,
       } as Booking,
       error: null,
+      errorCode: undefined,
       conflictError: false,
     };
   } catch (err) {
@@ -45,7 +56,12 @@ export async function createBooking(
     const isConflictError =
       errorMessage.toLowerCase().includes("already booked") ||
       errorMessage.toLowerCase().includes("time slot");
-    return { data: null, error: errorMessage, conflictError: isConflictError };
+    return {
+      data: null,
+      error: errorMessage,
+      errorCode: isConflictError ? "slot_conflict" : undefined,
+      conflictError: isConflictError,
+    };
   }
 }
 

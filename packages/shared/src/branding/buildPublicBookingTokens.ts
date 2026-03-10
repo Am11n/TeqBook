@@ -144,10 +144,13 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
   const primaryHover = darken(primary, 0.14);
   const focusColor = rgba(primary, 0.35);
   const pageBackgroundBase = branding.backgroundColor || branding.pageBackground || "#f5f6f8";
-  const cardBackground = branding.cardBackground || "#ffffff";
+  // Keep all booking cards on white surface for consistent contrast.
+  const cardBackground = "#ffffff";
   const gradientStart = branding.gradientStart || mix(primary, pageBackgroundBase, 0.84);
   const gradientEnd = branding.gradientEnd || pageBackgroundBase;
-  const pageBackground = branding.backgroundMode === "soft_gradient"
+  const gradientModeEnabled =
+    branding.backgroundMode === "soft_gradient" || branding.pageBackgroundMode === "gradient";
+  const pageBackground = gradientModeEnabled
     ? `linear-gradient(${branding.gradientAngle}deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
     : pageBackgroundBase;
 
@@ -209,7 +212,7 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
       ? {
           radius: "9999px",
           baseShadow: "none",
-          selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%)",
+          selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%), var(--pb-shadow-1)",
           selectedBg: "var(--pb-primary)",
           selectedText: "var(--pb-primary-text)",
           selectedBorder: "var(--pb-primary)",
@@ -218,17 +221,17 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
         ? {
             radius: "0.875rem",
             baseShadow: "var(--pb-shadow-1)",
-            selectedShadow: "var(--pb-shadow-2)",
-            selectedBg: "color-mix(in srgb, var(--pb-primary) 10%, var(--pb-surface) 90%)",
-            selectedText: "var(--pb-text)",
+            selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%), var(--pb-shadow-2)",
+            selectedBg: "var(--pb-primary)",
+            selectedText: "var(--pb-primary-text)",
             selectedBorder: "var(--pb-primary)",
           }
         : {
             radius: "0.625rem",
             baseShadow: "none",
-            selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%)",
-            selectedBg: "var(--pb-surface)",
-            selectedText: "var(--pb-text)",
+            selectedShadow: "0 0 0 2px color-mix(in srgb, var(--pb-primary) 70%, #ffffff 30%), var(--pb-shadow-1)",
+            selectedBg: "var(--pb-primary)",
+            selectedText: "var(--pb-primary-text)",
             selectedBorder: "var(--pb-primary)",
           };
 

@@ -64,7 +64,7 @@ export function BookingSummaryCard({
     <section
       className="space-y-4 rounded-[var(--pb-radius-lg)] border p-6"
       style={{
-        backgroundColor: "color-mix(in srgb, var(--pb-surface-muted) 84%, var(--pb-surface) 16%)",
+        backgroundColor: "var(--pb-surface)",
         borderColor: "var(--pb-border)",
         boxShadow: "var(--pb-shadow-2)",
       }}
@@ -159,7 +159,7 @@ function SummaryRow({ label, value, muted, action, emphasize = false }: SummaryR
       <dt className="text-[13px]" style={{ color: muted }}>
         {label}
       </dt>
-      <dd className={`flex items-center gap-2 text-right font-medium ${emphasize ? "text-[15px]" : "text-sm"}`}>
+      <dd className={`flex items-center gap-2 text-right font-semibold ${emphasize ? "text-[15px]" : "text-[14px]"}`}>
         <span>{value || "—"}</span>
         {action ? (
           <button

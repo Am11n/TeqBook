@@ -53,7 +53,7 @@ export function TimeSlotButton({
         cursor: isDisabled ? "not-allowed" : "pointer",
       }}
     >
-      <span className="block text-sm font-medium">{stateText}</span>
+      <span className="block text-sm font-semibold">{stateText}</span>
       <span className="mt-3 flex min-h-5 items-center gap-2">
         {recommended ? (
           <span

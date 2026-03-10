@@ -298,10 +298,8 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       sanitizeColor(safeOverrides.appearance?.pageBackground)
       ?? sanitizeColor(base.pageBackground)
       ?? "#f5f6f8",
-    cardBackground:
-      sanitizeColor(safeOverrides.appearance?.cardBackground)
-      ?? sanitizeColor(base.cardBackground)
-      ?? "#ffffff",
+    // Public booking cards stay white across plans to preserve contrast/readability.
+    cardBackground: "#ffffff",
     pageBackgroundMode: safeOverrides.appearance?.pageBackgroundMode ?? base.pageBackgroundMode ?? "solid",
     backgroundMode: safeOverrides.appearance?.backgroundMode ?? base.backgroundMode ?? "default",
     backgroundColor:

@@ -39,6 +39,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const {
     salon, services, employees, loading, error, successMessage,
     effectiveBranding, tokens, activeStep, selectionStatus, employeeAvailability, ANY_EMPLOYEE_VALUE,
+    slotConflictActive,
     serviceId, setServiceId, employeeId, setEmployeeId,
     date, setDate, slots, selectedSlot, setSelectedSlot,
     loadingSlots, hasAttemptedSlotLoad,
@@ -158,10 +159,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   useEffect(() => {
     if (!pageLoadedRef.current) return;
-    if (error && /no longer available/i.test(error)) {
+    if (slotConflictActive || (error && /no longer available/i.test(error))) {
       scrollToSection("book-mode-panel");
     }
-  }, [error]);
+  }, [error, slotConflictActive]);
 
   useEffect(() => {
     pageLoadedRef.current = true;

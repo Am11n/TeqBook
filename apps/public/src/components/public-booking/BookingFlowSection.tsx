@@ -29,9 +29,9 @@ export function BookingFlowSection({
     <section id={id} className="space-y-3 py-1">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <h2 className="text-base font-medium tracking-tight text-[var(--pb-text)]">{title}</h2>
-          {subtitle ? <p className="text-sm text-[var(--pb-muted)]">{subtitle}</p> : null}
-          {!isExpanded && summary ? <p className="text-sm text-[var(--pb-muted)]">{summary}</p> : null}
+          <h2 className="text-base font-semibold tracking-tight text-[var(--pb-text)]">{title}</h2>
+          {subtitle ? <p className="text-[13px] text-[var(--pb-muted)]">{subtitle}</p> : null}
+          {!isExpanded && summary ? <p className="text-[13px] text-[var(--pb-muted)]">{summary}</p> : null}
         </div>
         {!isExpanded && onChange && showInlineChange ? (
           <button
