@@ -93,7 +93,6 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
-  const hasAnyDetailsInput = customerName.trim().length > 0 || customerEmail.trim().length > 0 || customerPhone.trim().length > 0;
   const summaryState = useMemo(() => {
     if (!serviceId) {
       return { step: 1 as const, label: "Select a service", disabledForState: true };
@@ -102,10 +101,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       return { step: 2 as const, label: "Choose a time", disabledForState: true };
     }
     if (!detailsReady) {
-      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: hasAnyDetailsInput };
+      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: true };
     }
     return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
-  }, [serviceId, selectedSlot, detailsReady, hasAnyDetailsInput, t.enterDetailsLabel, t.confirmBookingLabel]);
+  }, [serviceId, selectedSlot, detailsReady, t.enterDetailsLabel, t.confirmBookingLabel]);
   const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
   const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
   const summaryCtaLabel = clampCtaLabel(summaryState.label);
@@ -301,6 +300,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   ctaLabel={summaryCtaLabel}
                   detailsReady={detailsReady}
                   progressStep={summaryState.step}
+                  hasSelectedService={Boolean(serviceId)}
+                  hasSelectedSlot={Boolean(selectedSlot)}
                   detailsFormId={DETAILS_FORM_ID}
                   onSubmitBooking={() => {
                     handlePrimaryBookingCta();
@@ -360,6 +361,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 ctaLabel={summaryCtaLabel}
                 detailsReady={detailsReady}
                 progressStep={summaryState.step}
+                hasSelectedService={Boolean(serviceId)}
+                hasSelectedSlot={Boolean(selectedSlot)}
                 detailsFormId={DETAILS_FORM_ID}
                 onSubmitBooking={() => {
                   handlePrimaryBookingCta();
