@@ -102,10 +102,9 @@ export function PublicBookingHeader({
 
   return (
     <header
-      className="w-full border-b"
+      className="w-full"
       style={{
-        borderColor: "var(--pb-border)",
-        backgroundImage: "linear-gradient(rgba(15,23,42,var(--pb-header-overlay-opacity)), rgba(15,23,42,var(--pb-header-overlay-opacity))), var(--pb-page-bg)",
+        background: "transparent",
       }}
     >
       <div
