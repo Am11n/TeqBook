@@ -32,6 +32,8 @@ export type PublicBookingMessages = {
   loadingSlots: string;
   step2Label: string;
   noSlotsYet: string;
+  availableTimesLabel?: string;
+  findingTimesLabel?: string;
   selectSlotPlaceholder: string;
   step3Title: string;
   step3Description: string;
@@ -88,6 +90,8 @@ export type PublicBookingMessages = {
   durationLabel?: string;
   priceLabel?: string;
   selectTimeToContinueLabel?: string;
+  selectServiceToContinueLabel?: string;
+  summaryStartHint?: string;
   enterDetailsLabel?: string;
   confirmBookingLabel?: string;
   bestAvailableRecommended?: string;

@@ -95,7 +95,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
   const summaryState = useMemo(() => {
     if (!serviceId) {
-      return { step: 1 as const, label: "Select a service", disabledForState: true };
+      return { step: 1 as const, label: t.selectServiceToContinueLabel || "Select a service to continue", disabledForState: true };
     }
     if (!selectedSlot) {
       return { step: 2 as const, label: "Choose a time", disabledForState: true };
@@ -104,7 +104,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: true };
     }
     return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
-  }, [serviceId, selectedSlot, detailsReady, t.enterDetailsLabel, t.confirmBookingLabel]);
+  }, [serviceId, selectedSlot, detailsReady, t.selectServiceToContinueLabel, t.enterDetailsLabel, t.confirmBookingLabel]);
   const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
   const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
   const summaryCtaLabel = clampCtaLabel(summaryState.label);

@@ -84,6 +84,7 @@ export function BookingSelectionSection({
   const hasNoServices = selectionStatus === "no_active_services";
   const hasNoEmployees = selectionStatus === "no_active_employees";
   const isSelectionBlocked = hasMissingSetup || hasNoServices || hasNoEmployees;
+  const canAutoLoadTimes = !isWaitlistMode && Boolean(serviceId && date) && !isSelectionBlocked;
   const shouldShowServiceSearch = services.length > 8;
   const [serviceSearchValue, setServiceSearchValue] = useState("");
   const [debouncedServiceSearch, setDebouncedServiceSearch] = useState("");
@@ -308,14 +309,20 @@ export function BookingSelectionSection({
 
       <article id="book-mode-panel" role="tabpanel" aria-labelledby="book-mode-tab" className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-base font-medium text-[var(--pb-text)]">{t.step2Label}</h3>
+          <h3 className="text-base font-medium text-[var(--pb-text)]">
+            {canShowStep2 ? (t.availableTimesLabel || "Available times") : (t.step2Label || "Choose time")}
+          </h3>
           {onlyShowingForEmployeeText && (
             <p className="text-xs text-[var(--pb-muted)]">
               {onlyShowingForEmployeeText}
             </p>
           )}
           {!canShowStep2 && !loadingSlots && (
-            <p className="text-xs text-[var(--pb-muted)]">{t.noSlotsYet}</p>
+            <p className="text-xs text-[var(--pb-muted)]">
+              {canAutoLoadTimes
+                ? (t.findingTimesLabel || "Finding available times...")
+                : (t.noSlotsYet || "Choose a service and date to view available times.")}
+            </p>
           )}
           {loadingSlots && (
             <p className="text-xs text-[var(--pb-muted)]">{t.checkingAvailability || t.loadingSlots}</p>

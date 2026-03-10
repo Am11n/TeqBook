@@ -121,7 +121,7 @@ export function BookingSummaryCard({
             backgroundColor: "color-mix(in srgb, var(--pb-primary) 6%, var(--pb-surface) 94%)",
           }}
         >
-          Select a service to start your booking
+          {t.summaryStartHint || "Select a service to start your booking"}
         </p>
       ) : (
         <dl className="space-y-3 text-sm">
