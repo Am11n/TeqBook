@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@teqbook/ui";
 import { EmptyState } from "@/components/empty-state";
-import { BookingHeader } from "./BookingHeader";
+import type { AppLocale } from "@/i18n/translations";
+import { PublicBookingHeader } from "./PublicBookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
 import { MobileSummaryBar } from "./MobileSummaryBar";
 import { BookingSelectionSection } from "./BookingSelectionSection";
@@ -14,6 +15,7 @@ import { usePublicBooking } from "./usePublicBooking";
 import type { PublicBookingPageProps } from "./types";
 
 const DETAILS_FORM_ID = "public-booking-details-form";
+const APP_LOCALES: AppLocale[] = ["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "tl", "zh", "fa", "dar", "ur", "hi"];
 
 function parseSlotLabel(label: string): { timeRange: string; employeeName: string | null } {
   const parts = label.split("·").map((part) => part.trim());
@@ -120,6 +122,12 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     if (Number.isNaN(parsed.getTime())) return date;
     return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
   }, [date, locale]);
+  const supportedLocales = useMemo(
+    () => (salon?.supported_languages ?? []).filter(
+      (lang): lang is AppLocale => APP_LOCALES.includes(lang as AppLocale),
+    ),
+    [salon?.supported_languages],
+  );
 
   const scrollToSection = (sectionId: string) => {
     if (typeof window === "undefined") return;
@@ -214,20 +222,23 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
           }
         }
       `}</style>
-      <BookingHeader
-        salon={salon}
+      <PublicBookingHeader
+        salonId={salon.id}
+        salonName={salon.name}
+        subtitle={t.headerSubtitle}
+        logoUrl={effectiveBranding.logoUrl}
         mode={mode}
-        activeStep={activeStep}
+        onModeChange={handleModeChange}
         tokens={tokens}
-        effectiveBranding={effectiveBranding}
+        headerStyle={effectiveBranding.headerStyle}
+        locale={locale}
+        supportedLocales={supportedLocales}
+        onLocaleChange={setLocale}
         modeBookTimeLabel={t.modeBookTime || "Book time"}
         modeWaitlistLabel={t.modeWaitlist || "Notify me when available"}
         modeSelectorLabel={t.modeSelectorLabel || "Booking mode"}
-        handleModeChange={handleModeChange}
-        locale={locale}
-        setLocale={setLocale}
-        headerSubtitle={t.headerSubtitle}
         payInSalonBadge={t.payInSalonBadge}
+        whatsappNumber={salon.whatsapp_number}
       />
 
       <main className="flex flex-1 flex-col">

@@ -51,5 +51,10 @@ export function buildPublicBookingCssVars(tokens: PublicBookingTokens): CSSPrope
     "--pb-header-logo-size": tokens.header.logoSize,
     "--pb-header-vertical-padding": tokens.header.verticalPadding,
     "--pb-header-accent-opacity": `${tokens.header.accentOpacity}`,
+    // System-locked in v1: consistent readability overlay across all branded backgrounds.
+    "--pb-header-overlay-opacity": "0.04",
+    "--pb-header-min-height-compact": "8.5rem",
+    "--pb-header-min-height-standard": "10.25rem",
+    "--pb-header-min-height-branded": "11.5rem",
   } as CSSProperties;
 }
