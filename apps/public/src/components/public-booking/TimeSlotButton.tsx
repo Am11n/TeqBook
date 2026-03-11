@@ -37,25 +37,23 @@ export function TimeSlotButton({
       aria-label={`${timeRange}${employeeName ? `, ${employeeName}` : ""}${unavailable ? ", unavailable" : ""}`}
       onClick={() => onSelect(id)}
       disabled={isDisabled}
-      className="min-h-[52px] rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] enabled:active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
+      className="min-h-[52px] rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[120ms] ease-out enabled:hover:border-[var(--pb-primary)] enabled:active:translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
       style={{
         borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
         borderWidth: selected ? "2px" : "1px",
         backgroundColor: selected
-          ? "color-mix(in srgb, var(--pb-slot-selected-bg) 80%, var(--pb-surface) 20%)"
+          ? "color-mix(in srgb, var(--pb-slot-selected-bg) 85%, var(--pb-surface) 15%)"
           : unavailable
             ? "var(--pb-surface-muted)"
             : "var(--pb-surface)",
         color: selected ? "var(--pb-slot-selected-text)" : unavailable ? "var(--pb-muted)" : "var(--pb-text)",
-        boxShadow: selected
-          ? "var(--pb-slot-selected-shadow)"
-          : "var(--pb-slot-shadow)",
-        transform: selected ? "translateY(-1px) scale(1.02)" : "translateY(0) scale(1)",
+        boxShadow: selected ? "0 4px 12px rgba(0,0,0,0.08)" : "none",
+        transform: selected ? "translateY(-1px)" : "translateY(0)",
         opacity: isDisabled && !selected ? 0.4 : 1,
         cursor: isDisabled ? "not-allowed" : "pointer",
       }}
     >
-      <span className="block text-sm font-semibold">{stateText}</span>
+      <span className="block text-[15px] font-semibold">{stateText}</span>
       <span className="mt-2 flex min-h-5 items-center gap-2">
         {recommended ? (
           <span
@@ -69,7 +67,13 @@ export function TimeSlotButton({
           </span>
         ) : null}
         {employeeName ? (
-          <span className="text-[11px] font-normal" style={{ color: selected ? "var(--pb-primary-text)" : "color-mix(in srgb, var(--pb-muted) 80%, var(--pb-text) 20%)" }}>
+          <span
+            className="text-[12px] font-normal"
+            style={{
+              color: selected ? "var(--pb-slot-selected-text)" : "var(--pb-muted)",
+              opacity: selected ? 0.9 : 0.6,
+            }}
+          >
             {employeeName}
           </span>
         ) : null}

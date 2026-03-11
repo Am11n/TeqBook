@@ -106,7 +106,7 @@ export function MobileBookingSummary({
             type="button"
             onClick={onCtaClick}
             disabled={ctaActionDisabled}
-            className="h-12 w-full text-sm font-semibold motion-reduce:transition-none"
+            className="h-[52px] w-full text-[15px] font-semibold motion-reduce:transition-none"
             style={{
               backgroundColor: "var(--pb-primary)",
               color: "var(--pb-primary-text)",

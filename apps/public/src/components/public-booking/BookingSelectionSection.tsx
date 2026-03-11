@@ -322,9 +322,25 @@ export function BookingSelectionSection({
 
       <article id="book-mode-panel" role="tabpanel" aria-labelledby="book-mode-tab" className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-base font-medium text-[var(--pb-text)]">
-            {canShowStep2 ? (t.availableTimesLabel || "Available times") : (t.step2Label || "Choose time")}
-          </h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-base font-medium text-[var(--pb-text)]">
+              {canShowStep2 ? (t.availableTimesLabel || "Available times") : (t.step2Label || "Choose time")}
+            </h3>
+            {canShowStep2 && !loadingSlots && slots.length > 0 ? (
+              <button
+                type="button"
+                className="text-xs font-medium text-[var(--pb-muted)] underline underline-offset-2"
+                onClick={() => {
+                  if (!recommendedSlotId) return;
+                  setHasInteracted(true);
+                  triggerHaptic();
+                  setSelectedSlot(recommendedSlotId);
+                }}
+              >
+                {isToday ? (t.nextAvailableToday || "Next available today") : (t.nextAvailable || "Next available")}
+              </button>
+            ) : null}
+          </div>
           {onlyShowingForEmployeeText && (
             <p className="text-xs text-[var(--pb-muted)]">
               {onlyShowingForEmployeeText}
@@ -352,31 +368,17 @@ export function BookingSelectionSection({
 
         {canShowStep2 && !loadingSlots && slots.length > 0 && (
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                className="h-11 px-4 text-sm font-semibold"
-                style={{ borderRadius: "var(--pb-button-radius)", boxShadow: "var(--pb-button-shadow)" }}
-                onClick={() => {
-                  if (!recommendedSlotId) return;
-                  setHasInteracted(true);
-                  triggerHaptic();
-                  setSelectedSlot(recommendedSlotId);
-                }}
-              >
-                {isToday ? (t.nextAvailableToday || "Jump to next available today") : (t.nextAvailable || "Jump to next available")}
-              </Button>
-            </div>
-            {groupedOrder.map((groupKey) => {
+            {groupedOrder.map((groupKey, groupIndex) => {
               const groupSlots = groupedSlots[groupKey];
               if (groupSlots.length === 0) return null;
+              const spacingClass = groupIndex === 0 ? "mt-0" : "mt-6";
               return (
-                <div key={groupKey} className="space-y-3 rounded-[var(--pb-radius-sm)] border px-3 py-3" style={{ borderColor: "var(--pb-border)" }}>
+                <div key={groupKey} className={`${spacingClass} space-y-2.5`}>
                   <div className="flex items-center gap-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--pb-muted)]">
+                    <p className="mb-[10px] text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--pb-muted)]">
                       {groupedLabels[groupKey]}
                     </p>
-                    <span className="h-px flex-1" style={{ backgroundColor: "var(--pb-border)" }} />
+                    <span className="mb-[10px] h-px flex-1" style={{ backgroundColor: "color-mix(in srgb, var(--pb-border) 85%, transparent)" }} />
                   </div>
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                     {groupSlots.map((slot, index) => {
