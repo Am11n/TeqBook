@@ -36,7 +36,7 @@ export function TimeSlotButton({
       aria-label={`${timeRange}${employeeName ? `, ${employeeName}` : ""}${unavailable ? ", unavailable" : ""}`}
       onClick={() => onSelect(id)}
       disabled={isDisabled}
-      className="min-h-12 rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none"
+      className="min-h-12 rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
       style={{
         borderColor: selected ? "var(--pb-slot-selected-border)" : "var(--pb-border)",
         backgroundColor: selected
@@ -48,7 +48,7 @@ export function TimeSlotButton({
         boxShadow: selected
           ? "var(--pb-slot-selected-shadow)"
           : "var(--pb-slot-shadow)",
-        transform: selected ? "translateY(-1px)" : "translateY(0)",
+        transform: selected ? "translateY(-1px) scale(1.02)" : "translateY(0) scale(1)",
         opacity: isDisabled && !selected ? 0.4 : 1,
         cursor: isDisabled ? "not-allowed" : "pointer",
       }}

@@ -220,13 +220,13 @@ export function BookingSelectionSection({
               const priceLabel = typeof service.price_cents === "number" && service.price_cents > 0
                 ? new Intl.NumberFormat("en-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(service.price_cents / 100)
                 : null;
-              const meta = priceLabel ? `${durationLabel} • ${priceLabel}` : durationLabel;
               return (
                 <ServiceCard
                   key={service.id}
                   id={service.id}
                   title={service.name}
-                  meta={meta}
+                  durationLabel={durationLabel}
+                  priceLabel={priceLabel}
                   selected={service.id === serviceId}
                   disabled={isSelectionBlocked}
                   onSelect={(id) => {

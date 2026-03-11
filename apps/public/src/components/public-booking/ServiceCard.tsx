@@ -3,14 +3,15 @@
 type ServiceCardProps = {
   id: string;
   title: string;
-  meta: string;
+  durationLabel: string;
+  priceLabel?: string | null;
   selected: boolean;
   disabled?: boolean;
   loading?: boolean;
   onSelect: (id: string) => void;
 };
 
-export function ServiceCard({ id, title, meta, selected, disabled = false, loading = false, onSelect }: ServiceCardProps) {
+export function ServiceCard({ id, title, durationLabel, priceLabel = null, selected, disabled = false, loading = false, onSelect }: ServiceCardProps) {
   const isDisabled = disabled || loading;
 
   return (
@@ -21,7 +22,7 @@ export function ServiceCard({ id, title, meta, selected, disabled = false, loadi
       aria-disabled={isDisabled}
       onClick={() => onSelect(id)}
       disabled={isDisabled}
-      className="relative w-full min-h-12 rounded-[var(--pb-radius-md)] border px-5 py-5 text-left outline-none transition-all duration-[120ms] ease-out enabled:hover:border-[var(--pb-primary)] enabled:hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
+      className="relative w-full min-h-[72px] rounded-[var(--pb-radius-md)] border px-5 py-5 text-left outline-none transition-all duration-[120ms] ease-out enabled:hover:border-[var(--pb-primary)] enabled:hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
       style={{
         borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
         borderWidth: selected ? "2px" : "1px",
@@ -45,7 +46,10 @@ export function ServiceCard({ id, title, meta, selected, disabled = false, loadi
         </span>
       ) : null}
       <p className="text-base font-medium text-[var(--pb-text)]">{title}</p>
-      <p className="mt-3 text-sm text-[var(--pb-muted)]">{loading ? "Loading..." : meta}</p>
+      <div className="mt-3 space-y-1">
+        <p className="text-sm text-[var(--pb-muted)]">{loading ? "Loading..." : durationLabel}</p>
+        {priceLabel ? <p className="text-sm font-medium text-[var(--pb-text)]">{priceLabel}</p> : null}
+      </div>
     </button>
   );
 }

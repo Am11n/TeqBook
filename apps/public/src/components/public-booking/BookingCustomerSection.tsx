@@ -72,7 +72,7 @@ export function BookingCustomerSection({
   return (
     <section
       id="details-section"
-      className="space-y-4 rounded-[var(--pb-radius-md)] border p-5 shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)]"
+      className="space-y-5 rounded-[var(--pb-radius-md)] border p-5 shadow-sm transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)]"
       style={{
         backgroundColor: detailsEmphasized
           ? tokens.colors.surface
@@ -140,7 +140,7 @@ export function BookingCustomerSection({
           }
           handleSubmitBooking(e);
         }}
-        className="space-y-3"
+        className="space-y-4"
       >
         <div className="space-y-1 text-sm">
           <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_name">{t.nameLabel}</label>
@@ -150,7 +150,7 @@ export function BookingCustomerSection({
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             required
-            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-12 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
           {!hasName ? (
             <p className="text-xs text-[var(--pb-muted)]">
@@ -168,7 +168,7 @@ export function BookingCustomerSection({
             value={customerEmail}
             onChange={(e) => setCustomerEmail(e.target.value)}
             placeholder={t.emailPlaceholder}
-            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-12 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
         </div>
         <div className="space-y-1 text-sm">
@@ -181,7 +181,7 @@ export function BookingCustomerSection({
             value={customerPhone}
             onChange={(e) => setCustomerPhone(e.target.value)}
             placeholder={t.phonePlaceholder}
-            className="h-10 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
+            className="h-12 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
           {!hasContact ? (

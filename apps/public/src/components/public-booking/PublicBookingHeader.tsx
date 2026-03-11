@@ -108,7 +108,7 @@ export function PublicBookingHeader({
       }}
     >
       <div
-        className="mx-auto flex w-full max-w-[1200px] flex-col gap-3 px-4 py-4 sm:px-6"
+        className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4"
         style={{
           minHeight: `var(--pb-header-min-height-${headerStyle})`,
         }}

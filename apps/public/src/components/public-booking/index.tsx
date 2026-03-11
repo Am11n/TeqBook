@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import type { AppLocale } from "@/i18n/translations";
 import { PublicBookingHeader } from "./PublicBookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
-import { MobileSummaryBar } from "./MobileSummaryBar";
+import { MobileBookingSummary } from "./MobileBookingSummary";
 import { BookingSelectionSection } from "./BookingSelectionSection";
 import { BookingSummaryCard } from "./BookingSummaryCard";
 import { PublicBookingLayout } from "./PublicBookingLayout";
@@ -84,6 +84,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   };
 
   const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
+  const [mobileDetailsInputFocused, setMobileDetailsInputFocused] = useState(false);
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
   const previousSlotRef = useRef(selectedSlot);
@@ -93,20 +94,17 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const selectedSlotData = slots.find((slot) => slot.id === selectedSlot) || null;
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
-  const summaryState = useMemo(() => {
-    if (!serviceId) {
-      return { step: 1 as const, label: t.selectServiceToContinueLabel || "Select a service to continue", disabledForState: true };
-    }
-    if (!selectedSlot) {
-      return { step: 2 as const, label: "Choose a time", disabledForState: true };
-    }
-    if (!detailsReady) {
-      return { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: true };
-    }
-    return { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
-  }, [serviceId, selectedSlot, detailsReady, t.selectServiceToContinueLabel, t.enterDetailsLabel, t.confirmBookingLabel]);
+  const summaryState = !serviceId
+    ? { step: 1 as const, label: t.selectServiceToContinueLabel || "Select a service to continue", disabledForState: true }
+    : !selectedSlot
+      ? { step: 2 as const, label: "Choose a time", disabledForState: true }
+      : !detailsReady
+        ? { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: true }
+        : { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
   const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
+  const ctaActionDisabled = mode !== "book" || saving;
   const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
+  const mobileStep = summaryState.step;
   const summaryCtaLabel = clampCtaLabel(summaryState.label);
   const summaryDurationLabel = selectedService?.duration_minutes && selectedService.duration_minutes > 0
     ? `${selectedService.duration_minutes} min`
@@ -130,11 +128,11 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   const scrollToSection = (sectionId: string) => {
     if (typeof window === "undefined") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (!window.matchMedia("(max-width: 1023px)").matches) return;
     const target = document.getElementById(sectionId);
     if (!target || isSectionVisible(target)) return;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
   };
 
   useEffect(() => {
@@ -173,6 +171,34 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   useEffect(() => {
     pageLoadedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const isDetailsField = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      if (!target.closest("#details-section")) return false;
+      return target.matches("input, textarea, select");
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      if (isDetailsField(event.target)) {
+        setMobileDetailsInputFocused(true);
+      }
+    };
+    const handleFocusOut = () => {
+      const active = document.activeElement;
+      if (!(active instanceof HTMLElement) || !active.closest("#details-section") || !active.matches("input, textarea, select")) {
+        setMobileDetailsInputFocused(false);
+      }
+    };
+
+    window.addEventListener("focusin", handleFocusIn);
+    window.addEventListener("focusout", handleFocusOut);
+    return () => {
+      window.removeEventListener("focusin", handleFocusIn);
+      window.removeEventListener("focusout", handleFocusOut);
+    };
   }, []);
 
   if (loading) {
@@ -242,24 +268,8 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
       <main className="flex flex-1 flex-col">
         <PublicBookingLayout
-          top={(
-            <MobileSummaryBar
-              summaryText={
-                [selectedService?.name, parsedSlot?.timeRange || summaryDateLabel, parsedSlot?.employeeName]
-                  .filter(Boolean)
-                  .join(" • ") || `${t.summaryTitle || "Your booking"}`
-              }
-              ctaLabel={summaryCtaLabel}
-              disabled={ctaDisabled}
-              onClick={() => {
-                handlePrimaryBookingCta();
-              }}
-              onChangeClick={() => setMobileChangeOpen(true)}
-              changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
-            />
-          )}
           left={(
-            <div className="space-y-8">
+            <div className="space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0">
               <BookingSelectionSection
                 t={t}
                 selectionStatus={selectionStatus}
@@ -284,64 +294,36 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 setSelectedSlot={setSelectedSlot}
               />
 
-              <div className="lg:hidden">
-                <BookingSummaryCard
+              <div className={mode === "book" && mobileStep < 3 ? "hidden lg:block" : ""}>
+                <BookingCustomerSection
                   t={t}
                   tokens={tokens}
+                  activeStep={activeStep}
                   mode={mode}
-                  serviceName={selectedService?.name || null}
-                  dateLabel={summaryDateLabel}
-                  timeLabel={parsedSlot?.timeRange || null}
-                  employeeLabel={parsedSlot?.employeeName || null}
-                  durationLabel={summaryDurationLabel}
-                  priceLabel={summaryPriceLabel}
-                  ctaDisabled={ctaDisabled}
-                  readyToSubmit={readyToSubmitBooking}
-                  ctaLabel={summaryCtaLabel}
-                  detailsReady={detailsReady}
-                  progressStep={summaryState.step}
-                  hasSelectedService={Boolean(serviceId)}
-                  hasSelectedSlot={Boolean(selectedSlot)}
+                  waitlistReceipt={waitlistReceipt}
+                  handleJoinWaitlist={handleJoinWaitlist}
+                  handleSubmitBooking={handleSubmitBooking}
+                  customerName={customerName}
+                  setCustomerName={setCustomerName}
+                  customerEmail={customerEmail}
+                  setCustomerEmail={setCustomerEmail}
+                  customerPhone={customerPhone}
+                  setCustomerPhone={setCustomerPhone}
+                  waitlistContactError={waitlistContactError}
+                  error={error}
+                  successMessage={successMessage}
+                  waitlistError={waitlistError}
+                  waitlistMessage={waitlistMessage}
+                  serviceId={serviceId}
+                  date={date}
+                  selectedSlot={selectedSlot}
+                  joiningWaitlist={joiningWaitlist}
+                  saving={saving}
+                  handleRetryLoadSlots={handleRetryLoadSlots}
                   detailsFormId={DETAILS_FORM_ID}
-                  onSubmitBooking={() => {
-                    handlePrimaryBookingCta();
-                  }}
-                  editActions={[
-                    { key: "service", label: t.editService || "Change service", onClick: () => scrollToSection("service-section") },
-                    { key: "date", label: t.editDate || "Change date", onClick: () => scrollToSection("date-section") },
-                    { key: "time", label: t.editTime || "Change time", onClick: () => scrollToSection("book-mode-panel") },
-                  ]}
+                  showBookingSubmitButton={false}
                 />
               </div>
-
-              <BookingCustomerSection
-                t={t}
-                tokens={tokens}
-                activeStep={activeStep}
-                mode={mode}
-                waitlistReceipt={waitlistReceipt}
-                handleJoinWaitlist={handleJoinWaitlist}
-                handleSubmitBooking={handleSubmitBooking}
-                customerName={customerName}
-                setCustomerName={setCustomerName}
-                customerEmail={customerEmail}
-                setCustomerEmail={setCustomerEmail}
-                customerPhone={customerPhone}
-                setCustomerPhone={setCustomerPhone}
-                waitlistContactError={waitlistContactError}
-                error={error}
-                successMessage={successMessage}
-                waitlistError={waitlistError}
-                waitlistMessage={waitlistMessage}
-                serviceId={serviceId}
-                date={date}
-                selectedSlot={selectedSlot}
-                joiningWaitlist={joiningWaitlist}
-                saving={saving}
-                handleRetryLoadSlots={handleRetryLoadSlots}
-                detailsFormId={DETAILS_FORM_ID}
-                showBookingSubmitButton={false}
-              />
             </div>
           )}
           right={(
@@ -377,6 +359,23 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
           )}
         />
       </main>
+      <MobileBookingSummary
+        mode={mode}
+        step={mobileStep}
+        serviceName={selectedService?.name || null}
+        dateLabel={summaryDateLabel}
+        timeLabel={parsedSlot?.timeRange || null}
+        employeeLabel={parsedSlot?.employeeName || null}
+        priceLabel={summaryPriceLabel}
+        ctaLabel={summaryCtaLabel}
+        ctaDisabled={ctaDisabled}
+        ctaActionDisabled={ctaActionDisabled}
+        keyboardHidden={mobileDetailsInputFocused}
+        onCtaClick={handlePrimaryBookingCta}
+        onChangeClick={() => setMobileChangeOpen(true)}
+        changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
+        summaryTitle={t.summaryTitle || "Your booking"}
+      />
       <Dialog open={mobileChangeOpen} onOpenChange={setMobileChangeOpen}>
         <DialogContent className="max-w-md lg:hidden">
           <DialogHeader>
