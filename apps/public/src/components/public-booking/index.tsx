@@ -63,14 +63,17 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   };
   const handlePrimaryBookingCta = () => {
     if (!serviceId) {
+      setMobileRequestedSection("service");
       scrollToSection("service-section");
       return;
     }
     if (!date) {
+      setMobileRequestedSection("date");
       scrollToSection("date-section");
       return;
     }
     if (!selectedSlot) {
+      setMobileRequestedSection("time");
       scrollToSection("book-mode-panel");
       return;
     }
@@ -85,6 +88,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
 
   const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
   const [mobileDetailsInputFocused, setMobileDetailsInputFocused] = useState(false);
+  const [mobileRequestedSection, setMobileRequestedSection] = useState<"service" | "date" | "time" | null>(null);
   const previousServiceIdRef = useRef(serviceId);
   const previousDateRef = useRef(date);
   const previousSlotRef = useRef(selectedSlot);
@@ -292,6 +296,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 slots={slots}
                 selectedSlot={selectedSlot}
                 setSelectedSlot={setSelectedSlot}
+                mobileRequestedSection={mobileRequestedSection}
               />
 
               <div className={mode === "book" && mobileStep < 3 ? "hidden lg:block" : ""}>
@@ -388,6 +393,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
+                setMobileRequestedSection("service");
                 scrollToSection("service-section");
               }}
             >
@@ -399,6 +405,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
+                setMobileRequestedSection("date");
                 scrollToSection("date-section");
               }}
             >
@@ -410,6 +417,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
+                setMobileRequestedSection("time");
                 scrollToSection("book-mode-panel");
               }}
             >

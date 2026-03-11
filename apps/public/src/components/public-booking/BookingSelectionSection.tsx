@@ -31,6 +31,7 @@ type BookingSelectionSectionProps = {
   slots: Slot[];
   selectedSlot: string;
   setSelectedSlot: (value: string) => void;
+  mobileRequestedSection?: "service" | "date" | "time" | null;
 };
 
 type GroupKey = "morning" | "afternoon" | "evening";
@@ -73,6 +74,7 @@ export function BookingSelectionSection({
   slots,
   selectedSlot,
   setSelectedSlot,
+  mobileRequestedSection = null,
 }: BookingSelectionSectionProps) {
   const isWaitlistMode = mode === "waitlist";
   const selectedService = services.find((service) => service.id === serviceId) || null;
@@ -108,6 +110,11 @@ export function BookingSelectionSection({
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
   }, []);
+
+  useEffect(() => {
+    if (!mobileRequestedSection || isDesktop) return;
+    setManualSection(mobileRequestedSection);
+  }, [mobileRequestedSection, isDesktop]);
 
   const sortedServices = useMemo(() => {
     const copy = [...services];
@@ -196,7 +203,7 @@ export function BookingSelectionSection({
         summary={selectedServiceName || undefined}
         onChange={() => updateSectionByInteraction("service")}
         changeLabel={t.editService || "Change service"}
-        showInlineChange={isDesktop}
+        showInlineChange
       >
         <div className="space-y-4">
           {shouldShowServiceSearch && (
@@ -257,7 +264,7 @@ export function BookingSelectionSection({
         summary={date || undefined}
         onChange={() => updateSectionByInteraction("date")}
         changeLabel={t.editDate || "Change date"}
-        showInlineChange={isDesktop}
+        showInlineChange
       >
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2 text-sm">
