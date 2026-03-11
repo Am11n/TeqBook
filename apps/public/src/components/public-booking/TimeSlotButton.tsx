@@ -28,6 +28,7 @@ export function TimeSlotButton({
 
   return (
     <button
+      id={`slot-${id}`}
       type="button"
       role="radio"
       aria-checked={selected}
@@ -36,11 +37,12 @@ export function TimeSlotButton({
       aria-label={`${timeRange}${employeeName ? `, ${employeeName}` : ""}${unavailable ? ", unavailable" : ""}`}
       onClick={() => onSelect(id)}
       disabled={isDisabled}
-      className="min-h-12 rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
+      className="min-h-[52px] rounded-[var(--pb-slot-radius)] border px-3 py-3 text-left outline-none transition-all duration-[140ms] ease-[var(--pb-ease-in-out)] enabled:hover:border-[var(--pb-primary)] enabled:active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transition-none motion-reduce:transform-none"
       style={{
-        borderColor: selected ? "var(--pb-slot-selected-border)" : "var(--pb-border)",
+        borderColor: selected ? "var(--pb-primary)" : "var(--pb-border)",
+        borderWidth: selected ? "2px" : "1px",
         backgroundColor: selected
-          ? "var(--pb-slot-selected-bg)"
+          ? "color-mix(in srgb, var(--pb-slot-selected-bg) 80%, var(--pb-surface) 20%)"
           : unavailable
             ? "var(--pb-surface-muted)"
             : "var(--pb-surface)",
@@ -54,7 +56,7 @@ export function TimeSlotButton({
       }}
     >
       <span className="block text-sm font-semibold">{stateText}</span>
-      <span className="mt-3 flex min-h-5 items-center gap-2">
+      <span className="mt-2 flex min-h-5 items-center gap-2">
         {recommended ? (
           <span
             className="inline-flex rounded-full border px-1.5 py-0.5 text-[10px] font-medium"
@@ -67,13 +69,7 @@ export function TimeSlotButton({
           </span>
         ) : null}
         {employeeName ? (
-          <span
-            className="inline-flex rounded-full border px-2 py-0.5 text-[10px] font-normal"
-            style={{
-              borderColor: selected ? "var(--pb-primary-text)" : "var(--pb-border)",
-              color: selected ? "var(--pb-primary-text)" : "var(--pb-muted)",
-            }}
-          >
+          <span className="text-[11px] font-normal" style={{ color: selected ? "var(--pb-primary-text)" : "color-mix(in srgb, var(--pb-muted) 80%, var(--pb-text) 20%)" }}>
             {employeeName}
           </span>
         ) : null}

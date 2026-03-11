@@ -89,6 +89,7 @@ export function MobileBookingSummary({
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--pb-text)]">{serviceValue}</p>
               <p className="truncate text-xs text-[var(--pb-muted)]">{timeValue}</p>
+              {priceLabel ? <p className="truncate text-xs font-medium text-[var(--pb-text)]">{priceLabel}</p> : null}
             </div>
             <button
               type="button"

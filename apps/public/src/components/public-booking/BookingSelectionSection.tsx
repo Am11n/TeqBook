@@ -111,11 +111,6 @@ export function BookingSelectionSection({
     return () => media.removeEventListener("change", apply);
   }, []);
 
-  useEffect(() => {
-    if (!mobileRequestedSection || isDesktop) return;
-    setManualSection(mobileRequestedSection);
-  }, [mobileRequestedSection, isDesktop]);
-
   const sortedServices = useMemo(() => {
     const copy = [...services];
     copy.sort((a, b) => {
@@ -169,14 +164,25 @@ export function BookingSelectionSection({
   const canCompleteDate = Boolean(serviceId && date);
 
   const autoSection: "service" | "date" | "time" = canCompleteDate ? "time" : canCompleteService ? "date" : "service";
-  const resolvedSection = manualSection ?? autoSection;
+  const resolvedSection = (!isDesktop && mobileRequestedSection) ? mobileRequestedSection : (manualSection ?? autoSection);
   const sectionExpanded = (section: "service" | "date" | "time") => isDesktop || resolvedSection === section;
+  const triggerHaptic = () => {
+    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+    navigator.vibrate(8);
+  };
 
   const updateSectionByInteraction = (section: "service" | "date" | "time") => {
     setHasInteracted(true);
     if (isDesktop) return;
     setManualSection(section);
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined" || isDesktop || loadingSlots || !recommendedSlotId || !canShowStep2) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const slotButton = document.getElementById(`slot-${recommendedSlotId}`);
+    slotButton?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "nearest" });
+  }, [recommendedSlotId, canShowStep2, loadingSlots, isDesktop]);
 
   return (
     <section className="space-y-8">
@@ -349,26 +355,29 @@ export function BookingSelectionSection({
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                size="sm"
-                variant="outline"
-                style={{ borderRadius: "var(--pb-button-radius)" }}
+                className="h-11 px-4 text-sm font-semibold"
+                style={{ borderRadius: "var(--pb-button-radius)", boxShadow: "var(--pb-button-shadow)" }}
                 onClick={() => {
                   if (!recommendedSlotId) return;
                   setHasInteracted(true);
+                  triggerHaptic();
                   setSelectedSlot(recommendedSlotId);
                 }}
               >
-                {isToday ? (t.nextAvailableToday || "Next available today") : (t.nextAvailable || "Next available")}
+                {isToday ? (t.nextAvailableToday || "Jump to next available today") : (t.nextAvailable || "Jump to next available")}
               </Button>
             </div>
             {groupedOrder.map((groupKey) => {
               const groupSlots = groupedSlots[groupKey];
               if (groupSlots.length === 0) return null;
               return (
-                <div key={groupKey} className="space-y-3">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--pb-muted)]">
-                    {groupedLabels[groupKey]}
-                  </p>
+                <div key={groupKey} className="space-y-3 rounded-[var(--pb-radius-sm)] border px-3 py-3" style={{ borderColor: "var(--pb-border)" }}>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--pb-muted)]">
+                      {groupedLabels[groupKey]}
+                    </p>
+                    <span className="h-px flex-1" style={{ backgroundColor: "var(--pb-border)" }} />
+                  </div>
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                     {groupSlots.map((slot, index) => {
                       const isSelected = selectedSlot === slot.id;
@@ -383,6 +392,7 @@ export function BookingSelectionSection({
                           recommended={slot.id === recommendedSlotId}
                           onSelect={(id) => {
                             setHasInteracted(true);
+                            triggerHaptic();
                             setSelectedSlot(id);
                           }}
                         />

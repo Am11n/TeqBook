@@ -61,19 +61,25 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     const detailsForm = document.getElementById(DETAILS_FORM_ID) as HTMLFormElement | null;
     detailsForm?.requestSubmit();
   };
+  const requestMobileSection = (section: "service" | "date" | "time") => {
+    setMobileRequestedSection(section);
+    window.setTimeout(() => {
+      setMobileRequestedSection((current) => (current === section ? null : current));
+    }, 0);
+  };
   const handlePrimaryBookingCta = () => {
     if (!serviceId) {
-      setMobileRequestedSection("service");
+      requestMobileSection("service");
       scrollToSection("service-section");
       return;
     }
     if (!date) {
-      setMobileRequestedSection("date");
+      requestMobileSection("date");
       scrollToSection("date-section");
       return;
     }
     if (!selectedSlot) {
-      setMobileRequestedSection("time");
+      requestMobileSection("time");
       scrollToSection("book-mode-panel");
       return;
     }
@@ -393,7 +399,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
-                setMobileRequestedSection("service");
+                requestMobileSection("service");
                 scrollToSection("service-section");
               }}
             >
@@ -405,7 +411,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
-                setMobileRequestedSection("date");
+                requestMobileSection("date");
                 scrollToSection("date-section");
               }}
             >
@@ -417,7 +423,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
               style={{ borderColor: "var(--pb-border)" }}
               onClick={() => {
                 setMobileChangeOpen(false);
-                setMobileRequestedSection("time");
+                requestMobileSection("time");
                 scrollToSection("book-mode-panel");
               }}
             >

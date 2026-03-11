@@ -108,12 +108,12 @@ export function PublicBookingHeader({
       }}
     >
       <div
-        className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4"
+        className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-4"
         style={{
           minHeight: `var(--pb-header-min-height-${headerStyle})`,
         }}
       >
-        <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3 sm:gap-4">
+        <div className="grid grid-cols-[auto_1fr_auto] items-start gap-2.5 sm:gap-4">
           <div
             aria-hidden="true"
             className="flex shrink-0 items-center justify-center overflow-hidden rounded-[var(--pb-radius-md)] border"
@@ -147,23 +147,23 @@ export function PublicBookingHeader({
           </div>
 
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold leading-tight tracking-tight sm:text-xl">
+            <h1 className="truncate text-[17px] font-semibold leading-tight tracking-tight sm:text-xl">
               {salonName}
             </h1>
             {headerStyle !== "compact" && (
               <p
-                className="mt-1 text-sm leading-snug"
+                className="mt-0.5 line-clamp-1 text-xs leading-snug sm:text-sm"
                 style={{
                   color: tokens.colors.mutedText,
-                  minHeight: "1.25rem",
+                  minHeight: "1rem",
                 }}
               >
                 {safeSubtitle}
               </p>
             )}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span
-                className="inline-flex min-h-6 items-center rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-wide"
+                className="inline-flex min-h-5 items-center rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide"
                 style={{
                   border: `1px solid ${tokens.colors.border}`,
                   backgroundColor: tokens.colors.surface,
