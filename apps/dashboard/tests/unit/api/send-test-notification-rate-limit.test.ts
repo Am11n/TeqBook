@@ -57,7 +57,12 @@ describe("Dashboard send-test-notification rate limiting", () => {
         group: "internal",
         salonId: "salon-1",
       }),
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost",
+        host: "localhost",
+        "x-forwarded-proto": "http",
+      },
     });
 
     const res = await POST(req);
@@ -101,7 +106,12 @@ describe("Dashboard send-test-notification rate limiting", () => {
         group: "internal",
         salonId: "salon-1",
       }),
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost",
+        host: "localhost",
+        "x-forwarded-proto": "http",
+      },
     });
 
     const res = await POST(req);

@@ -39,6 +39,37 @@ jobs:
       - name: File length gate
         run: pnpm run check:file-length:ci
 
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prettier check
+        run: pnpm run format:check
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=high
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -94,6 +125,30 @@ jobs:
           path: apps/dashboard/coverage/
           if-no-files-found: ignore
 
+  coverage-extended:
+    name: Coverage Extended (Public/Admin)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Coverage public/admin
+        run: pnpm run test:coverage:public && pnpm run test:coverage:admin
+      - name: Upload extended coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-public-admin
+          path: |
+            apps/public/coverage/
+            apps/admin/coverage/
+          if-no-files-found: ignore
+
   architecture:
     name: Architecture Guards
     runs-on: ubuntu-latest
@@ -116,7 +171,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [type-check, lint, test, integration, architecture]
+    needs: [type-check, lint, format-check, test, integration, coverage, architecture]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -132,6 +187,8 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - name: Bundle size gate
+        run: pnpm run check:bundle-size
 
   e2e:
     name: E2E

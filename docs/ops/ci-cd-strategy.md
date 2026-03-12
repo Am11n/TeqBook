@@ -151,16 +151,16 @@ For each Vercel project, set "Ignored Build Step" to:
 
 ```bash
 # For public app
-git diff HEAD^ HEAD --quiet . apps/public/ packages/ || echo "should-build"
+git diff HEAD^ HEAD --quiet . apps/public/ packages/ || exit 1
 
 # For dashboard app
-git diff HEAD^ HEAD --quiet . apps/dashboard/ packages/ || echo "should-build"
+git diff HEAD^ HEAD --quiet . apps/dashboard/ packages/ || exit 1
 
 # For admin app
-git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || echo "should-build"
+git diff HEAD^ HEAD --quiet . apps/admin/ packages/ || exit 1
 ```
 
-**Note:** This is a simple approach. For more robust detection, use the GitHub Action workflow.
+`exit 1` is required to force build when relevant files changed.
 
 ### E2E in CI
 
@@ -172,6 +172,14 @@ The workflow in `.github/workflows/deploy.yml` uses `dorny/paths-filter` to:
 - Detect which apps changed
 - Trigger deployments only for changed apps
 - Deploy all apps when `packages/*` changes
+
+The quality workflow in `.github/workflows/ci.yml` enforces:
+- type-check, lint, and format checks
+- unit and integration/RLS tests
+- architecture gates
+- security scan
+- bundle size gate
+- E2E after successful build
 
 ## Benefits
 

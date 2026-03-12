@@ -1,97 +1,96 @@
 # Observability Strategy
 
-## Overview
+## Scope
 
-Each app in the monorepo should have clear observability to know where problems occur.
+This document defines observability standards for:
+- `apps/public`
+- `apps/dashboard`
+- `apps/admin`
+- Supabase Edge Functions
 
-## Logging
+## Logging Standard
 
-### App Context
+All logs must include:
+- `app` (`public` | `dashboard` | `admin`) or `fn` for edge functions
+- `request_id` / `correlationId`
+- `tenant_id` (when available)
+- `user_id` (when authenticated)
+- `route` and `method`
+- `status_code` and `latency_ms`
 
-All loggers should include `app` context:
-- `app: "public"` - Public app logs
-- `app: "dashboard"` - Dashboard app logs
-- `app: "admin"` - Admin app logs
-
-### Edge Functions
-
-Edge functions should include `fn` context:
-- `fn: "process-reminders"` - Reminders edge function
-- `fn: "get-public-booking-data"` - Public booking data edge function
-- `fn: "send-booking-reminder"` - Send reminder edge function
-
-### Example Usage
-
-```typescript
-// In apps/public
-logInfo("Booking created", { app: "public", bookingId, salonId });
-
-// In apps/dashboard
-logInfo("Booking created", { app: "dashboard", bookingId, salonId });
-
-// In edge functions
-console.log(`[${fn}] Processing reminder`, { fn: "process-reminders", reminderId });
-```
-
-## Sentry Configuration
-
-### Option 1: Separate Projects (Recommended)
-
-Each app has its own Sentry project:
-- Public App: `SENTRY_DSN_PUBLIC`
-- Dashboard App: `SENTRY_DSN_DASHBOARD`
-- Admin App: `SENTRY_DSN_ADMIN`
-
-### Option 2: Tags (Simpler)
-
-Single Sentry project with tags:
-- Tag: `app:public`, `app:dashboard`, `app:admin`
-- Tag: `env:production`, `env:staging`
-
-### Configuration
-
-Update `sentry.client.config.ts` and `sentry.edge.config.ts` to include app context:
-
-```typescript
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tags: {
-    app: process.env.NEXT_PUBLIC_APP_NAME || "unknown",
-  },
-});
-```
-
-## Structured Logging
-
-All logs should follow this structure:
+Recommended structure:
 
 ```typescript
 {
-  timestamp: "2026-01-26T10:00:00Z",
-  level: "info" | "warn" | "error",
-  message: "Booking created",
+  timestamp: "2026-03-12T10:00:00Z",
+  level: "info",
+  message: "booking notification sent",
   correlationId: "uuid",
-  app: "dashboard",
   context: {
-    bookingId: "...",
-    salonId: "...",
+    app: "public",
+    route: "/api/bookings/send-notifications",
+    method: "POST",
+    tenant_id: "salon_123",
+    user_id: "user_456",
+    latency_ms: 123
   }
 }
 ```
 
-## Edge Function Logging
+## Tracing
 
-Edge functions should log with `fn` context:
+Critical chains must be traceable end-to-end:
+- `booking -> reminder scheduling -> notification`
+- `billing action -> Stripe webhook -> salon state update`
+- `waitlist trigger -> lifecycle processor -> claim flow`
 
-```typescript
-console.log(`[${fn}] Starting execution`, { fn: "process-reminders", timestamp });
-console.error(`[${fn}] Error:`, { fn: "process-reminders", error: error.message });
-```
+Minimum requirement:
+- One request ID generated/propagated across route handlers and service calls.
+- Include `event_id` for webhook-driven flows.
 
-## Benefits
+## Metrics and Dashboards
 
-- Always know which app has the problem
-- Filter logs by app in Sentry
-- Track errors per app
-- Monitor performance per app
+Required dashboards:
+- Bookings per minute
+- Booking completion rate
+- Notification delivery success/failure
+- API latency (p50, p95, p99)
+- DB query latency
+- Stripe webhook success/failure
+
+## Alerts
+
+Minimum alert thresholds:
+- Error rate > 5% for 5 minutes
+- Booking API failure spike
+- Webhook processing failures
+- p95 latency > 200ms for critical APIs
+- Repeated background job lock contention/failures
+
+## SLI/SLO Governance
+
+Primary SLIs:
+- Availability
+- Latency
+- Success rate
+- Data freshness for scheduled processors
+
+Initial SLO targets:
+- API latency p95 < 200ms for critical routes
+- Booking success >= 99.9%
+- Uptime >= 99.95%
+- Error rate < 1%
+
+Governance process:
+- Weekly operations review
+- Monthly SLO review with error budget status
+- Release freeze when error budget is exhausted
+
+## Instrumentation Review Checklist
+
+Before merging changes to critical flows:
+- [ ] Request ID/correlation propagation verified
+- [ ] Logs include app/fn + route + tenant/user context
+- [ ] Metrics emitted or observable for new path
+- [ ] Alerts updated if failure mode changes
+- [ ] Runbook impact documented

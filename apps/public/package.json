@@ -15,7 +15,8 @@
     "lint:i18n-locale-gate": "node -e \"const fs=require('fs');const content=fs.readFileSync('src/i18n/public-pages.ts','utf8');const locales=['en','nb','ar','so','ti','am','tr','pl','vi','zh','tl','fa','dar','ur','hi'];const missing=locales.filter((l)=>!new RegExp('\\\\\\\\b'+l+':').test(content));if(missing.length){console.error('Missing locale entries in src/i18n/public-pages.ts:',missing.join(', '));process.exit(1);}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "test": "vitest",
-    "test:run": "vitest --run"
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
@@ -54,17 +55,18 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
-    "@vitejs/plugin-react": "^5.1.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.181.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
+    "jsdom": "^25.0.1",
     "prettier": "^3.4.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^2.1.8",
-    "jsdom": "^25.0.1"
+    "vitest": "^2.1.8"
   }
 }

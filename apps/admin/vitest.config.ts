@@ -19,6 +19,18 @@ export default defineConfig({
       "**/dist/**",
       "**/.next/**",
     ],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json-summary"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["**/*.d.ts", "**/tests/**", "**/.next/**"],
+      thresholds: {
+        lines: 35,
+        functions: 30,
+        branches: 25,
+        statements: 35,
+      },
+    },
   },
   resolve: {
     alias: {

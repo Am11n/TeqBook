@@ -202,6 +202,15 @@ export function _getTotalDuration(): number { return totalDuration; }
 export function _getOperationCount(): number { return operationCount; }
 export function _getSlowCount(): number { return slowCount; }
 export function _resetCounters(): void { metrics.length = 0; totalDuration = 0; operationCount = 0; slowCount = 0; }
+export function _getSlowThresholdValue(): number { return CONFIG.slowThreshold; }
+export function _setSlowThresholdValue(threshold: number): void {
+  if (Number.isFinite(threshold) && threshold >= 0) {
+    CONFIG.slowThreshold = threshold;
+  }
+}
+export function _setConsoleLoggingValue(enabled: boolean): void {
+  CONFIG.logToConsole = enabled;
+}
 
 function logSlowOperation(
   name: string,

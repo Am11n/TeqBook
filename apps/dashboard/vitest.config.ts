@@ -47,6 +47,12 @@ export default defineConfig({
         "**/src/app/**",
         "**/src/components/**",
       ],
+      thresholds: {
+        lines: 20,
+        functions: 40,
+        branches: 60,
+        statements: 20,
+      },
     },
   },
   resolve: {

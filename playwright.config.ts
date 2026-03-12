@@ -57,7 +57,7 @@ export default defineConfig({
     // Dashboard (3002): settings, billing, booking flow, onboarding – owner auth
     {
       name: "authenticated",
-      testMatch: /settings-.*\.spec\.ts|billing-flow\.spec\.ts|booking-flow\.spec\.ts|onboarding\.spec\.ts/,
+      testMatch: /settings-.*\.spec\.ts|billing-flow\.spec\.ts|booking-flow\.spec\.ts|onboarding\.spec\.ts|calendar-shifts-import\.spec\.ts/,
       use: {
         baseURL: "http://localhost:3002",
         ...devices["Desktop Chrome"],

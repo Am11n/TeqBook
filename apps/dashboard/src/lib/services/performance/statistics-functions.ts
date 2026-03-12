@@ -1,5 +1,16 @@
 import type { PerformanceMetric, OperationCategory, PerformanceStats } from "./performance-service";
-import { trackOperation, trackOperationSync, _getMetrics, _getTotalDuration, _getOperationCount, _getSlowCount, _resetCounters } from "./performance-service";
+import {
+  trackOperation,
+  trackOperationSync,
+  _getMetrics,
+  _getTotalDuration,
+  _getOperationCount,
+  _getSlowCount,
+  _resetCounters,
+  _getSlowThresholdValue,
+  _setSlowThresholdValue,
+  _setConsoleLoggingValue,
+} from "./performance-service";
 
 export function getPerformanceStats(): PerformanceStats {
   const metrics = _getMetrics();
@@ -53,9 +64,17 @@ export function clearMetrics(): void {
   _resetCounters();
 }
 
-export function getSlowThreshold(): number { return 500; }
-export function setSlowThreshold(_threshold: number): void { /* no-op in split mode */ }
-export function setConsoleLogging(_enabled: boolean): void { /* no-op in split mode */ }
+export function getSlowThreshold(): number {
+  return _getSlowThresholdValue();
+}
+
+export function setSlowThreshold(threshold: number): void {
+  _setSlowThresholdValue(threshold);
+}
+
+export function setConsoleLogging(enabled: boolean): void {
+  _setConsoleLoggingValue(enabled);
+}
 
 /**
  * Create a tracked version of a function

@@ -28,6 +28,8 @@
     "test": "npm run test --workspaces --if-present",
     "test:run": "pnpm --filter '@teqbook/dashboard' run test:run && pnpm --filter '@teqbook/public' run test:run && pnpm --filter '@teqbook/admin' run test:run",
     "test:coverage": "pnpm --filter '@teqbook/dashboard' run test:coverage",
+    "test:coverage:public": "pnpm --filter '@teqbook/public' run test:coverage",
+    "test:coverage:admin": "pnpm --filter '@teqbook/admin' run test:coverage",
     "test:e2e": "playwright test",
     "test:integration": "pnpm --filter '@teqbook/dashboard' run test:integration",
     "test:e2e:ui": "playwright test --ui",
@@ -42,6 +44,9 @@
     "reset:db": "tsx scripts/reset-db.ts",
     "check:file-length": "tsx scripts/check-file-length.ts",
     "check:file-length:ci": "tsx scripts/check-file-length.ts --ci",
+    "check:bundle-size": "tsx scripts/check-bundle-size.ts",
+    "check:api-latency": "tsx scripts/check-api-latency.ts",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format": "npm run format --workspaces --if-present"
   },
   "devDependencies": {

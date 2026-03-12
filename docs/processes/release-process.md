@@ -1,191 +1,94 @@
-# TeqBook – Release Process
+# TeqBook Release Process
 
-Dette dokumentet beskriver release-prosessen for TeqBook.
+## Scope
 
----
+This process governs releases for monorepo applications:
+- `apps/public`
+- `apps/dashboard`
+- `apps/admin`
 
-## Release-strategi
+Deployment target is Vercel-based app projects (not GitHub Pages).
 
-TeqBook bruker **semantic versioning** (SemVer): `MAJOR.MINOR.PATCH`
+## Release Model
 
-- **MAJOR**: Breaking changes
-- **MINOR**: Nye features (backward compatible)
-- **PATCH**: Bugfixes (backward compatible)
+- `main` -> production candidate
+- Staging verification is mandatory before production approval
+- Semantic versioning is used for release communication
 
----
+## Pre-Release Gates (Must Pass)
 
-## Pre-release Checklist
+- [ ] `pnpm run type-check`
+- [ ] `pnpm run lint`
+- [ ] `pnpm run format:check`
+- [ ] `pnpm run test:run`
+- [ ] `pnpm run test:integration`
+- [ ] `pnpm run test:e2e`
+- [ ] `pnpm run build`
+- [ ] `pnpm run check:bundle-size`
+- [ ] Security scan job completed (no unresolved high-severity release blockers)
+- [ ] Migrations verified and reviewed
+- [ ] Backup/restore readiness verified for release window
+- [ ] Observability and alerting enabled for impacted flows
+- [ ] Documentation and runbooks updated
 
-Før du starter en release:
+## Release Steps
 
-- [ ] Alle tests passerer (`npm run test`)
-- [ ] Lint passerer (`npm run lint`)
-- [ ] Type check passerer (`npx tsc --noEmit`)
-- [ ] Build er vellykket (`npm run build`)
-- [ ] E2E tests passerer (`npm run test:e2e`)
-- [ ] Dokumentasjon er oppdatert
-- [ ] CHANGELOG.md er oppdatert (hvis relevant)
-- [ ] Breaking changes er dokumentert
+1. Create release branch from `main`.
+2. Freeze non-critical scope changes.
+3. Run full CI and staging validation.
+4. Verify critical journeys:
+   - booking
+   - payment
+   - reschedule
+   - cancellation
+   - notifications
+5. Approve release in change log with accountable owner.
+6. Merge to `main` and trigger production deployment.
+7. Create release tag and publish release notes.
 
----
+## Post-Release Validation
 
-## Release-prosess
+Within first hour:
+- [ ] API error rate and latency within SLO thresholds
+- [ ] Booking success and payment success stable
+- [ ] No webhook backlog/failure spike
+- [ ] No critical support incident spike
 
-### 1. Opprett Release Branch
+Within 24 hours:
+- [ ] Incident review of any abnormal signals
+- [ ] Confirm no tenant isolation regressions
+- [ ] Update release notes with known issues/actions
 
-```bash
-git checkout -b release/v1.2.0
-```
+## Rollback Plan
 
-### 2. Oppdater Versjon
+If release health degrades:
+1. Stop forward deployments.
+2. Roll back to previous stable deployment.
+3. If data-impacting issue: execute controlled restore from verified backup point.
+4. Disable high-risk side effects when needed (for example outbound notifications).
+5. Open incident, assign commander, track remediation.
 
-**Hvis du bruker npm version:**
+## Hotfix Process
 
-```bash
-cd web
-npm version patch  # for patch release
-npm version minor  # for minor release
-npm version major  # for major release
-```
+1. Create `hotfix/*` branch from `main`.
+2. Implement minimal fix and targeted tests.
+3. Re-run mandatory gates for impacted scope.
+4. Deploy to staging, then production.
+5. Publish hotfix note and follow-up prevention task.
 
-Dette oppdaterer automatisk `package.json` og oppretter en git tag.
+## Required Evidence
 
-**Eller manuelt:**
+Each release must attach:
+- CI run references
+- staging verification notes
+- migration verification
+- rollback readiness confirmation
+- post-release validation notes
 
-1. Oppdater `apps/dashboard/package.json` (eller den appen du utgir) versjon
-2. Commit endringen:
-   ```bash
-   git add apps/dashboard/package.json
-   git commit -m "chore: bump version to 1.2.0"
-   ```
+## References
 
-### 3. Merge til Main
-
-```bash
-git checkout main
-git merge release/v1.2.0
-git push origin main
-```
-
-### 4. Opprett Git Tag
-
-```bash
-git tag -a v1.2.0 -m "Release v1.2.0"
-git push origin v1.2.0
-```
-
-### 5. Deploy
-
-Deployment skjer automatisk via GitHub Actions når kode pushes til `main` branch.
-
-**Manuell deployment (hvis nødvendig):**
-
-1. Gå til **Actions** tab i GitHub
-2. Velg **Deploy Next.js site to Pages**
-3. Klikk **Run workflow**
-
----
-
-## Post-release
-
-### 1. Verifiser Deployment
-
-1. Gå til repository **Settings** → **Pages**
-2. Sjekk at deployment er vellykket
-3. Test live URL
-
-### 2. Opprett Release Notes
-
-1. Gå til **Releases** i GitHub
-2. Klikk **Draft a new release**
-3. Velg tag (f.eks. `v1.2.0`)
-4. Legg til release notes:
-   - Nye features
-   - Bugfixes
-   - Breaking changes
-   - Migration guide (hvis relevant)
-
-### 3. Kommuniser Endringer
-
-- Oppdater brukere om nye features
-- Dokumenter breaking changes
-- Gi migration guide hvis nødvendig
-
----
-
-## Hotfix-prosess
-
-For kritiske bugfixes som må til produksjon umiddelbart:
-
-### 1. Opprett Hotfix Branch
-
-```bash
-git checkout -b hotfix/v1.2.1 main
-```
-
-### 2. Fix Buggen
-
-```bash
-# Fix bug
-git add .
-git commit -m "fix: resolve critical booking bug"
-```
-
-### 3. Oppdater Versjon
-
-```bash
-npm version patch
-```
-
-### 4. Merge til Main
-
-```bash
-git checkout main
-git merge hotfix/v1.2.1
-git push origin main
-```
-
-### 5. Tag og Deploy
-
-```bash
-git tag -a v1.2.1 -m "Hotfix v1.2.1"
-git push origin v1.2.1
-```
-
----
-
-## Rollback-prosess
-
-Hvis noe går galt etter release:
-
-### 1. Revert Commit
-
-```bash
-git revert <commit-hash>
-git push origin main
-```
-
-### 2. Eller Deploy Forrige Versjon
-
-1. Gå til **Actions** tab
-2. Finn forrige vellykkede deployment
-3. Re-run workflow
-
----
-
-## Best Practices
-
-1. **Test i staging først** (hvis du har staging-miljø)
-2. **Kommuniser breaking changes** tydelig
-3. **Dokumenter migrations** hvis nødvendig
-4. **Monitor deployment** etter release
-5. **Ha rollback-plan** klar
-
----
-
-## Relaterte Dokumenter
-
-- `CONTRIBUTING.md` - Branch-strategi og PR-prosess
-- `docs/onboarding.md` - Developer onboarding
-- `.github/workflows/ci.yml` - CI/CD pipeline
+- `.github/workflows/ci.yml`
+- `docs/ops/ci-cd-strategy.md`
+- `docs/nordic-readiness/backup-restore.md`
+- `docs/ops/observability.md`
 
