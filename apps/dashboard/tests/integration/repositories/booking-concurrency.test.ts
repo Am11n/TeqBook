@@ -62,7 +62,9 @@ describeIf("Booking Concurrency Integration", () => {
 
       const successCount = [a, b].filter((r) => !r.error && r.data).length;
       const conflictCount = [a, b].filter((r) =>
-        (r.error?.message || "").toLowerCase().includes("already booked"),
+        ["already booked", "exclusion constraint"].some((needle) =>
+          (r.error?.message || "").toLowerCase().includes(needle),
+        ),
       ).length;
 
       expect(successCount).toBe(1);

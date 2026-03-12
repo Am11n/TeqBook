@@ -312,6 +312,10 @@ export async function createTestBooking(
   const startTime = new Date();
   startTime.setDate(startTime.getDate() + 1); // Tomorrow
   startTime.setHours(10, 0, 0, 0);
+  // Spread integration bookings across unique slots so exclusion constraints do not
+  // create false negatives in unrelated tests.
+  const uniqueOffsetMinutes = Math.floor((Date.now() % 1000) / 10) * 5;
+  startTime.setMinutes(startTime.getMinutes() + uniqueOffsetMinutes);
   const endTime = new Date(startTime);
   endTime.setMinutes(endTime.getMinutes() + 30);
 

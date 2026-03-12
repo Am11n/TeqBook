@@ -70,7 +70,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/supabase/admin", () => ({
   getAdminClient: () => ({
-    from: (...args: unknown[]) => mockAdminFrom(...args),
+    from: (table: string) => mockAdminFrom(table),
   }),
 }));
 
