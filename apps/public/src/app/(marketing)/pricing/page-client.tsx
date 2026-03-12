@@ -2,17 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Check,
-  Shield,
-  CreditCard,
-  X,
-  Lock,
-  CalendarCheck,
-  Users,
-  TrendingUp,
-} from "lucide-react";
-import { PRICING, getTopFeaturesForPlan } from "@/content/marketing";
+import { Check, Shield, CreditCard, X, Lock } from "lucide-react";
+import { PRICING } from "@/content/marketing";
 import { Section, SectionHeader } from "@/components/marketing/Section";
 import {
   ComparisonTable,
@@ -24,25 +15,16 @@ import { CTASection } from "@/components/marketing/CTASection";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { copy as landingCopy } from "@/components/landing/landing-copy";
 
-const columns: ComparisonColumn[] = [...PRICING.plans]
-  .sort((a, b) => a.order - b.order)
-  .map((p) => ({
-    id: p.id,
-    label: p.name,
-    highlighted: p.highlighted,
-  }));
-
-const planMeta: ComparisonMeta[] = [...PRICING.plans]
-  .sort((a, b) => a.order - b.order)
-  .map((p) => ({
-    planId: p.id,
-    bestFor: p.bestFor,
-    teamSize: p.teamSize,
-  }));
+const TRUST_ICONS = {
+  shield: Shield,
+  card: CreditCard,
+  x: X,
+  lock: Lock,
+} as const;
 
 const sortedCategories = [...PRICING.categories].sort((a, b) => a.order - b.order);
-
 const rows: ComparisonRow[] = [...PRICING.features]
   .sort((a, b) => {
     const catA = PRICING.categories.find((c) => c.id === a.category)?.order ?? 99;
@@ -54,26 +36,30 @@ const rows: ComparisonRow[] = [...PRICING.features]
     feature: f.label,
     values: { ...f.values },
   }));
-
 const categoryLabels = sortedCategories.map((c) => c.label);
-
-const TRUST_ICONS = {
-  shield: Shield,
-  card: CreditCard,
-  x: X,
-  lock: Lock,
-} as const;
-
-const WHY_PRO_ICONS = {
-  "calendar-check": CalendarCheck,
-  users: Users,
-  "trending-up": TrendingUp,
-} as const;
 
 export default function PricingPageClient() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = getPublicPageTranslations(appLocale).marketingPages.pricing;
+  const l = landingCopy[appLocale];
+  const sortedTiers = [...l.tiers].sort((a, b) => {
+    const order: Record<string, number> = { starter: 1, pro: 2, business: 3 };
+    return (order[a.id] ?? 99) - (order[b.id] ?? 99);
+  });
+  const columns: ComparisonColumn[] = sortedTiers.map((tier) => ({
+    id: tier.id,
+    label: tier.name,
+    highlighted: tier.highlighted,
+  }));
+  const planMeta: ComparisonMeta[] = sortedTiers.map((tier) => ({
+    planId: tier.id,
+    bestFor: tier.description,
+    teamSize:
+      PRICING.plans.find((p) => p.id === tier.id)?.teamSize ??
+      PRICING.plans.find((p) => p.id === tier.id)?.bestFor ??
+      "-",
+  }));
 
   return (
     <>
@@ -87,10 +73,8 @@ export default function PricingPageClient() {
 
       <Section className="!pt-8">
         <div className="grid gap-6 md:grid-cols-3">
-          {[...PRICING.plans]
-            .sort((a, b) => a.order - b.order)
-            .map((plan) => {
-              const features = getTopFeaturesForPlan(plan.id, 7);
+          {sortedTiers.map((plan) => {
+              const features = plan.features.slice(0, 7);
               return (
                 <div
                   key={plan.id}
@@ -121,13 +105,14 @@ export default function PricingPageClient() {
                     </div>
                     <h3 className="text-lg font-bold text-slate-900">{plan.name}</h3>
                   </div>
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-blue-600">
-                    {plan.bestFor}
-                  </p>
+                  {plan.badge ? (
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-blue-600">
+                      {plan.badge}
+                    </p>
+                  ) : null}
                   <p className="mb-4 text-sm text-slate-600">{plan.description}</p>
                   <div className="mb-6">
                     <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
-                    <span className="text-sm text-slate-500">{plan.period}</span>
                   </div>
                   <ul className="mb-6 flex-1 space-y-2.5 text-sm">
                     {features.map((feature) => (
@@ -155,7 +140,6 @@ export default function PricingPageClient() {
               );
             })}
         </div>
-
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {PRICING.trustSignals.map((signal) => {
             const Icon = TRUST_ICONS[signal.icon];
@@ -167,6 +151,7 @@ export default function PricingPageClient() {
             );
           })}
         </div>
+
       </Section>
 
       <Section className="bg-gradient-to-b from-white to-slate-50/50">
@@ -177,15 +162,11 @@ export default function PricingPageClient() {
           <p className="mt-3 text-base text-slate-600">{t.whyProDescription}</p>
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
-          {PRICING.whyPro.map((item) => {
-            const Icon = WHY_PRO_ICONS[item.icon];
+          {l.stats.map((item) => {
             return (
-              <div key={item.text} className="rounded-xl bg-white px-6 py-8 text-center shadow-sm">
-                <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <p className="text-lg font-semibold text-slate-900">{item.text}</p>
-                <p className="mt-2 text-sm text-slate-500">{item.description}</p>
+              <div key={item.title} className="rounded-xl bg-white px-6 py-8 text-center shadow-sm">
+                <p className="text-lg font-semibold text-slate-900">{item.title}</p>
+                <p className="mt-2 text-sm text-slate-500">{item.body}</p>
               </div>
             );
           })}
@@ -193,10 +174,7 @@ export default function PricingPageClient() {
       </Section>
 
       <Section id="compare" className="bg-slate-50/50">
-        <SectionHeader
-          title={t.fullComparisonTitle}
-          description={t.fullComparisonDescription}
-        />
+        <SectionHeader title={t.fullComparisonTitle} description={t.fullComparisonDescription} />
         <div className="mt-12">
           <ComparisonTable
             columns={columns}
@@ -217,7 +195,20 @@ export default function PricingPageClient() {
       <Section>
         <SectionHeader title={t.addonsTitle} description={t.addonsDescription} />
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          {PRICING.addons.map((addon) => (
+          {[
+            {
+              id: "multilingual-booking",
+              title: l.multilingualBookingTitle,
+              description: l.multilingualBookingDescription,
+              recommendedWith: l.tiers[1]?.name ?? "Pro",
+            },
+            {
+              id: "extra-staff",
+              title: l.extraStaffTitle,
+              description: l.extraStaffDescription,
+              recommendedWith: l.tiers[2]?.name ?? "Business",
+            },
+          ].map((addon) => (
             <div
               key={addon.id}
               className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
