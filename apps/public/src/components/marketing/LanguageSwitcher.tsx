@@ -8,9 +8,10 @@ const LANDING_LOCALE_KEY = "teqbook_landing_locale";
 
 interface LanguageSwitcherProps {
   dropUp?: boolean;
+  ariaLabel?: string;
 }
 
-export function LanguageSwitcher({ dropUp = false }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ dropUp = false, ariaLabel = "Language" }: LanguageSwitcherProps) {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -47,7 +48,7 @@ export function LanguageSwitcher({ dropUp = false }: LanguageSwitcherProps) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/60 backdrop-blur-lg outline-none transition-all hover:scale-105 hover:bg-slate-100/60 focus-visible:ring-2 focus-visible:ring-blue-400/30"
-        aria-label="Language"
+        aria-label={ariaLabel}
       >
         <span className="text-base leading-none">
           {LANGUAGE_FLAGS[locale as LanguageCode] || "\u{1F310}"}

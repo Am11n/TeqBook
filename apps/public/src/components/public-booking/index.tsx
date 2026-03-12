@@ -126,12 +126,12 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   const parsedSlot = selectedSlotData ? parseSlotLabel(selectedSlotData.label) : null;
   const detailsReady = customerName.trim().length > 0 && (customerEmail.trim().length > 0 || customerPhone.trim().length > 0);
   const summaryState = !serviceId
-    ? { step: 1 as const, label: t.selectServiceToContinueLabel || "Select a service to continue", disabledForState: true }
+    ? { step: 1 as const, label: t.selectServiceToContinueLabel ?? "", disabledForState: true }
     : !selectedSlot
-      ? { step: 2 as const, label: "Choose a time", disabledForState: true }
+      ? { step: 2 as const, label: t.step2Label, disabledForState: true }
       : !detailsReady
-        ? { step: 3 as const, label: t.enterDetailsLabel || "Enter your details", disabledForState: true }
-        : { step: 4 as const, label: t.confirmBookingLabel || "Confirm booking", disabledForState: false };
+        ? { step: 3 as const, label: t.enterDetailsLabel ?? "", disabledForState: true }
+        : { step: 4 as const, label: t.confirmBookingLabel ?? "", disabledForState: false };
   const ctaDisabled = mode !== "book" || saving || summaryState.disabledForState;
   const ctaActionDisabled = mode !== "book" || saving;
   const readyToSubmitBooking = mode === "book" && !saving && summaryState.step === 4 && detailsReady && !summaryState.disabledForState;
@@ -281,9 +281,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         locale={locale}
         supportedLocales={supportedLocales}
         onLocaleChange={setLocale}
-        modeBookTimeLabel={t.modeBookTime || "Book time"}
-        modeWaitlistLabel={t.modeWaitlist || "Notify me when available"}
-        modeSelectorLabel={t.modeSelectorLabel || "Booking mode"}
+        modeBookTimeLabel={t.modeBookTime ?? ""}
+        modeWaitlistLabel={t.modeWaitlist ?? ""}
+        modeSelectorLabel={t.modeSelectorLabel ?? ""}
         payInSalonBadge={t.payInSalonBadge}
         whatsappNumber={salon.whatsapp_number}
       />
@@ -373,9 +373,9 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                   handlePrimaryBookingCta();
                 }}
                 editActions={[
-                  { key: "service", label: t.editService || "Change service", onClick: () => scrollToSection("service-section") },
-                  { key: "date", label: t.editDate || "Change date", onClick: () => scrollToSection("date-section") },
-                  { key: "time", label: t.editTime || "Change time", onClick: () => scrollToSection("book-mode-panel") },
+                  { key: "service", label: t.editService ?? "", onClick: () => scrollToSection("service-section") },
+                  { key: "date", label: t.editDate ?? "", onClick: () => scrollToSection("date-section") },
+                  { key: "time", label: t.editTime ?? "", onClick: () => scrollToSection("book-mode-panel") },
                 ]}
               />
             </div>
@@ -396,13 +396,14 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         keyboardHidden={mobileDetailsInputFocused}
         onCtaClick={handlePrimaryBookingCta}
         onChangeClick={handleChangeSelection}
-        changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
-        summaryTitle={t.summaryTitle || "Your booking"}
+        changeLabel={t.mobileChangeSelectionLabel ?? ""}
+        summaryTitle={t.summaryTitle ?? ""}
+        t={t}
       />
       <Dialog open={mobileChangeOpen} onOpenChange={setMobileChangeOpen}>
         <DialogContent className="z-[70] max-w-md lg:hidden">
           <DialogHeader>
-            <DialogTitle>{t.mobileChangeSelectionLabel || "Change selection"}</DialogTitle>
+            <DialogTitle>{t.mobileChangeSelectionLabel}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <button
@@ -415,7 +416,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 scrollToSection("service-section");
               }}
             >
-              {t.editService || "Change service"}
+              {t.editService}
             </button>
             <button
               type="button"
@@ -427,7 +428,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 scrollToSection("date-section");
               }}
             >
-              {t.editDate || "Change date"}
+              {t.editDate}
             </button>
             <button
               type="button"
@@ -439,7 +440,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
                 scrollToSection("book-mode-panel");
               }}
             >
-              {t.editTime || "Change time"}
+              {t.editTime}
             </button>
           </div>
         </DialogContent>

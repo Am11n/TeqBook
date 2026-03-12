@@ -1,12 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).marketingLayout;
+
   return (
     <>
       <MarketingHeader />
@@ -19,13 +28,13 @@ export default function MarketingLayout({
             href="/signup"
             className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
-            Start free
+            {t.startFree}
           </Link>
           <Link
             href="/contact"
             className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
           >
-            Contact
+            {t.contact}
           </Link>
         </div>
       </div>

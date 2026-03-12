@@ -23,9 +23,9 @@ export default function OnboardingPage() {
   });
 
   const stepLabels = [
-    t.step1Title || "Salon information",
-    t.step2Title || "Settings",
-    t.step3Title || "Confirm & Create",
+    t.step1Title,
+    t.step2Title,
+    t.step3Title,
   ];
 
   return (
@@ -55,12 +55,9 @@ export default function OnboardingPage() {
                   {stepLabels[onboarding.currentStep - 1]}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  {onboarding.currentStep === 1 &&
-                    "Add your core salon info so we can tailor bookings to your business."}
-                  {onboarding.currentStep === 2 &&
-                    "Configure your opening hours and booking preferences."}
-                  {onboarding.currentStep === 3 &&
-                    "Review your settings before creating your salon."}
+                  {onboarding.currentStep === 1 && t.step1Description}
+                  {onboarding.currentStep === 2 && t.step2Description}
+                  {onboarding.currentStep === 3 && t.step3Description}
                 </p>
               </div>
 
@@ -170,8 +167,7 @@ export default function OnboardingPage() {
               </form>
 
               <p className="mt-6 text-[11px] text-center text-slate-400">
-                Your salon information is securely stored. You can update these settings anytime
-                from your dashboard.
+                {t.footerHint}
               </p>
             </motion.div>
           </section>

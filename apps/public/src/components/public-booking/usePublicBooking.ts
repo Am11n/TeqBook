@@ -289,7 +289,7 @@ export function usePublicBooking(slug: string) {
     const normalizedEmail = customerEmail.trim().toLowerCase();
 
     if (!normalizedEmail && !normalizedPhone) {
-      setWaitlistContactError(t.waitlistContactRequired || "Please provide email or phone.");
+      setWaitlistContactError(t.waitlistContactRequired ?? t.bookingContactRequired ?? null);
       return;
     }
 
@@ -331,7 +331,7 @@ export function usePublicBooking(slug: string) {
       }
 
       const selectedService = services.find((service) => service.id === serviceId);
-      const serviceName = selectedService?.name || (t.servicePlaceholder || "Selected service");
+      const serviceName = selectedService?.name || t.servicePlaceholder;
       const formattedDate = formatPreferredDate(date, locale);
       const alreadyJoined = !!response.body.alreadyJoined;
 
@@ -345,8 +345,8 @@ export function usePublicBooking(slug: string) {
 
       setWaitlistMessage(
         alreadyJoined
-          ? `${t.waitlistAlreadyJoined || "You are already on the waitlist."} ${serviceName} - ${formattedDate}`
-          : t.waitlistSuccess || "You're on the waitlist. The salon will contact you if a matching slot opens."
+          ? `${t.waitlistAlreadyJoined ?? ""} ${serviceName} - ${formattedDate}`
+          : (t.waitlistSuccess ?? "")
       );
     } catch {
       setWaitlistError(t.waitlistCreateError || t.createError);
@@ -374,7 +374,7 @@ export function usePublicBooking(slug: string) {
     const normalizedPhone = normalizePhone(customerPhone);
     const normalizedEmail = customerEmail.trim().toLowerCase();
     if (!normalizedEmail && !normalizedPhone) {
-      setWaitlistContactError(t.bookingContactRequired || "Please provide email or phone so we can send booking confirmation.");
+      setWaitlistContactError(t.bookingContactRequired ?? t.waitlistContactRequired ?? null);
       return;
     }
 
@@ -417,7 +417,7 @@ export function usePublicBooking(slug: string) {
       if (!isPreview) {
         window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
       } else {
-        setSuccessMessage(t.submitLabel || "Booking created successfully!");
+        setSuccessMessage(t.successMessage);
         setSaving(false);
       }
     } catch {

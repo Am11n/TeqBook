@@ -12,9 +12,13 @@ import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide
 import type { Booking } from "@/lib/types";
 import { type Salon, createDateFormatter, createTimeFormatter } from "./confirmation-types";
 import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components/public-booking/publicBookingUtils";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug: string }) {
   const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).bookingConfirmation;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [slug] = useState<string>(salonSlug);
@@ -31,7 +35,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   useEffect(() => {
     async function loadData() {
       if (!bookingId || !slug) {
-        setError("Missing booking ID or salon slug");
+        setError(t.bookingNotFound);
         setLoading(false);
         return;
       }
@@ -40,7 +44,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         // Load salon
         const { data: salonData, error: salonError } = await getSalonBySlugForPublic(slug);
         if (salonError || !salonData) {
-          setError(salonError || "Salon not found");
+          setError(salonError || t.bookingNotFound);
           setLoading(false);
           return;
         }
@@ -69,14 +73,14 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         if (!confirmationResponse.ok || !confirmationPayload?.booking) {
           // Reservation-first UX: booking is already created before redirect.
           // If details lookup fails, keep confirmation screen and show reference id.
-          setBookingDetailsError(confirmationPayload?.error || "Could not load booking details.");
+          setBookingDetailsError(confirmationPayload?.error || t.loadBookingDetailsError);
         } else if (confirmationPayload.booking.salon_id !== salonData.id) {
-          setBookingDetailsError("Booking belongs to another salon.");
+          setBookingDetailsError(t.bookingFromAnotherSalonError);
         } else {
           setBooking(confirmationPayload.booking as Booking);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load booking");
+        setError(err instanceof Error ? err.message : t.bookingNotFound);
       } finally {
         setLoading(false);
       }
@@ -92,7 +96,11 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     setError(null);
 
     try {
-      const { error: cancelError } = await cancelBooking(salon.id, booking.id, cancellationReason || null);
+      const { error: cancelError } = await cancelBooking(
+        salon.id,
+        booking.id,
+        cancellationReason || null,
+      );
       
       if (cancelError) {
         setError(cancelError);
@@ -104,7 +112,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
       setShowCancelForm(false);
       setCancellationReason("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to cancel booking");
+      setError(err instanceof Error ? err.message : t.cancelFailed);
     } finally {
       setCancelling(false);
     }
@@ -119,7 +127,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t.loading}</p>
       </div>
     );
   }
@@ -130,10 +138,10 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         <Card className="p-6 max-w-md w-full">
           <div className="text-center">
             <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Error</h2>
-            <p className="text-sm text-muted-foreground">{error || "Booking not found"}</p>
+            <h2 className="mb-2 text-lg font-semibold">{t.errorTitle}</h2>
+            <p className="text-sm text-muted-foreground">{error || t.bookingNotFound}</p>
             <Button onClick={() => router.push(`/book/${slug}`)} className="mt-4">
-              Back to Booking
+              {t.backToBooking}
             </Button>
           </div>
         </Card>
@@ -144,7 +152,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   if (!tokens || !effectiveBranding) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t.loading}</p>
       </div>
     );
   }
@@ -175,12 +183,12 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
           )}
           <h1 className="text-2xl font-bold mb-2">
-            {isCancelled ? "Booking Cancelled" : "Booking Confirmed"}
+            {isCancelled ? t.cancelledTitle : t.confirmedTitle}
           </h1>
           <p className="text-sm text-muted-foreground">
             {isCancelled
-              ? "Your booking has been cancelled"
-              : "Your booking has been confirmed successfully"}
+              ? t.cancelledDescription
+              : t.confirmedDescription}
           </p>
         </div>
 
@@ -197,8 +205,10 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-medium">Reservation received</p>
-                  <p className="text-xs text-muted-foreground">Reference: {bookingId}</p>
+                  <p className="text-sm font-medium">{t.reservationReceived}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.reference}: {bookingId}
+                  </p>
                 </>
               )}
             </div>
@@ -207,9 +217,9 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <Scissors className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">Service</p>
+              <p className="text-sm font-medium">{t.service}</p>
               <p className="text-xs text-muted-foreground">
-                {booking?.services?.name || "Will be confirmed shortly"}
+                {booking?.services?.name || t.servicePending}
               </p>
             </div>
           </div>
@@ -217,9 +227,9 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <User className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">Employee</p>
+              <p className="text-sm font-medium">{t.employee}</p>
               <p className="text-xs text-muted-foreground">
-                {booking?.employees?.full_name || "Best available"}
+                {booking?.employees?.full_name || t.bestAvailable}
               </p>
             </div>
           </div>
@@ -227,7 +237,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <Clock className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">Status</p>
+              <p className="text-sm font-medium">{t.status}</p>
               <Badge
                 variant="outline"
                 className={`mt-1 ${
@@ -238,7 +248,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                       : ""
                 }`}
               >
-                {booking?.status || "confirmed"}
+                {booking?.status ?? "confirmed"}
               </Badge>
             </div>
           </div>
@@ -254,28 +264,28 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                   className="flex-1"
                 >
                   <X className="mr-2 h-4 w-4" />
-                  Cancel Booking
+                  {t.cancelBooking}
                 </Button>
                 <Button
                   onClick={() => router.push(`/book/${slug}`)}
                   className="flex-1"
                   style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryText }}
                 >
-                  Book Another
+                  {t.bookAnother}
                 </Button>
               </div>
             ) : (
               <div className="space-y-3 p-4 border rounded-lg">
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Cancellation Reason (Optional)
+                    {t.cancelReasonLabel}
                   </label>
                   <textarea
                     value={cancellationReason}
                     onChange={(e) => setCancellationReason(e.target.value)}
                     className="w-full p-2 border rounded-md text-sm"
                     rows={3}
-                    placeholder="Please let us know why you're cancelling..."
+                    placeholder={t.cancelReasonPlaceholder}
                   />
                 </div>
                 <div className="flex gap-3">
@@ -288,7 +298,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                     className="flex-1"
                     disabled={cancelling}
                   >
-                    Keep Booking
+                    {t.keepBooking}
                   </Button>
                   <Button
                     onClick={handleCancel}
@@ -296,7 +306,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                     className="flex-1"
                     disabled={cancelling}
                   >
-                    {cancelling ? "Cancelling..." : "Confirm Cancellation"}
+                    {cancelling ? t.cancelling : t.confirmCancellation}
                   </Button>
                 </div>
               </div>
@@ -313,7 +323,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         {salon.whatsapp_number && (
           <div className="mt-6 pt-6 border-t">
             <p className="text-sm text-center text-muted-foreground mb-3">
-              Need to make changes? Contact us on WhatsApp
+              {t.changesViaWhatsapp}
             </p>
             <a
               href={`https://wa.me/${salon.whatsapp_number.replace(/[^0-9]/g, "")}`}
@@ -322,7 +332,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
               className="block"
             >
               <Button className="w-full" variant="outline">
-                Chat on WhatsApp
+                {t.chatOnWhatsapp}
               </Button>
             </a>
           </div>

@@ -39,7 +39,7 @@ export function BookingFlowSection({
             onClick={onChange}
             className="text-xs font-medium text-[var(--pb-muted)] underline underline-offset-2 outline-none transition hover:opacity-80 focus-visible:ring-2 focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)]"
           >
-            {changeLabel || "Change"}
+            {changeLabel}
           </button>
         ) : null}
       </div>

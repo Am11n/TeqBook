@@ -12,12 +12,18 @@ import { initSession } from "@/lib/services/session-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/form/Field";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 export default function Login2FAPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const factorId = searchParams.get("factorId");
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).login2fa;
   const [code, setCode] = useState("");
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -32,7 +38,7 @@ export default function Login2FAPageClient() {
     const { data: challengeData, error: challengeError } = await challengeTOTP(factorId);
 
     if (challengeError || !challengeData) {
-      setError(challengeError || "Failed to create 2FA challenge");
+      setError(challengeError || t.failedChallenge);
       setStatus("error");
       return;
     }
@@ -46,7 +52,7 @@ export default function Login2FAPageClient() {
     if (factorId) {
       handleChallenge();
     } else {
-      setError("Missing factor ID. Please try logging in again.");
+      setError(t.missingFactorId);
       setStatus("error");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,7 +61,7 @@ export default function Login2FAPageClient() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!challengeId || !code) {
-      setError("Please enter the 6-digit code");
+      setError(t.enterCode);
       return;
     }
 
@@ -66,7 +72,7 @@ export default function Login2FAPageClient() {
 
     if (verifyError || !verified) {
       logSecurity("Failed 2FA verification", { challengeId });
-      setError(verifyError || "Invalid code. Please try again.");
+      setError(verifyError || t.invalidCode);
       setStatus("error");
       return;
     }
@@ -77,7 +83,7 @@ export default function Login2FAPageClient() {
     // Get user profile to determine redirect
     const { data: user, error: userError } = await getCurrentUser();
     if (userError || !user) {
-      setError("Failed to get user information");
+      setError(t.failedUser);
       setStatus("error");
       return;
     }
@@ -85,7 +91,7 @@ export default function Login2FAPageClient() {
     const { data: profile, error: profileError } = await getProfileForUser(user.id);
 
     if (profileError) {
-      setError("Could not load user profile.");
+      setError(t.failedProfile);
       setStatus("error");
       return;
     }
@@ -130,10 +136,10 @@ export default function Login2FAPageClient() {
           </Link>
 
           <h1 className="text-2xl sm:text-3xl font-semibold leading-tight text-slate-900 mb-2">
-            Two-Factor Authentication
+            {t.title}
           </h1>
           <p className="text-sm text-slate-600 mb-6">
-            Enter the 6-digit code from your authenticator app
+            {t.description}
           </p>
 
           {error && (
@@ -144,7 +150,7 @@ export default function Login2FAPageClient() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <Field
-              label="Authentication Code"
+              label={t.authCodeLabel}
               htmlFor="code"
               required
               error={error || undefined}
@@ -160,7 +166,7 @@ export default function Login2FAPageClient() {
                   const value = e.target.value.replace(/\D/g, "");
                   setCode(value);
                 }}
-                placeholder="000000"
+                placeholder={t.placeholder}
                 className="text-center text-2xl tracking-widest font-mono"
                 disabled={status === "loading" || !challengeId}
                 autoFocus
@@ -172,7 +178,7 @@ export default function Login2FAPageClient() {
               className="w-full"
               disabled={status === "loading" || code.length !== 6 || !challengeId}
             >
-              {status === "loading" ? "Verifying..." : "Verify"}
+              {status === "loading" ? t.verifying : t.verify}
             </Button>
           </form>
 
@@ -182,7 +188,7 @@ export default function Login2FAPageClient() {
               onClick={() => router.push("/login")}
               className="text-sm text-slate-600 hover:text-slate-900"
             >
-              Back to login
+              {t.backToLogin}
             </Button>
           </div>
         </div>

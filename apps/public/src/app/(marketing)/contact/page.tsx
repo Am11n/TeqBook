@@ -3,10 +3,16 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import { Section } from "@/components/marketing/Section";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
 export default function ContactPage() {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).marketingPages.contact;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -30,19 +36,19 @@ export default function ContactPage() {
 
       if (!response.ok) {
         setState("error");
-        setFeedback(result.error ?? "Could not send your message right now.");
+        setFeedback(result.error ?? t.error);
         return;
       }
 
       setState("success");
-      setFeedback(result.message ?? "Thanks! We will contact you shortly.");
+      setFeedback(result.message ?? t.success);
       setName("");
       setEmail("");
       setMessage("");
       setConsent(false);
     } catch {
       setState("error");
-      setFeedback("Network error. Please try again.");
+      setFeedback(t.networkError);
     }
   }
 
@@ -52,14 +58,13 @@ export default function ContactPage() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 shadow-sm backdrop-blur-sm">
             <Image src="/Favikon.svg" alt="TeqBook" width={22} height={22} className="h-5 w-5" />
-            <span className="text-xs font-semibold tracking-wide text-blue-700">TEQBOOK SUPPORT</span>
+            <span className="text-xs font-semibold tracking-wide text-blue-700">{t.supportBadge}</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Contact TeqBook
+            {t.title}
           </h1>
           <p className="mt-4 text-base text-slate-600 sm:text-lg">
-            Questions about plans, onboarding, or support? Send us a message and we
-            will respond as soon as possible.
+            {t.description}
           </p>
         </div>
       </Section>
@@ -71,12 +76,12 @@ export default function ContactPage() {
             className="rounded-3xl border border-blue-100/80 bg-white/95 p-6 shadow-lg shadow-blue-100/30 backdrop-blur-sm sm:p-8"
           >
             <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm text-slate-700">
-              Send us your message and we will follow up with practical next steps.
+              {t.intro}
             </div>
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Full name
+                  {t.fullName}
                 </label>
                 <input
                   id="name"
@@ -86,13 +91,13 @@ export default function ContactPage() {
                   required
                   maxLength={100}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  placeholder="Your full name"
+                  placeholder={t.fullNamePlaceholder}
                 />
               </div>
 
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Email address
+                  {t.email}
                 </label>
                 <input
                   id="email"
@@ -102,7 +107,7 @@ export default function ContactPage() {
                   required
                   maxLength={200}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  placeholder="you@salon.com"
+                  placeholder={t.emailPlaceholder}
                 />
               </div>
 
@@ -111,7 +116,7 @@ export default function ContactPage() {
                   htmlFor="message"
                   className="mb-1.5 block text-sm font-medium text-slate-700"
                 >
-                  Message
+                  {t.message}
                 </label>
                 <textarea
                   id="message"
@@ -121,7 +126,7 @@ export default function ContactPage() {
                   maxLength={2000}
                   rows={6}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  placeholder="Tell us how we can help."
+                  placeholder={t.messagePlaceholder}
                 />
               </div>
 
@@ -134,8 +139,7 @@ export default function ContactPage() {
                   className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/30"
                 />
                 <span>
-                  I consent to TeqBook storing my inquiry so the team can respond to my
-                  request.
+                  {t.consent}
                 </span>
               </label>
             </div>
@@ -156,17 +160,16 @@ export default function ContactPage() {
               disabled={state === "loading"}
               className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-colors hover:from-blue-500 hover:to-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {state === "loading" ? "Sending..." : "Send message"}
+              {state === "loading" ? t.sending : t.send}
             </button>
           </form>
 
           <aside className="rounded-3xl border border-blue-100/80 bg-gradient-to-b from-white to-blue-50/50 p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-              Support information
+              {t.supportInfoTitle}
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-700">
-              We usually reply within one business day. For urgent plan or onboarding
-              questions, include your salon name in the message.
+              {t.supportInfoBody}
             </p>
             <dl className="mt-6 space-y-3 text-sm text-slate-700">
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
@@ -174,11 +177,11 @@ export default function ContactPage() {
                 <dd>support@teqbook.com</dd>
               </div>
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
-                <dt className="font-medium text-slate-900">Phone</dt>
+                <dt className="font-medium text-slate-900">{t.phone}</dt>
                 <dd>+47 45 76 55 67</dd>
               </div>
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
-                <dt className="font-medium text-slate-900">Office</dt>
+                <dt className="font-medium text-slate-900">{t.office}</dt>
                 <dd>Nesbru, Norway</dd>
               </div>
             </dl>

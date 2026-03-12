@@ -26,6 +26,13 @@ type ComparisonTableProps = {
   rows: ComparisonRow[];
   categories: string[];
   planMeta?: ComparisonMeta[];
+  labels?: {
+    feature: string;
+    bestFor: string;
+    teamSize: string;
+    featureCountOne: string;
+    featureCountMany: string;
+  };
 };
 
 function CellValue({ value }: { value: string | boolean | number }) {
@@ -55,7 +62,16 @@ export function ComparisonTable({
   rows,
   categories,
   planMeta,
+  labels,
 }: ComparisonTableProps) {
+  const t = {
+    feature: labels?.feature ?? "Feature",
+    bestFor: labels?.bestFor ?? "Best for",
+    teamSize: labels?.teamSize ?? "Typical team size",
+    featureCountOne: labels?.featureCountOne ?? "feature",
+    featureCountMany: labels?.featureCountMany ?? "features",
+  };
+
   const [openCategories, setOpenCategories] = useState<Set<string>>(() => {
     return new Set(categories.length > 0 ? [categories[0]] : []);
   });
@@ -78,7 +94,7 @@ export function ComparisonTable({
         <thead className="sticky top-0 z-20 bg-white shadow-[0_1px_0_0_theme(colors.slate.200)]">
           <tr>
             <th className="sticky left-0 z-30 bg-white py-4 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 sm:pl-0 sm:min-w-[240px]">
-              Feature
+              {t.feature}
             </th>
             {columns.map((col) => (
               <th
@@ -100,7 +116,7 @@ export function ComparisonTable({
             <>
               <tr className="border-b border-slate-100">
                 <td className="sticky left-0 z-10 bg-white py-3 pl-4 pr-3 text-sm font-medium text-slate-700 sm:pl-0">
-                  Best for
+                  {t.bestFor}
                 </td>
                 {columns.map((col) => {
                   const meta = planMeta.find((m) => m.planId === col.id);
@@ -115,7 +131,7 @@ export function ComparisonTable({
               </tr>
               <tr className="border-b border-slate-200">
                 <td className="sticky left-0 z-10 bg-white py-3 pl-4 pr-3 text-sm font-medium text-slate-700 sm:pl-0">
-                  Typical team size
+                  {t.teamSize}
                 </td>
                 {columns.map((col) => {
                   const meta = planMeta.find((m) => m.planId === col.id);
@@ -143,6 +159,7 @@ export function ComparisonTable({
                 category={category}
                 rows={categoryRows}
                 columns={columns}
+                labels={t}
                 isOpen={isOpen}
                 onToggle={() => toggleCategory(category)}
               />
@@ -158,15 +175,23 @@ function CollapsibleCategory({
   category,
   rows,
   columns,
+  labels,
   isOpen,
   onToggle,
 }: {
   category: string;
   rows: ComparisonRow[];
   columns: ComparisonColumn[];
+  labels?: {
+    featureCountOne: string;
+    featureCountMany: string;
+  };
   isOpen: boolean;
   onToggle: () => void;
 }) {
+  const featureCountOne = labels?.featureCountOne ?? "feature";
+  const featureCountMany = labels?.featureCountMany ?? "features";
+
   return (
     <>
       <tr
@@ -185,7 +210,7 @@ function CollapsibleCategory({
             />
             <span>{category}</span>
             <span className="text-[10px] font-normal normal-case text-slate-400">
-              {rows.length} {rows.length === 1 ? "feature" : "features"}
+              {rows.length} {rows.length === 1 ? featureCountOne : featureCountMany}
             </span>
           </div>
         </td>

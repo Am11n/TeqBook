@@ -27,10 +27,15 @@ interface SignupFormProps {
   status: "idle" | "loading" | "error";
   error: string | null;
   onSubmit: (e: FormEvent) => void;
-  locale: string;
   translations: {
     title: string;
     formSubtitle: string;
+    stepLabel: string;
+    stepTitle: string;
+    firstNameLabel: string;
+    firstNamePlaceholder: string;
+    lastNameLabel: string;
+    lastNamePlaceholder: string;
     emailLabel: string;
     emailPlaceholder: string;
     passwordLabel: string;
@@ -44,6 +49,8 @@ interface SignupFormProps {
     alreadyHaveAccount: string;
     loginLink: string;
     secureLoginLine: string;
+    show: string;
+    hide: string;
   };
 }
 
@@ -67,7 +74,6 @@ export function SignupForm({
   status,
   error,
   onSubmit,
-  locale,
   translations,
 }: SignupFormProps) {
   return (
@@ -80,8 +86,8 @@ export function SignupForm({
       {/* Progress indicator */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-3.5">
-          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Step 1 of 2</span>
-          <span className="text-[10px] text-slate-400">Create account</span>
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{translations.stepLabel}</span>
+          <span className="text-[10px] text-slate-400">{translations.stepTitle}</span>
         </div>
         <div className="h-[2.5px] w-full bg-slate-100/80 rounded-full overflow-hidden">
           <div className="h-full w-1/2 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full" />
@@ -94,7 +100,7 @@ export function SignupForm({
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <Field label={locale === "nb" ? "Fornavn" : "First Name"} htmlFor="firstName" required>
+        <Field label={translations.firstNameLabel} htmlFor="firstName" required>
           <input
             id="firstName"
             type="text"
@@ -102,12 +108,12 @@ export function SignupForm({
             required
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder={locale === "nb" ? "Ditt fornavn" : "Your first name"}
+            placeholder={translations.firstNamePlaceholder}
             className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
           />
         </Field>
 
-        <Field label={locale === "nb" ? "Etternavn" : "Last Name"} htmlFor="lastName" required>
+        <Field label={translations.lastNameLabel} htmlFor="lastName" required>
           <input
             id="lastName"
             type="text"
@@ -115,7 +121,7 @@ export function SignupForm({
             required
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            placeholder={locale === "nb" ? "Ditt etternavn" : "Your last name"}
+            placeholder={translations.lastNamePlaceholder}
             className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30"
           />
         </Field>
@@ -150,7 +156,7 @@ export function SignupForm({
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? translations.hide : translations.show}
             </button>
           </div>
           <p className="mt-1 text-xs text-slate-500/80">{translations.passwordHint}</p>
@@ -173,7 +179,7 @@ export function SignupForm({
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1"
             >
-              {showConfirmPassword ? "Hide" : "Show"}
+              {showConfirmPassword ? translations.hide : translations.show}
             </button>
           </div>
         </Field>

@@ -8,6 +8,9 @@ interface UseSignupOptions {
   locale: string;
   translations: {
     passwordMismatch: string;
+    firstNameRequired: string;
+    lastNameRequired: string;
+    termsRequired: string;
   };
 }
 
@@ -31,13 +34,13 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
 
     // Validation
     if (!firstName.trim()) {
-      setError(locale === "nb" ? "Fornavn er påkrevd" : "First name is required");
+      setError(translations.firstNameRequired);
       setStatus("error");
       return;
     }
 
     if (!lastName.trim()) {
-      setError(locale === "nb" ? "Etternavn er påkrevd" : "Last name is required");
+      setError(translations.lastNameRequired);
       setStatus("error");
       return;
     }
@@ -57,7 +60,7 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
     }
 
     if (!agreeToTerms) {
-      setError(locale === "nb" ? "Du må godta vilkårene" : "You must agree to the terms");
+      setError(translations.termsRequired);
       setStatus("error");
       return;
     }

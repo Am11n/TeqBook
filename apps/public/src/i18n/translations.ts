@@ -15,6 +15,8 @@ export type AppLocale =
   | "ur"
   | "hi";
 
+export const SOURCE_LOCALE: AppLocale = "en";
+
 export type PublicBookingMessages = {
   notFound: string;
   loadError: string;
@@ -112,6 +114,184 @@ export type PublicBookingMessages = {
   mobileChangeSelectionLabel?: string;
   nameRequiredHint?: string;
   contactRequiredHint?: string;
+};
+
+export type MarketingNavMessages = {
+  pricing: string;
+  security: string;
+  contact: string;
+  signup: string;
+  login: string;
+  language: string;
+  openMenu: string;
+  closeMenu: string;
+  primaryNavAria: string;
+  mobileNavAria: string;
+};
+
+export type MarketingFooterMessages = {
+  pricing: string;
+  security: string;
+  contact: string;
+  privacy: string;
+  terms: string;
+  tagline: string;
+  navAria: string;
+};
+
+export type MarketingLayoutMessages = {
+  startFree: string;
+  contact: string;
+};
+
+export type MarketingPageMessages = {
+  pricing: {
+    title: string;
+    description: string;
+    heroTitle: string;
+    heroDescription: string;
+    heroBadge: string;
+    whyProTitle: string;
+    whyProDescription: string;
+    fullComparisonTitle: string;
+    fullComparisonDescription: string;
+    addonsTitle: string;
+    addonsDescription: string;
+    ctaTitle: string;
+    ctaDescription: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
+    trustLine: string;
+    startTrial: string;
+    feature: string;
+    bestFor: string;
+    teamSize: string;
+  };
+  contact: {
+    title: string;
+    description: string;
+    supportBadge: string;
+    intro: string;
+    fullName: string;
+    fullNamePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    message: string;
+    messagePlaceholder: string;
+    consent: string;
+    sending: string;
+    send: string;
+    supportInfoTitle: string;
+    supportInfoBody: string;
+    office: string;
+    phone: string;
+    success: string;
+    error: string;
+    networkError: string;
+  };
+  security: {
+    title: string;
+    description: string;
+    technicalOverviewTitle: string;
+    technicalOverviewBody: string;
+    yourDataTitle: string;
+    yourDataBody: string;
+    contactSupport: string;
+  };
+  privacy: {
+    title: string;
+    description: string;
+    effectiveDate: string;
+    contact: string;
+  };
+  terms: {
+    title: string;
+    description: string;
+    effectiveDate: string;
+    acceptance: string;
+  };
+};
+
+export type Login2FAMessages = {
+  title: string;
+  description: string;
+  authCodeLabel: string;
+  placeholder: string;
+  verify: string;
+  verifying: string;
+  backToLogin: string;
+  missingFactorId: string;
+  failedChallenge: string;
+  enterCode: string;
+  invalidCode: string;
+  failedUser: string;
+  failedProfile: string;
+};
+
+export type AdminLoginMessages = {
+  title: string;
+  heading: string;
+  subtitle: string;
+  bulletSalons: string;
+  bulletUsers: string;
+  bulletReports: string;
+  secureLine: string;
+  cardTitle: string;
+  cardSubtitle: string;
+  emailLabel: string;
+  passwordLabel: string;
+  show: string;
+  hide: string;
+  submit: string;
+  submitting: string;
+  secureFooter: string;
+  missingCredentials: string;
+  invalidCredentials: string;
+  confirmEmail: string;
+  loginFailed: string;
+  profileLoadFailed: string;
+  profileMissing: string;
+  notSuperAdmin: string;
+  unknownError: string;
+};
+
+export type BookingConfirmationMessages = {
+  loading: string;
+  errorTitle: string;
+  bookingNotFound: string;
+  backToBooking: string;
+  confirmedTitle: string;
+  cancelledTitle: string;
+  confirmedDescription: string;
+  cancelledDescription: string;
+  reservationReceived: string;
+  reference: string;
+  service: string;
+  servicePending: string;
+  employee: string;
+  bestAvailable: string;
+  status: string;
+  cancelBooking: string;
+  bookAnother: string;
+  cancelReasonLabel: string;
+  cancelReasonPlaceholder: string;
+  keepBooking: string;
+  confirmCancellation: string;
+  cancelling: string;
+  changesViaWhatsapp: string;
+  chatOnWhatsapp: string;
+  loadBookingDetailsError: string;
+  bookingFromAnotherSalonError: string;
+  cancelFailed: string;
+};
+
+export type NotFoundMessages = {
+  description: string;
+  navAria: string;
+  home: string;
+  productOverview: string;
+  signup: string;
+  login: string;
 };
 
 export type LoginMessages = {
@@ -645,6 +825,14 @@ export type NotificationsMessages = {
 
 export type TranslationNamespaces = {
   publicBooking: PublicBookingMessages;
+  marketingNav?: MarketingNavMessages;
+  marketingFooter?: MarketingFooterMessages;
+  marketingLayout?: MarketingLayoutMessages;
+  marketingPages?: MarketingPageMessages;
+  login2fa?: Login2FAMessages;
+  adminLogin?: AdminLoginMessages;
+  bookingConfirmation?: BookingConfirmationMessages;
+  notFoundPage?: NotFoundMessages;
   login: LoginMessages;
   signup: SignUpMessages;
   onboarding: OnboardingMessages;
@@ -695,5 +883,18 @@ export const translations: Record<AppLocale, TranslationNamespaces> = {
   ur,
   hi,
 };
+
+export function getStrictTranslation<K extends keyof TranslationNamespaces>(
+  locale: AppLocale,
+  namespace: K,
+): NonNullable<TranslationNamespaces[K]> {
+  const value = translations[locale][namespace];
+  if (value == null) {
+    throw new Error(
+      `Missing translation namespace "${String(namespace)}" for locale "${locale}"`,
+    );
+  }
+  return value as NonNullable<TranslationNamespaces[K]>;
+}
 
 

@@ -1,14 +1,22 @@
-import Link from "next/link";
+"use client";
 
-const FOOTER_LINKS = [
-  { href: "/pricing", label: "Pricing" },
-  { href: "/security", label: "Security" },
-  { href: "/contact", label: "Contact" },
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms of service" },
-];
+import Link from "next/link";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 export function MarketingFooter() {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).marketingFooter;
+  const footerLinks = [
+    { href: "/pricing", label: t.pricing },
+    { href: "/security", label: t.security },
+    { href: "/contact", label: t.contact },
+    { href: "/privacy", label: t.privacy },
+    { href: "/terms", label: t.terms },
+  ];
+
   return (
     <footer className="border-t border-blue-200/50 bg-white/60 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:flex-wrap sm:justify-between sm:px-6">
@@ -16,10 +24,10 @@ export function MarketingFooter() {
           &copy; {new Date().getFullYear()} TeqBook.
         </span>
         <nav
-          aria-label="Footer navigation"
+          aria-label={t.navAria}
           className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1"
         >
-          {FOOTER_LINKS.map((link) => (
+          {footerLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -30,7 +38,7 @@ export function MarketingFooter() {
           ))}
         </nav>
         <span className="text-center sm:text-left">
-          Helping salons stay organized, confident and fully booked &mdash; globally.
+          {t.tagline}
         </span>
       </div>
     </footer>

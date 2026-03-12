@@ -54,10 +54,10 @@ export function BookingSummaryCard({
 }: BookingSummaryCardProps) {
   const isBookMode = mode === "book";
   const nextActionByStep: Record<1 | 2 | 3 | 4, string> = {
-    1: t.serviceLabel || "Service",
-    2: t.step2Label || "Choose time",
-    3: t.step3Title || "Your details",
-    4: t.submitLabel || "Confirm booking",
+    1: t.serviceLabel,
+    2: t.step2Label,
+    3: t.step3Title,
+    4: t.submitLabel,
   };
   const nextAction = nextActionByStep[progressStep];
   const shouldSubmit = readyToSubmit && detailsReady;
@@ -68,10 +68,10 @@ export function BookingSummaryCard({
   const showDateRow = Boolean(hasSelectedService && dateLabel);
   const showTimeRows = hasSelectedSlot;
   const stepLabels = [
-    `Step 1 ${t.serviceLabel || "Service"}`,
-    `Step 2 ${t.step2Label || "Time"}`,
-    `Step 3 ${t.step3Title || "Details"}`,
-    `Step 4 ${t.confirmBookingLabel || "Confirm"}`,
+    `Step 1 ${t.serviceLabel}`,
+    `Step 2 ${t.step2Label}`,
+    `Step 3 ${t.step3Title}`,
+    `Step 4 ${t.confirmBookingLabel}`,
   ];
 
   return (
@@ -84,12 +84,12 @@ export function BookingSummaryCard({
       }}
     >
       <div className="space-y-3">
-        <h2 className="text-[17px] font-semibold tracking-tight text-[var(--pb-text)]">{t.summaryTitle || "Your booking"}</h2>
+        <h2 className="text-[17px] font-semibold tracking-tight text-[var(--pb-text)]">{t.summaryTitle}</h2>
         <p
           className="inline-flex rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide"
           style={{ borderColor: "var(--pb-border)", color: "var(--pb-muted)" }}
         >
-          {(t.nextLabel || "Next")}: {nextAction}
+          {t.nextLabel}: {nextAction}
         </p>
         <ol className="grid grid-cols-2 gap-2 text-[11px]">
           {[1, 2, 3, 4].map((step, index) => (
@@ -121,13 +121,13 @@ export function BookingSummaryCard({
             backgroundColor: "color-mix(in srgb, var(--pb-primary) 6%, var(--pb-surface) 94%)",
           }}
         >
-          {t.summaryStartHint || "Select a service to start your booking"}
+          {t.summaryStartHint}
         </p>
       ) : (
         <dl className="space-y-3 text-sm">
           {showServiceRow ? (
             <SummaryRow
-              label={t.serviceLabel || "Service"}
+              label={t.serviceLabel}
               value={serviceName}
               muted={tokens.colors.mutedText}
               emphasize
@@ -136,7 +136,7 @@ export function BookingSummaryCard({
           ) : null}
           {showDateRow ? (
             <SummaryRow
-              label={t.dateLabel || "Date"}
+              label={t.dateLabel}
               value={dateLabel}
               muted={tokens.colors.mutedText}
               action={actionByKey.get("date")}
@@ -145,17 +145,17 @@ export function BookingSummaryCard({
           {showTimeRows ? (
             <>
               <SummaryRow
-                label={t.timeLabel || "Time"}
+                label={t.timeLabel ?? ""}
                 value={timeLabel}
                 muted={tokens.colors.mutedText}
                 emphasize
                 action={actionByKey.get("time")}
               />
-              {employeeLabel ? <SummaryRow label={t.employeeLabel || "Employee"} value={employeeLabel} muted={tokens.colors.mutedText} /> : null}
+              {employeeLabel ? <SummaryRow label={t.employeeLabel} value={employeeLabel} muted={tokens.colors.mutedText} /> : null}
             </>
           ) : null}
-          {durationLabel ? <SummaryRow label={t.durationLabel || "Duration"} value={durationLabel} muted={tokens.colors.mutedText} /> : null}
-          {priceLabel ? <SummaryRow label={t.priceLabel || "Price"} value={priceLabel} muted={tokens.colors.mutedText} emphasize /> : null}
+          {durationLabel ? <SummaryRow label={t.durationLabel ?? ""} value={durationLabel} muted={tokens.colors.mutedText} /> : null}
+          {priceLabel ? <SummaryRow label={t.priceLabel ?? ""} value={priceLabel} muted={tokens.colors.mutedText} emphasize /> : null}
         </dl>
       )}
 

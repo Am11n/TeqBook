@@ -9,6 +9,9 @@ import { initSession } from "@/lib/services/session-service";
 import { logSecurity, logError } from "@/lib/services/logger";
 import { Shield } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 const MotionDiv = dynamic(
   () => import("framer-motion").then((mod) => mod.motion.div),
@@ -19,6 +22,10 @@ const MotionDiv = dynamic(
 const ADMIN_COOKIE_NAME = "sb-admin-auth-token";
 
 export default function AdminLoginPage() {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).adminLogin;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +42,7 @@ export default function AdminLoginPage() {
     setError(null);
 
     if (!email || !password) {
-      setError("E-post og passord er påkrevd.");
+      setError(t.missingCredentials);
       setStatus("error");
       return;
     }
@@ -52,9 +59,9 @@ export default function AdminLoginPage() {
         let errorMessage = signInError.message;
 
         if (signInError.message.includes("Invalid login credentials")) {
-          errorMessage = "Ugyldig e-post eller passord.";
+          errorMessage = t.invalidCredentials;
         } else if (signInError.message.includes("Email not confirmed")) {
-          errorMessage = "Bekreft e-postadressen din før du logger inn.";
+          errorMessage = t.confirmEmail;
         }
 
         setError(errorMessage);
@@ -70,7 +77,7 @@ export default function AdminLoginPage() {
       }
 
       if (!data?.user) {
-        setError("Innlogging feilet. Prøv igjen.");
+        setError(t.loginFailed);
         setStatus("error");
         return;
       }
@@ -84,13 +91,13 @@ export default function AdminLoginPage() {
       );
 
       if (profileError) {
-        setError("Kunne ikke laste brukerprofil.");
+        setError(t.profileLoadFailed);
         setStatus("error");
         return;
       }
 
       if (!profile) {
-        setError("Ingen profil funnet.");
+        setError(t.profileMissing);
         setStatus("error");
         return;
       }
@@ -98,7 +105,7 @@ export default function AdminLoginPage() {
       // Check if user is superadmin
       if (!profile.is_superadmin) {
         setError(
-          "Du har ikke tilgang til admin-panelet. Kun superadmins kan logge inn her.",
+          t.notSuperAdmin,
         );
         setStatus("error");
         logSecurity("Non-superadmin attempted admin login", {
@@ -119,7 +126,7 @@ export default function AdminLoginPage() {
       window.location.href = "/admin/";
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "En ukjent feil oppstod.",
+        err instanceof Error ? err.message : t.unknownError,
       );
       setStatus("error");
     }
@@ -156,32 +163,32 @@ export default function AdminLoginPage() {
             </Link>
 
             <h1 className="text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              Velkommen til{" "}
+              {t.heading.split("Admin Panel")[0]}
               <span className="text-blue-700">Admin Panel</span>
+              {t.heading.split("Admin Panel")[1] ?? ""}
             </h1>
 
             <p className="mt-4 max-w-xl text-sm text-slate-600 sm:text-base">
-              Administrer salonger, brukere og systeminnstillinger. Kun for
-              autoriserte superadministratorer.
+              {t.subtitle}
             </p>
 
             <ul className="mt-6 space-y-2 text-sm text-slate-700">
               <li className="flex items-start gap-2">
                 <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
-                <span>Oversikt over alle salonger i systemet</span>
+                <span>{t.bulletSalons}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
-                <span>Administrer brukere og tilganger</span>
+                <span>{t.bulletUsers}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-blue-600" />
-                <span>System-analyser og rapporter</span>
+                <span>{t.bulletReports}</span>
               </li>
             </ul>
 
             <p className="mt-8 text-xs text-slate-500">
-              Sikker tilgang · Kun for superadministratorer
+              {t.secureLine}
             </p>
           </div>
 
@@ -195,11 +202,11 @@ export default function AdminLoginPage() {
             >
               <div className="mb-6">
                 <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
-                  Admin Logg Inn
+                  {t.cardTitle}
                   <Shield className="h-5 w-5 text-amber-500" />
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Skriv inn dine admin-legitimasjoner
+                  {t.cardSubtitle}
                 </p>
               </div>
 
@@ -210,7 +217,7 @@ export default function AdminLoginPage() {
                     htmlFor="admin-email"
                     className="text-sm font-medium text-slate-800"
                   >
-                    E-post
+                    {t.emailLabel}
                   </label>
                   <input
                     id="admin-email"
@@ -230,7 +237,7 @@ export default function AdminLoginPage() {
                     htmlFor="admin-password"
                     className="text-sm font-medium text-slate-800"
                   >
-                    Passord
+                    {t.passwordLabel}
                   </label>
                   <div className="relative">
                     <input
@@ -248,7 +255,7 @@ export default function AdminLoginPage() {
                       onClick={() => setShowPassword((v) => !v)}
                       className="-mr-1 absolute inset-y-0 right-0 flex items-center rounded-lg px-2 py-1 pr-3 text-xs font-medium text-slate-600 transition-all hover:bg-slate-100/50 hover:text-slate-900"
                     >
-                      {showPassword ? "Skjul" : "Vis"}
+                      {showPassword ? t.hide : t.show}
                     </button>
                   </div>
                 </div>
@@ -267,13 +274,13 @@ export default function AdminLoginPage() {
                   className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {status === "loading"
-                    ? "Logger inn..."
-                    : "Logg inn som Admin"}
+                    ? t.submitting
+                    : t.submit}
                 </button>
               </form>
 
               <p className="mt-4 text-center text-[11px] text-slate-400">
-                Sikker innlogging · TeqBook Admin Panel
+                {t.secureFooter}
               </p>
             </MotionDiv>
           </div>

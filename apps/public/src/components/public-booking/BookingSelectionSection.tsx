@@ -141,13 +141,13 @@ export function BookingSelectionSection({
 
   const groupedOrder: GroupKey[] = ["morning", "afternoon", "evening"];
   const groupedLabels: Record<GroupKey, string> = {
-    morning: t.morningLabel || "Morning",
-    afternoon: t.afternoonLabel || "Afternoon",
-    evening: t.eveningLabel || "Evening",
+    morning: t.morningLabel ?? "",
+    afternoon: t.afternoonLabel ?? "",
+    evening: t.eveningLabel ?? "",
   };
 
   const onlyShowingForEmployeeText = selectedEmployeeIsSpecific && selectedEmployeeName
-    ? (t.showingTimesForEmployee || `Only showing times for ${selectedEmployeeName}`)
+    ? (t.showingTimesForEmployee ?? "{employee}")
         .replace("{employee}", selectedEmployeeName)
     : null;
 
@@ -195,20 +195,20 @@ export function BookingSelectionSection({
             color: "var(--pb-warning-text)",
           }}
         >
-          {hasMissingSetup && <p>{t.missingSetupDescription || "This salon exists, but public booking is not fully configured yet."}</p>}
-          {hasNoServices && <p>{t.noActiveServicesDescription || "This salon has not published any services yet."}</p>}
-          {hasNoEmployees && <p>{t.noActiveEmployeesDescription || "This salon has not published any employees yet."}</p>}
+          {hasMissingSetup && <p>{t.missingSetupDescription}</p>}
+          {hasNoServices && <p>{t.noActiveServicesDescription}</p>}
+          {hasNoEmployees && <p>{t.noActiveEmployeesDescription}</p>}
         </div>
       )}
 
       <BookingFlowSection
         id="service-section"
-        title={t.serviceLabel || "Service"}
+        title={t.serviceLabel}
         subtitle={t.step1Description}
         isExpanded={sectionExpanded("service")}
         summary={selectedServiceName || undefined}
         onChange={() => updateSectionByInteraction("service")}
-        changeLabel={t.editService || "Change service"}
+        changeLabel={t.editService}
         showInlineChange
       >
         <div className="space-y-4">
@@ -220,7 +220,7 @@ export function BookingSelectionSection({
                 setHasInteracted(true);
                 setServiceSearchValue(event.target.value);
               }}
-              placeholder={t.searchServicesPlaceholder || "Search services"}
+              placeholder={t.searchServicesPlaceholder}
               disabled={isSelectionBlocked}
             />
           )}
@@ -255,8 +255,8 @@ export function BookingSelectionSection({
           {visibleServices.length === 0 && (
             <p className="text-sm text-[var(--pb-muted)]">
               {services.length === 0
-                ? (t.noActiveServicesDescription || "No services available right now.")
-                : (t.noServiceSearchResults || "No services match your search.")}
+                ? t.noActiveServicesDescription
+                : t.noServiceSearchResults}
             </p>
           )}
         </div>
@@ -264,12 +264,12 @@ export function BookingSelectionSection({
 
       <BookingFlowSection
         id="date-section"
-        title={t.dateLabel || "Date"}
-        subtitle={selectedEmployeeName ? `${t.employeeLabel || "Employee"}: ${selectedEmployeeName}` : undefined}
+        title={t.dateLabel}
+        subtitle={selectedEmployeeName ? `${t.employeeLabel}: ${selectedEmployeeName}` : undefined}
         isExpanded={sectionExpanded("date")}
         summary={date || undefined}
         onChange={() => updateSectionByInteraction("date")}
-        changeLabel={t.editDate || "Change date"}
+        changeLabel={t.editDate}
         showInlineChange
       >
         <div className="grid gap-3 md:grid-cols-2">
@@ -299,22 +299,22 @@ export function BookingSelectionSection({
               }}
               required={!isWaitlistMode}
               disabled={isSelectionBlocked || employees.length === 0}
-              placeholder={isWaitlistMode ? (t.employeeAny || "Any employee") : t.employeePlaceholder}
+              placeholder={isWaitlistMode ? t.employeeAny : t.employeePlaceholder}
               options={[
-                { value: anyEmployeeValue, label: t.bestAvailableRecommended || "Best available (recommended)" },
+                { value: anyEmployeeValue, label: t.bestAvailableRecommended ?? "" },
                 ...employees.map((emp) => {
                   const status = employeeAvailability[emp.id] ?? "unknown";
                   const statusLabel = status === "likely_available"
-                    ? ` · ${t.likelyAvailable || "Likely available"}`
+                    ? ` · ${t.likelyAvailable}`
                     : status === "no_times"
-                      ? ` · ${t.noTimesForSelectedDate || "No times found for selected date"}`
+                      ? ` · ${t.noTimesForSelectedDate}`
                       : "";
                   return { value: emp.id, label: `${emp.full_name}${statusLabel}` };
                 }),
               ]}
             />
             <p className="text-xs text-[var(--pb-muted)]">
-              {t.bestAvailableHint || "You'll get the first available barber at your chosen time."}
+              {t.bestAvailableHint}
             </p>
           </div>
         </div>
@@ -324,7 +324,7 @@ export function BookingSelectionSection({
         <div className="space-y-1">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-base font-medium text-[var(--pb-text)]">
-              {canShowStep2 ? (t.availableTimesLabel || "Available times") : (t.step2Label || "Choose time")}
+              {canShowStep2 ? t.availableTimesLabel : t.step2Label}
             </h3>
             {canShowStep2 && !loadingSlots && slots.length > 0 ? (
               <button
@@ -337,7 +337,7 @@ export function BookingSelectionSection({
                   setSelectedSlot(recommendedSlotId);
                 }}
               >
-                {isToday ? (t.nextAvailableToday || "Next available today") : (t.nextAvailable || "Next available")}
+                {isToday ? t.nextAvailableToday : t.nextAvailable}
               </button>
             ) : null}
           </div>
@@ -349,8 +349,8 @@ export function BookingSelectionSection({
           {!canShowStep2 && !loadingSlots && (
             <p className="text-xs text-[var(--pb-muted)]">
               {canAutoLoadTimes
-                ? (t.findingTimesLabel || "Finding available times...")
-                : (t.noSlotsYet || "Choose a service and date to view available times.")}
+                ? t.findingTimesLabel
+                : t.noSlotsYet}
             </p>
           )}
           {loadingSlots && (
@@ -416,8 +416,8 @@ export function BookingSelectionSection({
               color: "var(--pb-warning-text)",
             }}
           >
-            <p className="font-medium">{t.waitlistTitle || "No slots available right now"}</p>
-            <p className="mt-1">{t.waitlistDescription || "Join the waitlist and the salon can contact you if something opens up."}</p>
+            <p className="font-medium">{t.waitlistTitle}</p>
+            <p className="mt-1">{t.waitlistDescription}</p>
             <div className="mt-3 flex flex-col gap-2">
               <Button
                 type="button"
@@ -433,7 +433,7 @@ export function BookingSelectionSection({
                   void handleRetryLoadSlots();
                 }}
               >
-                {t.tryAnotherDay || "Try another day"}
+                {t.tryAnotherDay}
               </Button>
               <Button
                 type="button"
@@ -455,7 +455,7 @@ export function BookingSelectionSection({
                 style={{ borderRadius: "var(--pb-button-radius)" }}
                 onClick={() => handleModeChange("waitlist", "no-slots")}
               >
-                {t.joinWaitlist || t.modeWaitlist || "Join waitlist"}
+                {t.joinWaitlist}
               </Button>
             </div>
           </div>

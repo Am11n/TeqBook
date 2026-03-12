@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { BookingMode } from "./types";
+import type { BookingMode, PublicBookingCopy } from "./types";
 
 type MobileBookingSummaryProps = {
   mode: BookingMode;
@@ -20,6 +20,7 @@ type MobileBookingSummaryProps = {
   onChangeClick: () => void;
   changeLabel: string;
   summaryTitle: string;
+  t: PublicBookingCopy;
 };
 
 export function MobileBookingSummary({
@@ -38,10 +39,11 @@ export function MobileBookingSummary({
   onChangeClick,
   changeLabel,
   summaryTitle,
+  t,
 }: MobileBookingSummaryProps) {
   const [expanded, setExpanded] = useState(false);
-  const serviceValue = serviceName || "Select service";
-  const timeValue = timeLabel || "Choose time";
+  const serviceValue = serviceName || t.servicePlaceholder;
+  const timeValue = timeLabel || t.selectTimeToContinueLabel || "";
   const handleChangeSelection = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -70,17 +72,17 @@ export function MobileBookingSummary({
             Step {step} of 4
           </span>
           <span className="text-xs font-medium text-[var(--pb-muted)]">
-            {expanded ? "Hide details" : "Show details"}
+            {expanded ? t.editTime : t.mobileChangeSelectionLabel}
           </span>
         </button>
 
         {expanded ? (
           <dl className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-[var(--pb-radius-sm)] border px-3 py-2 text-xs" style={{ borderColor: "var(--pb-border)" }}>
-            <SummaryItem label="Service" value={serviceValue} />
-            <SummaryItem label="Date" value={dateLabel || "-"} />
-            <SummaryItem label="Time" value={timeValue} />
-            <SummaryItem label="Employee" value={employeeLabel || "-"} />
-            <SummaryItem label="Price" value={priceLabel || "-"} />
+            <SummaryItem label={t.serviceLabel} value={serviceValue} />
+            <SummaryItem label={t.dateLabel ?? ""} value={dateLabel || "-"} />
+            <SummaryItem label={t.timeLabel ?? ""} value={timeValue} />
+            <SummaryItem label={t.employeeLabel ?? ""} value={employeeLabel || "-"} />
+            <SummaryItem label={t.priceLabel ?? ""} value={priceLabel || "-"} />
             <button
               type="button"
               className="justify-self-end text-[11px] font-medium text-[var(--pb-muted)] underline underline-offset-2"

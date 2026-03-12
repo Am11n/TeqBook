@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 import dynamic from "next/dynamic";
 const MotionDiv = dynamic(
   () => import("framer-motion").then((mod) => mod.motion.div),
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].login;
+  const extra = getPublicPageTranslations(appLocale).adminLogin;
 
   const {
     email, setEmail, password, setPassword,
@@ -67,7 +69,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.passwordPlaceholder} className="w-full rounded-xl border border-slate-200/60 bg-blue-50/80 backdrop-blur-md px-3.5 py-2.5 pr-10 text-sm text-slate-900 outline-none ring-0 transition focus:border-blue-600 focus:bg-white/90 focus:ring-2 focus:ring-blue-600/30" />
                     <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all hover:bg-slate-100/50 rounded-lg px-2 py-1 -mr-1">
-                      {showPassword ? "Hide" : "Show"}
+                      {showPassword ? extra.hide : extra.show}
                     </button>
                   </div>
                 </div>
@@ -89,7 +91,7 @@ export default function LoginPage() {
               <p className="mt-4 text-[11px] text-center text-slate-400">{t.secureLoginLine}</p>
               <div className="mt-2 text-center text-xs">
                 <Link href="/login-admin" className="font-medium text-blue-600 hover:underline">
-                  Log in as Admin
+                  {extra.submit}
                 </Link>
               </div>
             </MotionDiv>

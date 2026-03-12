@@ -1,22 +1,86 @@
 "use client";
 
 import { useLocale } from "@/components/locale-provider";
-import { translations } from "@/i18n/translations";
+import { translations, type AppLocale } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useSignup } from "@/lib/hooks/signup/useSignup";
 import { SignupBranding } from "@/components/signup/SignupBranding";
 import { SignupForm } from "@/components/signup/SignupForm";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
+
+type SignupUiMessages = {
+  stepLabel: string;
+  stepTitle: string;
+  firstNameLabel: string;
+  firstNamePlaceholder: string;
+  lastNameLabel: string;
+  lastNamePlaceholder: string;
+  firstNameRequired: string;
+  lastNameRequired: string;
+  termsRequired: string;
+  show: string;
+  hide: string;
+};
+
+const signupUiEn: SignupUiMessages = {
+  stepLabel: "Step 1 of 2",
+  stepTitle: "Create account",
+  firstNameLabel: "First name",
+  firstNamePlaceholder: "Your first name",
+  lastNameLabel: "Last name",
+  lastNamePlaceholder: "Your last name",
+  firstNameRequired: "First name is required",
+  lastNameRequired: "Last name is required",
+  termsRequired: "You must agree to the terms",
+  show: "Show",
+  hide: "Hide",
+};
+
+const signupUiByLocale: Record<AppLocale, SignupUiMessages> = {
+  en: signupUiEn,
+  nb: {
+    stepLabel: "Steg 1 av 2",
+    stepTitle: "Opprett konto",
+    firstNameLabel: "Fornavn",
+    firstNamePlaceholder: "Ditt fornavn",
+    lastNameLabel: "Etternavn",
+    lastNamePlaceholder: "Ditt etternavn",
+    firstNameRequired: "Fornavn er påkrevd",
+    lastNameRequired: "Etternavn er påkrevd",
+    termsRequired: "Du må godta vilkårene",
+    show: "Vis",
+    hide: "Skjul",
+  },
+  ar: signupUiEn,
+  so: signupUiEn,
+  ti: signupUiEn,
+  am: signupUiEn,
+  tr: signupUiEn,
+  pl: signupUiEn,
+  vi: signupUiEn,
+  zh: signupUiEn,
+  tl: signupUiEn,
+  fa: signupUiEn,
+  dar: signupUiEn,
+  ur: signupUiEn,
+  hi: signupUiEn,
+};
 
 export default function SignUpPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].login;
   const signupT = translations[appLocale].signup;
+  const ui = signupUiByLocale[appLocale];
+  const shared = getPublicPageTranslations(appLocale).adminLogin;
 
   const signup = useSignup({
     locale: appLocale,
     translations: {
       passwordMismatch: signupT.passwordMismatch,
+      firstNameRequired: ui.firstNameRequired,
+      lastNameRequired: ui.lastNameRequired,
+      termsRequired: ui.termsRequired,
     },
   });
 
@@ -60,10 +124,15 @@ export default function SignUpPage() {
               status={signup.status}
               error={signup.error}
               onSubmit={signup.handleSubmit}
-              locale={appLocale}
               translations={{
                 title: signupT.title,
                 formSubtitle: signupT.formSubtitle,
+                stepLabel: ui.stepLabel,
+                stepTitle: ui.stepTitle,
+                firstNameLabel: ui.firstNameLabel,
+                firstNamePlaceholder: ui.firstNamePlaceholder,
+                lastNameLabel: ui.lastNameLabel,
+                lastNamePlaceholder: ui.lastNamePlaceholder,
                 emailLabel: t.emailLabel,
                 emailPlaceholder: t.emailPlaceholder,
                 passwordLabel: t.passwordLabel,
@@ -77,6 +146,8 @@ export default function SignUpPage() {
                 alreadyHaveAccount: signupT.alreadyHaveAccount,
                 loginLink: signupT.loginLink,
                 secureLoginLine: signupT.secureLoginLine,
+                show: shared.show,
+                hide: shared.hide,
               }}
             />
           </section>

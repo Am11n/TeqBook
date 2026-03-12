@@ -87,7 +87,7 @@ export function BookingCustomerSection({
         <p className="text-[13px]" style={{ color: tokens.colors.mutedText }}>{t.step3Description}</p>
         {!detailsEmphasized && !isWaitlistMode ? (
           <p className="text-xs" style={{ color: tokens.colors.mutedText }}>
-            {t.selectTimeToContinueLabel || "Select a time to unlock details."}
+            {t.selectTimeToContinueLabel}
           </p>
         ) : null}
       </div>
@@ -104,8 +104,8 @@ export function BookingCustomerSection({
             color: tokens.colors.mutedText,
           }}
         >
-          <p className="font-medium">{t.waitlistModeTitle || "Waitlist request"}</p>
-          <p className="mt-1">{t.waitlistModeSubtitle || "We'll notify you when a matching slot becomes available."}</p>
+          <p className="font-medium">{t.waitlistModeTitle}</p>
+          <p className="mt-1">{t.waitlistModeSubtitle}</p>
         </div>
       )}
 
@@ -120,14 +120,14 @@ export function BookingCustomerSection({
         >
           <p className="font-medium">
             {waitlistReceipt.alreadyJoined
-              ? (t.waitlistAlreadyJoinedTitle || "You're already on the waitlist")
-              : (t.waitlistSuccessTitle || "You're on the waitlist")}
+              ? t.waitlistAlreadyJoinedTitle
+              : t.waitlistSuccessTitle}
           </p>
           <p className="mt-1">{waitlistReceipt.serviceName} - {waitlistReceipt.formattedDate}</p>
-          {waitlistReceipt.maskedPhone && <p className="mt-1">{t.waitlistContactSms || "SMS"}: {waitlistReceipt.maskedPhone}</p>}
-          {waitlistReceipt.maskedEmail && <p className="mt-1">{t.waitlistContactEmail || "Email"}: {waitlistReceipt.maskedEmail}</p>}
-          <p className="mt-1">{t.waitlistSecureLinkInfo || "You will receive a message with a secure confirmation link if a slot becomes available."}</p>
-          <p className="mt-1">{t.waitlistCanLeavePage || "You can leave this page now."}</p>
+          {waitlistReceipt.maskedPhone && <p className="mt-1">{t.waitlistContactSms}: {waitlistReceipt.maskedPhone}</p>}
+          {waitlistReceipt.maskedEmail && <p className="mt-1">{t.waitlistContactEmail}: {waitlistReceipt.maskedEmail}</p>}
+          <p className="mt-1">{t.waitlistSecureLinkInfo}</p>
+          <p className="mt-1">{t.waitlistCanLeavePage}</p>
         </div>
       )}
 
@@ -154,13 +154,13 @@ export function BookingCustomerSection({
           />
           {!hasName ? (
             <p className="text-xs text-[var(--pb-muted)]">
-              {t.nameRequiredHint || "Add your name to continue."}
+              {t.nameRequiredHint}
             </p>
           ) : null}
         </div>
         <div className="space-y-1 text-sm">
           <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_email">
-            {t.emailLabelPlain || "Email"}
+            {t.emailLabelPlain}
           </label>
           <Input
             id="customer_email"
@@ -173,7 +173,7 @@ export function BookingCustomerSection({
         </div>
         <div className="space-y-1 text-sm">
           <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_phone">
-            {t.phoneLabelPlain || "Phone"}
+            {t.phoneLabelPlain}
           </label>
           <Input
             id="customer_phone"
@@ -184,10 +184,10 @@ export function BookingCustomerSection({
             placeholder={t.phonePlaceholder}
             className="h-12 bg-[var(--pb-surface-muted)] focus-visible:border-[var(--pb-primary)] focus-visible:ring-[var(--pb-focus)]"
           />
-          <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint || "Use international format, for example +47 99 99 99 99"}</p>
+          <p className="text-xs" style={{ color: tokens.colors.mutedText }}>{t.phoneFormatHint}</p>
           {!hasContact ? (
             <p className="text-xs text-[var(--pb-muted)]">
-              {t.contactRequiredHint || "Add email or phone so we can confirm your booking."}
+              {t.contactRequiredHint}
             </p>
           ) : null}
         </div>
@@ -216,7 +216,7 @@ export function BookingCustomerSection({
                   void handleRetryLoadSlots();
                 }}
               >
-                Retry loading times
+                {t.loadSlots}
               </Button>
             )}
           </div>
@@ -245,7 +245,7 @@ export function BookingCustomerSection({
             }}
           >
             {isWaitlistMode
-              ? (joiningWaitlist ? (t.waitlistSubmitting || "Submitting...") : (t.modeWaitlist || "Notify me when available"))
+              ? (joiningWaitlist ? t.waitlistSubmitting : t.modeWaitlist)
               : (saving ? t.submitSaving : t.submitLabel)}
           </Button>
         )}

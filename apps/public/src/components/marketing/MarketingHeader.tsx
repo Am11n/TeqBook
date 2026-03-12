@@ -1,9 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNavClient } from "./MobileNavClient";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { getPublicPageTranslations } from "@/i18n/public-pages";
 
 export function MarketingHeader() {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = getPublicPageTranslations(appLocale).marketingNav;
+
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-transparent">
       <div className="mx-auto flex h-18 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -22,40 +31,40 @@ export function MarketingHeader() {
               </span>
             </Link>
 
-            <nav className="flex items-center gap-2" aria-label="Primary navigation">
+            <nav className="flex items-center gap-2" aria-label={t.primaryNavAria}>
               <Link
                 href="/pricing"
                 className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-100/80 hover:text-slate-900"
               >
-                Pricing
+                {t.pricing}
               </Link>
               <Link
                 href="/security"
                 className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-100/80 hover:text-slate-900"
               >
-                Security
+                {t.security}
               </Link>
               <Link
                 href="/contact"
                 className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-100/80 hover:text-slate-900"
               >
-                Contact
+                {t.contact}
               </Link>
             </nav>
 
             <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+              <LanguageSwitcher ariaLabel={t.language} />
               <Link
                 href="/signup"
                 className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
               >
-                Sign up
+                {t.signup}
               </Link>
               <Link
                 href="/login"
                 className="rounded-full border border-slate-300 bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-white"
               >
-                Log in
+                {t.login}
               </Link>
             </div>
           </div>
