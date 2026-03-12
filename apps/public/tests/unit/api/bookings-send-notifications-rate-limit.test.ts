@@ -9,6 +9,39 @@ const mockSendBookingConfirmation = vi.fn();
 const mockScheduleReminders = vi.fn();
 const mockRpc = vi.fn();
 const mockAdminMaybeSingle = vi.fn();
+const mockEventMaybeSingle = vi.fn();
+const mockEventUpsert = vi.fn();
+const mockEventUpdateEq = vi.fn();
+const mockEventUpdate = vi.fn(() => ({
+  eq: vi.fn(() => ({
+    eq: (...args: unknown[]) => mockEventUpdateEq(...args),
+  })),
+}));
+const mockAdminFrom = vi.fn((table: string) => {
+  if (table === "bookings") {
+    return {
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            maybeSingle: (...args: unknown[]) => mockAdminMaybeSingle(...args),
+          }),
+        }),
+      }),
+    };
+  }
+
+  return {
+    select: () => ({
+      eq: () => ({
+        eq: () => ({
+          maybeSingle: (...args: unknown[]) => mockEventMaybeSingle(...args),
+        }),
+      }),
+    }),
+    upsert: (...args: unknown[]) => mockEventUpsert(...args),
+    update: () => mockEventUpdate(),
+  };
+});
 
 vi.mock("@/lib/services/rate-limit-service", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -35,15 +68,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/supabase/admin", () => ({
   getAdminClient: () => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            maybeSingle: (...args: unknown[]) => mockAdminMaybeSingle(...args),
-          }),
-        }),
-      }),
-    }),
+    from: (...args: unknown[]) => mockAdminFrom(...args),
   }),
 }));
 
@@ -123,6 +148,9 @@ describe("Public bookings/send-notifications rate limiting", () => {
     mockSendBookingConfirmation.mockResolvedValue({ data: { id: "email-1" }, error: null });
     mockScheduleReminders.mockResolvedValue({ error: null });
     mockRpc.mockResolvedValue({ data: 1, error: null });
+    mockEventMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockEventUpsert.mockResolvedValue({ error: null });
+    mockEventUpdateEq.mockResolvedValue({ error: null });
 
     const req = new NextRequest("http://localhost/api/bookings/send-notifications", {
       method: "POST",

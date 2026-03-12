@@ -7,6 +7,7 @@ import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 
 type BookingNotificationPayload = {
   bookingId: string;
@@ -16,6 +17,7 @@ type BookingNotificationPayload = {
 };
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
+const MAX_NOTIFICATION_ATTEMPTS = 5;
 
 function normalizeToE164(input?: string | null): string | null {
   if (!input) return null;
@@ -69,12 +71,14 @@ async function sendTwilioSms(input: {
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   const rateLimitPolicy = getRateLimitPolicy("public-booking-notifications");
+  const requestId = getRequestIdFromHeaders(request.headers);
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
     const { bookingId, salonId, customerEmail, language } = body;
 
     const logContext = {
+      requestId,
       bookingId,
       salonId,
       customerEmail,
@@ -186,6 +190,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: existingEvent } = await admin
+      .from("notification_events")
+      .select("id, status, attempts")
+      .eq("booking_id", bookingId)
+      .eq("event_type", "confirmation")
+      .maybeSingle();
+
+    if (existingEvent?.status === "sent") {
+      const alreadySent = NextResponse.json({
+        email: { data: null, error: null, skipped: true },
+        sms: { sent: false, skipped: true },
+        reminders: { error: null, skipped: true },
+        inApp: { success: true, skipped: true },
+      });
+      alreadySent.headers.set(REQUEST_ID_HEADER, requestId);
+      return alreadySent;
+    }
+
+    const nextAttempt = (existingEvent?.attempts ?? 0) + 1;
+    await admin.from("notification_events").upsert(
+      {
+        booking_id: bookingId,
+        event_type: "confirmation",
+        status: "processing",
+        attempts: nextAttempt,
+        last_error: null,
+        dead_letter_reason: null,
+        next_retry_at: null,
+      },
+      { onConflict: "booking_id,event_type" },
+    );
+
     // Fetch salon to get language/timezone and name
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
@@ -278,7 +314,7 @@ export async function POST(request: NextRequest) {
           bookingTime,
         });
 
-        const supabase = createClientForRouteHandler(request, response);
+        const supabase = createClientForRouteHandler(request, response, requestId);
         const { data: notifiedCount, error: notifyError } = await supabase.rpc(
           "notify_salon_staff_new_booking",
           {
@@ -387,6 +423,41 @@ export async function POST(request: NextRequest) {
           error: rawPhone ? "Customer phone must be valid E.164 format" : "No customer phone provided",
         };
 
+    const anyDeliverySuccess = Boolean(emailResult?.data || smsResult?.sent || inAppResult?.success);
+    if (anyDeliverySuccess) {
+      await admin
+        .from("notification_events")
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          last_error: null,
+          provider_used: smsResult?.sent ? "twilio" : "resend",
+          next_retry_at: null,
+        })
+        .eq("booking_id", bookingId)
+        .eq("event_type", "confirmation");
+    } else {
+      const shouldDeadLetter = nextAttempt >= MAX_NOTIFICATION_ATTEMPTS;
+      const errorReason =
+        emailResult?.error ||
+        smsResult?.error ||
+        inAppResult?.error ||
+        "No channel delivered confirmation";
+
+      await admin
+        .from("notification_events")
+        .update({
+          status: shouldDeadLetter ? "dead_letter" : "failed",
+          last_error: errorReason,
+          dead_letter_reason: shouldDeadLetter ? errorReason : null,
+          next_retry_at: shouldDeadLetter
+            ? null
+            : new Date(Date.now() + Math.min(30, 2 ** nextAttempt) * 60_000).toISOString(),
+        })
+        .eq("booking_id", bookingId)
+        .eq("event_type", "confirmation");
+    }
+
     const jsonResponse = NextResponse.json({
       email: emailResult,
       sms: smsResult,
@@ -399,13 +470,16 @@ export async function POST(request: NextRequest) {
       jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
     });
 
+    jsonResponse.headers.set(REQUEST_ID_HEADER, requestId);
     return jsonResponse;
   } catch (error) {
     logError("Exception in public send-notifications API route", error, {});
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },
     );
+    errorResponse.headers.set(REQUEST_ID_HEADER, requestId);
+    return errorResponse;
   }
 }
 

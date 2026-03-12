@@ -6,11 +6,6 @@ import {
   generateRequestId,
 } from "@teqbook/shared";
 
-/**
- * Admin app middleware.
- * Routes have been restructured: the dashboard is now at "/" (via route group),
- * so no root redirect is needed. The (admin) layout handles auth guards.
- */
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get(REQUEST_ID_HEADER) || generateRequestId();
@@ -38,3 +33,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
+

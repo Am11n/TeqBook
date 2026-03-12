@@ -1,0 +1,31 @@
+name: Staging Load Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Staging base URL"
+        required: true
+        default: "https://staging.teqbook.app"
+  schedule:
+    - cron: "30 2 * * *"
+
+jobs:
+  load-test:
+    name: k6 staging smoke load
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run public booking smoke load
+        uses: grafana/run-k6-action@v1
+        with:
+          path: tests/load/public-booking-smoke.js
+          flags: --env LOAD_BASE_URL=${{ github.event.inputs.base_url || vars.STAGING_BASE_URL || 'https://staging.teqbook.app' }}
+
+      - name: Run dashboard API smoke load
+        uses: grafana/run-k6-action@v1
+        with:
+          path: tests/load/dashboard-api-smoke.js
+          flags: --env LOAD_BASE_URL=${{ github.event.inputs.base_url || vars.STAGING_BASE_URL || 'https://staging.teqbook.app' }}
+

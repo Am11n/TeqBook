@@ -8,6 +8,7 @@ import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 import type { Booking } from "@/lib/types";
 import { UUID_REGEX, type SendCancellationBody } from "../_shared/types";
 import { prepareBookingForNotification, notifySalonStaffCancellation } from "../_shared/notify-staff";
@@ -15,6 +16,7 @@ import { prepareBookingForNotification, notifySalonStaffCancellation } from "../
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   const rateLimitPolicy = getRateLimitPolicy("booking-cancellation");
+  const requestId = getRequestIdFromHeaders(request.headers);
   
   try {
     const csrfGuard = enforceSameOrigin(request);
@@ -24,6 +26,7 @@ export async function POST(request: NextRequest) {
     const { bookingId, customerEmail: bodyCustomerEmail, salonId: bodySalonId, language: bodyLanguage, cancelledBy, cancellationReason, bookingData }: SendCancellationBody = body;
 
     logInfo("send-cancellation API route called (dashboard)", {
+      requestId,
       bookingId,
       bodySalonId,
     });
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Same as send-notifications: fetch booking first to get salonId and customer email
-    const supabase = createClientForRouteHandler(request, response);
+    const supabase = createClientForRouteHandler(request, response, requestId);
     const { data: bookingRow, error: bookingFetchError } = await supabase
       .from("bookings")
       .select("id, salon_id, status, customers(email, phone)")
@@ -282,13 +285,16 @@ export async function POST(request: NextRequest) {
       jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
     });
     
+    jsonResponse.headers.set(REQUEST_ID_HEADER, requestId);
     return jsonResponse;
   } catch (error) {
     logError("Exception in send-cancellation API route (dashboard)", error, {});
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
+    errorResponse.headers.set(REQUEST_ID_HEADER, requestId);
+    return errorResponse;
   }
 }
 

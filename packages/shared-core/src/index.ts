@@ -33,6 +33,14 @@ export {
 } from "./session/session-service";
 
 export {
+  REQUEST_ID_HEADER,
+  TRACEPARENT_HEADER,
+  generateRequestId,
+  getRequestIdFromHeaders,
+  getTraceparentFromHeaders,
+} from "./tracing/request-context";
+
+export {
   PUBLIC_BOOKING_ANALYTICS_EVENTS,
   SUPPORT_TICKET_CATEGORIES,
   type PublicBookingAnalyticsEvent,

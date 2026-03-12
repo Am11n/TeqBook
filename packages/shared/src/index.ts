@@ -32,6 +32,14 @@ export {
 } from "@teqbook/shared-core";
 
 export {
+  REQUEST_ID_HEADER,
+  TRACEPARENT_HEADER,
+  generateRequestId,
+  getRequestIdFromHeaders,
+  getTraceparentFromHeaders,
+} from "@teqbook/shared-core";
+
+export {
   PUBLIC_BOOKING_ANALYTICS_EVENTS,
   SUPPORT_TICKET_CATEGORIES,
   type PublicBookingAnalyticsEvent,

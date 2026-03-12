@@ -10,7 +10,13 @@ export async function createClient(): Promise<SupabaseClient> {
 
 export function createClientForRouteHandler(
   request: NextRequest,
-  response: NextResponse
+  response: NextResponse,
+  requestId?: string
 ): SupabaseClient {
-  return createServerSupabaseClientForRouteHandler(request, response, ADMIN_COOKIE_NAME);
+  return createServerSupabaseClientForRouteHandler(
+    request,
+    response,
+    ADMIN_COOKIE_NAME,
+    requestId,
+  );
 }

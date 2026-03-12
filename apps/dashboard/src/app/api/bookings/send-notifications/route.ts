@@ -9,6 +9,7 @@ import { authenticateAndVerifySalon } from "@/lib/api-auth";
 import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 import type { Booking } from "@/lib/types";
 import { UUID_REGEX, type SendNotificationsBody } from "../_shared/types";
 import { prepareBookingForNotification, notifySalonStaff } from "../_shared/notify-staff";
@@ -16,6 +17,7 @@ import { prepareBookingForNotification, notifySalonStaff } from "../_shared/noti
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   const rateLimitPolicy = getRateLimitPolicy("booking-notifications");
+  const requestId = getRequestIdFromHeaders(request.headers);
   
   try {
     const csrfGuard = enforceSameOrigin(request);
@@ -26,6 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Log incoming request for debugging
     logInfo("send-notifications API route called (dashboard)", {
+      requestId,
       bookingId,
       bodySalonId,
     });
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch booking from database (server-side)
     // We need to get salonId from booking first, then verify access
-    const supabase = createClientForRouteHandler(request, response);
+    const supabase = createClientForRouteHandler(request, response, requestId);
     
     // First, get booking to find salonId
     const { data: bookingRow, error: bookingFetchError } = await supabase
@@ -302,13 +305,16 @@ export async function POST(request: NextRequest) {
       jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
     });
     
+    jsonResponse.headers.set(REQUEST_ID_HEADER, requestId);
     return jsonResponse;
   } catch (error) {
     logError("Exception in send-notifications API route (dashboard)", error, {});
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
+    errorResponse.headers.set(REQUEST_ID_HEADER, requestId);
+    return errorResponse;
   }
 }
 

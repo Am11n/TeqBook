@@ -6,6 +6,7 @@ import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 
 /**
  * Public send-cancellation: same pattern as send-notifications.
@@ -19,16 +20,19 @@ type BookingCancellationPayload = {
   language?: string;
   cancellationReason?: string | null;
 };
+const MAX_NOTIFICATION_ATTEMPTS = 5;
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
   const rateLimitPolicy = getRateLimitPolicy("public-booking-cancellation");
+  const requestId = getRequestIdFromHeaders(request.headers);
 
   try {
     const body = (await request.json()) as BookingCancellationPayload;
     const { bookingId, salonId, customerEmail, language, cancellationReason } = body;
 
     const logContext = {
+      requestId,
       bookingId,
       salonId,
       customerEmail,
@@ -137,6 +141,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: existingEvent } = await admin
+      .from("notification_events")
+      .select("id, status, attempts")
+      .eq("booking_id", bookingId)
+      .eq("event_type", "cancellation")
+      .maybeSingle();
+
+    if (existingEvent?.status === "sent") {
+      const alreadySent = NextResponse.json({
+        customerEmail: { success: true, skipped: true },
+        salonInApp: { success: true, skipped: true },
+      });
+      alreadySent.headers.set(REQUEST_ID_HEADER, requestId);
+      return alreadySent;
+    }
+
+    const nextAttempt = (existingEvent?.attempts ?? 0) + 1;
+    await admin.from("notification_events").upsert(
+      {
+        booking_id: bookingId,
+        event_type: "cancellation",
+        status: "processing",
+        attempts: nextAttempt,
+        last_error: null,
+        dead_letter_reason: null,
+        next_retry_at: null,
+      },
+      { onConflict: "booking_id,event_type" },
+    );
+
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
@@ -214,7 +248,7 @@ export async function POST(request: NextRequest) {
           bookingTime,
         });
 
-        const supabase = createClientForRouteHandler(request, response);
+        const supabase = createClientForRouteHandler(request, response, requestId);
         const { data: notifiedCount, error: notifyError } = await supabase.rpc(
           "notify_salon_staff_booking_cancelled",
           {
@@ -255,6 +289,37 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    const anyDeliverySuccess = Boolean(!emailResult.error || inAppResult.success);
+    if (anyDeliverySuccess) {
+      await admin
+        .from("notification_events")
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          last_error: null,
+          provider_used: !emailResult.error ? "resend" : "in_app",
+          next_retry_at: null,
+        })
+        .eq("booking_id", bookingId)
+        .eq("event_type", "cancellation");
+    } else {
+      const shouldDeadLetter = nextAttempt >= MAX_NOTIFICATION_ATTEMPTS;
+      const errorReason =
+        emailResult.error || inAppResult.error || "No channel delivered cancellation notification";
+      await admin
+        .from("notification_events")
+        .update({
+          status: shouldDeadLetter ? "dead_letter" : "failed",
+          last_error: errorReason,
+          dead_letter_reason: shouldDeadLetter ? errorReason : null,
+          next_retry_at: shouldDeadLetter
+            ? null
+            : new Date(Date.now() + Math.min(30, 2 ** nextAttempt) * 60_000).toISOString(),
+        })
+        .eq("booking_id", bookingId)
+        .eq("event_type", "cancellation");
+    }
+
     const jsonResponse = NextResponse.json({
       customerEmail: {
         success: !emailResult.error,
@@ -267,12 +332,15 @@ export async function POST(request: NextRequest) {
       jsonResponse.cookies.set(cookie.name, cookie.value, cookie);
     });
 
+    jsonResponse.headers.set(REQUEST_ID_HEADER, requestId);
     return jsonResponse;
   } catch (error) {
     logError("Exception in public send-cancellation API route", error, {});
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },
     );
+    errorResponse.headers.set(REQUEST_ID_HEADER, requestId);
+    return errorResponse;
   }
 }

@@ -43,9 +43,11 @@ export async function createServerSupabaseClient(cookieName?: string): Promise<S
 export function createServerSupabaseClientForRouteHandler(
   request: NextRequest,
   response: NextResponse,
-  cookieName?: string
+  cookieName?: string,
+  requestId?: string
 ): SupabaseClient {
   return createServerClient(finalSupabaseUrl, finalSupabaseAnonKey, {
+    ...(requestId ? { global: { headers: { "x-request-id": requestId } } } : {}),
     ...(cookieName ? { cookieOptions: { name: cookieName } } : {}),
     cookies: {
       getAll() {

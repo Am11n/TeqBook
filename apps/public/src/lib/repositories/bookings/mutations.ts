@@ -100,6 +100,27 @@ export async function updateBooking(
   }
 ): Promise<{ data: Booking | null; error: string | null }> {
   try {
+    const shouldUseAtomicUpdate =
+      typeof updates.start_time !== "undefined" ||
+      typeof updates.end_time !== "undefined" ||
+      typeof updates.employee_id !== "undefined";
+
+    if (shouldUseAtomicUpdate) {
+      const { data, error } = await supabase.rpc("update_booking_atomic", {
+        p_salon_id: salonId,
+        p_booking_id: bookingId,
+        p_start_time: updates.start_time ?? null,
+        p_end_time: updates.end_time ?? null,
+        p_employee_id: updates.employee_id ?? null,
+        p_status: updates.status ?? null,
+        p_notes: updates.notes ?? null,
+      });
+
+      if (error || !data) return { data: null, error: error?.message ?? "Failed to update booking" };
+      const booking = Array.isArray(data) ? data[0] : data;
+      return { data: booking as unknown as Booking, error: null };
+    }
+
     const { data, error } = await supabase
       .from("bookings")
       .update(updates)

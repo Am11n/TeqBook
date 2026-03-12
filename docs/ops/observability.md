@@ -8,6 +8,15 @@ This document defines observability standards for:
 - `apps/admin`
 - Supabase Edge Functions
 
+## Concrete Runtime Stack
+
+- OpenTelemetry SDK (`@opentelemetry/api`, `@opentelemetry/sdk-node`) for instrumentation
+- OTLP exporter as the transport contract
+- Grafana Tempo for distributed traces
+- Grafana Loki for structured logs
+- Grafana dashboards and Grafana Alerting for SLO monitoring
+- Sentry for application exception tracking and release regression visibility
+
 ## Logging Standard
 
 All logs must include:
