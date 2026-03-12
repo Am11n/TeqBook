@@ -33,6 +33,7 @@ async function resolveInitialBookingData(
   services: Service[];
   employees: Employee[];
   employeeShiftWeekdays: Record<string, number[]>;
+  employeeServiceMap: Record<string, string[]>;
   error: string | null;
   issue: "none" | "not_found" | "missing_setup";
 }> {
@@ -43,20 +44,50 @@ async function resolveInitialBookingData(
   });
 
   if (response.status === 404) {
-    return { salon: null, services: [], employees: [], employeeShiftWeekdays: {}, error: fallbackErrors.notFound, issue: "not_found" };
+    return {
+      salon: null,
+      services: [],
+      employees: [],
+      employeeShiftWeekdays: {},
+      employeeServiceMap: {},
+      error: fallbackErrors.notFound,
+      issue: "not_found",
+    };
   }
 
   if (!response.ok) {
-    return { salon: null, services: [], employees: [], employeeShiftWeekdays: {}, error: fallbackErrors.loadError, issue: "missing_setup" };
+    return {
+      salon: null,
+      services: [],
+      employees: [],
+      employeeShiftWeekdays: {},
+      employeeServiceMap: {},
+      error: fallbackErrors.loadError,
+      issue: "missing_setup",
+    };
   }
 
   const payload = await response.json().catch(() => null) as
-    | { salon?: Salon | null; services?: Service[] | null; employees?: Employee[] | null; employeeShiftWeekdays?: Record<string, number[]> | null }
+    | {
+      salon?: Salon | null;
+      services?: Service[] | null;
+      employees?: Employee[] | null;
+      employeeShiftWeekdays?: Record<string, number[]> | null;
+      employeeServiceMap?: Record<string, string[]> | null;
+    }
     | null;
 
   const salonData = payload?.salon;
   if (!salonData) {
-    return { salon: null, services: [], employees: [], employeeShiftWeekdays: {}, error: fallbackErrors.notFound, issue: "not_found" };
+    return {
+      salon: null,
+      services: [],
+      employees: [],
+      employeeShiftWeekdays: {},
+      employeeServiceMap: {},
+      error: fallbackErrors.notFound,
+      issue: "not_found",
+    };
   }
 
   const salon: Salon = {
@@ -87,6 +118,7 @@ async function resolveInitialBookingData(
   const servicesData = payload?.services ?? [];
   const employeesData = payload?.employees ?? [];
   const employeeShiftWeekdays = payload?.employeeShiftWeekdays ?? {};
+  const employeeServiceMap = payload?.employeeServiceMap ?? {};
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[public-booking] Initial booking data loaded.", {
@@ -101,6 +133,7 @@ async function resolveInitialBookingData(
     services: servicesData ?? [],
     employees: employeesData ?? [],
     employeeShiftWeekdays,
+    employeeServiceMap,
     error: null,
     issue: "none",
   };
@@ -118,6 +151,7 @@ export function useInitialBookingLoad(params: {
   setServices: (value: Service[]) => void;
   setEmployees: (value: Employee[]) => void;
   setEmployeeShiftWeekdays: (value: Record<string, number[]>) => void;
+  setEmployeeServiceMap: (value: Record<string, string[]>) => void;
   setLocale: (value: AppLocale) => void;
 }) {
   const {
@@ -132,6 +166,7 @@ export function useInitialBookingLoad(params: {
     setServices,
     setEmployees,
     setEmployeeShiftWeekdays,
+    setEmployeeServiceMap,
     setLocale,
   } = params;
 
@@ -156,6 +191,7 @@ export function useInitialBookingLoad(params: {
       setServices(initialData.services);
       setEmployees(initialData.employees);
       setEmployeeShiftWeekdays(initialData.employeeShiftWeekdays);
+      setEmployeeServiceMap(initialData.employeeServiceMap);
       setError(null);
 
       const initialLocale = resolveInitialLocale(initialData.salon);
@@ -176,6 +212,7 @@ export function useInitialBookingLoad(params: {
     setServices,
     setEmployees,
     setEmployeeShiftWeekdays,
+    setEmployeeServiceMap,
     setLocale,
   ]);
 }

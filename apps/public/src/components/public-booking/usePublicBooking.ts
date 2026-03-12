@@ -79,6 +79,7 @@ export function usePublicBooking(slug: string) {
   const [waitlistReceipt, setWaitlistReceipt] = useState<WaitlistReceipt | null>(null);
   const [employeeAvailability, setEmployeeAvailability] = useState<Record<string, "likely_available" | "no_times" | "unknown">>({});
   const [, setEmployeeShiftWeekdays] = useState<Record<string, number[]>>({});
+  const [employeeServiceMap, setEmployeeServiceMap] = useState<Record<string, string[]>>({});
 
   const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
@@ -135,8 +136,16 @@ export function usePublicBooking(slug: string) {
     setServices,
     setEmployees,
     setEmployeeShiftWeekdays,
+    setEmployeeServiceMap,
     setLocale,
   });
+
+  const employeesForSelectedService = useMemo(() => {
+    if (!serviceId) return employees;
+    // Backward-compatible fallback while employee-service mapping rolls out.
+    if (Object.keys(employeeServiceMap).length === 0) return employees;
+    return employees.filter((employee) => (employeeServiceMap[employee.id] ?? []).includes(serviceId));
+  }, [employeeServiceMap, employees, serviceId]);
 
   useQueryPrefill({
     loading,
@@ -234,8 +243,8 @@ export function usePublicBooking(slug: string) {
       employeeId: selectedEmployeeForLoad,
       serviceId,
       date,
-      employees,
-      maxEmployeesToCheck: selectedEmployeeForLoad ? 1 : employees.length,
+      employees: employeesForSelectedService,
+      maxEmployeesToCheck: selectedEmployeeForLoad ? 1 : employeesForSelectedService.length,
       signal: abortController.signal,
     });
 
@@ -265,7 +274,7 @@ export function usePublicBooking(slug: string) {
       return next;
     });
     setLoadingSlots(false);
-  }, [canLoadSlots, date, employees, ensureUniqueSlotIds, filterOutUnavailableSlots, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
+  }, [canLoadSlots, date, employeesForSelectedService, ensureUniqueSlotIds, filterOutUnavailableSlots, salon, selectedEmployeeForLoad, serviceId, t.loadError]);
 
   async function handleLoadSlots(e: FormEvent) {
     e.preventDefault();
@@ -452,10 +461,10 @@ export function usePublicBooking(slug: string) {
 
   useEffect(() => {
     if (mode !== "book") return;
-    if (employees.length === 0) return;
+    if (employeesForSelectedService.length === 0) return;
     if (employeeId) return;
     setEmployeeId(ANY_EMPLOYEE);
-  }, [mode, employees, employeeId]);
+  }, [mode, employeesForSelectedService, employeeId]);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -466,12 +475,12 @@ export function usePublicBooking(slug: string) {
   useEffect(() => {
     if (!employeeId) return;
     if (employeeId === ANY_EMPLOYEE) {
-      if (employees.length === 0) setEmployeeId("");
+      if (employeesForSelectedService.length === 0) setEmployeeId("");
       return;
     }
-    const exists = employees.some((employee) => employee.id === employeeId);
-    if (!exists) setEmployeeId(employees.length > 0 ? ANY_EMPLOYEE : "");
-  }, [employeeId, employees]);
+    const exists = employeesForSelectedService.some((employee) => employee.id === employeeId);
+    if (!exists) setEmployeeId(employeesForSelectedService.length > 0 ? ANY_EMPLOYEE : "");
+  }, [employeeId, employeesForSelectedService]);
 
   useEffect(() => {
     if (mode !== "book") return;
@@ -571,7 +580,7 @@ export function usePublicBooking(slug: string) {
   }, []);
 
   return {
-    salon, services, employees, loading, error, successMessage,
+    salon, services, employees: employeesForSelectedService, loading, error, successMessage,
     effectiveBranding, tokens, activeStep, selectionStatus, loadIssue, employeeAvailability,
     slotConflictActive,
     ANY_EMPLOYEE_VALUE: ANY_EMPLOYEE,

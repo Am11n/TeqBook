@@ -72,7 +72,9 @@ export async function GET(request: NextRequest) {
     }
 
     const employeeIds = (employees ?? []).map((employee) => employee.id);
+    const activeServiceIds = (services ?? []).map((service) => service.id);
     let employeeShiftWeekdays: Record<string, number[]> = {};
+    let employeeServiceMap: Record<string, string[]> = {};
 
     if (employeeIds.length > 0) {
       const { data: shiftRows, error: shiftsError } = await supabase
@@ -101,6 +103,36 @@ export async function GET(request: NextRequest) {
         if (!acc[employeeId].includes(weekday)) acc[employeeId].push(weekday);
         return acc;
       }, {});
+
+      if (activeServiceIds.length > 0) {
+        const { data: employeeServiceRows, error: employeeServicesError } = await supabase
+          .from("employee_services")
+          .select("employee_id, service_id")
+          .eq("salon_id", salon.id)
+          .in("employee_id", employeeIds)
+          .in("service_id", activeServiceIds);
+
+        if (employeeServicesError) {
+          return NextResponse.json(
+            {
+              error: "Failed to load public booking setup",
+              details: {
+                employee_services: employeeServicesError.message,
+              },
+            },
+            { status: 500 }
+          );
+        }
+
+        employeeServiceMap = (employeeServiceRows ?? []).reduce<Record<string, string[]>>((acc, row) => {
+          const employeeId = String(row.employee_id || "");
+          const serviceId = String(row.service_id || "");
+          if (!employeeId || !serviceId) return acc;
+          if (!acc[employeeId]) acc[employeeId] = [];
+          if (!acc[employeeId].includes(serviceId)) acc[employeeId].push(serviceId);
+          return acc;
+        }, {});
+      }
     }
 
     return NextResponse.json(
@@ -109,6 +141,7 @@ export async function GET(request: NextRequest) {
         services: services ?? [],
         employees: employees ?? [],
         employeeShiftWeekdays,
+        employeeServiceMap,
       },
       {
         status: 200,
