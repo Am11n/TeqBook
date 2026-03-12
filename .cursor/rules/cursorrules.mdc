@@ -190,3 +190,5 @@ import {
 - Always check for linter errors after editing files.
 - Never commit `.env` files or secrets.
 - Use `useSearchParams()` only inside a `<Suspense>` boundary to avoid prerendering errors.
+- Keep files under 300 lines when practical; if a file grows beyond that, split by concern (for example locale dictionaries into dedicated i18n modules per feature/locale).
+- For large translation dictionaries, prefer separate locale/i18n files over embedding dictionaries inside page/component files.
