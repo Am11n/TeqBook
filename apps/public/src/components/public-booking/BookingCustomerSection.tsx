@@ -178,6 +178,7 @@ export function BookingCustomerSection({
           <Input
             id="customer_phone"
             type="tel"
+            inputMode="tel"
             value={customerPhone}
             onChange={(e) => setCustomerPhone(e.target.value)}
             placeholder={t.phonePlaceholder}
