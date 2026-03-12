@@ -127,8 +127,44 @@ serve(async (req) => {
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Handle different event types
-    switch (event.type) {
+    // Idempotency gate: store event first, skip if already processed.
+    const { error: insertWebhookError } = await supabase
+      .from("stripe_webhook_events")
+      .insert({
+        event_id: event.id,
+        event_type: event.type,
+        payload: event,
+        processing_status: "processing",
+      });
+
+    if (insertWebhookError) {
+      const duplicateEvent = insertWebhookError.code === "23505";
+      if (duplicateEvent) {
+        console.log("Duplicate Stripe webhook event received, skipping:", event.id);
+        return new Response(
+          JSON.stringify({ received: true, duplicate: true, event_type: event.type }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      console.error("Failed to persist Stripe webhook event:", insertWebhookError);
+      return new Response(
+        JSON.stringify({ error: "Failed to persist webhook event" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    let processingError: string | null = null;
+
+    try {
+      // Handle different event types
+      switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
@@ -446,6 +482,37 @@ serve(async (req) => {
       default: {
         console.log(`Unhandled event type: ${event.type}`);
       }
+    }
+    } catch (eventError) {
+      processingError = eventError instanceof Error ? eventError.message : "Unknown webhook processing error";
+      console.error("Error while processing Stripe webhook event:", {
+        event_id: event.id,
+        event_type: event.type,
+        error: processingError,
+      });
+    }
+
+    const { error: updateWebhookError } = await supabase
+      .from("stripe_webhook_events")
+      .update({
+        processing_status: processingError ? "failed" : "processed",
+        error_message: processingError,
+        processed_at: new Date().toISOString(),
+      })
+      .eq("event_id", event.id);
+
+    if (updateWebhookError) {
+      console.error("Failed to update Stripe webhook event status:", updateWebhookError);
+    }
+
+    if (processingError) {
+      return new Response(
+        JSON.stringify({ error: "Webhook processing failed", event_type: event.type }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     return new Response(
