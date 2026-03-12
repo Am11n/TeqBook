@@ -56,6 +56,12 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "public-waitlist-claim": {
+    maxAttempts: 20,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "admin-impersonate": {
     maxAttempts: 30,
     windowMs: ONE_HOUR_MS,
@@ -64,6 +70,36 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
   },
   "settings-test-notification": {
     maxAttempts: 10,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "admin-health": {
+    maxAttempts: 30,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: ONE_HOUR_MS,
+    failurePolicy: "fail_closed",
+  },
+  "waitlist-notify": {
+    maxAttempts: 20,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "waitlist-priority-override": {
+    maxAttempts: 30,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "waitlist-convert-booking": {
+    maxAttempts: 20,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "waitlist-process-cancellation": {
+    maxAttempts: 30,
     windowMs: ONE_MINUTE_MS,
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",

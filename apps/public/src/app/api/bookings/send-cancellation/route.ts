@@ -3,6 +3,7 @@ import { sendBookingCancellation } from "@/lib/services/email-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { createClientForRouteHandler } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
@@ -14,20 +15,9 @@ import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 type BookingCancellationPayload = {
   bookingId: string;
   salonId: string;
-  customerEmail: string;
+  customerEmail?: string;
   language?: string;
   cancellationReason?: string | null;
-  bookingData?: {
-    id: string;
-    salon_id: string;
-    start_time: string;
-    end_time: string | null;
-    status: string;
-    is_walk_in: boolean;
-    customer_full_name: string;
-    service_name?: string;
-    employee_name?: string;
-  };
 };
 
 export async function POST(request: NextRequest) {
@@ -36,13 +26,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingCancellationPayload;
-    const { bookingId, salonId, customerEmail, language, cancellationReason, bookingData } = body;
+    const { bookingId, salonId, customerEmail, language, cancellationReason } = body;
 
     const logContext = {
       bookingId,
       salonId,
       customerEmail,
-      hasBookingData: !!bookingData,
     };
 
     logInfo("Public send-cancellation API route called", logContext);
@@ -56,8 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const rateLimitIdentifier = customerEmail || ipIdentifier;
-    const rateLimitIdentifierType = customerEmail ? "email" : "ip";
+    const rateLimitIdentifier = `${ipIdentifier}:${bookingId}`;
+    const rateLimitIdentifierType = "ip";
 
     const rateLimitResult = await checkRateLimit(
       rateLimitIdentifier,
@@ -99,6 +88,55 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    const admin = getAdminClient();
+    const { data: bookingRow, error: bookingError } = await admin
+      .from("bookings")
+      .select(
+        "id, salon_id, start_time, end_time, status, is_walk_in, customers(full_name, email), employees(full_name), services(name)",
+      )
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .maybeSingle();
+
+    if (bookingError || !bookingRow) {
+      logWarn("Booking not found in authoritative cancellation lookup", {
+        ...logContext,
+        error: bookingError?.message,
+      });
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (!["cancelled", "no-show"].includes(bookingRow.status)) {
+      return NextResponse.json(
+        { error: `Cannot send cancellation for booking status: ${bookingRow.status}` },
+        { status: 400 },
+      );
+    }
+
+    const bookingCustomer = Array.isArray(bookingRow.customers)
+      ? bookingRow.customers[0]
+      : bookingRow.customers;
+    const bookingEmployee = Array.isArray(bookingRow.employees)
+      ? bookingRow.employees[0]
+      : bookingRow.employees;
+    const bookingService = Array.isArray(bookingRow.services)
+      ? bookingRow.services[0]
+      : bookingRow.services;
+
+    const authoritativeEmail = bookingCustomer?.email?.trim() || null;
+    if (!authoritativeEmail) {
+      return NextResponse.json(
+        { error: "Booking does not have a customer email address" },
+        { status: 400 },
+      );
+    }
+    if (customerEmail && customerEmail.trim().toLowerCase() !== authoritativeEmail.toLowerCase()) {
+      return NextResponse.json(
+        { error: "Provided customerEmail does not match booking owner" },
+        { status: 403 },
+      );
+    }
+
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
@@ -113,20 +151,18 @@ export async function POST(request: NextRequest) {
     const effectiveLanguage = language || salon?.preferred_language || "en";
 
     const bookingForEmail = {
-      id: bookingId,
-      start_time: bookingData?.start_time,
-      end_time: bookingData?.end_time ?? bookingData?.start_time,
-      status: bookingData?.status ?? "cancelled",
-      is_walk_in: bookingData?.is_walk_in ?? false,
+      id: bookingRow.id,
+      start_time: bookingRow.start_time,
+      end_time: bookingRow.end_time ?? bookingRow.start_time,
+      status: bookingRow.status ?? "cancelled",
+      is_walk_in: bookingRow.is_walk_in ?? false,
       notes: null,
-      customers: bookingData?.customer_full_name
-        ? { full_name: bookingData.customer_full_name }
-        : null,
-      employees: bookingData?.employee_name ? { full_name: bookingData.employee_name } : null,
-      services: bookingData?.service_name ? { name: bookingData.service_name } : null,
-      customer_full_name: bookingData?.customer_full_name ?? "Customer",
-      service: bookingData?.service_name ? { name: bookingData.service_name } : null,
-      employee: bookingData?.employee_name ? { name: bookingData.employee_name } : null,
+      customers: bookingCustomer?.full_name ? { full_name: bookingCustomer.full_name } : null,
+      employees: bookingEmployee?.full_name ? { full_name: bookingEmployee.full_name } : null,
+      services: bookingService?.name ? { name: bookingService.name } : null,
+      customer_full_name: bookingCustomer?.full_name ?? "Customer",
+      service: bookingService?.name ? { name: bookingService.name } : null,
+      employee: bookingEmployee?.full_name ? { name: bookingEmployee.full_name } : null,
       salon: salon ? { name: salon.name } : null,
     } as Parameters<typeof sendBookingCancellation>[0]["booking"];
 
@@ -135,7 +171,7 @@ export async function POST(request: NextRequest) {
       error: null,
     };
 
-    if (customerEmail) {
+    if (authoritativeEmail) {
       logInfo("Attempting to send public booking cancellation email", {
         ...logContext,
         timezone,
@@ -144,7 +180,7 @@ export async function POST(request: NextRequest) {
 
       emailResult = await sendBookingCancellation({
         booking: bookingForEmail,
-        recipientEmail: customerEmail,
+        recipientEmail: authoritativeEmail,
         language: effectiveLanguage,
         salonId,
         timezone,
@@ -166,9 +202,9 @@ export async function POST(request: NextRequest) {
     let inAppResult: { success: boolean; sent?: unknown; error?: string } = { success: false };
 
     try {
-      const customerName = bookingData?.customer_full_name || "Customer";
-      const serviceName = bookingData?.service_name || "Service";
-      const bookingTime = bookingData?.start_time;
+      const customerName = bookingCustomer?.full_name || "Customer";
+      const serviceName = bookingService?.name || "Service";
+      const bookingTime = bookingRow.start_time;
 
       if (bookingTime) {
         logInfo("Calling notify_salon_staff_booking_cancelled from public API route", {
@@ -205,7 +241,7 @@ export async function POST(request: NextRequest) {
           inAppResult = { success: true, sent: notifiedCount };
         }
       } else {
-        logWarn("Missing bookingTime in bookingData, skipping in-app cancellation notification", logContext);
+        logWarn("Missing bookingTime in authoritative booking, skipping in-app cancellation notification", logContext);
         inAppResult = { success: false, error: "Missing booking start time" };
       }
     } catch (inAppError) {

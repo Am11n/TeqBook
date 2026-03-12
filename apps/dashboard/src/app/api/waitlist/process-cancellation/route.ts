@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { enforceSameOrigin } from "@/lib/api-security";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { handleWaitlistCancellation } from "@/lib/services/waitlist-cancellation";
 
 type Body = {
@@ -13,8 +16,12 @@ type Body = {
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
+  const rateLimitPolicy = getRateLimitPolicy("waitlist-process-cancellation");
 
   try {
+    const csrfGuard = enforceSameOrigin(request);
+    if (csrfGuard) return csrfGuard;
+
     const body = (await request.json()) as Body;
     const salonId = body.salonId?.trim();
     const serviceId = body.serviceId?.trim();
@@ -31,6 +38,20 @@ export async function POST(request: NextRequest) {
     if (auth.error || !auth.user || !auth.hasAccess) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }
+
+    const rateLimitResult = await checkRateLimit(auth.user.id, "waitlist-process-cancellation", {
+      identifierType: "user_id",
+      endpointType: "waitlist-process-cancellation",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+    await incrementRateLimit(auth.user.id, "waitlist-process-cancellation", {
+      identifierType: "user_id",
+      endpointType: "waitlist-process-cancellation",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
 
     const result = await handleWaitlistCancellation(
       salonId,

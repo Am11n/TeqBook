@@ -33,7 +33,7 @@ pnpm run seed:force
 
 #### `migrate-local.ts` - Run Local Migrations
 
-Runs SQL migrations from `supabase/migrations/` against your Supabase instance.
+Runs SQL migrations from `supabase/supabase/migrations/` against your Supabase instance.
 
 ```bash
 pnpm run migrate:local
@@ -43,7 +43,7 @@ pnpm run migrate:local
 - `--file=path/to/file.sql` - Run specific migration file
 
 ```bash
-pnpm run migrate:local -- --file=supabase/migrations/my-migration.sql
+pnpm run migrate:local -- --file=supabase/supabase/migrations/my-migration.sql
 ```
 
 **Note:** Uses Supabase RPC `exec_sql` if available; otherwise run migrations manually in the Supabase SQL Editor.
@@ -118,7 +118,7 @@ pnpm run seed
 
 ### Adding New Migrations
 
-1. Create SQL file in `supabase/migrations/`.
+1. Create SQL file in `supabase/supabase/migrations/`.
 2. Run migration:
    ```bash
    pnpm run migrate:local

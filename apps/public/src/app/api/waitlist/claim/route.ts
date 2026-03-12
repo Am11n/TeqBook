@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 type ClaimAction = "accept" | "decline";
 
@@ -174,6 +176,7 @@ function renderClaimPage(input: { ok: boolean; message: string; origin: string }
 
 export async function GET(request: NextRequest) {
   try {
+    const rateLimitPolicy = getRateLimitPolicy("public-waitlist-claim");
     const url = new URL(request.url);
     const token = url.searchParams.get("token")?.trim() ?? "";
     const action = parseAction(url.searchParams.get("action"));
@@ -184,6 +187,22 @@ export async function GET(request: NextRequest) {
     if (!token || !action) {
       return new NextResponse("Invalid claim link.", { status: 400 });
     }
+
+    const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimitIdentifier = `${ipIdentifier}:${token}`;
+    const rateLimitResult = await checkRateLimit(rateLimitIdentifier, "public-waitlist-claim", {
+      identifierType: "ip",
+      endpointType: "public-waitlist-claim",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+    if (!rateLimitResult.allowed) {
+      return new NextResponse("Too many requests. Please try again later.", { status: 429 });
+    }
+    await incrementRateLimit(rateLimitIdentifier, "public-waitlist-claim", {
+      identifierType: "ip",
+      endpointType: "public-waitlist-claim",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
 
     const result = await executeClaim(action, token, channel);
     const body = renderClaimPage({
@@ -199,6 +218,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitPolicy = getRateLimitPolicy("public-waitlist-claim");
     const body = (await request.json()) as { token?: string; action?: string; channel?: string };
     const token = body.token?.trim() ?? "";
     const action = parseAction(body.action ?? null);
@@ -206,6 +226,22 @@ export async function POST(request: NextRequest) {
     if (!token || !action) {
       return NextResponse.json({ error: "token and action are required" }, { status: 400 });
     }
+
+    const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimitIdentifier = `${ipIdentifier}:${token}`;
+    const rateLimitResult = await checkRateLimit(rateLimitIdentifier, "public-waitlist-claim", {
+      identifierType: "ip",
+      endpointType: "public-waitlist-claim",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+    await incrementRateLimit(rateLimitIdentifier, "public-waitlist-claim", {
+      identifierType: "ip",
+      endpointType: "public-waitlist-claim",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
 
     const result = await executeClaim(action, token, channel);
     return NextResponse.json(result, { status: result.ok ? 200 : 409 });

@@ -17,6 +17,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   getRateLimitConfig,
+  RATE_LIMIT_CONFIGS,
   type EdgeRateLimitFailurePolicy,
 } from "../_shared/rate-limit-config.ts";
 
@@ -59,6 +60,12 @@ interface RateLimitConfig {
   windowMs: number;
   blockDurationMs: number;
   failurePolicy: EdgeRateLimitFailurePolicy;
+}
+
+function getBearerToken(req: Request): string | null {
+  const header = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!header?.startsWith("Bearer ")) return null;
+  return header.slice("Bearer ".length).trim() || null;
 }
 
 /**
@@ -475,6 +482,7 @@ serve(async (req) => {
 
     // Create Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
     // Parse request body (OPTIONS already handled above)
     const body: RateLimitRequest = await req.json().catch(() => ({}));
@@ -493,6 +501,15 @@ serve(async (req) => {
     const identifierType = body.identifierType || "email";
     const endpointType = body.endpointType || "login";
     const action = body.action || "check";
+    if (action === "reset" && !(endpointType in RATE_LIMIT_CONFIGS)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid endpointType: ${endpointType}` }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
     const config = getRateLimitConfig(endpointType);
 
     let result: RateLimitResponse | { success: boolean };
@@ -517,6 +534,42 @@ serve(async (req) => {
         );
         break;
       case "reset":
+        {
+          const adminResetToken = Deno.env.get("RATE_LIMIT_RESET_TOKEN") ?? "";
+          const providedResetToken = req.headers.get("x-rate-limit-reset-token") ?? "";
+          let authorizedReset = adminResetToken !== "" && providedResetToken === adminResetToken;
+
+          if (!authorizedReset) {
+            const bearerToken = getBearerToken(req);
+            if (!bearerToken || !supabaseAnonKey) {
+              return new Response(
+                JSON.stringify({ error: "Forbidden: reset requires authenticated caller" }),
+                {
+                  status: 403,
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                },
+              );
+            }
+
+            const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+              global: {
+                headers: {
+                  Authorization: `Bearer ${bearerToken}`,
+                },
+              },
+            });
+            const { data, error: authError } = await authClient.auth.getUser(bearerToken);
+            if (authError || !data.user) {
+              return new Response(
+                JSON.stringify({ error: "Forbidden: invalid reset caller token" }),
+                {
+                  status: 403,
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                },
+              );
+            }
+          }
+
         result = await resetRateLimit(
           supabase,
           body.identifier,
@@ -524,6 +577,7 @@ serve(async (req) => {
           endpointType
         );
         break;
+        }
       default:
         return new Response(
           JSON.stringify({ error: `Invalid action: ${action}` }),

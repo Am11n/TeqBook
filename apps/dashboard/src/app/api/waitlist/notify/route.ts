@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { enforceSameOrigin } from "@/lib/api-security";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { createAndSendWaitlistOffer } from "@/lib/services/waitlist-offer-flow";
 import type { WaitlistEntry } from "@/lib/repositories/waitlist";
@@ -14,7 +17,11 @@ type Body = {
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
+  const rateLimitPolicy = getRateLimitPolicy("waitlist-notify");
   try {
+    const csrfGuard = enforceSameOrigin(request);
+    if (csrfGuard) return csrfGuard;
+
     const body = (await request.json()) as Body;
     const salonId = body.salonId?.trim();
     const entryId = body.entryId?.trim();
@@ -33,6 +40,20 @@ export async function POST(request: NextRequest) {
     if (auth.error || !auth.user || !auth.hasAccess) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }
+
+    const rateLimitResult = await checkRateLimit(auth.user.id, "waitlist-notify", {
+      identifierType: "user_id",
+      endpointType: "waitlist-notify",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+    await incrementRateLimit(auth.user.id, "waitlist-notify", {
+      identifierType: "user_id",
+      endpointType: "waitlist-notify",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
 
     const admin = getAdminClient();
     const { data: entry, error: entryError } = await admin

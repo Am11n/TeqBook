@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 export async function GET(request: NextRequest) {
   const rateLimitPolicy = getRateLimitPolicy("admin-impersonate");
+  const csrfGuard = enforceSameOrigin(request);
+  if (csrfGuard) return csrfGuard;
+
   const salonId = request.nextUrl.searchParams.get("salon_id");
   if (!salonId) {
     return NextResponse.json({ error: "salon_id required" }, { status: 400 });

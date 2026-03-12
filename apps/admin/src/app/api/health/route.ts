@@ -1,11 +1,47 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createAdminAppClient } from "@/lib/supabase/server";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const resendApiKey = process.env.RESEND_API_KEY ?? "";
 
 export async function GET() {
+  const appClient = await createAdminAppClient();
+  const {
+    data: { user },
+  } = await appClient.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: profile, error: profileError } = await appClient
+    .from("profiles")
+    .select("is_superadmin")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (profileError || !profile?.is_superadmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const rateLimitPolicy = getRateLimitPolicy("admin-health");
+  const rateLimitResult = await checkRateLimit(user.id, "admin-health", {
+    identifierType: "user_id",
+    endpointType: "admin-health",
+    failurePolicy: rateLimitPolicy.failurePolicy,
+  });
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+  await incrementRateLimit(user.id, "admin-health", {
+    identifierType: "user_id",
+    endpointType: "admin-health",
+    failurePolicy: rateLimitPolicy.failurePolicy,
+  });
+
   const checks: Record<string, { status: string; latency_ms: number; error?: string }> = {};
 
   // Run all checks in parallel for speed

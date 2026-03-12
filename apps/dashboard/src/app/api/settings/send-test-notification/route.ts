@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { enforceSameOrigin } from "@/lib/api-security";
 import { sendEmail } from "@/lib/services/email-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logInfo, logWarn } from "@/lib/services/logger";
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
   const rateLimitPolicy = getRateLimitPolicy("settings-test-notification");
 
   try {
+    const csrfGuard = enforceSameOrigin(request);
+    if (csrfGuard) return csrfGuard;
+
     const body = await request.json();
     const { recipientEmail, group, salonId } = body as {
       recipientEmail?: string;

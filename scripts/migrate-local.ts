@@ -2,12 +2,12 @@
 /**
  * Local Migration Script
  * 
- * Runs SQL migrations from supabase/migrations/ directory against local Supabase instance.
+ * Runs SQL migrations from supabase/supabase/migrations/ directory against local Supabase instance.
  * Only deterministic migrations are run - admin scripts are excluded.
  * 
  * Usage:
  *   npm run migrate:local
- *   npm run migrate:local -- --file supabase/migrations/specific-migration.sql
+ *   npm run migrate:local -- --file supabase/supabase/migrations/specific-migration.sql
  * 
  * Migration file naming convention:
  *   YYYYMMDD-HHMMSS-description.sql (recommended)
@@ -102,7 +102,7 @@ async function runMigration(filePath: string) {
 
 async function migrate() {
   console.log("🔄 Starting local migration...\n");
-  console.log("📁 Only running files from supabase/migrations/ directory\n");
+  console.log("📁 Only running files from supabase/supabase/migrations/ directory\n");
 
   const args = process.argv.slice(2);
   const fileArg = args.find((arg) => arg.startsWith("--file="));
@@ -119,22 +119,22 @@ async function migrate() {
       }
       
       // Validate it's in migrations directory
-      if (!filePath.includes("supabase/migrations/")) {
-        console.error(`❌ Error: File must be in supabase/migrations/ directory`);
+      if (!filePath.includes("supabase/supabase/migrations/")) {
+        console.error(`❌ Error: File must be in supabase/supabase/migrations/ directory`);
         console.error(`   Admin scripts and other SQL files are not run automatically`);
         process.exit(1);
       }
       
       await runMigration(filePath);
     } else {
-      // Run all SQL files in supabase/migrations/ directory only
-      const sqlFiles = await glob("supabase/migrations/**/*.sql", {
+      // Run all SQL files in supabase/supabase/migrations/ directory only
+      const sqlFiles = await glob("supabase/supabase/migrations/**/*.sql", {
         cwd: resolve(__dirname, ".."),
         ignore: ["**/node_modules/**"],
       });
 
       if (sqlFiles.length === 0) {
-        console.log("ℹ️  No SQL files found in supabase/migrations/ directory");
+        console.log("ℹ️  No SQL files found in supabase/supabase/migrations/ directory");
         return;
       }
 

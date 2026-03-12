@@ -4,27 +4,15 @@ import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { createClientForRouteHandler } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 type BookingNotificationPayload = {
   bookingId: string;
   salonId: string;
-  customerEmail: string;
-  customerPhone?: string;
+  customerEmail?: string;
   language?: string;
-  bookingData?: {
-    id: string;
-    salon_id: string;
-    start_time: string;
-    end_time: string;
-    status: string;
-    is_walk_in: boolean;
-    customer_full_name: string;
-    customer_phone?: string;
-    service_name?: string;
-    employee_name?: string;
-  };
 };
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -84,29 +72,27 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
-    const { bookingId, salonId, customerEmail, customerPhone, language, bookingData } = body;
+    const { bookingId, salonId, customerEmail, language } = body;
 
     const logContext = {
       bookingId,
       salonId,
       customerEmail,
-      hasCustomerPhone: !!customerPhone || !!bookingData?.customer_phone,
-      hasBookingData: !!bookingData,
     };
 
     logInfo("Public send-notifications API route called", logContext);
 
-    if (!bookingId || !salonId || !customerEmail) {
+    if (!bookingId || !salonId) {
       logWarn("Missing required fields in public send-notifications API route", logContext);
       return NextResponse.json(
-        { error: "Missing required fields: bookingId, salonId and customerEmail are required" },
+        { error: "Missing required fields: bookingId and salonId are required" },
         { status: 400 },
       );
     }
 
     const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const rateLimitIdentifier = customerEmail || ipIdentifier;
-    const rateLimitIdentifierType = customerEmail ? "email" : "ip";
+    const rateLimitIdentifier = `${ipIdentifier}:${bookingId}`;
+    const rateLimitIdentifierType = "ip";
 
     const rateLimitResult = await checkRateLimit(
       rateLimitIdentifier,
@@ -148,6 +134,58 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    const admin = getAdminClient();
+    const { data: bookingRow, error: bookingError } = await admin
+      .from("bookings")
+      .select(
+        "id, salon_id, start_time, end_time, status, is_walk_in, customers(full_name, email, phone), employees(full_name), services(name)",
+      )
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .maybeSingle();
+
+    if (bookingError || !bookingRow) {
+      logWarn("Booking not found in authoritative lookup", {
+        ...logContext,
+        error: bookingError?.message,
+      });
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (!["confirmed", "pending", "scheduled"].includes(bookingRow.status)) {
+      return NextResponse.json(
+        { error: `Cannot send notifications for booking status: ${bookingRow.status}` },
+        { status: 400 },
+      );
+    }
+
+    const bookingCustomer = Array.isArray(bookingRow.customers)
+      ? bookingRow.customers[0]
+      : bookingRow.customers;
+    const bookingEmployee = Array.isArray(bookingRow.employees)
+      ? bookingRow.employees[0]
+      : bookingRow.employees;
+    const bookingService = Array.isArray(bookingRow.services)
+      ? bookingRow.services[0]
+      : bookingRow.services;
+
+    const authoritativeEmail = bookingCustomer?.email?.trim() || null;
+    const authoritativePhone = bookingCustomer?.phone?.trim() || null;
+
+    if (!authoritativeEmail) {
+      return NextResponse.json(
+        { error: "Booking does not have a customer email address" },
+        { status: 400 },
+      );
+    }
+
+    if (customerEmail && customerEmail.trim().toLowerCase() !== authoritativeEmail.toLowerCase()) {
+      return NextResponse.json(
+        { error: "Provided customerEmail does not match booking owner" },
+        { status: 403 },
+      );
+    }
+
     // Fetch salon to get language/timezone and name
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
@@ -162,30 +200,19 @@ export async function POST(request: NextRequest) {
     const timezone = salon?.timezone || "UTC";
     const effectiveLanguage = language || salon?.preferred_language || "nb";
 
-    // Build booking object for email from provided bookingData
-    if (!bookingData || bookingData.id !== bookingId || bookingData.salon_id !== salonId) {
-      logWarn("Invalid or missing bookingData in public send-notifications API route", {
-        ...logContext,
-        bookingDataId: bookingData?.id,
-        bookingDataSalonId: bookingData?.salon_id,
-      });
-    }
-
     const bookingForEmail = {
-      id: bookingId,
-      start_time: bookingData?.start_time,
-      end_time: bookingData?.end_time ?? bookingData?.start_time,
-      status: bookingData?.status ?? "confirmed",
-      is_walk_in: bookingData?.is_walk_in ?? false,
+      id: bookingRow.id,
+      start_time: bookingRow.start_time,
+      end_time: bookingRow.end_time ?? bookingRow.start_time,
+      status: bookingRow.status ?? "confirmed",
+      is_walk_in: bookingRow.is_walk_in ?? false,
       notes: null,
-      customers: bookingData?.customer_full_name
-        ? { full_name: bookingData.customer_full_name }
-        : null,
-      employees: bookingData?.employee_name ? { full_name: bookingData.employee_name } : null,
-      services: bookingData?.service_name ? { name: bookingData.service_name } : null,
-      customer_full_name: bookingData?.customer_full_name ?? "Customer",
-      service: bookingData?.service_name ? { name: bookingData.service_name } : null,
-      employee: bookingData?.employee_name ? { name: bookingData.employee_name } : null,
+      customers: bookingCustomer?.full_name ? { full_name: bookingCustomer.full_name } : null,
+      employees: bookingEmployee?.full_name ? { full_name: bookingEmployee.full_name } : null,
+      services: bookingService?.name ? { name: bookingService.name } : null,
+      customer_full_name: bookingCustomer?.full_name ?? "Customer",
+      service: bookingService?.name ? { name: bookingService.name } : null,
+      employee: bookingEmployee?.full_name ? { name: bookingEmployee.full_name } : null,
       salon: salon ? { name: salon.name, time_format: salon.time_format ?? null } : null,
     } as any;
 
@@ -199,7 +226,7 @@ export async function POST(request: NextRequest) {
 
     const emailResult = await sendBookingConfirmation({
       booking: bookingForEmail,
-      recipientEmail: customerEmail,
+      recipientEmail: authoritativeEmail,
       language: effectiveLanguage,
       salonId,
       timezone,
@@ -215,25 +242,23 @@ export async function POST(request: NextRequest) {
     });
 
     // Schedule reminders (24h and 2h before appointment)
-    const reminderResult = bookingData
-      ? await scheduleReminders({
-          bookingId,
-          bookingStartTime: bookingData.start_time,
-          salonId,
-          timezone,
-        }).catch((reminderError: unknown) => {
-          logWarn("Failed to schedule reminders for public booking", {
-            ...logContext,
-            reminderError: reminderError instanceof Error
-              ? reminderError.message
-              : "Unknown error",
-          });
-          return {
-            error:
-              reminderError instanceof Error ? reminderError.message : "Unknown error",
-          };
-        })
-      : { error: "Missing bookingData, could not schedule reminders" };
+    const reminderResult = await scheduleReminders({
+      bookingId,
+      bookingStartTime: bookingRow.start_time,
+      salonId,
+      timezone,
+    }).catch((reminderError: unknown) => {
+      logWarn("Failed to schedule reminders for public booking", {
+        ...logContext,
+        reminderError: reminderError instanceof Error
+          ? reminderError.message
+          : "Unknown error",
+      });
+      return {
+        error:
+          reminderError instanceof Error ? reminderError.message : "Unknown error",
+      };
+    });
 
     // Notify salon staff via RPC so they get in-app (bell) notifications
     let inAppResult: { success: boolean; sent?: unknown; error?: string } = {
@@ -241,9 +266,9 @@ export async function POST(request: NextRequest) {
     };
 
     try {
-      const customerName = bookingData?.customer_full_name || "Customer";
-      const serviceName = bookingData?.service_name || "Service";
-      const bookingTime = bookingData?.start_time;
+      const customerName = bookingCustomer?.full_name || "Customer";
+      const serviceName = bookingService?.name || "Service";
+      const bookingTime = bookingRow.start_time;
 
       if (bookingTime) {
         logInfo("Calling notify_salon_staff_new_booking from public API route", {
@@ -286,7 +311,7 @@ export async function POST(request: NextRequest) {
           };
         }
       } else {
-        logWarn("Missing bookingTime in bookingData, skipping in-app notification", logContext);
+        logWarn("Missing bookingTime in authoritative booking, skipping in-app notification", logContext);
         inAppResult = {
           success: false,
           error: "Missing booking start time",
@@ -304,14 +329,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Send customer SMS confirmation if phone exists and is valid E.164.
-    const rawPhone = bookingData?.customer_phone || customerPhone || null;
+    const rawPhone = authoritativePhone;
     const normalizedPhone = normalizeToE164(rawPhone);
     const smsResult = normalizedPhone
       ? await (async () => {
-          const serviceName = bookingData?.service_name || "your appointment";
+          const serviceName = bookingService?.name || "your appointment";
           const salonName = salon?.name || "the salon";
-          const dateTime = bookingData?.start_time
-            ? new Date(bookingData.start_time)
+          const dateTime = bookingRow.start_time
+            ? new Date(bookingRow.start_time)
             : null;
 
           const formattedDate = dateTime

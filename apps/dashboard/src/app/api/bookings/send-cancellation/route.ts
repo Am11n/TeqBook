@@ -5,6 +5,7 @@ import { getBookingByIdWithSalonVerification } from "@/lib/repositories/bookings
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
 import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { authenticateAndVerifySalon } from "@/lib/api-auth";
+import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import type { Booking } from "@/lib/types";
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
   const rateLimitPolicy = getRateLimitPolicy("booking-cancellation");
   
   try {
+    const csrfGuard = enforceSameOrigin(request);
+    if (csrfGuard) return csrfGuard;
+
     const body = await request.json();
     const { bookingId, customerEmail: bodyCustomerEmail, salonId: bodySalonId, language: bodyLanguage, cancelledBy, cancellationReason, bookingData }: SendCancellationBody = body;
 

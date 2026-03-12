@@ -194,7 +194,7 @@ describe("Query Performance - Repository Analysis", () => {
 });
 
 describe("Query Performance - Index Coverage", () => {
-  const MIGRATIONS_DIR = path.join(__dirname, "../../supabase/migrations");
+  const MIGRATIONS_DIR = path.join(__dirname, "../../../../supabase/supabase/migrations");
 
   // Helper to read all migration files
   function getMigrationContent(): string {
@@ -255,7 +255,7 @@ describe("Query Performance - Index Coverage", () => {
 });
 
 describe("Query Performance - RLS Policy Analysis", () => {
-  const MIGRATIONS_DIR = path.join(__dirname, "../../supabase/migrations");
+  const MIGRATIONS_DIR = path.join(__dirname, "../../../../supabase/supabase/migrations");
 
   function getMigrationContent(): string {
     const files = fs.readdirSync(MIGRATIONS_DIR)

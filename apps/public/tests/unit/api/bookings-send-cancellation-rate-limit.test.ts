@@ -7,6 +7,7 @@ const mockIncrementRateLimit = vi.fn();
 const mockGetSalonById = vi.fn();
 const mockSendBookingCancellation = vi.fn();
 const mockRpc = vi.fn();
+const mockAdminMaybeSingle = vi.fn();
 
 vi.mock("@/lib/services/rate-limit-service", () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
@@ -24,6 +25,20 @@ vi.mock("@/lib/services/email-service", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   createClientForRouteHandler: () => ({
     rpc: (...args: unknown[]) => mockRpc(...args),
+  }),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  getAdminClient: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            maybeSingle: (...args: unknown[]) => mockAdminMaybeSingle(...args),
+          }),
+        }),
+      }),
+    }),
   }),
 }));
 
@@ -86,6 +101,20 @@ describe("Public bookings/send-cancellation rate limiting", () => {
       data: { id: "salon-1", name: "Test Salon", timezone: "UTC", preferred_language: "en" },
       error: null,
     });
+    mockAdminMaybeSingle.mockResolvedValue({
+      data: {
+        id: "booking-1",
+        salon_id: "salon-1",
+        start_time: "2026-03-01T10:00:00Z",
+        end_time: "2026-03-01T11:00:00Z",
+        status: "cancelled",
+        is_walk_in: false,
+        customers: { full_name: "Jane Doe", email: "customer@example.com" },
+        employees: { full_name: "Alex" },
+        services: { name: "Cut" },
+      },
+      error: null,
+    });
     mockSendBookingCancellation.mockResolvedValue({ data: { id: "email-1" }, error: null });
     mockRpc.mockResolvedValue({ data: 1, error: null });
 
@@ -95,17 +124,6 @@ describe("Public bookings/send-cancellation rate limiting", () => {
         bookingId: "booking-1",
         salonId: "salon-1",
         customerEmail: "customer@example.com",
-        bookingData: {
-          id: "booking-1",
-          salon_id: "salon-1",
-          start_time: "2026-03-01T10:00:00Z",
-          end_time: "2026-03-01T11:00:00Z",
-          status: "cancelled",
-          is_walk_in: false,
-          customer_full_name: "Jane Doe",
-          service_name: "Cut",
-          employee_name: "Alex",
-        },
       }),
       headers: { "content-type": "application/json" },
     });
