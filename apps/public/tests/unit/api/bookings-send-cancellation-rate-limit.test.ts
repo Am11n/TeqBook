@@ -59,7 +59,7 @@ vi.mock("@/lib/services/email-service", () => ({
 
 vi.mock("@/lib/supabase/server", () => ({
   createClientForRouteHandler: () => ({
-    rpc: (...args: unknown[]) => mockRpc(...args),
+    rpc: (arg1: unknown, arg2?: unknown, arg3?: unknown) => mockRpc(arg1, arg2, arg3),
   }),
 }));
 
