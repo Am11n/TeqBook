@@ -42,10 +42,15 @@ export function MobileBookingSummary({
   const [expanded, setExpanded] = useState(false);
   const serviceValue = serviceName || "Select service";
   const timeValue = timeLabel || "Choose time";
+  const handleChangeSelection = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onChangeClick();
+  };
 
   return (
     <section
-      className={`fixed bottom-0 left-0 right-0 z-50 border-t lg:hidden ${keyboardHidden ? "pointer-events-none translate-y-full opacity-0" : "translate-y-0 opacity-100"} transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none`}
+      className={`fixed bottom-0 left-0 right-0 z-40 border-t lg:hidden ${keyboardHidden ? "pointer-events-none translate-y-full opacity-0" : "translate-y-0 opacity-100"} transition-all duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-in-out)] motion-reduce:transition-none`}
       style={{
         backgroundColor: "var(--pb-surface)",
         borderColor: "var(--pb-border)",
@@ -79,7 +84,7 @@ export function MobileBookingSummary({
             <button
               type="button"
               className="justify-self-end text-[11px] font-medium text-[var(--pb-muted)] underline underline-offset-2"
-              onClick={onChangeClick}
+              onClick={handleChangeSelection}
             >
               {changeLabel}
             </button>
@@ -94,7 +99,7 @@ export function MobileBookingSummary({
             <button
               type="button"
               className="text-[11px] font-medium text-[var(--pb-muted)] underline underline-offset-2"
-              onClick={onChangeClick}
+              onClick={handleChangeSelection}
             >
               {changeLabel}
             </button>

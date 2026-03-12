@@ -91,6 +91,26 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
       safeSubmitBooking();
     }
   };
+  const handleChangeSelection = () => {
+    setMobileChangeOpen(true);
+    if (!serviceId) {
+      requestMobileSection("service");
+      scrollToSection("service-section");
+      return;
+    }
+    if (!date) {
+      requestMobileSection("date");
+      scrollToSection("date-section");
+      return;
+    }
+    if (!selectedSlot) {
+      requestMobileSection("time");
+      scrollToSection("book-mode-panel");
+      return;
+    }
+    requestMobileSection("service");
+    scrollToSection("service-section");
+  };
 
   const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
   const [mobileDetailsInputFocused, setMobileDetailsInputFocused] = useState(false);
@@ -383,12 +403,12 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
         ctaActionDisabled={ctaActionDisabled}
         keyboardHidden={mobileDetailsInputFocused}
         onCtaClick={handlePrimaryBookingCta}
-        onChangeClick={() => setMobileChangeOpen(true)}
+        onChangeClick={handleChangeSelection}
         changeLabel={t.mobileChangeSelectionLabel || "Change selection"}
         summaryTitle={t.summaryTitle || "Your booking"}
       />
       <Dialog open={mobileChangeOpen} onOpenChange={setMobileChangeOpen}>
-        <DialogContent className="max-w-md lg:hidden">
+        <DialogContent className="z-[70] max-w-md lg:hidden">
           <DialogHeader>
             <DialogTitle>{t.mobileChangeSelectionLabel || "Change selection"}</DialogTitle>
           </DialogHeader>
