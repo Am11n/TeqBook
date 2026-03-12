@@ -31,3 +31,11 @@ export {
   extendSession,
   formatSessionTimeRemaining,
 } from "./session/session-service";
+
+export {
+  PUBLIC_BOOKING_ANALYTICS_EVENTS,
+  SUPPORT_TICKET_CATEGORIES,
+  type PublicBookingAnalyticsEvent,
+  type SupportTicketCategory,
+  type ProductFunnelKpi,
+} from "./analytics/event-taxonomy";

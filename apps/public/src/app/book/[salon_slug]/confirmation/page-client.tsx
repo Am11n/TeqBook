@@ -12,6 +12,7 @@ import { CheckCircle, XCircle, Calendar, Clock, User, Scissors, X } from "lucide
 import type { Booking } from "@/lib/types";
 import { type Salon, createDateFormatter, createTimeFormatter } from "./confirmation-types";
 import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components/public-booking/publicBookingUtils";
+import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getPublicPageTranslations } from "@/i18n/public-pages";
 
@@ -89,6 +90,18 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     loadData();
   }, [bookingId, slug]);
 
+  useEffect(() => {
+    if (!salon?.id || !bookingId) return;
+    if (booking?.status === "cancelled") return;
+
+    trackPublicEvent("booking_completed", {
+      salon_slug: slug,
+      salon_id: salon.id,
+      booking_id: bookingId,
+      step: "confirmation",
+    });
+  }, [booking?.status, bookingId, salon?.id, slug]);
+
   const handleCancel = async () => {
     if (!salon?.id || !booking?.id) return;
 
@@ -96,6 +109,13 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     setError(null);
 
     try {
+      trackPublicEvent("booking_cancel_requested", {
+        salon_slug: slug,
+        salon_id: salon.id,
+        booking_id: booking.id,
+        step: "confirmation",
+      });
+
       const { error: cancelError } = await cancelBooking(
         salon.id,
         booking.id,
@@ -109,6 +129,12 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
       }
 
       setBooking((prev) => (prev ? { ...prev, status: "cancelled" } as Booking : prev));
+      trackPublicEvent("booking_cancel_completed", {
+        salon_slug: slug,
+        salon_id: salon.id,
+        booking_id: booking.id,
+        step: "confirmation",
+      });
       setShowCancelForm(false);
       setCancellationReason("");
     } catch (err) {

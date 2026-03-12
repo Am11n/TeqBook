@@ -32,6 +32,14 @@ export {
 } from "@teqbook/shared-core";
 
 export {
+  PUBLIC_BOOKING_ANALYTICS_EVENTS,
+  SUPPORT_TICKET_CATEGORIES,
+  type PublicBookingAnalyticsEvent,
+  type SupportTicketCategory,
+  type ProductFunnelKpi,
+} from "@teqbook/shared-core";
+
+export {
   createBrowserSupabaseClient,
   getBrowserSupabaseClient,
 } from "@teqbook/shared-data";
