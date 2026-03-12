@@ -67,7 +67,7 @@ const copy: Record<
     badge: "Bygget for salonger",
     pricingTitle: "Velg TeqBook-pakken som passer din salong",
     pricingSubtitle:
-      "Bygget for internasjonale salonger i Vesten – start enkelt, og utvid når du trenger mer.",
+      "Bygget for salonger i alle størrelser — start enkelt, og oppgrader når som helst.",
     tiers: [
       {
         id: "starter",
