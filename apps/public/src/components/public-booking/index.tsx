@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@teqbook/ui";
 import { EmptyState } from "@/components/empty-state";
+import { LoadingScreen } from "@/components/loading-screen";
 import type { AppLocale } from "@/i18n/translations";
 import { PublicBookingHeader } from "./PublicBookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
@@ -232,16 +233,7 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background px-4 py-6 sm:px-6">
-        <div className="mx-auto w-full max-w-3xl space-y-4">
-          <div className="h-28 animate-pulse rounded-2xl border bg-muted/40" />
-          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
-          <div className="h-80 animate-pulse rounded-2xl border bg-muted/40" />
-          <p className="text-center text-sm text-muted-foreground">{t.loadingSalon}</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!salon || !effectiveBranding || !tokens || selectionStatus === "not_found" || selectionStatus === "error") {
