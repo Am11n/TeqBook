@@ -15,13 +15,40 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, stripe-signature",
+    "authorization, x-client-info, apikey, content-type, stripe-signature, x-request-id",
 };
 
+const REQUEST_ID_HEADER = "x-request-id";
+
+function getRequestId(req: Request): string {
+  return req.headers.get(REQUEST_ID_HEADER) || crypto.randomUUID();
+}
+
+function jsonResponse(
+  body: Record<string, unknown>,
+  status: number,
+  requestId: string,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      [REQUEST_ID_HEADER]: requestId,
+    },
+  });
+}
+
 serve(async (req) => {
+  const requestId = getRequestId(req);
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", {
+      headers: {
+        ...corsHeaders,
+        [REQUEST_ID_HEADER]: requestId,
+      },
+    });
   }
 
   try {
@@ -36,25 +63,17 @@ serve(async (req) => {
     const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
     if (!stripeWebhookSecret) {
-      return new Response(
-        JSON.stringify({ error: "STRIPE_WEBHOOK_SECRET environment variable is not set" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+      return jsonResponse(
+        { error: "STRIPE_WEBHOOK_SECRET environment variable is not set", request_id: requestId },
+        500,
+        requestId,
       );
     }
 
     // Get Stripe signature from headers
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
-      return new Response(
-        JSON.stringify({ error: "Missing stripe-signature header" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Missing stripe-signature header", request_id: requestId }, 400, requestId);
     }
 
     // Get raw body for signature verification
@@ -82,25 +101,17 @@ serve(async (req) => {
         // Stripe SDK also validates this, but we add explicit check for clarity
         if (age > 300) {
           console.error("Webhook timestamp too old (replay attack):", { age, timestamp, currentTime });
-          return new Response(
-            JSON.stringify({ error: "Webhook timestamp too old - possible replay attack" }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
+          return jsonResponse(
+            { error: "Webhook timestamp too old - possible replay attack", request_id: requestId },
+            400,
+            requestId,
           );
         }
         
         // Reject webhooks with future timestamps
         if (age < -300) {
           console.error("Webhook timestamp in future:", { age, timestamp, currentTime });
-          return new Response(
-            JSON.stringify({ error: "Webhook timestamp in future" }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
+          return jsonResponse({ error: "Webhook timestamp in future", request_id: requestId }, 400, requestId);
         }
       }
 
@@ -115,12 +126,10 @@ serve(async (req) => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("Webhook signature verification failed:", errorMessage);
-      return new Response(
-        JSON.stringify({ error: `Webhook signature verification failed: ${errorMessage}` }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+      return jsonResponse(
+        { error: `Webhook signature verification failed: ${errorMessage}`, request_id: requestId },
+        400,
+        requestId,
       );
     }
 
@@ -141,23 +150,15 @@ serve(async (req) => {
       const duplicateEvent = insertWebhookError.code === "23505";
       if (duplicateEvent) {
         console.log("Duplicate Stripe webhook event received, skipping:", event.id);
-        return new Response(
-          JSON.stringify({ received: true, duplicate: true, event_type: event.type }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+        return jsonResponse(
+          { received: true, duplicate: true, event_type: event.type, request_id: requestId },
+          200,
+          requestId,
         );
       }
 
       console.error("Failed to persist Stripe webhook event:", insertWebhookError);
-      return new Response(
-        JSON.stringify({ error: "Failed to persist webhook event" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return jsonResponse({ error: "Failed to persist webhook event", request_id: requestId }, 500, requestId);
     }
 
     let processingError: string | null = null;
@@ -506,33 +507,28 @@ serve(async (req) => {
     }
 
     if (processingError) {
-      return new Response(
-        JSON.stringify({ error: "Webhook processing failed", event_type: event.type }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return jsonResponse(
+        { error: "Webhook processing failed", event_type: event.type, request_id: requestId },
+        500,
+        requestId,
       );
     }
 
-    return new Response(
-      JSON.stringify({ received: true, event_type: event.type }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+    return jsonResponse(
+      { received: true, event_type: event.type, request_id: requestId },
+      200,
+      requestId,
     );
   } catch (error) {
     console.error("Error processing webhook:", error);
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        request_id: requestId,
+      },
+      500,
+      requestId,
     );
   }
 });

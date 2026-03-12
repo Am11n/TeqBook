@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run public booking smoke load
         uses: grafana/run-k6-action@v1
@@ -28,4 +35,10 @@ jobs:
         with:
           path: tests/load/dashboard-api-smoke.js
           flags: --env LOAD_BASE_URL=${{ github.event.inputs.base_url || vars.STAGING_BASE_URL || 'https://staging.teqbook.app' }}
+
+      - name: Query budget gate (staging)
+        run: pnpm run check:query-budgets
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 

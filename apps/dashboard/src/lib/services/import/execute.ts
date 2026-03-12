@@ -174,25 +174,72 @@ async function insertChunk(
 
           const startTime = row.data.start_time as string;
           const endTime = (row.data.end_time as string) || new Date(new Date(startTime).getTime() + 60 * 60000).toISOString();
+          if (!serviceId || !employeeId) {
+            failures.push({
+              row: row.rowIndex + 1,
+              field: "*",
+              error: "service_name and employee_name are required for atomic booking import",
+            });
+            continue;
+          }
 
-          const { error } = await supabase.from("bookings").insert({
-            salon_id: salonId,
-            customer_id: customerId,
-            service_id: serviceId,
-            employee_id: employeeId,
-            start_time: startTime,
-            end_time: endTime,
-            status: (row.data.status as string) || "completed",
-            is_walk_in: false,
-            is_imported: true,
-            import_batch_id: batchId,
+          const customerName = (row.data.customer_name as string) || "Imported Customer";
+          const customerEmail = (row.data.customer_email as string) || null;
+          const customerPhone = (row.data.customer_phone as string) || null;
+          const customerNotes = (row.data.customer_notes as string) || null;
+          const desiredStatus = (row.data.status as string) || "completed";
+
+          const { data: createdRows, error: createError } = await supabase.rpc("create_booking_atomic", {
+            p_salon_id: salonId,
+            p_employee_id: employeeId,
+            p_service_id: serviceId,
+            p_start_time: startTime,
+            p_customer_full_name: customerName,
+            p_customer_email: customerEmail,
+            p_customer_phone: customerPhone,
+            p_customer_notes: customerNotes,
+            p_is_walk_in: false,
           });
 
-          if (error) {
-            failures.push({ row: row.rowIndex + 1, field: "*", error: error.message });
-          } else {
-            successes++;
+          if (createError) {
+            failures.push({ row: row.rowIndex + 1, field: "*", error: createError.message });
+            continue;
           }
+
+          const createdBooking = Array.isArray(createdRows) ? createdRows[0] : createdRows;
+          if (!createdBooking?.id) {
+            failures.push({ row: row.rowIndex + 1, field: "*", error: "Atomic create did not return booking id" });
+            continue;
+          }
+
+          const { error: statusUpdateError } = await supabase.rpc("update_booking_atomic", {
+            p_salon_id: salonId,
+            p_booking_id: createdBooking.id,
+            p_start_time: startTime,
+            p_end_time: endTime,
+            p_employee_id: employeeId,
+            p_status: desiredStatus,
+            p_notes: customerNotes,
+          });
+
+          if (statusUpdateError) {
+            failures.push({ row: row.rowIndex + 1, field: "*", error: statusUpdateError.message });
+            continue;
+          }
+
+          // Keep import metadata aligned after atomic write path.
+          const { error: importMetaError } = await supabase
+            .from("bookings")
+            .update({ is_imported: true, import_batch_id: batchId })
+            .eq("id", createdBooking.id)
+            .eq("salon_id", salonId);
+
+          if (importMetaError) {
+            failures.push({ row: row.rowIndex + 1, field: "*", error: importMetaError.message });
+            continue;
+          }
+
+          successes++;
         } catch (err) {
           failures.push({ row: row.rowIndex + 1, field: "*", error: err instanceof Error ? err.message : "Unknown" });
         }

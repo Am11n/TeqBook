@@ -11,6 +11,7 @@ const mockRpc = vi.fn();
 const mockAdminMaybeSingle = vi.fn();
 const mockEventMaybeSingle = vi.fn();
 const mockEventUpsert = vi.fn();
+const mockAttemptInsert = vi.fn();
 const mockEventUpdateEq = vi.fn();
 const mockEventUpdate = vi.fn(() => ({
   eq: vi.fn(() => ({
@@ -39,6 +40,7 @@ const mockAdminFrom = vi.fn((table: string) => {
       }),
     }),
     upsert: (...args: unknown[]) => mockEventUpsert(...args),
+    insert: (...args: unknown[]) => mockAttemptInsert(...args),
     update: () => mockEventUpdate(),
   };
 });
@@ -149,8 +151,13 @@ describe("Public bookings/send-notifications rate limiting", () => {
     mockScheduleReminders.mockResolvedValue({ error: null });
     mockRpc.mockResolvedValue({ data: 1, error: null });
     mockEventMaybeSingle.mockResolvedValue({ data: null, error: null });
-    mockEventUpsert.mockResolvedValue({ error: null });
+    mockEventUpsert.mockReturnValue({
+      select: () => ({
+        maybeSingle: () => Promise.resolve({ data: { id: "job-1" }, error: null }),
+      }),
+    });
     mockEventUpdateEq.mockResolvedValue({ error: null });
+    mockAttemptInsert.mockResolvedValue({ error: null });
 
     const req = new NextRequest("http://localhost/api/bookings/send-notifications", {
       method: "POST",

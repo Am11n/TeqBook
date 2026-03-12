@@ -17,6 +17,8 @@ This document records runtime implementation work for the hardening batches with
   - `apps/admin/middleware.ts`
 - Added request-id propagation into booking notification routes and response headers.
 - Extended route-handler Supabase client creation to forward request id as a global header.
+- Added request-id propagation in Stripe webhook runtime responses/logging:
+  - `supabase/supabase/functions/billing-webhook/index.ts`
 
 ### Evidence
 - Middleware now stamps `x-request-id` and `traceparent` for every request.
@@ -44,6 +46,10 @@ This document records runtime implementation work for the hardening batches with
   - `bookings_no_overlapping_active_slots` exclusion constraint
   - `update_booking_atomic(...)` RPC with conflict checks and row lock
 - Updated booking mutation repositories (`public`, `dashboard`, `admin`) so reschedule/employee-change updates use `update_booking_atomic`.
+- Updated booking import path to use atomic create/update RPC write path:
+  - `apps/dashboard/src/lib/services/import/execute.ts`
+- Added integration concurrency suite for deterministic race outcomes:
+  - `apps/dashboard/tests/integration/repositories/booking-concurrency.test.ts`
 
 ### Evidence
 - DB now enforces overlap guard for active booking statuses.
@@ -73,6 +79,10 @@ This document records runtime implementation work for the hardening batches with
   - `test:load:public`
   - `test:load:dashboard`
   - `test:load:staging`
+- Added query budget gate:
+  - SQL function migration `get_query_budget_violations(...)`
+  - script `scripts/check-query-budgets.ts`
+  - staging workflow step invoking `pnpm run check:query-budgets`
 
 ### Evidence
 - Nightly scheduled and manual dispatch staging load workflow now exists.
@@ -93,6 +103,8 @@ This document records runtime implementation work for the hardening batches with
 ### Change
 - Added migration:
   - `supabase/supabase/migrations/20260313000002_notification_reliability_fields.sql`
+- Added explicit jobs/attempts model migration:
+  - `supabase/supabase/migrations/20260313000003_notification_jobs_attempts.sql`
 - Extended `notification_events` with:
   - `next_retry_at`
   - `dead_letter_reason`
@@ -103,6 +115,7 @@ This document records runtime implementation work for the hardening batches with
   - increment attempts
   - mark `sent`/`failed`/`dead_letter`
   - set backoff (`next_retry_at`) for retryable failures
+  - write `notification_jobs` and `notification_attempts` runtime records
 
 ### Evidence
 - Runtime routes persist delivery outcome and retry metadata per booking event.
@@ -122,6 +135,11 @@ This document records runtime implementation work for the hardening batches with
 
 ### Change
 - Enforced release-control model through existing feature flag platform (already present in schema and admin service).
+- Added stricter guardrails for sensitive admin impersonation:
+  - reason required (min length)
+  - confirmation token required
+  - enriched audit metadata
+  - file: `apps/admin/src/app/api/impersonate/route.ts`
 - Codified operational rules in this execution record:
   - Feature flags are release controls.
   - Experimentation is a separate layer and should only run after baseline stability.
@@ -130,6 +148,10 @@ This document records runtime implementation work for the hardening batches with
 ### Evidence
 - Existing feature flag service is present (`apps/admin/src/lib/services/feature-flags-service.ts`).
 - Hardening batches above now satisfy sequencing prerequisites for controlled chaos drills.
+- Chaos and reliability runbooks added:
+  - `docs/ops/chaos-drills-runbook.md`
+  - `docs/ops/notification-reliability.md`
+  - `docs/ops/query-budgets-and-zero-downtime.md`
 
 ### Rollback
 - Disable feature flags for new rollouts and suspend experimentation/chaos drills.

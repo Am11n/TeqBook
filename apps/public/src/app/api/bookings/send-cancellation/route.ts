@@ -21,6 +21,13 @@ type BookingCancellationPayload = {
   cancellationReason?: string | null;
 };
 const MAX_NOTIFICATION_ATTEMPTS = 5;
+const RETRY_SCHEDULE_MS = [30_000, 120_000, 600_000] as const;
+
+function getNextRetryAtIso(attempt: number): string | null {
+  const delay = RETRY_SCHEDULE_MS[Math.min(attempt - 1, RETRY_SCHEDULE_MS.length - 1)];
+  if (!delay) return null;
+  return new Date(Date.now() + delay).toISOString();
+}
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
@@ -171,6 +178,23 @@ export async function POST(request: NextRequest) {
       { onConflict: "booking_id,event_type" },
     );
 
+    const { data: notificationJob } = await admin
+      .from("notification_jobs")
+      .upsert(
+        {
+          booking_id: bookingId,
+          event_type: "cancellation",
+          delivery_status: "processing",
+          attempts_count: nextAttempt,
+          dead_letter_reason: null,
+          provider_used: null,
+          next_retry_at: null,
+        },
+        { onConflict: "booking_id,event_type" },
+      )
+      .select("id")
+      .maybeSingle();
+
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
@@ -302,6 +326,18 @@ export async function POST(request: NextRequest) {
         })
         .eq("booking_id", bookingId)
         .eq("event_type", "cancellation");
+
+      if (notificationJob?.id) {
+        await admin
+          .from("notification_jobs")
+          .update({
+            delivery_status: "sent",
+            provider_used: !emailResult.error ? "resend" : "internal",
+            dead_letter_reason: null,
+            next_retry_at: null,
+          })
+          .eq("id", notificationJob.id);
+      }
     } else {
       const shouldDeadLetter = nextAttempt >= MAX_NOTIFICATION_ATTEMPTS;
       const errorReason =
@@ -312,12 +348,43 @@ export async function POST(request: NextRequest) {
           status: shouldDeadLetter ? "dead_letter" : "failed",
           last_error: errorReason,
           dead_letter_reason: shouldDeadLetter ? errorReason : null,
-          next_retry_at: shouldDeadLetter
-            ? null
-            : new Date(Date.now() + Math.min(30, 2 ** nextAttempt) * 60_000).toISOString(),
+          next_retry_at: shouldDeadLetter ? null : getNextRetryAtIso(nextAttempt),
         })
         .eq("booking_id", bookingId)
         .eq("event_type", "cancellation");
+
+      if (notificationJob?.id) {
+        await admin
+          .from("notification_jobs")
+          .update({
+            delivery_status: shouldDeadLetter ? "dead_letter" : "failed",
+            dead_letter_reason: shouldDeadLetter ? errorReason : null,
+            next_retry_at: shouldDeadLetter ? null : getNextRetryAtIso(nextAttempt),
+            provider_used: !emailResult.error ? "resend" : "internal",
+          })
+          .eq("id", notificationJob.id);
+      }
+    }
+
+    if (notificationJob?.id) {
+      await admin.from("notification_attempts").insert([
+        {
+          notification_job_id: notificationJob.id,
+          attempt_no: nextAttempt,
+          channel: "email",
+          provider_used: "resend",
+          result: emailResult.error ? "failed" : "success",
+          error_message: emailResult.error ?? null,
+        },
+        {
+          notification_job_id: notificationJob.id,
+          attempt_no: nextAttempt,
+          channel: "in_app",
+          provider_used: "internal",
+          result: inAppResult.success ? "success" : "failed",
+          error_message: inAppResult.success ? null : inAppResult.error ?? null,
+        },
+      ]);
     }
 
     const jsonResponse = NextResponse.json({

@@ -10,8 +10,29 @@ export async function GET(request: NextRequest) {
   if (csrfGuard) return csrfGuard;
 
   const salonId = request.nextUrl.searchParams.get("salon_id");
+  const reason = request.nextUrl.searchParams.get("reason");
+  const confirmationToken =
+    request.headers.get("x-admin-confirmation-token") ||
+    request.nextUrl.searchParams.get("confirmation_token");
   if (!salonId) {
     return NextResponse.json({ error: "salon_id required" }, { status: 400 });
+  }
+  if (!reason || reason.trim().length < 10) {
+    return NextResponse.json(
+      { error: "reason required (minimum 10 characters) for sensitive admin action" },
+      { status: 400 },
+    );
+  }
+
+  const expectedConfirmationToken = `impersonate:${salonId}`;
+  if (confirmationToken !== expectedConfirmationToken) {
+    return NextResponse.json(
+      {
+        error: "Missing or invalid confirmation token",
+        expected_format: "x-admin-confirmation-token: impersonate:<salon_id>",
+      },
+      { status: 412 },
+    );
   }
 
   try {
@@ -78,7 +99,11 @@ export async function GET(request: NextRequest) {
       salon_id: salonId,
       action: "impersonation_api_access",
       resource_type: "admin",
-      metadata: { admin_email: user.email },
+      metadata: {
+        admin_email: user.email,
+        reason,
+        confirmation_token_valid: true,
+      },
     });
 
     return NextResponse.json({

@@ -23,6 +23,7 @@ Detailed sub-logs remain in:
 - `docs/ops/phase-a-implementation.md`
 - `docs/ops/phase-b-implementation.md`
 - `docs/ops/phase-c-implementation.md`
+- `docs/ops/10-10-hardening-batch-execution.md`
 
 ---
 
@@ -188,6 +189,7 @@ All plan todos are marked `completed` in `/.cursor/plans/teqbook_launch_readines
 - Coverage thresholds are set to enforce movement without blocking entire delivery on historic debt.
 - Performance baseline script exists, but full load-test automation should be expanded in dedicated performance pipelines.
 - DR and post-launch governance are documented and need ongoing operational adherence to remain effective.
+- 10/10 hardening gates are implemented, but require periodic staging drill execution to keep evidence fresh (load/chaos/query budgets).
 
 ---
 
