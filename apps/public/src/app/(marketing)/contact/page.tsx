@@ -5,14 +5,14 @@ import Image from "next/image";
 import { Section } from "@/components/marketing/Section";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getContactPageCopy } from "@/i18n/contact-page-copy";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
 export default function ContactPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = getPublicPageTranslations(appLocale).marketingPages.contact;
+  const t = getContactPageCopy(appLocale);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -173,7 +173,7 @@ export default function ContactPage() {
             </p>
             <dl className="mt-6 space-y-3 text-sm text-slate-700">
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
-                <dt className="font-medium text-slate-900">Email</dt>
+                <dt className="font-medium text-slate-900">{t.supportEmailLabel}</dt>
                 <dd>support@teqbook.com</dd>
               </div>
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
@@ -182,7 +182,7 @@ export default function ContactPage() {
               </div>
               <div className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2">
                 <dt className="font-medium text-slate-900">{t.office}</dt>
-                <dd>Nesbru, Norway</dd>
+                <dd>{t.officeLocation}</dd>
               </div>
             </dl>
           </aside>
