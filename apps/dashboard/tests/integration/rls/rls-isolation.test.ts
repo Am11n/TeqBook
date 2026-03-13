@@ -22,6 +22,7 @@ import {
 const describeIf = isSupabaseConfigured() ? describe : describe.skip;
 
 describeIf("RLS Isolation Tests", () => {
+  const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   // Test data
   let salon1: TestSalon;
   let salon2: TestSalon;
@@ -51,9 +52,9 @@ describeIf("RLS Isolation Tests", () => {
     salon2 = await createTestSalon("Test Salon 2");
 
     // Create test users
-    user1 = await createTestUser("user1@test.com", { salonId: salon1.id });
-    user2 = await createTestUser("user2@test.com", { salonId: salon2.id });
-    superadmin = await createTestUser("superadmin@test.com", {
+    user1 = await createTestUser(`user1-${runId}@test.com`, { salonId: salon1.id });
+    user2 = await createTestUser(`user2-${runId}@test.com`, { salonId: salon2.id });
+    superadmin = await createTestUser(`superadmin-${runId}@test.com`, {
       salonId: null,
       isSuperAdmin: true,
     });
@@ -65,11 +66,11 @@ describeIf("RLS Isolation Tests", () => {
 
   afterAll(async () => {
     // Clean up test data
-    await cleanupTestUser(user1.id);
-    await cleanupTestUser(user2.id);
-    await cleanupTestUser(superadmin.id);
-    await cleanupTestSalon(salon1.id);
-    await cleanupTestSalon(salon2.id);
+    if (user1?.id) await cleanupTestUser(user1.id);
+    if (user2?.id) await cleanupTestUser(user2.id);
+    if (superadmin?.id) await cleanupTestUser(superadmin.id);
+    if (salon1?.id) await cleanupTestSalon(salon1.id);
+    if (salon2?.id) await cleanupTestSalon(salon2.id);
   });
 
   describe("Cross-tenant data access prevention", () => {

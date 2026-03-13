@@ -4,6 +4,13 @@ import { GET, POST } from "@/app/api/waitlist/claim/route";
 
 const mockCreateClient = vi.fn();
 const mockRpc = vi.fn();
+const mockCheckRateLimit = vi.fn();
+const mockIncrementRateLimit = vi.fn();
+
+vi.mock("@/lib/services/rate-limit-service", () => ({
+  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+  incrementRateLimit: (...args: unknown[]) => mockIncrementRateLimit(...args),
+}));
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: (...args: unknown[]) => mockCreateClient(...args),
@@ -14,6 +21,18 @@ describe("Public waitlist claim API", () => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "service-role-key";
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 9,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
+    mockIncrementRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 8,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
     mockCreateClient.mockReturnValue({
       rpc: mockRpc,
     });

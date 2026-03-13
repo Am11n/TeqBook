@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 /**
  * Catches errors in the root layout (e.g. 502, critical failures).
@@ -72,7 +73,7 @@ export default function GlobalError({
             >
               Prøv på nytt
             </button>
-            <a
+            <Link
               href="/"
               style={{
                 padding: "0.5rem 1rem",
@@ -86,7 +87,7 @@ export default function GlobalError({
               }}
             >
               Til Admin-forsiden
-            </a>
+            </Link>
           </div>
         </div>
       </body>

@@ -7,6 +7,7 @@ const DEEP_IMPORT_PATTERNS = [
 ];
 
 const ALLOWED_DEEP = [
+  "@teqbook/shared/services/rate-limit",
   "@teqbook/shared-data/server",
   "@teqbook/shared-data/services/rate-limit",
 ];

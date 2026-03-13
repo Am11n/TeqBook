@@ -97,7 +97,17 @@ describe("Admin impersonate API rate limiting", () => {
       blocked: true,
     });
 
-    const req = new NextRequest("http://localhost/api/impersonate?salon_id=salon-1");
+    const req = new NextRequest(
+      "http://localhost/api/impersonate?salon_id=salon-1&reason=Debugging+support+request&confirmation_token=impersonate:salon-1",
+      {
+        headers: {
+          origin: "https://localhost",
+          host: "localhost",
+          "x-forwarded-host": "localhost",
+          "x-forwarded-proto": "https",
+        },
+      },
+    );
     const res = await GET(req);
     const body = await res.json();
 
@@ -122,7 +132,17 @@ describe("Admin impersonate API rate limiting", () => {
       blocked: false,
     });
 
-    const req = new NextRequest("http://localhost/api/impersonate?salon_id=salon-1");
+    const req = new NextRequest(
+      "http://localhost/api/impersonate?salon_id=salon-1&reason=Debugging+support+request&confirmation_token=impersonate:salon-1",
+      {
+        headers: {
+          origin: "https://localhost",
+          host: "localhost",
+          "x-forwarded-host": "localhost",
+          "x-forwarded-proto": "https",
+        },
+      },
+    );
     const res = await GET(req);
     const body = await res.json();
 
