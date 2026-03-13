@@ -50,7 +50,7 @@
     "check:bundle-size": "tsx scripts/check-bundle-size.ts",
     "check:api-latency": "tsx scripts/check-api-latency.ts",
     "check:query-budgets": "tsx scripts/check-query-budgets.ts",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "tsx scripts/check-format-ratchet.ts --ci",
     "format": "npm run format --workspaces --if-present"
   },
   "devDependencies": {
