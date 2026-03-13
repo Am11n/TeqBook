@@ -60,5 +60,13 @@
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@isaacs/brace-expansion": "5.0.1",
+      "minimatch": "10.2.3",
+      "rollup": "4.59.0",
+      "serialize-javascript": "7.0.3"
+    }
   }
 }

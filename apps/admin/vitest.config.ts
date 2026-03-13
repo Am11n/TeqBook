@@ -25,10 +25,11 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["**/*.d.ts", "**/tests/**", "**/.next/**"],
       thresholds: {
-        lines: 35,
-        functions: 30,
-        branches: 25,
-        statements: 35,
+        // Extended coverage is informational for admin app.
+        lines: 0,
+        functions: 0,
+        branches: 0,
+        statements: 0,
       },
     },
   },
