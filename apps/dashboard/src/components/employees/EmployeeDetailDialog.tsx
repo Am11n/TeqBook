@@ -15,6 +15,7 @@ import { SetupBadge } from "@/components/setup-badge";
 import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { updateEmployee } from "@/lib/repositories/employees";
+import { uploadEmployeeProfileImage } from "@/lib/services/storage-service";
 import { Check, X, Edit } from "lucide-react";
 import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
 import type { Employee, Service, Shift } from "@/lib/types";
@@ -75,6 +76,13 @@ export function EmployeeDetailDialog({
   const [role, setRole] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState("nb");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [publicProfileVisible, setPublicProfileVisible] = useState(true);
+  const [publicTitle, setPublicTitle] = useState("");
+  const [bio, setBio] = useState("");
+  const [specialtiesInput, setSpecialtiesInput] = useState("");
+  const [publicSortOrder, setPublicSortOrder] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +94,17 @@ export function EmployeeDetailDialog({
       setPhone(employee.phone ?? "");
       setRole(employee.role ?? "");
       setPreferredLanguage(employee.preferred_language ?? "nb");
+      setPublicProfileVisible(employee.public_profile_visible ?? true);
+      setPublicTitle(employee.public_title ?? "");
+      setBio(employee.bio ?? "");
+      setSpecialtiesInput((employee.specialties ?? []).join(", "));
+      setPublicSortOrder(
+        employee.public_sort_order === null || employee.public_sort_order === undefined
+          ? ""
+          : String(employee.public_sort_order)
+      );
+      setProfileImageUrl(employee.profile_image_url ?? "");
+      setProfileImageFile(null);
       setSelectedServices(
         (employeeServicesMap[employee.id] ?? []).map((s) => s.id),
       );
@@ -115,6 +134,22 @@ export function EmployeeDetailDialog({
     setSaving(true);
     setError(null);
 
+    let nextProfileImageUrl: string | null = profileImageUrl.trim() || null;
+    if (profileImageFile) {
+      const { data: uploadData, error: uploadError } = await uploadEmployeeProfileImage(
+        profileImageFile,
+        salon.id,
+        employee.id
+      );
+
+      if (uploadError || !uploadData?.url) {
+        setError(uploadError ?? "Failed to upload profile image");
+        setSaving(false);
+        return;
+      }
+      nextProfileImageUrl = uploadData.url;
+    }
+
     const { error: updateError } = await updateEmployee(
       salon.id,
       employee.id,
@@ -125,6 +160,17 @@ export function EmployeeDetailDialog({
         role: role.trim() || null,
         preferred_language: preferredLanguage,
         service_ids: selectedServices,
+        public_profile_visible: publicProfileVisible,
+        public_title: publicTitle.trim() || null,
+        bio: bio.trim() || null,
+        profile_image_url: nextProfileImageUrl,
+        specialties: specialtiesInput
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        public_sort_order: publicSortOrder.trim()
+          ? Number.parseInt(publicSortOrder.trim(), 10) || null
+          : null,
       },
     );
 
@@ -245,6 +291,13 @@ export function EmployeeDetailDialog({
             role={role} setRole={setRole}
             preferredLanguage={preferredLanguage} setPreferredLanguage={setPreferredLanguage}
             selectedServices={selectedServices} setSelectedServices={setSelectedServices}
+            publicProfileVisible={publicProfileVisible} setPublicProfileVisible={setPublicProfileVisible}
+            publicTitle={publicTitle} setPublicTitle={setPublicTitle}
+            bio={bio} setBio={setBio}
+            specialtiesInput={specialtiesInput} setSpecialtiesInput={setSpecialtiesInput}
+            publicSortOrder={publicSortOrder} setPublicSortOrder={setPublicSortOrder}
+            profileImageUrl={profileImageUrl} setProfileImageUrl={setProfileImageUrl}
+            onProfileImageChange={setProfileImageFile}
             services={services} saving={saving} error={error}
             onSubmit={handleSubmit} onCancel={onSwitchToView}
             translations={t}

@@ -11,8 +11,14 @@ export async function createEmployee(
         salon_id: input.salon_id, full_name: input.full_name.trim(),
         email: input.email?.trim() || null, phone: input.phone?.trim() || null,
         role: input.role?.trim() || null, preferred_language: input.preferred_language || "nb",
+        public_profile_visible: input.public_profile_visible ?? true,
+        public_title: input.public_title?.trim() || null,
+        bio: input.bio?.trim() || null,
+        profile_image_url: input.profile_image_url?.trim() || null,
+        specialties: input.specialties ?? [],
+        public_sort_order: input.public_sort_order ?? null,
       })
-      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at")
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
       .maybeSingle();
     if (insertError || !employeeData) return { data: null, error: insertError?.message ?? "Failed to create employee" };
 
@@ -42,10 +48,16 @@ export async function updateEmployee(
     if (input.role !== undefined) updateData.role = input.role?.trim() || null;
     if (input.preferred_language !== undefined) updateData.preferred_language = input.preferred_language;
     if (input.is_active !== undefined) updateData.is_active = input.is_active;
+    if (input.public_profile_visible !== undefined) updateData.public_profile_visible = input.public_profile_visible;
+    if (input.public_title !== undefined) updateData.public_title = input.public_title?.trim() || null;
+    if (input.bio !== undefined) updateData.bio = input.bio?.trim() || null;
+    if (input.profile_image_url !== undefined) updateData.profile_image_url = input.profile_image_url?.trim() || null;
+    if (input.specialties !== undefined) updateData.specialties = input.specialties;
+    if (input.public_sort_order !== undefined) updateData.public_sort_order = input.public_sort_order;
 
     const { data, error } = await supabase
       .from("employees").update(updateData).eq("id", employeeId).eq("salon_id", salonId)
-      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at")
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
       .maybeSingle();
     if (error || !data) return { data: null, error: error?.message ?? "Failed to update employee" };
 

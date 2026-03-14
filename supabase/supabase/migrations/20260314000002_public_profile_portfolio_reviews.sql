@@ -157,6 +157,8 @@ DROP POLICY IF EXISTS "Salon members can upload portfolio images" ON storage.obj
 DROP POLICY IF EXISTS "Salon members can delete portfolio images" ON storage.objects;
 DROP POLICY IF EXISTS "Salon members can upload cover images" ON storage.objects;
 DROP POLICY IF EXISTS "Salon members can delete cover images" ON storage.objects;
+DROP POLICY IF EXISTS "Salon members can upload employee images" ON storage.objects;
+DROP POLICY IF EXISTS "Salon members can delete employee images" ON storage.objects;
 
 CREATE POLICY "Salon members can upload portfolio images"
 ON storage.objects FOR INSERT
@@ -206,6 +208,34 @@ TO authenticated
 USING (
   bucket_id = 'salon-assets'
   AND (storage.foldername(name))[1] = 'covers'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+CREATE POLICY "Salon members can upload employee images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'employees'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+CREATE POLICY "Salon members can delete employee images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'employees'
   AND (storage.foldername(name))[2] IN (
     SELECT p.salon_id::text
     FROM public.profiles p

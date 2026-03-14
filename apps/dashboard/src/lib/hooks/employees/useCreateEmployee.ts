@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { createEmployee } from "@/lib/services/employees-service";
+import { createEmployee, updateEmployee } from "@/lib/services/employees-service";
+import { uploadEmployeeProfileImage } from "@/lib/services/storage-service";
 import type { Service } from "@/lib/types";
 
 interface UseCreateEmployeeOptions {
@@ -16,6 +17,12 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
   const [role, setRole] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState("en");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [publicProfileVisible, setPublicProfileVisible] = useState(true);
+  const [publicTitle, setPublicTitle] = useState("");
+  const [bio, setBio] = useState("");
+  const [specialtiesInput, setSpecialtiesInput] = useState("");
+  const [publicSortOrder, setPublicSortOrder] = useState("");
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +36,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
     setSaving(true);
     setError(null);
 
-    const { error: createError } = await createEmployee({
+    const { data: createdData, error: createdError } = await createEmployee({
       salon_id: salon.id,
       full_name: fullName.trim(),
       email: email.trim() || null,
@@ -37,12 +44,50 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
       role: role || null,
       preferred_language: preferredLanguage,
       service_ids: selectedServices,
+      public_profile_visible: publicProfileVisible,
+      public_title: publicTitle.trim() || null,
+      bio: bio.trim() || null,
+      specialties: specialtiesInput
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      public_sort_order: publicSortOrder.trim()
+        ? Number.parseInt(publicSortOrder.trim(), 10) || null
+        : null,
     });
 
-    if (createError) {
-      setError(createError);
+    if (createdError || !createdData) {
+      setError(createdError ?? "Failed to create employee");
       setSaving(false);
       return;
+    }
+
+    if (profileImageFile) {
+      const { data: uploadData, error: uploadError } = await uploadEmployeeProfileImage(
+        profileImageFile,
+        salon.id,
+        createdData.id
+      );
+      if (uploadError || !uploadData?.url) {
+        setError(uploadError ?? "Employee created but profile image upload failed");
+        setSaving(false);
+        await onEmployeeCreated();
+        return;
+      }
+
+      const { error: imageUpdateError } = await updateEmployee(
+        salon.id,
+        createdData.id,
+        { profile_image_url: uploadData.url },
+        salon.plan
+      );
+
+      if (imageUpdateError) {
+        setError(`Employee created, but failed to save profile image: ${imageUpdateError}`);
+        setSaving(false);
+        await onEmployeeCreated();
+        return;
+      }
     }
 
     // Reset form
@@ -52,6 +97,12 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
     setRole("");
     setPreferredLanguage("en");
     setSelectedServices([]);
+    setPublicProfileVisible(true);
+    setPublicTitle("");
+    setBio("");
+    setSpecialtiesInput("");
+    setPublicSortOrder("");
+    setProfileImageFile(null);
     setSaving(false);
 
     // Reload employees
@@ -71,6 +122,18 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
     setPreferredLanguage,
     selectedServices,
     setSelectedServices,
+    publicProfileVisible,
+    setPublicProfileVisible,
+    publicTitle,
+    setPublicTitle,
+    bio,
+    setBio,
+    specialtiesInput,
+    setSpecialtiesInput,
+    publicSortOrder,
+    setPublicSortOrder,
+    profileImageFile,
+    setProfileImageFile,
     saving,
     error,
     handleSubmit,

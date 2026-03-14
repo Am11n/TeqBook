@@ -12,7 +12,7 @@ export async function getEmployeesForCurrentSalon(
     const to = from + pageSize - 1;
     const query = supabase
       .from("employees")
-      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at", { count: "exact" })
+      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order", { count: "exact" })
       .eq("salon_id", salonId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true })
@@ -32,7 +32,7 @@ export async function getEmployeeWithServices(
   try {
     const [{ data: employeeData, error: employeeError }, { data: servicesData, error: servicesError }] =
       await Promise.all([
-        supabase.from("employees").select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at").eq("id", employeeId).eq("salon_id", salonId).is("deleted_at", null).maybeSingle(),
+        supabase.from("employees").select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order").eq("id", employeeId).eq("salon_id", salonId).is("deleted_at", null).maybeSingle(),
         supabase.from("employee_services").select("service_id, services(id, name)").eq("employee_id", employeeId).eq("salon_id", salonId),
       ]);
     if (employeeError || servicesError) return { data: null, error: employeeError?.message ?? servicesError?.message ?? "Failed to load employee" };
@@ -58,7 +58,7 @@ export async function getEmployeesWithServicesMap(
     const to = from + pageSize - 1;
     const [{ data: employeesData, error: employeesError, count }, { data: employeeServicesData, error: employeeServicesError }] =
       await Promise.all([
-        supabase.from("employees").select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at", { count: "exact" }).eq("salon_id", salonId).is("deleted_at", null).order("created_at", { ascending: true }).range(from, to),
+        supabase.from("employees").select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order", { count: "exact" }).eq("salon_id", salonId).is("deleted_at", null).order("created_at", { ascending: true }).range(from, to),
         supabase.from("employee_services").select("employee_id, service_id, services(id, name)").eq("salon_id", salonId),
       ]);
     if (employeesError || employeeServicesError) return { data: null, error: employeesError?.message ?? employeeServicesError?.message ?? "Failed to load employees" };

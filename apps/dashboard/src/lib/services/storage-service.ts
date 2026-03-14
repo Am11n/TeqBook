@@ -180,3 +180,72 @@ export async function deleteAvatar(
     };
   }
 }
+
+/**
+ * Upload employee profile image to salon-assets
+ */
+export async function uploadEmployeeProfileImage(
+  file: File,
+  salonId: string,
+  employeeId: string
+): Promise<{ data: { url: string; path: string } | null; error: string | null }> {
+  try {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      return { data: null, error: "File must be a JPG, PNG, or WebP image" };
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return { data: null, error: "File size must be less than 5MB" };
+    }
+
+    const fileExt = file.name.split(".").pop() || "jpg";
+    const filePath = `employees/${salonId}/${employeeId}/${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("salon-assets")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return { data: null, error: uploadError.message || "Upload failed" };
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("salon-assets")
+      .getPublicUrl(filePath);
+    if (!urlData?.publicUrl) {
+      return { data: null, error: "Failed to get public URL" };
+    }
+
+    return { data: { url: urlData.publicUrl, path: filePath }, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Delete employee profile image from salon-assets
+ */
+export async function deleteEmployeeProfileImage(path: string): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase.storage
+      .from("salon-assets")
+      .remove([path]);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}

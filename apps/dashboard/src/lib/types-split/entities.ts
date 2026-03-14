@@ -9,6 +9,12 @@ export type Employee = {
   preferred_language: string | null;
   is_active: boolean;
   deleted_at?: string | null;
+  public_profile_visible?: boolean;
+  public_title?: string | null;
+  bio?: string | null;
+  profile_image_url?: string | null;
+  specialties?: string[];
+  public_sort_order?: number | null;
 };
 
 export type Service = {
@@ -115,6 +121,12 @@ export type CreateEmployeeInput = {
   role?: string | null;
   preferred_language?: string;
   service_ids?: string[];
+  public_profile_visible?: boolean;
+  public_title?: string | null;
+  bio?: string | null;
+  profile_image_url?: string | null;
+  specialties?: string[];
+  public_sort_order?: number | null;
 };
 
 export type UpdateEmployeeInput = {
@@ -125,6 +137,12 @@ export type UpdateEmployeeInput = {
   preferred_language?: string;
   is_active?: boolean;
   service_ids?: string[];
+  public_profile_visible?: boolean;
+  public_title?: string | null;
+  bio?: string | null;
+  profile_image_url?: string | null;
+  specialties?: string[];
+  public_sort_order?: number | null;
 };
 
 export type CreateServiceInput = {

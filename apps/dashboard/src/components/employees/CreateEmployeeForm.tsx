@@ -1,6 +1,5 @@
 "use client";
 
-import { FormEvent } from "react";
 import { Field } from "@/components/form/Field";
 import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
 import { useCreateEmployee } from "@/lib/hooks/employees/useCreateEmployee";
@@ -43,6 +42,17 @@ export function CreateEmployeeForm({
     setPreferredLanguage,
     selectedServices,
     setSelectedServices,
+    publicProfileVisible,
+    setPublicProfileVisible,
+    publicTitle,
+    setPublicTitle,
+    bio,
+    setBio,
+    specialtiesInput,
+    setSpecialtiesInput,
+    publicSortOrder,
+    setPublicSortOrder,
+    setProfileImageFile,
     saving,
     error,
     handleSubmit,
@@ -128,6 +138,78 @@ export function CreateEmployeeForm({
           />
         </Field>
       </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Field label="Public title" htmlFor="public_title">
+          <input
+            id="public_title"
+            type="text"
+            value={publicTitle}
+            onChange={(e) => setPublicTitle(e.target.value)}
+            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+            placeholder="Senior Barber"
+          />
+        </Field>
+        <Field label="Public sort order" htmlFor="public_sort_order">
+          <input
+            id="public_sort_order"
+            type="number"
+            value={publicSortOrder}
+            onChange={(e) => setPublicSortOrder(e.target.value)}
+            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+            placeholder="0"
+          />
+        </Field>
+      </div>
+
+      <Field
+        label="Profile image"
+        htmlFor="profile_image"
+        description="JPG, PNG, or WebP up to 5MB"
+      >
+        <input
+          id="profile_image"
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          onChange={(e) => setProfileImageFile(e.target.files?.[0] ?? null)}
+          className="block w-full text-sm"
+        />
+      </Field>
+
+      <Field
+        label="Specialties"
+        htmlFor="specialties"
+        description="Comma-separated (e.g. Fade, Beard trim)"
+      >
+        <input
+          id="specialties"
+          type="text"
+          value={specialtiesInput}
+          onChange={(e) => setSpecialtiesInput(e.target.value)}
+          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+          placeholder="Fade, Beard, Scissor cut"
+        />
+      </Field>
+
+      <Field label="Bio" htmlFor="bio">
+        <textarea
+          id="bio"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          className="min-h-[88px] w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
+          placeholder="Short intro shown on your public profile."
+        />
+      </Field>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={publicProfileVisible}
+          onChange={(e) => setPublicProfileVisible(e.target.checked)}
+          className="h-4 w-4 rounded border"
+        />
+        Visible on public profile
+      </label>
 
       <Field
         label={translations.servicesLabel}

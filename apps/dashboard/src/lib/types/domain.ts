@@ -80,6 +80,13 @@ export type Employee = {
   role: EmployeeRole | string | null; // Can be enum or text for backward compatibility
   preferred_language: string | null;
   is_active: boolean;
+  deleted_at?: string | null;
+  public_profile_visible?: boolean;
+  public_title?: string | null;
+  bio?: string | null;
+  profile_image_url?: string | null;
+  specialties?: string[];
+  public_sort_order?: number | null;
 };
 
 export type Service = {

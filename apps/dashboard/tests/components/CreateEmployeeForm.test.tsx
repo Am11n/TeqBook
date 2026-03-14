@@ -3,7 +3,7 @@
  * Task Group 24: Component Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import {
   render,
   screen,
@@ -28,6 +28,18 @@ vi.mock("@/lib/hooks/employees/useCreateEmployee", () => ({
     setPreferredLanguage: vi.fn(),
     selectedServices: [],
     setSelectedServices: vi.fn(),
+    publicProfileVisible: true,
+    setPublicProfileVisible: vi.fn(),
+    publicTitle: "",
+    setPublicTitle: vi.fn(),
+    bio: "",
+    setBio: vi.fn(),
+    specialtiesInput: "",
+    setSpecialtiesInput: vi.fn(),
+    publicSortOrder: "",
+    setPublicSortOrder: vi.fn(),
+    profileImageFile: null,
+    setProfileImageFile: vi.fn(),
     saving: false,
     error: null,
     handleSubmit: vi.fn((e) => e.preventDefault()),
@@ -35,6 +47,7 @@ vi.mock("@/lib/hooks/employees/useCreateEmployee", () => ({
 }));
 
 import { useCreateEmployee } from "@/lib/hooks/employees/useCreateEmployee";
+const mockedUseCreateEmployee = useCreateEmployee as unknown as Mock;
 
 describe("CreateEmployeeForm", () => {
   const translations = mockEmployeeFormTranslations();
@@ -52,7 +65,7 @@ describe("CreateEmployeeForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset mock to default state
-    vi.mocked(useCreateEmployee).mockReturnValue({
+    mockedUseCreateEmployee.mockReturnValue({
       fullName: "",
       setFullName: vi.fn(),
       email: "",
@@ -65,6 +78,18 @@ describe("CreateEmployeeForm", () => {
       setPreferredLanguage: vi.fn(),
       selectedServices: [],
       setSelectedServices: vi.fn(),
+      publicProfileVisible: true,
+      setPublicProfileVisible: vi.fn(),
+      publicTitle: "",
+      setPublicTitle: vi.fn(),
+      bio: "",
+      setBio: vi.fn(),
+      specialtiesInput: "",
+      setSpecialtiesInput: vi.fn(),
+      publicSortOrder: "",
+      setPublicSortOrder: vi.fn(),
+      profileImageFile: null,
+      setProfileImageFile: vi.fn(),
       saving: false,
       error: null,
       handleSubmit: vi.fn((e) => e.preventDefault()),
@@ -128,7 +153,7 @@ describe("CreateEmployeeForm", () => {
   describe("Form Interaction", () => {
     it("should call setFullName when name input changes", () => {
       const setFullName = vi.fn();
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName,
         email: "",
@@ -156,7 +181,7 @@ describe("CreateEmployeeForm", () => {
 
     it("should call setEmail when email input changes", () => {
       const setEmail = vi.fn();
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName: vi.fn(),
         email: "",
@@ -184,7 +209,7 @@ describe("CreateEmployeeForm", () => {
 
     it("should call setRole when role is selected", () => {
       const setRole = vi.fn();
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName: vi.fn(),
         email: "",
@@ -212,7 +237,7 @@ describe("CreateEmployeeForm", () => {
 
     it("should call setPreferredLanguage when language is selected", () => {
       const setPreferredLanguage = vi.fn();
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName: vi.fn(),
         email: "",
@@ -242,7 +267,7 @@ describe("CreateEmployeeForm", () => {
   describe("Form Submission", () => {
     it("should call handleSubmit when form is submitted", () => {
       const handleSubmit = vi.fn((e) => e.preventDefault());
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "John Doe",
         setFullName: vi.fn(),
         email: "john@example.com",
@@ -271,7 +296,7 @@ describe("CreateEmployeeForm", () => {
 
   describe("Loading State", () => {
     it("should disable submit button when saving", () => {
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "John Doe",
         setFullName: vi.fn(),
         email: "",
@@ -296,7 +321,7 @@ describe("CreateEmployeeForm", () => {
     });
 
     it("should show ellipsis text when saving", () => {
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "John Doe",
         setFullName: vi.fn(),
         email: "",
@@ -322,7 +347,7 @@ describe("CreateEmployeeForm", () => {
 
   describe("Error State", () => {
     it("should display error message when error exists", () => {
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName: vi.fn(),
         email: "",
@@ -346,7 +371,7 @@ describe("CreateEmployeeForm", () => {
     });
 
     it("should have aria-live attribute on error message", () => {
-      vi.mocked(useCreateEmployee).mockReturnValue({
+      mockedUseCreateEmployee.mockReturnValue({
         fullName: "",
         setFullName: vi.fn(),
         email: "",
