@@ -141,7 +141,10 @@ export default function GeneralSettingsPage() {
     }
   };
 
-  const bookingUrl = typeof window !== "undefined" && salon?.slug
+  const publicProfileUrl = typeof window !== "undefined" && salon?.slug
+    ? `${window.location.origin}/salon/${salon.slug}`
+    : null;
+  const directBookingUrl = typeof window !== "undefined" && salon?.slug
     ? `${window.location.origin}/book/${salon.slug}`
     : null;
 
@@ -224,7 +227,8 @@ export default function GeneralSettingsPage() {
             salonType={form.values.salonType}
             businessAddress={form.values.businessAddress}
             orgNumber={form.values.orgNumber}
-            bookingUrl={bookingUrl}
+            publicProfileUrl={publicProfileUrl}
+            directBookingUrl={directBookingUrl}
             errors={form.errors}
             t={t as Record<string, string | undefined>}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}

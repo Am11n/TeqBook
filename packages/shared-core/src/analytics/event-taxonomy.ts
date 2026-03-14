@@ -10,6 +10,19 @@ export const PUBLIC_BOOKING_ANALYTICS_EVENTS = [
   "booking_completed",
   "booking_cancel_requested",
   "booking_cancel_completed",
+  "click_book_from_profile",
+  "click_service_preview",
+  "click_team_member",
+  "click_map",
+  "click_instagram",
+  "open_team_member_modal",
+  "switch_team_member_tab",
+  "click_book_from_team_modal",
+  "click_share_profile",
+  "copy_profile_link",
+  "copy_direct_booking_link",
+  "open_profile_link_from_dashboard",
+  "open_booking_link_from_dashboard",
 ] as const;
 
 export type PublicBookingAnalyticsEvent =

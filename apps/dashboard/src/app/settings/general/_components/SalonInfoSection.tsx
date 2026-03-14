@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ExternalLink } from "lucide-react";
 
 interface SalonInfoSectionProps {
   salonName: string;
   salonType: string;
   businessAddress: string;
   orgNumber: string;
-  bookingUrl: string | null;
+  publicProfileUrl: string | null;
+  directBookingUrl: string | null;
   errors: Record<string, string>;
   t: Record<string, string | undefined>;
   onChangeField: (field: string, value: string) => void;
@@ -24,18 +25,27 @@ export function SalonInfoSection({
   salonType,
   businessAddress,
   orgNumber,
-  bookingUrl,
+  publicProfileUrl,
+  directBookingUrl,
   errors,
   t,
   onChangeField,
 }: SalonInfoSectionProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<"profile" | "booking" | null>(null);
 
-  const handleCopyUrl = async () => {
-    if (!bookingUrl) return;
-    await navigator.clipboard.writeText(bookingUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const trackDashboardLinkEvent = (eventName: string) => {
+    const maybeGtag = (window as Window & { gtag?: (command: string, event: string, payload?: Record<string, unknown>) => void }).gtag;
+    if (typeof maybeGtag === "function") {
+      maybeGtag("event", eventName, {});
+    }
+  };
+
+  const handleCopyUrl = async (url: string, key: "profile" | "booking") => {
+    await navigator.clipboard.writeText(url);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+    if (key === "profile") trackDashboardLinkEvent("copy_profile_link");
+    if (key === "booking") trackDashboardLinkEvent("copy_direct_booking_link");
   };
 
   return (
@@ -90,27 +100,95 @@ export function SalonInfoSection({
         />
       </FormRow>
 
-      {bookingUrl && (
-        <FormRow label={t.bookingUrlLabel ?? "Booking URL"}>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 truncate text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
-              {bookingUrl}
-            </code>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 shrink-0"
-              onClick={handleCopyUrl}
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-green-600" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" />
-              )}
-            </Button>
+      {(publicProfileUrl || directBookingUrl) && (
+        <FormRow label="Public links">
+          <div className="space-y-3">
+            {publicProfileUrl ? (
+              <div className="space-y-1.5">
+                <p className="text-xs text-muted-foreground">
+                  Public profile
+                  <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    Recommended for Instagram bio
+                  </span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
+                    {publicProfileUrl}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    onClick={() => handleCopyUrl(publicProfileUrl, "profile")}
+                  >
+                    {copiedKey === "profile" ? (
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    asChild
+                  >
+                    <a
+                      href={publicProfileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackDashboardLinkEvent("open_profile_link_from_dashboard")}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {directBookingUrl ? (
+              <div className="space-y-1.5">
+                <p className="text-xs text-muted-foreground">Direct booking</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
+                    {directBookingUrl}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    onClick={() => handleCopyUrl(directBookingUrl, "booking")}
+                  >
+                    {copiedKey === "booking" ? (
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 shrink-0"
+                    asChild
+                  >
+                    <a
+                      href={directBookingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackDashboardLinkEvent("open_booking_link_from_dashboard")}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <p className="text-xs text-muted-foreground">Suggested bio text: Book your next appointment here</p>
           </div>
         </FormRow>
       )}
+
     </SettingsSection>
   );
 }
