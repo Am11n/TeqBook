@@ -150,7 +150,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   const { data: salon, error: salonError } = await supabase
     .from("salons")
     .select(
-      "id, name, slug, is_public, salon_type, business_address, timezone, preferred_language, supported_languages, default_language, whatsapp_number, plan, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides"
+      "id, name, slug, is_public, salon_type, business_address, timezone, preferred_language, supported_languages, default_language, whatsapp_number, plan, description, cover_image, instagram_url, website_url, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides"
     )
     .eq("slug", normalizedSlug)
     .eq("is_public", true)
@@ -160,7 +160,14 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
 
   const timezone = salon.timezone || FALLBACK_TIMEZONE;
 
-  const [{ data: servicesData }, { data: employeesData }, { data: openingHoursData }, { data: employeeServicesData }] =
+  const [
+    { data: servicesData },
+    { data: employeesData },
+    { data: openingHoursData },
+    { data: employeeServicesData },
+    { data: portfolioData },
+    { data: reviewsData },
+  ] =
     await Promise.all([
       supabase
         .from("services")
@@ -172,10 +179,12 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
         .limit(1000),
       supabase
         .from("employees")
-        .select("id, full_name, role, preferred_language, is_active, deleted_at")
+        .select("id, full_name, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .is("deleted_at", null)
+        .eq("public_profile_visible", true)
+        .order("public_sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: true })
         .limit(1000),
       supabase
@@ -189,6 +198,23 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
         .select("employee_id, service_id")
         .eq("salon_id", salon.id)
         .limit(2000),
+      supabase
+        .from("portfolio")
+        .select("id, image_url, caption")
+        .eq("salon_id", salon.id)
+        .eq("is_published", true)
+        .is("deleted_at", null)
+        .order("is_featured", { ascending: false })
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("reviews")
+        .select("id, customer_name, rating, comment, created_at")
+        .eq("salon_id", salon.id)
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .limit(5),
     ]);
 
   const allServices: PublicService[] = (servicesData || []).map((service) => ({
@@ -220,10 +246,12 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
       return {
         id: employee.id,
         name: employee.full_name,
-        title: employee.role || null,
-        imageUrl: null,
-        bio: null,
-        specialties,
+        title: employee.public_title || employee.role || null,
+        imageUrl: employee.profile_image_url || null,
+        bio: employee.bio || null,
+        specialties: (employee.specialties && employee.specialties.length > 0
+          ? employee.specialties
+          : specialties),
         languages: language ? [language] : [],
         ratingAverage: null,
         services: assignedServices,
@@ -238,7 +266,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   }));
 
   const city = getCityFromAddress(salon.business_address || null);
-  const aboutDescription = buildAboutFallback(salon.salon_type || null, city, salon.name);
+  const aboutDescription = salon.description?.trim() || buildAboutFallback(salon.salon_type || null, city, salon.name);
   const openStatus = isOpenNow(openingHours, timezone);
   const bookingSalon: BookingSalon = {
     id: salon.id,
@@ -269,17 +297,34 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.business_address)}`
     : null;
 
+  const latestReviews = (reviewsData || []).map((review) => ({
+    id: review.id,
+    customerName: review.customer_name,
+    rating: review.rating,
+    comment: review.comment || null,
+    createdAt: review.created_at,
+  }));
+  const reviewsSummary = latestReviews.length
+    ? {
+        ratingAverage: Number(
+          (latestReviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / latestReviews.length).toFixed(1)
+        ),
+        ratingCount: latestReviews.length,
+        latest: latestReviews,
+      }
+    : null;
+
   return {
     kind: "ok",
     data: {
       hero: {
         name: salon.name,
-        coverImageUrl: null,
+        coverImageUrl: salon.cover_image || null,
         logoUrl: effectiveBranding.logoUrl || null,
         addressLine: salon.business_address || null,
         city,
-        ratingAverage: null,
-        ratingCount: 0,
+        ratingAverage: reviewsSummary?.ratingAverage ?? null,
+        ratingCount: reviewsSummary?.ratingCount ?? 0,
         isOpenNow: openStatus.isOpenNow,
         openStatusLabel: openStatus.label,
       },
@@ -288,15 +333,19 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
       },
       servicesPreview: allServices.slice(0, 6),
       teamPreview,
-      portfolioPreview: [],
-      reviewsSummary: null,
+      portfolioPreview: (portfolioData || []).map((item) => ({
+        id: item.id,
+        imageUrl: item.image_url,
+        caption: item.caption || null,
+      })),
+      reviewsSummary,
       openingHours,
       mapLink,
       bookUrl,
       shareUrl,
       socialLinks: {
-        instagramUrl: null,
-        websiteUrl: null,
+        instagramUrl: salon.instagram_url || null,
+        websiteUrl: salon.website_url || null,
       },
       timezone,
       tokens,

@@ -182,6 +182,10 @@ export type Salon = {
   supported_languages?: string[] | null;
   default_language?: string;
   time_format?: TimeFormat | null;
+  description?: string | null;
+  cover_image?: string | null;
+  instagram_url?: string | null;
+  website_url?: string | null;
 };
 
 export type Profile = {

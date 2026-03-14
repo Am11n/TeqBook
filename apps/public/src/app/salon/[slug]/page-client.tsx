@@ -57,6 +57,22 @@ type PublicProfileClientProps = {
     instagramUrl: string | null;
     websiteUrl: string | null;
   };
+  portfolioPreview: Array<{
+    id: string;
+    imageUrl: string;
+    caption: string | null;
+  }>;
+  reviewsSummary: {
+    ratingAverage: number;
+    ratingCount: number;
+    latest: Array<{
+      id: string;
+      customerName: string;
+      rating: number;
+      comment: string | null;
+      createdAt: string;
+    }>;
+  } | null;
   tokens: PublicBookingTokens;
 };
 
@@ -250,6 +266,47 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                   <p className="mt-2 text-sm text-[var(--pb-muted)]">{member.specialties.join(", ") || "Haircut and grooming"}</p>
                   <p className="mt-2 text-sm font-medium underline underline-offset-2">See profile</p>
                 </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {props.portfolioPreview.length > 0 ? (
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold">Portfolio</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {props.portfolioPreview.map((item) => (
+                <figure
+                  key={item.id}
+                  className="overflow-hidden rounded-xl border"
+                  style={{ borderColor: props.tokens.colors.border }}
+                >
+                  <div className="aspect-square bg-[var(--pb-surface)]">
+                    <img src={item.imageUrl} alt={item.caption || "Portfolio"} className="h-full w-full object-cover" />
+                  </div>
+                  {item.caption ? <figcaption className="px-2 py-1.5 text-xs text-[var(--pb-muted)]">{item.caption}</figcaption> : null}
+                </figure>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {props.reviewsSummary ? (
+          <section
+            className="space-y-3 rounded-xl border p-5"
+            style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
+          >
+            <h2 className="text-xl font-semibold">Reviews</h2>
+            <p className="text-sm text-[var(--pb-muted)]">
+              ⭐ {props.reviewsSummary.ratingAverage.toFixed(1)} / 5 ({props.reviewsSummary.ratingCount} reviews)
+            </p>
+            <div className="space-y-3">
+              {props.reviewsSummary.latest.map((review) => (
+                <article key={review.id} className="rounded-lg border p-3" style={{ borderColor: props.tokens.colors.border }}>
+                  <p className="text-sm font-medium">⭐ {review.rating}/5</p>
+                  {review.comment ? <p className="mt-1 text-sm text-[var(--pb-muted)]">{review.comment}</p> : null}
+                  <p className="mt-2 text-xs text-[var(--pb-muted)]">- {review.customerName}</p>
+                </article>
               ))}
             </div>
           </section>

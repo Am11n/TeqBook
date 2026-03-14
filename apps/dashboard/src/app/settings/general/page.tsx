@@ -36,6 +36,12 @@ export default function GeneralSettingsPage() {
 
   const [languageLimit, setLanguageLimit] = useState<number | null>(null);
   const userRole = profile?.role || "owner";
+  const salonProfile = (salon as (typeof salon & {
+    description?: string | null;
+    cover_image?: string | null;
+    instagram_url?: string | null;
+    website_url?: string | null;
+  }) | null);
 
   useEffect(() => {
     async function loadLimit() {
@@ -60,6 +66,10 @@ export default function GeneralSettingsPage() {
     orgNumber: salon?.org_number || "",
     cancellationHours: salon?.cancellation_hours ?? 24,
     defaultBufferMinutes: salon?.default_buffer_minutes ?? 0,
+    description: salonProfile?.description || "",
+    coverImage: salonProfile?.cover_image || "",
+    instagramUrl: salonProfile?.instagram_url || "",
+    websiteUrl: salonProfile?.website_url || "",
   }), [salon, profile]);
 
   const validate = useCallback((v: GeneralFormValues) => {
@@ -86,6 +96,10 @@ export default function GeneralSettingsPage() {
       org_number: v.orgNumber || null,
       cancellation_hours: v.cancellationHours,
       default_buffer_minutes: v.defaultBufferMinutes,
+      description: v.description || null,
+      cover_image: v.coverImage || null,
+      instagram_url: v.instagramUrl || null,
+      website_url: v.websiteUrl || null,
     }, salon.plan);
 
     if (updateError) throw new Error(updateError);
@@ -227,6 +241,10 @@ export default function GeneralSettingsPage() {
             salonType={form.values.salonType}
             businessAddress={form.values.businessAddress}
             orgNumber={form.values.orgNumber}
+            description={form.values.description}
+            coverImage={form.values.coverImage}
+            instagramUrl={form.values.instagramUrl}
+            websiteUrl={form.values.websiteUrl}
             publicProfileUrl={publicProfileUrl}
             directBookingUrl={directBookingUrl}
             errors={form.errors}

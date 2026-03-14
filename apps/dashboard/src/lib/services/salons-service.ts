@@ -83,6 +83,10 @@ export async function updateSalonSettings(
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
     time_format?: string | null;
+    description?: string | null;
+    cover_image?: string | null;
+    instagram_url?: string | null;
+    website_url?: string | null;
   },
   salonPlan?: PlanType | null
 ): Promise<{ error: string | null; limitReached?: boolean }> {
@@ -163,6 +167,10 @@ export async function updateSalon(
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
     time_format?: string | null;
+    description?: string | null;
+    cover_image?: string | null;
+    instagram_url?: string | null;
+    website_url?: string | null;
   },
   salonPlan?: PlanType | null
 ): Promise<{ error: string | null; limitReached?: boolean }> {

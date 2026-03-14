@@ -12,6 +12,10 @@ export type GeneralFormValues = {
   orgNumber: string;
   cancellationHours: number;
   defaultBufferMinutes: number;
+  description: string;
+  coverImage: string;
+  instagramUrl: string;
+  websiteUrl: string;
 };
 
 export const ALL_LANGUAGES = [

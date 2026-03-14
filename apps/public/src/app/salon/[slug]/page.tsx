@@ -72,6 +72,8 @@ export default async function SalonPublicProfilePage({ params }: { params: Promi
       bookUrl={result.data.bookUrl}
       shareUrl={result.data.shareUrl}
       socialLinks={result.data.socialLinks}
+      portfolioPreview={result.data.portfolioPreview}
+      reviewsSummary={result.data.reviewsSummary}
       tokens={result.data.tokens}
     />
   );

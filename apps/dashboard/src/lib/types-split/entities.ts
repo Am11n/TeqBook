@@ -217,6 +217,10 @@ export type Salon = {
   org_number?: string | null;
   cancellation_hours?: number | null;
   default_buffer_minutes?: number | null;
+  description?: string | null;
+  cover_image?: string | null;
+  instagram_url?: string | null;
+  website_url?: string | null;
 };
 
 export type Profile = {

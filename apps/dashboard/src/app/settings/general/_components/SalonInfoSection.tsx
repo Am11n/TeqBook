@@ -13,6 +13,10 @@ interface SalonInfoSectionProps {
   salonType: string;
   businessAddress: string;
   orgNumber: string;
+  description: string;
+  coverImage: string;
+  instagramUrl: string;
+  websiteUrl: string;
   publicProfileUrl: string | null;
   directBookingUrl: string | null;
   errors: Record<string, string>;
@@ -25,6 +29,10 @@ export function SalonInfoSection({
   salonType,
   businessAddress,
   orgNumber,
+  description,
+  coverImage,
+  instagramUrl,
+  websiteUrl,
   publicProfileUrl,
   directBookingUrl,
   errors,
@@ -97,6 +105,44 @@ export function SalonInfoSection({
           value={orgNumber}
           onChange={(e) => onChangeField("orgNumber", e.target.value)}
           placeholder={t.orgNumberPlaceholder ?? "e.g. 123 456 789"}
+        />
+      </FormRow>
+
+      <FormRow label="Public description" htmlFor="description">
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => onChangeField("description", e.target.value)}
+          rows={3}
+          placeholder="Tell customers what makes your salon unique..."
+          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+        />
+      </FormRow>
+
+      <FormRow label="Cover image URL" htmlFor="coverImage">
+        <Input
+          id="coverImage"
+          value={coverImage}
+          onChange={(e) => onChangeField("coverImage", e.target.value)}
+          placeholder="https://..."
+        />
+      </FormRow>
+
+      <FormRow label="Instagram URL" htmlFor="instagramUrl">
+        <Input
+          id="instagramUrl"
+          value={instagramUrl}
+          onChange={(e) => onChangeField("instagramUrl", e.target.value)}
+          placeholder="https://instagram.com/..."
+        />
+      </FormRow>
+
+      <FormRow label="Website URL" htmlFor="websiteUrl">
+        <Input
+          id="websiteUrl"
+          value={websiteUrl}
+          onChange={(e) => onChangeField("websiteUrl", e.target.value)}
+          placeholder="https://..."
         />
       </FormRow>
 

@@ -96,6 +96,11 @@ export type Salon = {
   cancellation_hours?: number | null;
   default_buffer_minutes?: number | null;
   time_format?: TimeFormat | null;
+  // Public profile fields
+  description?: string | null;
+  cover_image?: string | null;
+  instagram_url?: string | null;
+  website_url?: string | null;
 };
 
 /**
@@ -107,7 +112,7 @@ export async function getSalonBySlug(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, website_url")
       .eq("slug", slug)
       .eq("is_public", true)
       .maybeSingle();
@@ -138,7 +143,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, website_url")
       .eq("id", salonId)
       .maybeSingle();
 
@@ -226,6 +231,10 @@ export async function updateSalon(
     cancellation_hours?: number | null;
     default_buffer_minutes?: number | null;
     time_format?: string | null;
+    description?: string | null;
+    cover_image?: string | null;
+    instagram_url?: string | null;
+    website_url?: string | null;
   }
 ): Promise<{ error: string | null }> {
   try {
