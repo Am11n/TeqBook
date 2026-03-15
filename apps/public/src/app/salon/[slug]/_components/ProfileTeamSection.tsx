@@ -43,7 +43,7 @@ export function ProfileTeamSection({
             aria-haspopup="dialog"
             aria-expanded={openMemberId === member.id}
             aria-label={`${m.openProfileFor} ${member.name}`}
-            className={`${BASE_CARD_CLASS} group flex h-full flex-col gap-3 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
+            className={`${BASE_CARD_CLASS} group flex h-full flex-col gap-3 p-4 text-left transition-[transform,box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
             style={cardStyle}
             onClick={(event) => {
               onOpenMember(member, event.currentTarget);
@@ -91,9 +91,9 @@ export function ProfileTeamSection({
                 </span>
               ))}
             </div>
-            <p className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 py-1 text-sm font-medium text-[var(--pb-secondary-text)] transition group-hover:bg-[var(--pb-bg-surface)]">
+            <p className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 py-1 text-sm font-medium text-[var(--pb-secondary-text)] transition-colors duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:bg-[var(--pb-bg-surface)]">
               <span>{m.viewProfile}</span>
-              <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+              <span aria-hidden="true" className="transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transform-none">→</span>
             </p>
           </button>
         ))}

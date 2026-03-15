@@ -26,7 +26,7 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
           <Link
             key={service.id}
             href={`${bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-            className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
+            className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition-[transform,box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
             style={cardStyle}
             onClick={() =>
               trackPublicEvent("click_service_preview", {
@@ -46,12 +46,12 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
             </div>
             <p className="inline-flex items-center gap-1 text-sm font-medium text-[var(--pb-text-secondary)]">
               <span>{m.book}</span>
-              <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+              <span aria-hidden="true" className="transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transform-none">→</span>
             </p>
           </Link>
         ))}
       </div>
-      <Link href={bookUrl} className="inline-block text-sm font-medium text-[var(--pb-text-secondary)] underline underline-offset-2">
+      <Link href={bookUrl} className="inline-block text-sm font-medium text-[var(--pb-text-secondary)] underline underline-offset-2 transition-colors duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:text-[var(--pb-text-primary)] focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)]">
         {m.seeAllServices}
       </Link>
     </section>

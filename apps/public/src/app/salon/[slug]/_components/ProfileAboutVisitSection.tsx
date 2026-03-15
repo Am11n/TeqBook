@@ -115,7 +115,7 @@ export function ProfileAboutVisitSection(props: Props) {
                   rel="noreferrer"
                   title={item.label}
                   aria-label={`${m.openPrefix} ${item.label}`}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] text-[var(--pb-secondary-text)] transition hover:bg-[var(--pb-bg-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:bg-[var(--pb-bg-surface)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                   onClick={() => {
                     if (item.platform === "instagram") {
                       trackPublicEvent("click_instagram", {
@@ -143,7 +143,7 @@ export function ProfileAboutVisitSection(props: Props) {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${m.openLocationInMaps}: ${props.heroName}`}
-                className="group block overflow-hidden rounded-xl border border-[var(--pb-border-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                className="group block overflow-hidden rounded-xl border border-[var(--pb-border-soft)] transition-[border-color,box-shadow,transform] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                 onClick={() =>
                   trackPublicEvent("click_map", {
                     salon_id: props.salonId,
@@ -158,7 +158,7 @@ export function ProfileAboutVisitSection(props: Props) {
                       src={props.mapPreviewImageUrl}
                       alt=""
                       aria-hidden="true"
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.01]"
+                      className="h-full w-full object-cover transition-transform duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] group-hover:scale-[1.02] motion-reduce:transform-none"
                       loading="lazy"
                       onError={props.onMapImageError}
                     />

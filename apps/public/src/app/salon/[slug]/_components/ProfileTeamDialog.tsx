@@ -51,6 +51,7 @@ export function ProfileTeamDialog(props: Props) {
       <div
         aria-hidden="true"
         onClick={() => props.onOpenChange(false)}
+        className="pb-team-dialog-overlay"
         style={{
           position: "fixed",
           inset: 0,
@@ -59,7 +60,7 @@ export function ProfileTeamDialog(props: Props) {
         }}
       />
       <div
-        className="rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] p-6 text-[var(--pb-text)] shadow-lg"
+        className="pb-team-dialog-panel rounded-lg border border-[var(--pb-border)] bg-[var(--pb-surface)] p-6 text-[var(--pb-text)] shadow-lg"
         style={{
           position: "fixed",
           left: "50%",
@@ -76,7 +77,7 @@ export function ProfileTeamDialog(props: Props) {
           ref={closeButtonRef}
           type="button"
           aria-label={m.closeDialog}
-          className="absolute right-4 top-4 rounded-md border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-1 text-sm text-[var(--pb-secondary-text)] hover:bg-[var(--pb-bg-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+          className="absolute right-4 top-4 rounded-md border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-1 text-sm text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:bg-[var(--pb-bg-surface)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
           onClick={() => props.onOpenChange(false)}
         >
           X
@@ -116,7 +117,7 @@ export function ProfileTeamDialog(props: Props) {
           >
             <TabsTrigger
               value="about"
-              className="rounded-lg px-3 py-2 font-medium text-[var(--pb-muted)] transition data-[state=active]:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+              className="rounded-lg px-3 py-2 font-medium text-[var(--pb-muted)] transition-[transform,background-color,color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:shadow-sm active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
               style={
                 props.tab === "about"
                   ? { backgroundColor: "var(--pb-primary)", color: "var(--pb-primary-text)" }
@@ -127,7 +128,7 @@ export function ProfileTeamDialog(props: Props) {
             </TabsTrigger>
             <TabsTrigger
               value="services"
-              className="rounded-lg px-3 py-2 font-medium text-[var(--pb-muted)] transition data-[state=active]:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+              className="rounded-lg px-3 py-2 font-medium text-[var(--pb-muted)] transition-[transform,background-color,color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:shadow-sm active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
               style={
                 props.tab === "services"
                   ? { backgroundColor: "var(--pb-primary)", color: "var(--pb-primary-text)" }
@@ -162,7 +163,7 @@ export function ProfileTeamDialog(props: Props) {
                 <Link
                   key={service.id}
                   href={`${props.bookUrl}?employeeId=${encodeURIComponent(selectedMember.id)}&serviceId=${encodeURIComponent(service.id)}`}
-                  className="block rounded-lg border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                  className="block rounded-lg border px-3 py-2 transition-[transform,border-color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                   style={{ borderColor: props.borderColor }}
                   onClick={() =>
                     trackPublicEvent("click_service_from_team_modal", {
@@ -191,7 +192,7 @@ export function ProfileTeamDialog(props: Props) {
         <div className="sticky bottom-0 -mx-6 mt-4 border-t border-[var(--pb-divider)] bg-[var(--pb-surface)] px-6 py-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
           <Button
             asChild
-            className="w-full"
+            className="w-full transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] active:translate-y-px motion-reduce:transform-none"
             style={{ backgroundColor: "var(--pb-primary)", color: "var(--pb-primary-text)" }}
           >
             <Link
@@ -210,6 +211,34 @@ export function ProfileTeamDialog(props: Props) {
           </Button>
         </div>
       </div>
+      <style jsx>{`
+        .pb-team-dialog-overlay {
+          animation: pbTeamDialogOverlayIn var(--pb-motion-standard) var(--pb-ease-out);
+        }
+        .pb-team-dialog-panel {
+          animation: pbTeamDialogPanelIn var(--pb-motion-standard) var(--pb-ease-out);
+        }
+        @keyframes pbTeamDialogOverlayIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes pbTeamDialogPanelIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -47%) scale(0.985);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pb-team-dialog-overlay,
+          .pb-team-dialog-panel {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }
