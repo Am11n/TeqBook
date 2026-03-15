@@ -2,6 +2,8 @@ import { cache } from "react";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components/public-booking/publicBookingUtils";
 import type { PublicBookingTokens, Salon as BookingSalon } from "@/components/public-booking/types";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import type { AppLocale } from "@/i18n/translations";
 
 type PublicService = {
   id: string;
@@ -78,6 +80,7 @@ export type PublicSalonProfileViewModel = {
   };
   timezone: string;
   tokens: PublicBookingTokens;
+  locale: AppLocale;
   salonId: string;
   slug: string;
 };
@@ -321,6 +324,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   }));
 
   const city = getCityFromAddress(salon.business_address || null);
+  const locale = normalizeLocale(salon.default_language || salon.preferred_language || "en");
   const aboutDescription = salon.description?.trim() || buildAboutFallback(salon.salon_type || null, city, salon.name);
   const openStatus = isOpenNow(openingHours, timezone);
   const bookingSalon: BookingSalon = {
@@ -409,6 +413,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
       },
       timezone,
       tokens,
+      locale,
       salonId: salon.id,
       slug: salon.slug,
     },

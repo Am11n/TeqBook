@@ -196,6 +196,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         bookUrl={props.bookUrl}
         borderColor={props.tokens.colors.border}
         selectedMember={selectedMember}
+        locale={props.locale}
         tab={teamModalTab}
         onTabChange={setTeamModalTab}
         themeStyle={dialogThemeStyle}

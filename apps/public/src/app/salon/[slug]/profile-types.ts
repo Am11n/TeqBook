@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { PublicBookingTokens } from "@/components/public-booking/types";
+import type { AppLocale } from "@/i18n/translations";
 
 export type PublicService = {
   id: string;
@@ -74,6 +75,7 @@ export type PublicProfileClientProps = {
     }>;
   } | null;
   tokens: PublicBookingTokens;
+  locale: AppLocale;
 };
 
 export type CardStyle = CSSProperties;

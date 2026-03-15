@@ -7,32 +7,8 @@ import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@teqbook/ui";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { fallbackAvatar, formatPrice } from "../profile-helpers";
 import type { PublicTeamMember } from "../profile-types";
-
-const LANGUAGE_LABELS: Record<string, string> = {
-  nb: "Norwegian",
-  no: "Norwegian",
-  en: "English",
-  ar: "Arabic",
-  so: "Somali",
-  tr: "Turkish",
-  ti: "Tigrinya",
-  am: "Amharic",
-  pl: "Polish",
-  vi: "Vietnamese",
-  zh: "Chinese",
-  tl: "Tagalog",
-  fa: "Persian",
-  dar: "Dari",
-  ur: "Urdu",
-  hi: "Hindi",
-};
-
-function formatLanguageLabel(codeOrName: string): string {
-  const value = codeOrName.trim();
-  if (!value) return "Language";
-  const normalized = value.toLowerCase();
-  return LANGUAGE_LABELS[normalized] || value;
-}
+import type { AppLocale } from "@/i18n/translations";
+import { formatProfileLanguageLabel, PROFILE_TEAM_DIALOG_MESSAGES } from "../profile-i18n";
 
 type Props = {
   salonId: string;
@@ -40,6 +16,7 @@ type Props = {
   bookUrl: string;
   borderColor: string;
   selectedMember: PublicTeamMember | null;
+  locale: AppLocale;
   tab: "about" | "services";
   onTabChange: (tab: "about" | "services") => void;
   onOpenChange: (open: boolean) => void;
@@ -48,6 +25,7 @@ type Props = {
 
 export function ProfileTeamDialog(props: Props) {
   const selectedMember = props.selectedMember;
+  const m = PROFILE_TEAM_DIALOG_MESSAGES[props.locale] || PROFILE_TEAM_DIALOG_MESSAGES.en;
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -95,7 +73,7 @@ export function ProfileTeamDialog(props: Props) {
         <button
           ref={closeButtonRef}
           type="button"
-          aria-label="Close dialog"
+          aria-label={m.closeDialog}
           className="absolute right-4 top-4 rounded-md border px-2 py-1 text-sm text-[var(--pb-muted)] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
           onClick={() => props.onOpenChange(false)}
         >
@@ -113,7 +91,7 @@ export function ProfileTeamDialog(props: Props) {
               {fallbackAvatar(selectedMember.name)}
             </div>
           )}
-          <p className="text-sm text-[var(--pb-muted)]">{selectedMember.title || "Team member"}</p>
+          <p className="text-sm text-[var(--pb-muted)]">{selectedMember.title || m.teamMember}</p>
         </div>
 
         <Tabs
@@ -143,7 +121,7 @@ export function ProfileTeamDialog(props: Props) {
                   : undefined
               }
             >
-              About
+              {m.about}
             </TabsTrigger>
             <TabsTrigger
               value="services"
@@ -154,24 +132,24 @@ export function ProfileTeamDialog(props: Props) {
                   : undefined
               }
             >
-              Services
+              {m.services}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="about" className="space-y-3">
             <p className="text-sm text-[var(--pb-muted)]">
-              {selectedMember.bio || `${selectedMember.name} helps customers with modern cuts and grooming.`}
+              {selectedMember.bio || `${selectedMember.name} ${m.bioFallback}`}
             </p>
             {selectedMember.specialties.length > 0 ? (
               <div>
-                <p className="text-xs font-medium uppercase text-[var(--pb-muted)]">Specialties</p>
+                <p className="text-xs font-medium uppercase text-[var(--pb-muted)]">{m.specialties}</p>
                 <p className="text-sm">{selectedMember.specialties.join(", ")}</p>
               </div>
             ) : null}
             {selectedMember.languages.length > 0 ? (
               <div>
-                <p className="text-xs font-medium uppercase text-[var(--pb-muted)]">Languages</p>
-                <p className="text-sm">{selectedMember.languages.map(formatLanguageLabel).join(", ")}</p>
+                <p className="text-xs font-medium uppercase text-[var(--pb-muted)]">{m.languages}</p>
+                <p className="text-sm">{selectedMember.languages.map((language) => formatProfileLanguageLabel(language, props.locale)).join(", ")}</p>
               </div>
             ) : null}
           </TabsContent>
@@ -203,7 +181,7 @@ export function ProfileTeamDialog(props: Props) {
                 </Link>
               ))
             ) : (
-              <p className="text-sm text-[var(--pb-muted)]">Services will be shown here.</p>
+              <p className="text-sm text-[var(--pb-muted)]">{m.servicesEmpty}</p>
             )}
           </TabsContent>
         </Tabs>
@@ -225,7 +203,7 @@ export function ProfileTeamDialog(props: Props) {
                 })
               }
             >
-              Book with {selectedMember.name}
+              {m.bookWith} {selectedMember.name}
             </Link>
           </Button>
         </div>

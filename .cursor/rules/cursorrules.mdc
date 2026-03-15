@@ -192,3 +192,9 @@ import {
 - Use `useSearchParams()` only inside a `<Suspense>` boundary to avoid prerendering errors.
 - Keep files under 300 lines when practical; if a file grows beyond that, split by concern (for example locale dictionaries into dedicated i18n modules per feature/locale).
 - For large translation dictionaries, prefer separate locale/i18n files over embedding dictionaries inside page/component files.
+
+## Public Profile i18n
+
+- For every new UI text added under `apps/public/src/app/salon/[slug]/**`, add locale coverage for all 15 app locales (`en`, `nb`, `ar`, `so`, `ti`, `am`, `tr`, `pl`, `vi`, `zh`, `tl`, `fa`, `dar`, `ur`, `hi`) in a dedicated i18n module.
+- Do not merge new hardcoded English fallback copy into public profile components; route visible strings through the feature i18n map/helper.
+- If a fallback is unavoidable, fallback must still resolve from the locale map (for example `messages[locale] ?? messages.en`), not raw inline text in JSX.
