@@ -29,13 +29,12 @@ export function ProfileTeamDialog(props: Props) {
   const m = PROFILE_TEAM_DIALOG_MESSAGES[props.locale] || PROFILE_TEAM_DIALOG_MESSAGES.en;
   const pageMessages = getProfilePageMessages(props.locale);
   const open = Boolean(selectedMember);
-  const metaLine = useMemo(() => {
+  const subtitle = useMemo(() => {
     if (!selectedMember) return "";
-    const pieces: string[] = [];
-    if (selectedMember.services.length > 0) pieces.push(`${selectedMember.services.length} ${m.services.toLowerCase()}`);
-    if (selectedMember.languages.length > 0) pieces.push(`${selectedMember.languages.length} ${m.languages.toLowerCase()}`);
-    return pieces.join(" · ");
-  }, [m.languages, m.services, selectedMember]);
+    const bio = (selectedMember.bio || "").trim();
+    if (!bio) return "";
+    return bio.length > 56 ? `${bio.slice(0, 53).trimEnd()}...` : bio;
+  }, [selectedMember]);
   const shouldScrollServices = Boolean(
     selectedMember && props.tab === "services" && selectedMember.services.length > 4
   );
@@ -49,7 +48,7 @@ export function ProfileTeamDialog(props: Props) {
           style={props.themeStyle}
           className="!top-auto !bottom-0 !translate-y-0 !w-[calc(100%-0.75rem)] !max-w-[760px] !rounded-b-none rounded-t-3xl border-[var(--pb-border)] bg-[var(--pb-surface)] p-0 text-[var(--pb-text)] shadow-[var(--pb-shadow-card)] data-[state=open]:duration-[var(--pb-motion-standard)] data-[state=closed]:duration-[var(--pb-motion-fast)] sm:!top-[50%] sm:!bottom-auto sm:!translate-y-[-50%] sm:!rounded-3xl sm:!max-w-[760px]"
         >
-          <div className="flex max-h-[92vh] flex-col sm:max-h-[86vh]">
+          <div className="flex max-h-[92vh] flex-col sm:max-h-[80vh]">
             <DialogClose asChild>
               <button
                 type="button"
@@ -73,16 +72,16 @@ export function ProfileTeamDialog(props: Props) {
               <div className="space-y-1.5">
                 <DialogTitle className="text-[1.7rem] font-semibold tracking-tight">{selectedMember.name}</DialogTitle>
                 <p className="text-[0.95rem] capitalize text-[var(--pb-text-secondary)]">{selectedMember.title || m.teamMember}</p>
-                {metaLine ? (
-                  <p className="text-xs font-medium text-[var(--pb-text-secondary)]">{metaLine}</p>
+                {subtitle ? (
+                  <p className="text-xs text-[var(--pb-muted)]">{subtitle}</p>
                 ) : null}
               </div>
             </DialogHeader>
 
             <div
-              className={`px-6 pt-4 pb-24 sm:px-8 sm:pb-6 ${
+              className={`px-6 pt-4 pb-20 sm:px-8 sm:pb-5 ${
                 shouldScrollServices
-                  ? "overflow-y-auto max-h-[min(46vh,22rem)] sm:max-h-[min(48vh,24rem)]"
+                  ? "overflow-y-auto max-h-[min(44vh,21rem)] sm:max-h-[min(44vh,21rem)]"
                   : ""
               }`}
             >
@@ -98,15 +97,15 @@ export function ProfileTeamDialog(props: Props) {
                     tab: value,
                   });
                 }}
-                className="space-y-4"
+                className="space-y-3.5"
               >
                 <TabsList
-                  className="grid h-auto w-full grid-cols-2 items-stretch rounded-2xl border border-[var(--pb-border-soft)] bg-[var(--pb-surface-muted)] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+                  className="grid h-auto w-full grid-cols-2 items-stretch rounded-xl border border-[var(--pb-border-soft)] bg-[var(--pb-surface-muted)] p-1"
                   aria-label={m.teamMember}
                 >
                   <TabsTrigger
                     value="about"
-                    className="h-10 rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-[var(--pb-text-secondary)] transition-[transform,background-color,color,box-shadow,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:border-[var(--pb-border-strong)] data-[state=active]:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
+                    className="h-9 rounded-lg border border-transparent px-3 py-1.5 text-sm font-medium text-[var(--pb-text-secondary)] transition-[transform,background-color,color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
                     style={
                       props.tab === "about"
                         ? { backgroundColor: "var(--pb-bg-surface)", color: "var(--pb-text-primary)" }
@@ -117,7 +116,7 @@ export function ProfileTeamDialog(props: Props) {
                   </TabsTrigger>
                   <TabsTrigger
                     value="services"
-                    className="h-10 rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-[var(--pb-text-secondary)] transition-[transform,background-color,color,box-shadow,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:border-[var(--pb-border-strong)] data-[state=active]:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
+                    className="h-9 rounded-lg border border-transparent px-3 py-1.5 text-sm font-medium text-[var(--pb-text-secondary)] transition-[transform,background-color,color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] data-[state=active]:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
                     style={
                       props.tab === "services"
                         ? { backgroundColor: "var(--pb-bg-surface)", color: "var(--pb-text-primary)" }
@@ -128,20 +127,20 @@ export function ProfileTeamDialog(props: Props) {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="about" className="space-y-5">
-                  <section className="rounded-2xl border border-[var(--pb-border-soft)] bg-[var(--pb-bg-surface)] p-4 sm:p-5">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--pb-muted)]">{m.about}</p>
+                <TabsContent value="about" className="space-y-4">
+                  <section className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pb-muted)]">{m.about}</p>
                     <p className="text-sm leading-6 text-[var(--pb-text-secondary)]">
                       {selectedMember.bio || `${selectedMember.name} ${m.bioFallback}`}
                     </p>
                   </section>
 
                   {selectedMember.specialties.length > 0 ? (
-                    <section className="space-y-2.5 rounded-2xl border border-[var(--pb-border-soft)] bg-[var(--pb-bg-surface)] p-4 sm:p-5">
+                    <section className="space-y-2 border-t border-[var(--pb-divider)] pt-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pb-muted)]">{m.specialties}</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedMember.specialties.map((tag) => (
-                          <span key={`${selectedMember.id}-${tag}`} className="rounded-full border border-[var(--pb-chip-border)] bg-[var(--pb-chip-bg)] px-3 py-1.5 text-xs font-medium text-[var(--pb-chip-text)]">
+                          <span key={`${selectedMember.id}-${tag}`} className="rounded-full border border-[var(--pb-chip-border)] bg-[var(--pb-chip-bg)] px-2.5 py-1 text-xs font-medium text-[var(--pb-chip-text)]">
                             {tag}
                           </span>
                         ))}
@@ -150,11 +149,11 @@ export function ProfileTeamDialog(props: Props) {
                   ) : null}
 
                   {selectedMember.languages.length > 0 ? (
-                    <section className="space-y-2.5 rounded-2xl border border-[var(--pb-border-soft)] bg-[var(--pb-bg-surface)] p-4 sm:p-5">
+                    <section className="space-y-2 border-t border-[var(--pb-divider)] pt-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pb-muted)]">{m.languages}</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedMember.languages.map((language) => (
-                          <span key={`${selectedMember.id}-${language}`} className="rounded-full border border-[var(--pb-chip-border)] bg-[var(--pb-chip-bg)] px-3 py-1.5 text-xs font-medium text-[var(--pb-chip-text)]">
+                          <span key={`${selectedMember.id}-${language}`} className="rounded-full border border-[var(--pb-chip-border)] bg-[var(--pb-chip-bg)] px-2.5 py-1 text-xs font-medium text-[var(--pb-chip-text)]">
                             {formatProfileLanguageLabel(language, props.locale)}
                           </span>
                         ))}
@@ -204,8 +203,7 @@ export function ProfileTeamDialog(props: Props) {
               </Tabs>
             </div>
 
-            <div className="sticky bottom-0 border-t border-[var(--pb-divider)] bg-[var(--pb-surface)]/95 px-6 py-4 backdrop-blur-sm sm:static sm:bg-[color-mix(in_srgb,var(--pb-bg-surface)_80%,var(--pb-surface)_20%)] sm:px-8">
-              <p className="mb-2 text-center text-xs text-[var(--pb-muted)]">{pageMessages.book} {m.services.toLowerCase()}</p>
+            <div className="sticky bottom-0 border-t border-[var(--pb-divider)] bg-[var(--pb-surface)]/95 px-6 py-3 backdrop-blur-sm sm:static sm:bg-[color-mix(in_srgb,var(--pb-bg-surface)_80%,var(--pb-surface)_20%)] sm:px-8">
               <Button
                 asChild
                 className="h-11 w-full text-sm font-semibold transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] active:translate-y-px motion-reduce:transform-none"
