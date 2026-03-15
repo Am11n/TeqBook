@@ -258,7 +258,7 @@ export function BrandingForm({
             <p className="text-xs text-muted-foreground mt-1">Font family for the booking page</p>
           </Field>
 
-          <Field label="Page Background" htmlFor="backgroundMode">
+          <Field label="Booking Page Background" htmlFor="backgroundMode">
             <div className="space-y-3">
               <DialogSelect
                 value={backgroundMode}
@@ -351,6 +351,9 @@ export function BrandingForm({
                   )}
                 </div>
               )}
+              <p className="text-xs text-muted-foreground">
+                Applies to the public booking page only. Public salon profile uses platform background.
+              </p>
             </div>
           </Field>
 

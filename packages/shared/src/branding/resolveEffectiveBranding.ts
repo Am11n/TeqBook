@@ -34,6 +34,7 @@ export type ThemePackSnapshot = {
 } | null;
 
 export type ResolveEffectiveBrandingInput = {
+  context?: "public_booking" | "public_profile";
   plan: BrandingPlan | string | null | undefined;
   theme_pack_id?: string | null;
   theme_pack_version?: number | null;
@@ -77,6 +78,8 @@ export type EffectiveBranding = {
   themePackVersion?: number;
   themePackHash?: string;
 };
+
+const PLATFORM_PROFILE_BACKGROUND = "#f5f6f8";
 
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === "object") {
@@ -196,6 +199,7 @@ export function createThemePackSnapshot(pack: ThemePackDefinition): ThemePackSna
 }
 
 export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): Readonly<EffectiveBranding> {
+  const context = input.context ?? "public_booking";
   const plan = resolvePlan(input.plan);
 
   if (plan === "starter") {
@@ -339,6 +343,21 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
       ?? input.theme_pack_hash
       ?? undefined,
   };
+  if (context === "public_profile") {
+    merged.pageBackground = PLATFORM_PROFILE_BACKGROUND;
+    merged.pageBackgroundMode = "solid";
+    merged.backgroundMode = "default";
+    merged.backgroundColor = PLATFORM_PROFILE_BACKGROUND;
+    merged.gradientStart = undefined;
+    merged.gradientEnd = undefined;
+    merged.gradientAngle = 180;
+    // Profile surface language is platform-owned to keep consistency.
+    merged.cardBackground = "#ffffff";
+    merged.surfaceStyle = "soft";
+    merged.buttonStyle = "soft";
+    merged.slotStyle = "minimal";
+    merged.headerStyle = "standard";
+  }
 
   return deepFreeze(structuredClone(merged));
 }

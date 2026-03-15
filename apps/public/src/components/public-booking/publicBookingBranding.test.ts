@@ -118,8 +118,8 @@ describe("public booking branding resolver", () => {
       },
       appearance: {
         backgroundMode: "soft_gradient",
-        gradientStart: "#0f2027",
-        gradientEnd: "#2c5364",
+        gradientStart: "#e0f2fe",
+        gradientEnd: "#f8fafc",
         gradientAngle: 160,
       },
       components: {
@@ -142,8 +142,8 @@ describe("public booking branding resolver", () => {
         colors: { primary: "#317481" },
         appearance: {
           backgroundMode: "soft_gradient",
-          gradientStart: "#0f2027",
-          gradientEnd: "#2c5364",
+          gradientStart: "#e0f2fe",
+          gradientEnd: "#f8fafc",
           gradientAngle: 170,
         },
         components: {
@@ -160,6 +160,36 @@ describe("public booking branding resolver", () => {
     expect(tokens.button.radius).toBe("9999px");
     expect(tokens.slot.radius).toBe("9999px");
     expect(tokens.header.logoSize).toBe("52px");
+  });
+
+  it("locks profile context to platform background while keeping booking customizable", () => {
+    const input = {
+      plan: "business" as const,
+      theme_pack_id: "barber-bold",
+      theme_pack_snapshot: createThemePackSnapshot(findThemePackById("barber-bold")!),
+      theme_overrides: {
+        appearance: {
+          backgroundMode: "soft_gradient" as const,
+          gradientStart: "#e0f2fe",
+          gradientEnd: "#f8fafc",
+          gradientAngle: 160,
+        },
+      },
+    };
+
+    const bookingResolved = resolveEffectiveBranding({
+      ...input,
+      context: "public_booking",
+    });
+    const profileResolved = resolveEffectiveBranding({
+      ...input,
+      context: "public_profile",
+    });
+
+    expect(bookingResolved.backgroundMode).toBe("soft_gradient");
+    expect(profileResolved.backgroundMode).toBe("default");
+    expect(profileResolved.backgroundColor).toBe("#f5f6f8");
+    expect(profileResolved.pageBackgroundMode).toBe("solid");
   });
 
   it("falls back to legacy theme when override object has unknown keys", () => {

@@ -13,8 +13,12 @@ type RawAvailableSlot = {
   employee_name?: string;
 };
 
-export function computeEffectiveBranding(salon: Salon): PublicBookingEffectiveBranding {
+export function computeEffectiveBranding(
+  salon: Salon,
+  context: "public_booking" | "public_profile" = "public_booking"
+): PublicBookingEffectiveBranding {
   const resolved = resolveEffectiveBranding({
+    context,
     plan: salon.plan,
     theme_pack_id: salon.theme_pack_id,
     theme_pack_version: salon.theme_pack_version,

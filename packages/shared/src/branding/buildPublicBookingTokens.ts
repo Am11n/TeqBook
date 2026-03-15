@@ -2,6 +2,9 @@ import type { EffectiveBranding } from "./resolveEffectiveBranding";
 
 const PRIMARY_TEXT_LIGHT = "#ffffff";
 const PRIMARY_TEXT_DARK = "#101828";
+const CONTENT_TEXT = "#0f172a";
+const SAFE_PAGE_BACKGROUND = "#f5f6f8";
+const MIN_CONTRAST_RATIO = 4.5;
 
 type Rgb = { r: number; g: number; b: number };
 
@@ -33,6 +36,10 @@ function contrastRatio(a: string, b: string): number {
   const light = Math.max(luminance(a), luminance(b));
   const dark = Math.min(luminance(a), luminance(b));
   return (light + 0.05) / (dark + 0.05);
+}
+
+function ensureReadableBackground(hex: string): string {
+  return contrastRatio(hex, CONTENT_TEXT) >= MIN_CONTRAST_RATIO ? hex : SAFE_PAGE_BACKGROUND;
 }
 
 function pickPrimaryTextColor(primaryHex: string): string {
@@ -143,14 +150,20 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
   const primaryText = pickPrimaryTextColor(primary);
   const primaryHover = darken(primary, 0.14);
   const focusColor = rgba(primary, 0.35);
-  const pageBackgroundBase = branding.backgroundColor || branding.pageBackground || "#f5f6f8";
+  const pageBackgroundBase = ensureReadableBackground(
+    branding.backgroundColor || branding.pageBackground || SAFE_PAGE_BACKGROUND
+  );
   // Keep all booking cards on white surface for consistent contrast.
   const cardBackground = "#ffffff";
-  const gradientStart = branding.gradientStart || mix(primary, pageBackgroundBase, 0.84);
-  const gradientEnd = branding.gradientEnd || pageBackgroundBase;
+  const gradientStart = ensureReadableBackground(branding.gradientStart || mix(primary, pageBackgroundBase, 0.84));
+  const gradientEnd = ensureReadableBackground(branding.gradientEnd || pageBackgroundBase);
   const gradientModeEnabled =
     branding.backgroundMode === "soft_gradient" || branding.pageBackgroundMode === "gradient";
-  const pageBackground = gradientModeEnabled
+  const canUseGradient =
+    gradientModeEnabled
+    && contrastRatio(gradientStart, CONTENT_TEXT) >= MIN_CONTRAST_RATIO
+    && contrastRatio(gradientEnd, CONTENT_TEXT) >= MIN_CONTRAST_RATIO;
+  const pageBackground = canUseGradient
     ? `linear-gradient(${branding.gradientAngle}deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
     : pageBackgroundBase;
 
@@ -250,7 +263,7 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
       pageBackground,
       pageBackgroundBase,
       cardBackground,
-      text: "#0f172a",
+      text: CONTENT_TEXT,
       surface: cardBackground,
       surface2: mix(cardBackground, pageBackgroundBase, 0.45),
       border: "#e2e8f0",

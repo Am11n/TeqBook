@@ -77,6 +77,7 @@ type PublicProfileClientProps = {
 };
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const BASE_CARD_CLASS = "rounded-2xl border bg-[var(--pb-surface)] shadow-[var(--pb-shadow-1)]";
 
 function formatPrice(priceCents: number | null): string | null {
   if (!priceCents || priceCents <= 0) return null;
@@ -114,6 +115,7 @@ function buildTagline(description: string, addressLine: string | null): string {
     : "Precision cuts, fades and beard grooming.";
   const genericSignals = [
     "professional barber",
+    "professional barber in",
     "book your next appointment online",
     "professional salon",
   ];
@@ -146,9 +148,25 @@ function formatTimeShort(value: string | null): string | null {
   return value.slice(0, 5);
 }
 
+function getTodayDayOfWeek(): number {
+  return (new Date().getDay() + 6) % 7;
+}
+
+function formatOpeningHoursRange(item: { isClosed: boolean; openTime: string | null; closeTime: string | null }): string {
+  if (item.isClosed) return "Closed";
+  const open = formatTimeShort(item.openTime) || "--:--";
+  const close = formatTimeShort(item.closeTime) || "--:--";
+  return `${open} - ${close}`;
+}
+
+function MetaDivider() {
+  return <span className="text-[var(--pb-border)]">·</span>;
+}
+
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [teamModalTab, setTeamModalTab] = useState<"about" | "services">("about");
   const selectedMember = useMemo(
     () => props.teamPreview.find((member) => member.id === selectedMemberId) || null,
     [props.teamPreview, selectedMemberId]
@@ -166,6 +184,11 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     if (props.hero.isOpenNow === false) return "Closed now";
     return props.hero.openStatusLabel;
   }, [props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
+  const todayDayOfWeek = useMemo(() => getTodayDayOfWeek(), []);
+  const cardStyle = useMemo(
+    () => ({ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }),
+    [props.tokens.colors.border, props.tokens.colors.cardBackground]
+  );
 
   const handleShare = async () => {
     trackPublicEvent("click_share_profile", {
@@ -214,7 +237,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
       <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:space-y-8">
         <section
           className="overflow-hidden rounded-3xl border shadow-sm"
-          style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
+          style={cardStyle}
         >
           <div className="grid md:grid-cols-[1fr_1fr]">
             <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
@@ -235,22 +258,24 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
               <div className="space-y-2.5">
                 <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{props.hero.name}</h1>
 
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-[var(--pb-muted)]">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-[var(--pb-muted)]">
                   {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
                     <span className="inline-flex items-center gap-1.5">
                       <span className="text-amber-500">★</span>
                       {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} reviews)
                     </span>
                   ) : null}
+                  {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 && openCloseMeta ? <MetaDivider /> : null}
                   {openCloseMeta ? (
                     <span>{openCloseMeta}</span>
                   ) : null}
                 </div>
 
-                <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-[var(--pb-muted)]">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-[var(--pb-muted)]">
                   {props.hero.addressLine ? (
                     <span>{props.hero.addressLine}</span>
                   ) : null}
+                  {props.hero.addressLine ? <MetaDivider /> : null}
                   <span>Pay in salon</span>
                 </p>
 
@@ -277,7 +302,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                 <Button
                   variant="outline"
                   onClick={handleShare}
-                  className="h-11 rounded-xl border-slate-300/80 bg-white/70 px-4 font-medium sm:w-auto"
+                  className="h-11 rounded-xl border-slate-300/80 bg-white/70 px-4 font-medium sm:w-auto hover:bg-white"
                 >
                   Share
                 </Button>
@@ -294,12 +319,12 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Services</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {props.servicesPreview.map((service) => (
+            {props.servicesPreview.slice(0, 6).map((service) => (
               <Link
                 key={service.id}
                 href={`${props.bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-                className="rounded-xl border p-4 transition hover:shadow-sm"
-                style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
+                className={`${BASE_CARD_CLASS} flex min-h-[132px] flex-col justify-between p-4 transition hover:-translate-y-0.5`}
+                style={cardStyle}
                 onClick={() =>
                   trackPublicEvent("click_service_preview", {
                     salon_id: props.salonId,
@@ -309,13 +334,17 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                   })
                 }
               >
-                <p className="font-medium">{service.name}</p>
-                <p className="text-sm text-[var(--pb-muted)]">{service.durationMinutes ? `${service.durationMinutes} min` : "Duration on request"}</p>
-                {formatPrice(service.priceCents) ? <p className="mt-1 text-sm">{formatPrice(service.priceCents)}</p> : null}
+                <div className="space-y-1.5">
+                  <p className="font-medium">{service.name}</p>
+                  <p className="text-sm text-[var(--pb-muted)]">
+                    {service.durationMinutes ? `${service.durationMinutes} min` : "Duration on request"}
+                  </p>
+                </div>
+                {formatPrice(service.priceCents) ? <p className="text-sm font-medium">{formatPrice(service.priceCents)}</p> : null}
               </Link>
             ))}
           </div>
-          <Link href={props.bookUrl} className="inline-block text-sm font-medium underline underline-offset-2">
+          <Link href={props.bookUrl} className="inline-block text-sm font-medium text-slate-700 underline underline-offset-2">
             See all services
           </Link>
         </section>
@@ -328,10 +357,11 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                 <button
                   key={member.id}
                   type="button"
-                  className="rounded-xl border p-4 text-left transition hover:shadow-sm"
-                  style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
+                  className={`${BASE_CARD_CLASS} flex h-full flex-col gap-3 p-4 text-left transition hover:-translate-y-0.5`}
+                  style={cardStyle}
                   onClick={() => {
                     setSelectedMemberId(member.id);
+                    setTeamModalTab("about");
                     trackPublicEvent("click_team_member", {
                       salon_id: props.salonId,
                       slug: props.slug,
@@ -346,19 +376,37 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                     });
                   }}
                 >
-                  {member.imageUrl ? (
-                    <div className="mb-3 h-12 w-12 overflow-hidden rounded-full bg-[var(--pb-surface)]">
-                      <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                  <div className="flex items-center gap-3">
+                    {member.imageUrl ? (
+                      <div className="h-12 w-12 overflow-hidden rounded-full bg-[var(--pb-surface)]">
+                        <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div
+                        className="inline-flex h-12 w-12 items-center justify-center rounded-full font-semibold text-white"
+                        style={{ backgroundColor: props.tokens.colors.primary }}
+                      >
+                        {fallbackAvatar(member.name)}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{member.name}</p>
+                      <p className="truncate text-sm capitalize text-[var(--pb-muted)]">{member.title || "Team member"}</p>
                     </div>
-                  ) : (
-                    <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--pb-surface)] font-semibold">
-                      {fallbackAvatar(member.name)}
-                    </div>
-                  )}
-                  <p className="font-medium">{member.name}</p>
-                  <p className="text-sm capitalize text-[var(--pb-muted)]">{member.title || "Team member"}</p>
-                  <p className="mt-2 text-sm text-[var(--pb-muted)]">{member.specialties.join(", ") || "Haircut and grooming"}</p>
-                  <p className="mt-2 text-sm font-medium underline underline-offset-2">See profile</p>
+                  </div>
+
+                  <p className="text-sm text-[var(--pb-muted)]">
+                    {member.bio || "Experienced barber focused on precision cuts and clean grooming."}
+                  </p>
+
+                  <div className="mt-auto flex flex-wrap gap-1.5">
+                    {(member.specialties.length ? member.specialties : ["Haircut", "Grooming"]).slice(0, 2).map((tag) => (
+                      <span key={`${member.id}-${tag}`} className="rounded-full border px-2 py-0.5 text-xs text-[var(--pb-muted)]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 underline underline-offset-2">View profile</p>
                 </button>
               ))}
             </div>
@@ -406,69 +454,83 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           </section>
         ) : null}
 
-        <section
-          className="rounded-xl border p-5"
-          style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
-        >
-          <h2 className="text-xl font-semibold">About</h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--pb-muted)]">{props.about.description}</p>
-          {props.socialLinks.instagramUrl ? (
-            <a
-              href={props.socialLinks.instagramUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 inline-block text-sm font-medium underline underline-offset-2"
-              onClick={() =>
-                trackPublicEvent("click_instagram", {
-                  salon_id: props.salonId,
-                  slug: props.slug,
-                  cta_location: "about",
-                })
-              }
-            >
-              Instagram
-            </a>
-          ) : null}
-        </section>
+        <section className="grid gap-4 lg:grid-cols-3">
+          <article className={`${BASE_CARD_CLASS} p-5 lg:col-span-2`} style={cardStyle}>
+            <h2 className="text-xl font-semibold">About</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--pb-muted)]">{props.about.description}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {props.socialLinks.instagramUrl ? (
+                <a
+                  href={props.socialLinks.instagramUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  onClick={() =>
+                    trackPublicEvent("click_instagram", {
+                      salon_id: props.salonId,
+                      slug: props.slug,
+                      cta_location: "about",
+                    })
+                  }
+                >
+                  Instagram
+                </a>
+              ) : null}
+              {props.socialLinks.websiteUrl ? (
+                <a
+                  href={props.socialLinks.websiteUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Website
+                </a>
+              ) : null}
+            </div>
+          </article>
 
-        {props.mapLink ? (
-          <section
-            className="rounded-xl border p-5"
-            style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
-          >
-            <h2 className="text-xl font-semibold">Location</h2>
-            {props.hero.addressLine ? <p className="mt-2 text-sm text-[var(--pb-muted)]">{props.hero.addressLine}</p> : null}
-            <a
-              href={props.mapLink}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 inline-block text-sm font-medium underline underline-offset-2"
-              onClick={() =>
-                trackPublicEvent("click_map", {
-                  salon_id: props.salonId,
-                  slug: props.slug,
-                  cta_location: "map",
-                })
-              }
-            >
-              Open in Google Maps
-            </a>
-          </section>
-        ) : null}
+          <div className="space-y-4">
+            {props.mapLink ? (
+              <article className={`${BASE_CARD_CLASS} p-5`} style={cardStyle}>
+                <h2 className="text-lg font-semibold">Location</h2>
+                {props.hero.addressLine ? <p className="mt-2 text-sm text-[var(--pb-muted)]">{props.hero.addressLine}</p> : null}
+                <a
+                  href={props.mapLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  onClick={() =>
+                    trackPublicEvent("click_map", {
+                      salon_id: props.salonId,
+                      slug: props.slug,
+                      cta_location: "map",
+                    })
+                  }
+                >
+                  Open in Google Maps
+                </a>
+              </article>
+            ) : null}
 
-        <section
-          className="rounded-xl border p-5"
-          style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
-        >
-          <h2 className="text-xl font-semibold">Opening hours</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {props.openingHours.map((item) => (
-              <li key={item.dayOfWeek} className="flex items-center justify-between">
-                <span className="text-[var(--pb-muted)]">{WEEKDAYS[item.dayOfWeek] || "Day"}</span>
-                <span>{item.isClosed ? "Closed" : `${item.openTime || "--:--"} - ${item.closeTime || "--:--"}`}</span>
-              </li>
-            ))}
-          </ul>
+            <article className={`${BASE_CARD_CLASS} p-5`} style={cardStyle}>
+              <h2 className="text-lg font-semibold">Opening hours</h2>
+              <ul className="mt-3 space-y-2 text-sm">
+                {props.openingHours.map((item) => {
+                  const isToday = item.dayOfWeek === todayDayOfWeek;
+                  return (
+                    <li key={item.dayOfWeek} className="flex items-center justify-between">
+                      <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                        {WEEKDAYS[item.dayOfWeek] || "Day"}
+                      </span>
+                      <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                        {formatOpeningHoursRange(item)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </article>
+          </div>
         </section>
       </main>
 
@@ -498,15 +560,18 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                 <DialogTitle>{selectedMember.name}</DialogTitle>
               </DialogHeader>
               <Tabs
-                defaultValue="about"
+                value={teamModalTab}
                 onValueChange={(value) =>
+                  {
+                    setTeamModalTab(value as "about" | "services");
                   trackPublicEvent("switch_team_member_tab", {
                     salon_id: props.salonId,
                     slug: props.slug,
                     cta_location: "team_modal",
                     employee_id: selectedMember.id,
                     tab: value,
-                  })
+                  });
+                  }
                 }
               >
                 <TabsList className="grid w-full grid-cols-2">

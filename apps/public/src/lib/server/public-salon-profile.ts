@@ -284,7 +284,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
     theme_pack_snapshot: salon.theme_pack_snapshot || null,
     theme_overrides: salon.theme_overrides || null,
   };
-  const effectiveBranding = computeEffectiveBranding(bookingSalon);
+  const effectiveBranding = computeEffectiveBranding(bookingSalon, "public_profile");
   const tokens = buildPublicBookingTokens(effectiveBranding);
 
   const origin =

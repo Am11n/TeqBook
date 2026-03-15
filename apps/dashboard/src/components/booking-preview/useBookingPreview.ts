@@ -50,6 +50,7 @@ export function useBookingPreview(
   const effectiveBranding = useMemo(() => {
     if (!salon) return null;
     const resolved = resolveEffectiveBranding({
+      context: "public_booking",
       plan: salon.plan,
       theme_pack_id: salon.theme_pack_id,
       theme_pack_version: salon.theme_pack_version,
