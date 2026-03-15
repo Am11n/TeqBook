@@ -97,6 +97,54 @@ export async function deleteLogo(
 }
 
 /**
+ * Upload salon cover image to Supabase Storage
+ */
+export async function uploadCoverImage(
+  file: File,
+  salonId: string
+): Promise<{ data: { url: string; path: string } | null; error: string | null }> {
+  try {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      return { data: null, error: "File must be a JPG, PNG, or WebP image" };
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return { data: null, error: "File size must be less than 10MB" };
+    }
+
+    const fileExt = file.name.split(".").pop() || "jpg";
+    const filePath = `covers/${salonId}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("salon-assets")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+    if (uploadError) {
+      return { data: null, error: uploadError.message || "Upload failed" };
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("salon-assets")
+      .getPublicUrl(filePath);
+
+    if (!urlData?.publicUrl) {
+      return { data: null, error: "Failed to get public URL" };
+    }
+
+    return { data: { url: urlData.publicUrl, path: filePath }, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
  * Upload avatar to Supabase Storage
  */
 export async function uploadAvatar(

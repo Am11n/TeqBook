@@ -157,7 +157,6 @@ export default function BrandingSettingsPage() {
         setSecondaryColor={branding.setSecondaryColor}
         fontFamily={branding.fontFamily}
         setFontFamily={branding.setFontFamily}
-        logoUrl={branding.logoUrl}
         setLogoUrl={branding.setLogoUrl}
         logoPreview={branding.logoPreview}
         setLogoPreview={branding.setLogoPreview}

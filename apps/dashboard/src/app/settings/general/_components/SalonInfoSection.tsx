@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
@@ -15,6 +16,8 @@ interface SalonInfoSectionProps {
   orgNumber: string;
   description: string;
   coverImage: string;
+  uploadingCoverImage: boolean;
+  coverImageUploadError: string | null;
   instagramUrl: string;
   websiteUrl: string;
   publicProfileUrl: string | null;
@@ -22,6 +25,7 @@ interface SalonInfoSectionProps {
   errors: Record<string, string>;
   t: Record<string, string | undefined>;
   onChangeField: (field: string, value: string) => void;
+  onCoverImageUpload: (file: File) => void;
 }
 
 export function SalonInfoSection({
@@ -31,6 +35,8 @@ export function SalonInfoSection({
   orgNumber,
   description,
   coverImage,
+  uploadingCoverImage,
+  coverImageUploadError,
   instagramUrl,
   websiteUrl,
   publicProfileUrl,
@@ -38,8 +44,10 @@ export function SalonInfoSection({
   errors,
   t,
   onChangeField,
+  onCoverImageUpload,
 }: SalonInfoSectionProps) {
   const [copiedKey, setCopiedKey] = useState<"profile" | "booking" | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
 
   const trackDashboardLinkEvent = (eventName: string) => {
     const maybeGtag = (window as Window & { gtag?: (command: string, event: string, payload?: Record<string, unknown>) => void }).gtag;
@@ -119,13 +127,56 @@ export function SalonInfoSection({
         />
       </FormRow>
 
-      <FormRow label="Cover image URL" htmlFor="coverImage">
-        <Input
-          id="coverImage"
-          value={coverImage}
-          onChange={(e) => onChangeField("coverImage", e.target.value)}
-          placeholder="https://..."
-        />
+      <FormRow label="Cover image" htmlFor="coverImage">
+        <div className="space-y-3">
+          {coverImage ? (
+            <div className="relative h-28 w-full max-w-sm overflow-hidden rounded-md border bg-muted">
+              <Image
+                src={coverImage}
+                alt="Cover preview"
+                fill
+                sizes="384px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex h-28 w-full max-w-sm items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
+              No cover image uploaded
+            </div>
+          )}
+
+          <input
+            ref={coverInputRef}
+            id="coverImage"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) onCoverImageUpload(file);
+              event.currentTarget.value = "";
+            }}
+          />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => coverInputRef.current?.click()}
+              disabled={uploadingCoverImage}
+            >
+              {uploadingCoverImage ? "Uploading..." : "Upload cover image"}
+            </Button>
+            {coverImage ? (
+              <Button type="button" variant="ghost" onClick={() => onChangeField("coverImage", "")}>
+                Remove
+              </Button>
+            ) : null}
+          </div>
+          <p className="text-xs text-muted-foreground">JPG, PNG or WebP (max 10MB)</p>
+          {coverImageUploadError ? (
+            <p className="text-xs text-destructive">{coverImageUploadError}</p>
+          ) : null}
+        </div>
       </FormRow>
 
       <FormRow label="Instagram URL" htmlFor="instagramUrl">

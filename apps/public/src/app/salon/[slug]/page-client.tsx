@@ -258,9 +258,15 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                     });
                   }}
                 >
-                  <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--pb-surface)] font-semibold">
-                    {fallbackAvatar(member.name)}
-                  </div>
+                  {member.imageUrl ? (
+                    <div className="mb-3 h-12 w-12 overflow-hidden rounded-full bg-[var(--pb-surface)]">
+                      <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--pb-surface)] font-semibold">
+                      {fallbackAvatar(member.name)}
+                    </div>
+                  )}
                   <p className="font-medium">{member.name}</p>
                   <p className="text-sm capitalize text-[var(--pb-muted)]">{member.title || "Team member"}</p>
                   <p className="mt-2 text-sm text-[var(--pb-muted)]">{member.specialties.join(", ") || "Haircut and grooming"}</p>
@@ -420,6 +426,15 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                   <TabsTrigger value="services">Services</TabsTrigger>
                 </TabsList>
                 <TabsContent value="about" className="space-y-3">
+                  {selectedMember.imageUrl ? (
+                    <div className="h-16 w-16 overflow-hidden rounded-full bg-[var(--pb-surface)]">
+                      <img src={selectedMember.imageUrl} alt={selectedMember.name} className="h-full w-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--pb-surface)] text-lg font-semibold">
+                      {fallbackAvatar(selectedMember.name)}
+                    </div>
+                  )}
                   <p className="text-sm text-[var(--pb-muted)]">{selectedMember.title || "Team member"}</p>
                   <p className="text-sm text-[var(--pb-muted)]">
                     {selectedMember.bio || `${selectedMember.name} helps customers with modern cuts and grooming.`}

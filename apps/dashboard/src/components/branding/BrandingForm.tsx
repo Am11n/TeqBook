@@ -19,7 +19,6 @@ interface BrandingFormProps {
   setSecondaryColor: (color: string) => void;
   fontFamily: string;
   setFontFamily: (font: string) => void;
-  logoUrl: string;
   setLogoUrl: (url: string) => void;
   logoPreview: string | null;
   setLogoPreview: (preview: string | null) => void;
@@ -74,7 +73,6 @@ export function BrandingForm({
   setSecondaryColor,
   fontFamily,
   setFontFamily,
-  logoUrl,
   setLogoUrl,
   logoPreview,
   setLogoPreview,
@@ -454,23 +452,10 @@ export function BrandingForm({
                   <Upload className="mr-2 h-4 w-4" />
                   {uploadingLogo ? "Uploading..." : "Upload Logo"}
                 </Button>
-                <span className="text-xs text-muted-foreground">or</span>
-                <Input
-                  id="logoUrl"
-                  type="url"
-                  value={logoUrl}
-                  onChange={(e) => {
-                    setLogoUrl(e.target.value);
-                    setLogoPreview(e.target.value || null);
-                  }}
-                  placeholder="https://example.com/logo.png"
-                  disabled={isStarterPlan}
-                  className="max-w-md"
-                />
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Upload a logo file or enter a URL (max 5MB, PNG/JPG recommended)
+              Upload a logo file (max 5MB, PNG/JPG recommended)
             </p>
           </Field>
         </div>

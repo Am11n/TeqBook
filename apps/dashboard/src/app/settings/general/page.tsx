@@ -11,6 +11,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
+import { uploadCoverImage } from "@/lib/services/storage-service";
 import { useRouter } from "next/navigation";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import { SettingsGrid } from "@/components/settings/SettingsGrid";
@@ -35,6 +36,8 @@ export default function GeneralSettingsPage() {
   const { registerDirtyState, reportLastSaved } = useTabGuard();
 
   const [languageLimit, setLanguageLimit] = useState<number | null>(null);
+  const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
+  const [coverImageUploadError, setCoverImageUploadError] = useState<string | null>(null);
   const userRole = profile?.role || "owner";
   const salonProfile = (salon as (typeof salon & {
     description?: string | null;
@@ -158,6 +161,22 @@ export default function GeneralSettingsPage() {
   const publicProfileUrl = typeof window !== "undefined" && salon?.slug
     ? `${window.location.origin}/salon/${salon.slug}`
     : null;
+
+  const handleCoverImageUpload = useCallback(async (file: File) => {
+    if (!salon?.id) return;
+    setUploadingCoverImage(true);
+    setCoverImageUploadError(null);
+
+    const { data, error } = await uploadCoverImage(file, salon.id);
+    if (error || !data?.url) {
+      setCoverImageUploadError(error ?? "Failed to upload cover image");
+      setUploadingCoverImage(false);
+      return;
+    }
+
+    form.setValue("coverImage", data.url);
+    setUploadingCoverImage(false);
+  }, [salon?.id, form]);
   const directBookingUrl = typeof window !== "undefined" && salon?.slug
     ? `${window.location.origin}/book/${salon.slug}`
     : null;
@@ -243,6 +262,8 @@ export default function GeneralSettingsPage() {
             orgNumber={form.values.orgNumber}
             description={form.values.description}
             coverImage={form.values.coverImage}
+            uploadingCoverImage={uploadingCoverImage}
+            coverImageUploadError={coverImageUploadError}
             instagramUrl={form.values.instagramUrl}
             websiteUrl={form.values.websiteUrl}
             publicProfileUrl={publicProfileUrl}
@@ -250,6 +271,7 @@ export default function GeneralSettingsPage() {
             errors={form.errors}
             t={t as Record<string, string | undefined>}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}
+            onCoverImageUpload={handleCoverImageUpload}
           />
 
           <RegionalSection
