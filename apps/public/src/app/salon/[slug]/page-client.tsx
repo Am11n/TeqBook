@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Tabs, TabsContent, TabsList, TabsTrigger } from "@teqbook/ui";
-import { Clock3, MapPin, Share2, Star, Wallet } from "lucide-react";
 import { buildPublicBookingCssVars } from "@/components/public-booking/publicBookingTokens";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import type { PublicBookingTokens } from "@/components/public-booking/types";
@@ -98,11 +97,53 @@ function fallbackAvatar(name: string): string {
   return letters.join("") || "TB";
 }
 
-function buildTagline(description: string): string {
+function extractCity(addressLine: string | null): string | null {
+  if (!addressLine) return null;
+  const parts = addressLine
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 1 ? parts[parts.length - 1] : null;
+}
+
+function buildTagline(description: string, addressLine: string | null): string {
   const trimmed = description.trim();
-  if (!trimmed) return "Premium cuts, grooming, and salon care.";
+  const city = extractCity(addressLine);
+  const premiumFallback = city
+    ? `Precision cuts, fades and beard grooming in ${city}.`
+    : "Precision cuts, fades and beard grooming.";
+  const genericSignals = [
+    "professional barber",
+    "book your next appointment online",
+    "professional salon",
+  ];
+
+  if (!trimmed) return premiumFallback;
+  if (genericSignals.some((signal) => trimmed.toLowerCase().includes(signal))) {
+    return premiumFallback;
+  }
   if (trimmed.length <= 140) return trimmed;
   return `${trimmed.slice(0, 137).trimEnd()}...`;
+}
+
+function getTodayOpeningHours(
+  openingHours: Array<{
+    dayOfWeek: number;
+    isClosed: boolean;
+    openTime: string | null;
+    closeTime: string | null;
+  }>
+): { closeTime: string | null; isClosed: boolean } | null {
+  const jsDay = new Date().getDay();
+  const mondayBasedDay = (jsDay + 6) % 7;
+  const today = openingHours.find((entry) => entry.dayOfWeek === mondayBasedDay);
+  if (!today) return null;
+  return { closeTime: today.closeTime, isClosed: today.isClosed };
+}
+
+function formatTimeShort(value: string | null): string | null {
+  if (!value) return null;
+  return value.slice(0, 5);
 }
 
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
@@ -112,7 +153,19 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     () => props.teamPreview.find((member) => member.id === selectedMemberId) || null,
     [props.teamPreview, selectedMemberId]
   );
-  const heroTagline = useMemo(() => buildTagline(props.about.description), [props.about.description]);
+  const heroTagline = useMemo(
+    () => buildTagline(props.about.description, props.hero.addressLine),
+    [props.about.description, props.hero.addressLine]
+  );
+  const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
+  const openCloseMeta = useMemo(() => {
+    if (props.hero.isOpenNow === true) {
+      const closeAt = formatTimeShort(todayHours?.closeTime || null);
+      return closeAt ? `Open now · Closes ${closeAt}` : "Open now";
+    }
+    if (props.hero.isOpenNow === false) return "Closed now";
+    return props.hero.openStatusLabel;
+  }, [props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
 
   const handleShare = async () => {
     trackPublicEvent("click_share_profile", {
@@ -163,59 +216,48 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           className="overflow-hidden rounded-3xl border shadow-sm"
           style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
         >
-          <div className="grid md:grid-cols-[1.15fr_0.85fr]">
+          <div className="grid md:grid-cols-[1fr_1fr]">
             <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
               {props.hero.coverImageUrl ? (
                 <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${props.hero.coverImageUrl})` }} />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent md:bg-gradient-to-l md:from-black/15 md:to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-black/0 to-transparent md:bg-gradient-to-l md:from-black/10 md:via-black/0 md:to-transparent" />
               {props.hero.logoUrl ? (
-                <div className="absolute right-4 top-4 rounded-xl border bg-white/95 p-2.5 shadow-md backdrop-blur-sm">
-                  <img src={props.hero.logoUrl} alt={props.hero.name} className="h-10 w-10 rounded-md object-contain sm:h-12 sm:w-12" />
+                <div className="absolute right-3 top-3 rounded-lg border bg-white/92 p-1.5 shadow-sm backdrop-blur-sm">
+                  <img src={props.hero.logoUrl} alt={props.hero.name} className="h-8 w-8 rounded object-contain sm:h-10 sm:w-10" />
                 </div>
               ) : null}
             </div>
 
-            <div className="order-2 space-y-5 p-5 sm:p-6 md:order-1 md:p-8">
-              <div className="space-y-3">
+            <div className="order-2 space-y-4 p-5 sm:p-6 md:order-1 md:p-7">
+              <div className="space-y-2.5">
                 <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{props.hero.name}</h1>
 
-                <div className="flex flex-wrap items-center gap-2.5 text-sm text-[var(--pb-muted)]">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-[var(--pb-muted)]">
                   {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="text-amber-500">★</span>
                       {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} reviews)
                     </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full border px-3 py-1">New on TeqBook</span>
-                  )}
-
-                  {props.hero.openStatusLabel ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {props.hero.openStatusLabel}
-                    </span>
                   ) : null}
-
-                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
-                    <Wallet className="h-3.5 w-3.5" />
-                    Pay in salon
-                  </span>
+                  {openCloseMeta ? (
+                    <span>{openCloseMeta}</span>
+                  ) : null}
                 </div>
 
-                {props.hero.addressLine ? (
-                  <p className="inline-flex items-center gap-2 text-sm text-[var(--pb-muted)]">
-                    <MapPin className="h-4 w-4 shrink-0" />
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-[var(--pb-muted)]">
+                  {props.hero.addressLine ? (
                     <span>{props.hero.addressLine}</span>
-                  </p>
-                ) : null}
+                  ) : null}
+                  <span>Pay in salon</span>
+                </p>
 
                 <p className="max-w-xl text-sm leading-relaxed text-[var(--pb-muted)] sm:text-base">{heroTagline}</p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
                 <Link href={props.bookUrl} className="w-full sm:w-auto">
                   <Button
                     className="h-11 w-full rounded-xl px-5 font-medium sm:w-auto"
@@ -232,24 +274,15 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                   </Button>
                 </Link>
 
-                <Button variant="outline" onClick={handleShare} className="h-11 rounded-xl px-5 font-medium sm:w-auto">
-                  <Share2 className="mr-2 h-4 w-4" />
+                <Button
+                  variant="outline"
+                  onClick={handleShare}
+                  className="h-11 rounded-xl border-slate-300/80 bg-white/70 px-4 font-medium sm:w-auto"
+                >
                   Share
                 </Button>
 
                 {shareMessage ? <p className="text-xs text-[var(--pb-muted)]">{shareMessage}</p> : null}
-              </div>
-
-              <div className="flex flex-wrap gap-2.5 text-xs font-medium text-[var(--pb-muted)]">
-                {props.hero.ratingAverage !== null && props.hero.ratingAverage >= 4.7 ? (
-                  <span className="rounded-full border px-2.5 py-1">Top rated</span>
-                ) : null}
-                <span className="rounded-full border px-2.5 py-1">Pay in salon</span>
-                {props.hero.isOpenNow !== null ? (
-                  <span className="rounded-full border px-2.5 py-1">
-                    {props.hero.isOpenNow ? "Open now" : "Closed now"}
-                  </span>
-                ) : null}
               </div>
             </div>
           </div>
