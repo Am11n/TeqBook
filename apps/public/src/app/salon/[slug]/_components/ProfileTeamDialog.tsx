@@ -50,11 +50,12 @@ export function ProfileTeamDialog(props: Props) {
     >
       <div
         aria-hidden="true"
+        onClick={() => props.onOpenChange(false)}
         style={{
           position: "fixed",
           inset: 0,
           zIndex: 70,
-          backgroundColor: "rgba(0,0,0,0.45)",
+          backgroundColor: "var(--pb-overlay)",
         }}
       />
       <div
@@ -75,7 +76,7 @@ export function ProfileTeamDialog(props: Props) {
           ref={closeButtonRef}
           type="button"
           aria-label={m.closeDialog}
-          className="absolute right-4 top-4 rounded-md border px-2 py-1 text-sm text-[var(--pb-muted)] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+          className="absolute right-4 top-4 rounded-md border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-1 text-sm text-[var(--pb-secondary-text)] hover:bg-[var(--pb-bg-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
           onClick={() => props.onOpenChange(false)}
         >
           X
@@ -187,7 +188,7 @@ export function ProfileTeamDialog(props: Props) {
           </TabsContent>
         </Tabs>
 
-        <div className="sticky bottom-0 -mx-6 mt-4 border-t bg-[var(--pb-surface)] px-6 py-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+        <div className="sticky bottom-0 -mx-6 mt-4 border-t border-[var(--pb-divider)] bg-[var(--pb-surface)] px-6 py-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
           <Button
             asChild
             className="w-full"

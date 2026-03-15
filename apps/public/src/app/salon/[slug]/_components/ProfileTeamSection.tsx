@@ -12,6 +12,7 @@ type Props = {
   members: PublicTeamMember[];
   cardStyle: CardStyle;
   primaryColor: string;
+  primaryTextColor: string;
   openMemberId: string | null;
   locale: AppLocale;
   onOpenMember: (member: PublicTeamMember, trigger: HTMLButtonElement) => void;
@@ -23,6 +24,7 @@ export function ProfileTeamSection({
   members,
   cardStyle,
   primaryColor,
+  primaryTextColor,
   openMemberId,
   locale,
   onOpenMember,
@@ -65,7 +67,10 @@ export function ProfileTeamSection({
                   <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
                 </div>
               ) : (
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full font-semibold text-white" style={{ backgroundColor: primaryColor }}>
+                <div
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full font-semibold"
+                  style={{ backgroundColor: primaryColor, color: primaryTextColor }}
+                >
                   {fallbackAvatar(member.name)}
                 </div>
               )}
@@ -81,12 +86,12 @@ export function ProfileTeamSection({
 
             <div className="mt-auto flex flex-wrap gap-1.5">
               {(member.specialties.length ? member.specialties : [m.defaultSpecialty1, m.defaultSpecialty2]).slice(0, 2).map((tag) => (
-                <span key={`${member.id}-${tag}`} className="rounded-full border px-2 py-0.5 text-xs text-[var(--pb-muted)]">
+                <span key={`${member.id}-${tag}`} className="rounded-full border border-[var(--pb-chip-border)] bg-[var(--pb-chip-bg)] px-2 py-0.5 text-xs text-[var(--pb-chip-text)]">
                   {tag}
                 </span>
               ))}
             </div>
-            <p className="inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium text-slate-700 transition group-hover:bg-slate-50">
+            <p className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 py-1 text-sm font-medium text-[var(--pb-secondary-text)] transition group-hover:bg-[var(--pb-bg-surface)]">
               <span>{m.viewProfile}</span>
               <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
             </p>

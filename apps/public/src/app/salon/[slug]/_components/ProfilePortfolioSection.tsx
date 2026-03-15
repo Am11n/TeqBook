@@ -17,7 +17,7 @@ export function ProfilePortfolioSection({ items, borderColor, locale }: Props) {
       <h2 className="text-xl font-semibold">{m.portfolioHeading}</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
-          <figure key={item.id} className="overflow-hidden rounded-xl border" style={{ borderColor }}>
+          <figure key={item.id} className="overflow-hidden rounded-xl border border-[var(--pb-border-soft)]" style={{ borderColor }}>
             <div className="aspect-square bg-[var(--pb-surface)]">
               <img src={item.imageUrl} alt={item.caption || m.portfolioAlt} className="h-full w-full object-cover" />
             </div>

@@ -26,7 +26,7 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
           <Link
             key={service.id}
             href={`${bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-            className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
+            className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
             style={cardStyle}
             onClick={() =>
               trackPublicEvent("click_service_preview", {
@@ -44,14 +44,14 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
                 {formatPrice(service.priceCents, locale) ? ` · ${formatPrice(service.priceCents, locale)}` : ""}
               </p>
             </div>
-            <p className="inline-flex items-center gap-1 text-sm font-medium text-slate-700">
+            <p className="inline-flex items-center gap-1 text-sm font-medium text-[var(--pb-text-secondary)]">
               <span>{m.book}</span>
               <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
             </p>
           </Link>
         ))}
       </div>
-      <Link href={bookUrl} className="inline-block text-sm font-medium text-slate-700 underline underline-offset-2">
+      <Link href={bookUrl} className="inline-block text-sm font-medium text-[var(--pb-text-secondary)] underline underline-offset-2">
         {m.seeAllServices}
       </Link>
     </section>

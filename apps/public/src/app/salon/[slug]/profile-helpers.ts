@@ -2,7 +2,7 @@ import type { OpeningHourItem, SocialItem } from "./profile-types";
 import type { AppLocale } from "@/i18n/translations";
 import { getLocaleTag, getProfilePageMessages } from "./profile-i18n";
 
-export const BASE_CARD_CLASS = "rounded-2xl border bg-[var(--pb-surface)] shadow-[var(--pb-shadow-1)]";
+export const BASE_CARD_CLASS = "rounded-2xl border border-[var(--pb-border-soft)] bg-[var(--pb-surface)] shadow-[var(--pb-shadow-1)]";
 
 export function formatPrice(priceCents: number | null, locale: AppLocale): string | null {
   if (!priceCents || priceCents <= 0) return null;
@@ -81,10 +81,12 @@ export function formatOpeningHoursRange(item: OpeningHourItem, locale: AppLocale
 
 export function buildHoursStatusLine(
   isOpenNow: boolean | null,
+  isClosedToday: boolean,
   closeTime: string | null,
   locale: AppLocale
 ): string {
   const m = getProfilePageMessages(locale);
+  if (isClosedToday) return m.closedNow;
   if (isOpenNow === true) {
     const closeAt = formatTimeShort(closeTime);
     return closeAt ? `${m.openNow} · ${m.closesAtLabel} ${closeAt}` : m.openNow;

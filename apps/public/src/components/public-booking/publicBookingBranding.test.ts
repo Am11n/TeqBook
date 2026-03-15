@@ -188,7 +188,9 @@ describe("public booking branding resolver", () => {
 
     expect(bookingResolved.backgroundMode).toBe("soft_gradient");
     expect(profileResolved.backgroundMode).toBe("default");
-    expect(profileResolved.backgroundColor).toBe("#f5f6f8");
+    expect(profileResolved.backgroundColor).toBe("#f6f3ee");
+    expect(profileResolved.cardBackground).toBe("#fffcf8");
+    expect(profileResolved.primaryColor).toBe("#2457f5");
     expect(profileResolved.pageBackgroundMode).toBe("solid");
   });
 

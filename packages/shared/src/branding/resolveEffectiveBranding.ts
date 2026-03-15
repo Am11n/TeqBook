@@ -79,7 +79,9 @@ export type EffectiveBranding = {
   themePackHash?: string;
 };
 
-const PLATFORM_PROFILE_BACKGROUND = "#f5f6f8";
+const PLATFORM_PROFILE_BACKGROUND = "#f6f3ee";
+const PLATFORM_PROFILE_CARD = "#fffcf8";
+const PLATFORM_PROFILE_PRIMARY = "#2457f5";
 
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === "object") {
@@ -352,7 +354,8 @@ export function resolveEffectiveBranding(input: ResolveEffectiveBrandingInput): 
     merged.gradientEnd = undefined;
     merged.gradientAngle = 180;
     // Profile surface language is platform-owned to keep consistency.
-    merged.cardBackground = "#ffffff";
+    merged.primaryColor = PLATFORM_PROFILE_PRIMARY;
+    merged.cardBackground = PLATFORM_PROFILE_CARD;
     merged.surfaceStyle = "soft";
     merged.buttonStyle = "soft";
     merged.slotStyle = "minimal";

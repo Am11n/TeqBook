@@ -5,6 +5,7 @@ const PRIMARY_TEXT_DARK = "#101828";
 const CONTENT_TEXT = "#0f172a";
 const SAFE_PAGE_BACKGROUND = "#f5f6f8";
 const MIN_CONTRAST_RATIO = 4.5;
+const PROFILE_WARM_CARD = "#fffcf8";
 
 type Rgb = { r: number; g: number; b: number };
 
@@ -153,8 +154,9 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
   const pageBackgroundBase = ensureReadableBackground(
     branding.backgroundColor || branding.pageBackground || SAFE_PAGE_BACKGROUND
   );
-  // Keep all booking cards on white surface for consistent contrast.
-  const cardBackground = "#ffffff";
+  // Keep card readability high while allowing a profile-specific warm card tone.
+  const cardBackground = ensureReadableBackground(branding.cardBackground || "#ffffff");
+  const useWarmProfilePalette = cardBackground.toLowerCase() === PROFILE_WARM_CARD;
   const gradientStart = ensureReadableBackground(branding.gradientStart || mix(primary, pageBackgroundBase, 0.84));
   const gradientEnd = ensureReadableBackground(branding.gradientEnd || pageBackgroundBase);
   const gradientModeEnabled =
@@ -263,15 +265,15 @@ export function buildPublicBookingTokens(branding: EffectiveBranding): PublicBoo
       pageBackground,
       pageBackgroundBase,
       cardBackground,
-      text: CONTENT_TEXT,
+      text: useWarmProfilePalette ? "#1e1a17" : CONTENT_TEXT,
       surface: cardBackground,
       surface2: mix(cardBackground, pageBackgroundBase, 0.45),
-      border: "#e2e8f0",
-      mutedText: "#64748b",
-      successBg: "#ecfdf3",
-      successText: "#166534",
-      errorBg: "#fef2f2",
-      errorText: "#b91c1c",
+      border: useWarmProfilePalette ? "#e7ded3" : "#e2e8f0",
+      mutedText: useWarmProfilePalette ? "#6b625a" : "#64748b",
+      successBg: useWarmProfilePalette ? "#e9f5ec" : "#ecfdf3",
+      successText: useWarmProfilePalette ? "#2f6a45" : "#166534",
+      errorBg: useWarmProfilePalette ? "#f8eae6" : "#fef2f2",
+      errorText: useWarmProfilePalette ? "#7a5048" : "#b91c1c",
       warningBg: "#fff7ed",
       warningText: "#c2410c",
     },

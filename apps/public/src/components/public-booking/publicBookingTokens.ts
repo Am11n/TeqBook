@@ -4,6 +4,14 @@ import type { CSSProperties } from "react";
 import type { PublicBookingTokens } from "./types";
 
 export function buildPublicBookingCssVars(tokens: PublicBookingTokens): CSSProperties {
+  const secondaryBg = `color-mix(in srgb, ${tokens.colors.pageBackgroundBase} 76%, ${tokens.colors.cardBackground} 24%)`;
+  const secondaryBorder = `color-mix(in srgb, ${tokens.colors.border} 78%, ${tokens.colors.pageBackgroundBase} 22%)`;
+  const secondaryText = `color-mix(in srgb, ${tokens.colors.text} 90%, ${tokens.colors.pageBackgroundBase} 10%)`;
+  const chipBg = `color-mix(in srgb, ${tokens.colors.pageBackgroundBase} 68%, ${tokens.colors.cardBackground} 32%)`;
+  const chipBorder = `color-mix(in srgb, ${tokens.colors.border} 72%, ${tokens.colors.pageBackgroundBase} 28%)`;
+  const chipText = `color-mix(in srgb, ${tokens.colors.mutedText} 92%, ${tokens.colors.text} 8%)`;
+  const strongBorder = `color-mix(in srgb, ${tokens.colors.border} 84%, ${tokens.colors.text} 16%)`;
+
   return {
     "--pb-primary": tokens.colors.primary,
     "--pb-primary-hover": tokens.colors.primaryHover,
@@ -22,6 +30,28 @@ export function buildPublicBookingCssVars(tokens: PublicBookingTokens): CSSPrope
     "--pb-error-text": tokens.colors.errorText,
     "--pb-warning-bg": tokens.colors.warningBg,
     "--pb-warning-text": tokens.colors.warningText,
+    "--pb-bg-page": tokens.colors.pageBackground,
+    "--pb-bg-surface": tokens.colors.surface,
+    "--pb-bg-surface-subtle": tokens.colors.surface2,
+    "--pb-text-primary": tokens.colors.text,
+    "--pb-text-secondary": secondaryText,
+    "--pb-text-muted": tokens.colors.mutedText,
+    "--pb-border-soft": tokens.colors.border,
+    "--pb-border-strong": strongBorder,
+    "--pb-accent-primary": tokens.colors.primary,
+    "--pb-accent-primary-hover": tokens.colors.primaryHover,
+    "--pb-secondary-bg": secondaryBg,
+    "--pb-secondary-border": secondaryBorder,
+    "--pb-secondary-text": secondaryText,
+    "--pb-chip-bg": chipBg,
+    "--pb-chip-border": chipBorder,
+    "--pb-chip-text": chipText,
+    "--pb-status-open-bg": tokens.colors.successBg,
+    "--pb-status-open-text": tokens.colors.successText,
+    "--pb-status-closed-bg": tokens.colors.errorBg,
+    "--pb-status-closed-text": tokens.colors.errorText,
+    "--pb-divider": `color-mix(in srgb, ${tokens.colors.border} 82%, ${tokens.colors.pageBackgroundBase} 18%)`,
+    "--pb-overlay": "rgba(30, 26, 23, 0.30)",
     "--pb-focus": tokens.focusRing.color,
     "--pb-shadow-1": tokens.shadow.level1,
     "--pb-shadow-2": tokens.shadow.level2,

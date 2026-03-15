@@ -38,6 +38,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
   const socialItems = useMemo(() => buildSocialItems(props.socialLinks), [props.socialLinks]);
   const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
   const openCloseMeta = useMemo(() => {
+    if (todayHours?.isClosed) return m.closedNow;
     if (props.hero.isOpenNow === true) {
       const closeAt = formatTimeShort(todayHours?.closeTime || null);
       return closeAt ? `${m.openNow} · ${m.closesLabel} ${closeAt}` : m.openNow;
@@ -46,9 +47,15 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     return props.hero.openStatusLabel;
   }, [m.closedNow, m.closesLabel, m.openNow, props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
   const hoursStatusLine = useMemo(
-    () => buildHoursStatusLine(props.hero.isOpenNow, todayHours?.closeTime || null, props.locale),
+    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),
     [props.hero.isOpenNow, todayHours, props.locale]
   );
+  const profileStatusKind = useMemo<"open" | "closed" | "neutral">(() => {
+    if (todayHours?.isClosed) return "closed";
+    if (props.hero.isOpenNow === true) return "open";
+    if (props.hero.isOpenNow === false) return "closed";
+    return "neutral";
+  }, [props.hero.isOpenNow, todayHours?.isClosed]);
   const todayDayOfWeek = useMemo(() => getTodayDayOfWeek(), []);
   const cardStyle = useMemo(
     () => ({ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }),
@@ -119,6 +126,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           tokens={props.tokens}
           heroTagline={heroTagline}
           openCloseMeta={openCloseMeta}
+          statusKind={profileStatusKind}
           shareMessage={shareMessage}
           onShare={handleShare}
           cardStyle={cardStyle}
@@ -140,6 +148,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           members={props.teamPreview}
           cardStyle={cardStyle}
           primaryColor={props.tokens.colors.primary}
+          primaryTextColor={props.tokens.colors.primaryText}
           openMemberId={selectedMember?.id || null}
           locale={props.locale}
           onOpenMember={(member, trigger) => {
@@ -166,10 +175,13 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           salonId={props.salonId}
           slug={props.slug}
           heroName={props.hero.name}
+          addressLine={props.hero.addressLine}
           aboutDescription={props.about.description}
           socialItems={socialItems}
           openingHours={props.openingHours}
           todayDayOfWeek={todayDayOfWeek}
+          isOpenNow={props.hero.isOpenNow}
+          isClosedToday={Boolean(todayHours?.isClosed)}
           hoursStatusLine={hoursStatusLine}
           mapLink={props.mapLink}
           mapPreviewImageUrl={props.mapPreviewImageUrl}
@@ -180,7 +192,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         />
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-[var(--pb-surface)] p-3 lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--pb-border-soft)] bg-[var(--pb-surface)] p-3 lg:hidden">
         <Link href={props.bookUrl}>
           <Button
             className="w-full"

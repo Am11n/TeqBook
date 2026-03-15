@@ -61,10 +61,13 @@ type Props = {
   salonId: string;
   slug: string;
   heroName: string;
+  addressLine: string | null;
   aboutDescription: string;
   socialItems: SocialItem[];
   openingHours: Array<{ dayOfWeek: number; isClosed: boolean; openTime: string | null; closeTime: string | null }>;
   todayDayOfWeek: number;
+  isOpenNow: boolean | null;
+  isClosedToday: boolean;
   hoursStatusLine: string;
   mapLink: string | null;
   mapPreviewImageUrl: string | null;
@@ -77,6 +80,25 @@ type Props = {
 export function ProfileAboutVisitSection(props: Props) {
   const m = getProfilePageMessages(props.locale);
   const weekdays = getLocalizedWeekdays(props.locale);
+  const statusStyle =
+    props.isClosedToday || props.isOpenNow === false
+      ? {
+          backgroundColor: "var(--pb-status-closed-bg)",
+          color: "var(--pb-status-closed-text)",
+          borderColor: "var(--pb-status-closed-text)",
+        }
+      : props.isOpenNow === true
+        ? {
+            backgroundColor: "var(--pb-status-open-bg)",
+            color: "var(--pb-status-open-text)",
+            borderColor: "var(--pb-status-open-text)",
+          }
+        : {
+            backgroundColor: "var(--pb-secondary-bg)",
+            color: "var(--pb-secondary-text)",
+            borderColor: "var(--pb-secondary-border)",
+          };
+
   return (
     <section className={`${BASE_CARD_CLASS} p-5 sm:p-6`} style={props.cardStyle}>
       <div className="space-y-6">
@@ -93,7 +115,7 @@ export function ProfileAboutVisitSection(props: Props) {
                   rel="noreferrer"
                   title={item.label}
                   aria-label={`${m.openPrefix} ${item.label}`}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] text-[var(--pb-secondary-text)] transition hover:bg-[var(--pb-bg-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
                   onClick={() => {
                     if (item.platform === "instagram") {
                       trackPublicEvent("click_instagram", {
@@ -111,16 +133,17 @@ export function ProfileAboutVisitSection(props: Props) {
           ) : null}
         </article>
 
-        <div className="grid gap-4 border-t border-[var(--pb-border)] pt-5 lg:grid-cols-2">
+        <div className="grid gap-4 border-t border-[var(--pb-divider)] pt-5 lg:grid-cols-2">
           <article className="space-y-3">
             <h3 className="text-lg font-semibold">{m.visitHeading}</h3>
+            {props.addressLine ? <p className="text-sm text-[var(--pb-text-secondary)]">{props.addressLine}</p> : null}
             {props.mapLink ? (
               <a
                 href={props.mapLink}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${m.openLocationInMaps}: ${props.heroName}`}
-                className="group block overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                className="group block overflow-hidden rounded-xl border border-[var(--pb-border-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
                 onClick={() =>
                   trackPublicEvent("click_map", {
                     salon_id: props.salonId,
@@ -130,7 +153,7 @@ export function ProfileAboutVisitSection(props: Props) {
                 }
               >
                 {props.mapPreviewImageUrl && !props.mapImageUnavailable ? (
-                  <div className="relative h-44 w-full bg-slate-100">
+                  <div className="relative h-44 w-full bg-[var(--pb-bg-surface-subtle)]">
                     <img
                       src={props.mapPreviewImageUrl}
                       alt=""
@@ -141,8 +164,8 @@ export function ProfileAboutVisitSection(props: Props) {
                     />
                   </div>
                 ) : (
-                  <div className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white" aria-hidden="true">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(148,163,184,0.25),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.22),transparent_35%)]" />
+                  <div className="relative h-44 w-full bg-gradient-to-br from-[var(--pb-bg-surface-subtle)] via-[var(--pb-bg-surface)] to-[var(--pb-bg-page)]" aria-hidden="true">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(139,118,99,0.18),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(160,138,116,0.15),transparent_35%)]" />
                     <div className="absolute inset-0 flex items-center justify-center text-center">
                       <span className="text-xl" aria-hidden="true">📍</span>
                     </div>
@@ -150,14 +173,14 @@ export function ProfileAboutVisitSection(props: Props) {
                 )}
               </a>
             ) : (
-              <div className="overflow-hidden rounded-xl border">
+              <div className="overflow-hidden rounded-xl border border-[var(--pb-border-soft)]">
                 {props.mapPreviewImageUrl && !props.mapImageUnavailable ? (
-                  <div className="relative h-44 w-full bg-slate-100" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
+                  <div className="relative h-44 w-full bg-[var(--pb-bg-surface-subtle)]" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
                     <img src={props.mapPreviewImageUrl} alt={`${m.mapPreviewFor} ${props.heroName}`} className="h-full w-full object-cover" loading="lazy" onError={props.onMapImageError} />
                   </div>
                 ) : (
-                  <div className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(148,163,184,0.25),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.22),transparent_35%)]" />
+                  <div className="relative h-44 w-full bg-gradient-to-br from-[var(--pb-bg-surface-subtle)] via-[var(--pb-bg-surface)] to-[var(--pb-bg-page)]" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(139,118,99,0.18),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(160,138,116,0.15),transparent_35%)]" />
                     <div className="absolute inset-0 flex items-center justify-center text-center">
                       <span className="text-xl" aria-hidden="true">📍</span>
                     </div>
@@ -169,16 +192,21 @@ export function ProfileAboutVisitSection(props: Props) {
 
           <article className="space-y-3">
             <h3 className="text-lg font-semibold">{m.openingHoursHeading}</h3>
-            <p className="text-sm font-medium text-slate-700">{props.hoursStatusLine}</p>
+            <p
+              className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
+              style={statusStyle}
+            >
+              {props.hoursStatusLine}
+            </p>
             <ul className="space-y-1.5 text-sm">
               {props.openingHours.map((item) => {
                 const isToday = item.dayOfWeek === props.todayDayOfWeek;
                 return (
                   <li key={item.dayOfWeek} className="flex items-center justify-between">
-                    <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                    <span className={isToday ? "font-semibold text-[var(--pb-text-primary)]" : "text-[var(--pb-muted)]"}>
                       {weekdays[item.dayOfWeek] || m.dayFallback}
                     </span>
-                    <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                    <span className={isToday ? "font-semibold text-[var(--pb-text-primary)]" : "text-[var(--pb-muted)]"}>
                       {formatOpeningHoursRange(item, props.locale)}
                     </span>
                   </li>
