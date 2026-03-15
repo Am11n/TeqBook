@@ -43,6 +43,9 @@ export default function GeneralSettingsPage() {
     description?: string | null;
     cover_image?: string | null;
     instagram_url?: string | null;
+    facebook_url?: string | null;
+    twitter_url?: string | null;
+    tiktok_url?: string | null;
     website_url?: string | null;
   }) | null);
 
@@ -72,6 +75,9 @@ export default function GeneralSettingsPage() {
     description: salonProfile?.description || "",
     coverImage: salonProfile?.cover_image || "",
     instagramUrl: salonProfile?.instagram_url || "",
+    facebookUrl: salonProfile?.facebook_url || "",
+    twitterUrl: salonProfile?.twitter_url || "",
+    tiktokUrl: salonProfile?.tiktok_url || "",
     websiteUrl: salonProfile?.website_url || "",
   }), [salon, profile]);
 
@@ -102,6 +108,9 @@ export default function GeneralSettingsPage() {
       description: v.description || null,
       cover_image: v.coverImage || null,
       instagram_url: v.instagramUrl || null,
+      facebook_url: v.facebookUrl || null,
+      twitter_url: v.twitterUrl || null,
+      tiktok_url: v.tiktokUrl || null,
       website_url: v.websiteUrl || null,
     }, salon.plan);
 
@@ -265,6 +274,9 @@ export default function GeneralSettingsPage() {
             uploadingCoverImage={uploadingCoverImage}
             coverImageUploadError={coverImageUploadError}
             instagramUrl={form.values.instagramUrl}
+            facebookUrl={form.values.facebookUrl}
+            twitterUrl={form.values.twitterUrl}
+            tiktokUrl={form.values.tiktokUrl}
             websiteUrl={form.values.websiteUrl}
             publicProfileUrl={publicProfileUrl}
             directBookingUrl={directBookingUrl}

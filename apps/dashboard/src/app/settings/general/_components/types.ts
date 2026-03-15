@@ -15,6 +15,9 @@ export type GeneralFormValues = {
   description: string;
   coverImage: string;
   instagramUrl: string;
+  facebookUrl: string;
+  twitterUrl: string;
+  tiktokUrl: string;
   websiteUrl: string;
 };
 

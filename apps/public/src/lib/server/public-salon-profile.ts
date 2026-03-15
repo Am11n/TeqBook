@@ -66,10 +66,14 @@ export type PublicSalonProfileViewModel = {
   } | null;
   openingHours: OpeningHourView[];
   mapLink: string | null;
+  mapPreviewImageUrl: string | null;
   bookUrl: string;
   shareUrl: string;
   socialLinks: {
     instagramUrl: string | null;
+    facebookUrl: string | null;
+    twitterUrl: string | null;
+    tiktokUrl: string | null;
     websiteUrl: string | null;
   };
   timezone: string;
@@ -79,6 +83,50 @@ export type PublicSalonProfileViewModel = {
 };
 
 const FALLBACK_TIMEZONE = "Europe/Oslo";
+
+async function buildStaticMapPreviewUrl(address: string | null): Promise<string | null> {
+  const query = address?.trim();
+  if (!query) return null;
+
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim();
+  if (mapboxToken) {
+    try {
+      const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?limit=1&access_token=${encodeURIComponent(mapboxToken)}`;
+      const response = await fetch(geocodeUrl);
+      if (response.ok) {
+        const json = (await response.json()) as {
+          features?: Array<{ center?: [number, number] }>;
+        };
+        const center = json.features?.[0]?.center;
+        const lng = center?.[0];
+        const lat = center?.[1];
+        if (typeof lng === "number" && typeof lat === "number") {
+          const lon = lng.toFixed(6);
+          const latitude = lat.toFixed(6);
+          return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+dc2626(${lon},${latitude})/${lon},${latitude},15,0/1200x520@2x?access_token=${encodeURIComponent(mapboxToken)}`;
+        }
+      }
+    } catch {
+      // Fall through to other providers.
+    }
+  }
+
+  const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+  if (googleApiKey) {
+    const params = new URLSearchParams({
+      center: query,
+      zoom: "15",
+      size: "1200x520",
+      scale: "2",
+      maptype: "roadmap",
+      markers: `color:0xdc2626|${query}`,
+      key: googleApiKey,
+    });
+    return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
+  }
+
+  return null;
+}
 
 function getNowInTimezoneParts(timezone: string): { weekday: number; hhmm: string } | null {
   try {
@@ -132,10 +180,17 @@ function getCityFromAddress(address: string | null): string | null {
   return segments[segments.length - 1] || null;
 }
 
+function normalizeExternalUrl(value: string | null): string | null {
+  const raw = value?.trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://${raw.replace(/^\/+/, "")}`;
+}
+
 function buildAboutFallback(salonType: string | null, city: string | null, salonName: string): string {
-  const typeLabel = salonType?.trim() ? salonType : "salon";
-  if (city) return `${salonName} is a professional ${typeLabel} in ${city}. Book your next appointment online.`;
-  return `${salonName} is a professional ${typeLabel}. Book your next appointment online.`;
+  const descriptor = salonType?.trim().toLowerCase() || "barber studio";
+  if (city) return `${salonName} delivers precision cuts, fades, and grooming in ${city}.`;
+  return `${salonName} is a trusted ${descriptor} for precision cuts, fades, and grooming.`;
 }
 
 type ProfileFetchResult =
@@ -150,7 +205,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   const { data: salon, error: salonError } = await supabase
     .from("salons")
     .select(
-      "id, name, slug, is_public, salon_type, business_address, timezone, preferred_language, supported_languages, default_language, whatsapp_number, plan, description, cover_image, instagram_url, website_url, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides"
+      "id, name, slug, is_public, salon_type, business_address, timezone, preferred_language, supported_languages, default_language, whatsapp_number, plan, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides"
     )
     .eq("slug", normalizedSlug)
     .eq("is_public", true)
@@ -296,6 +351,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   const mapLink = salon.business_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.business_address)}`
     : null;
+  const mapPreviewImageUrl = await buildStaticMapPreviewUrl(salon.business_address || null);
 
   const latestReviews = (reviewsData || []).map((review) => ({
     id: review.id,
@@ -341,11 +397,15 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
       reviewsSummary,
       openingHours,
       mapLink,
+      mapPreviewImageUrl,
       bookUrl,
       shareUrl,
       socialLinks: {
-        instagramUrl: salon.instagram_url || null,
-        websiteUrl: salon.website_url || null,
+        instagramUrl: normalizeExternalUrl(salon.instagram_url || null),
+        facebookUrl: normalizeExternalUrl(salon.facebook_url || null),
+        twitterUrl: normalizeExternalUrl(salon.twitter_url || null),
+        tiktokUrl: normalizeExternalUrl(salon.tiktok_url || null),
+        websiteUrl: normalizeExternalUrl(salon.website_url || null),
       },
       timezone,
       tokens,

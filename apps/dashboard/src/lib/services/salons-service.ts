@@ -86,6 +86,9 @@ export async function updateSalonSettings(
     description?: string | null;
     cover_image?: string | null;
     instagram_url?: string | null;
+    facebook_url?: string | null;
+    twitter_url?: string | null;
+    tiktok_url?: string | null;
     website_url?: string | null;
   },
   salonPlan?: PlanType | null
@@ -170,6 +173,9 @@ export async function updateSalon(
     description?: string | null;
     cover_image?: string | null;
     instagram_url?: string | null;
+    facebook_url?: string | null;
+    twitter_url?: string | null;
+    tiktok_url?: string | null;
     website_url?: string | null;
   },
   salonPlan?: PlanType | null

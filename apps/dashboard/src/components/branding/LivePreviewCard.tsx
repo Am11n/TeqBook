@@ -85,7 +85,7 @@ export function LivePreviewCard({ salon, theme, onHide, previewRefreshKey = 0 }:
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">Draft Preview</h3>
+          <h3 className="text-lg font-semibold mb-2">Booking Theme Preview</h3>
           <p className="text-sm text-muted-foreground">
             Preview uses current form values. Live page uses saved settings.
           </p>

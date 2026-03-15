@@ -19,6 +19,9 @@ interface SalonInfoSectionProps {
   uploadingCoverImage: boolean;
   coverImageUploadError: string | null;
   instagramUrl: string;
+  facebookUrl: string;
+  twitterUrl: string;
+  tiktokUrl: string;
   websiteUrl: string;
   publicProfileUrl: string | null;
   directBookingUrl: string | null;
@@ -38,6 +41,9 @@ export function SalonInfoSection({
   uploadingCoverImage,
   coverImageUploadError,
   instagramUrl,
+  facebookUrl,
+  twitterUrl,
+  tiktokUrl,
   websiteUrl,
   publicProfileUrl,
   directBookingUrl,
@@ -185,6 +191,33 @@ export function SalonInfoSection({
           value={instagramUrl}
           onChange={(e) => onChangeField("instagramUrl", e.target.value)}
           placeholder="https://instagram.com/..."
+        />
+      </FormRow>
+
+      <FormRow label="Facebook URL" htmlFor="facebookUrl">
+        <Input
+          id="facebookUrl"
+          value={facebookUrl}
+          onChange={(e) => onChangeField("facebookUrl", e.target.value)}
+          placeholder="https://facebook.com/..."
+        />
+      </FormRow>
+
+      <FormRow label="X (Twitter) URL" htmlFor="twitterUrl">
+        <Input
+          id="twitterUrl"
+          value={twitterUrl}
+          onChange={(e) => onChangeField("twitterUrl", e.target.value)}
+          placeholder="https://x.com/..."
+        />
+      </FormRow>
+
+      <FormRow label="TikTok URL" htmlFor="tiktokUrl">
+        <Input
+          id="tiktokUrl"
+          value={tiktokUrl}
+          onChange={(e) => onChangeField("tiktokUrl", e.target.value)}
+          placeholder="https://tiktok.com/@..."
         />
       </FormRow>
 

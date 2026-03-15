@@ -69,6 +69,7 @@ export default async function SalonPublicProfilePage({ params }: { params: Promi
       teamPreview={result.data.teamPreview}
       openingHours={result.data.openingHours}
       mapLink={result.data.mapLink}
+      mapPreviewImageUrl={result.data.mapPreviewImageUrl}
       bookUrl={result.data.bookUrl}
       shareUrl={result.data.shareUrl}
       socialLinks={result.data.socialLinks}

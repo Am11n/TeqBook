@@ -51,10 +51,14 @@ type PublicProfileClientProps = {
     closeTime: string | null;
   }>;
   mapLink: string | null;
+  mapPreviewImageUrl: string | null;
   bookUrl: string;
   shareUrl: string;
   socialLinks: {
     instagramUrl: string | null;
+    facebookUrl: string | null;
+    twitterUrl: string | null;
+    tiktokUrl: string | null;
     websiteUrl: string | null;
   };
   portfolioPreview: Array<{
@@ -163,10 +167,84 @@ function MetaDivider() {
   return <span className="text-[var(--pb-border)]">·</span>;
 }
 
+type SocialPlatform = "instagram" | "facebook" | "twitter" | "tiktok" | "website";
+
+function SocialIcon({ platform }: { platform: SocialPlatform }) {
+  if (platform === "instagram") {
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="0.8" fill="white" stroke="none" />
+        </svg>
+      </span>
+    );
+  }
+  if (platform === "facebook") {
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] bg-[#1877f2]">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-white">
+          <path d="M13.2 20v-7.2h2.4l.4-2.8h-2.8V8.2c0-.8.2-1.4 1.4-1.4h1.5V4.3c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8V10H8v2.8h2.2V20h3z" />
+        </svg>
+      </span>
+    );
+  }
+  if (platform === "twitter") {
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] bg-black">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-white">
+          <path d="M18.9 3h2.9l-6.4 7.3L23 21h-6l-4.7-6.1L6.9 21H4l6.8-7.8L3.4 3h6.1l4.3 5.7L18.9 3zm-1 16.2h1.6L8.7 4.7H7l10.9 14.5z" />
+        </svg>
+      </span>
+    );
+  }
+  if (platform === "tiktok") {
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] bg-gradient-to-br from-cyan-400 via-black to-pink-500">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-white">
+          <path d="M14.9 4.5c.8 1.2 2 2 3.4 2.2V9c-1.4 0-2.7-.4-3.8-1.1v5.3c0 2.6-2.1 4.7-4.7 4.7S5 15.8 5 13.2s2.1-4.7 4.7-4.7c.2 0 .4 0 .6.1v2.5a2.2 2.2 0 0 0-.6-.1c-1.2 0-2.2 1-2.2 2.2s1 2.2 2.2 2.2 2.2-1 2.2-2.2V3h2.9v1.5z" />
+        </svg>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] bg-gradient-to-br from-sky-500 to-indigo-600">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18" />
+        <path d="M12 3a13 13 0 0 1 0 18" />
+        <path d="M12 3a13 13 0 0 0 0 18" />
+      </svg>
+    </span>
+  );
+}
+
+function buildHoursStatusLine(isOpenNow: boolean | null, closeTime: string | null): string {
+  if (isOpenNow === true) {
+    const closeAt = formatTimeShort(closeTime);
+    return closeAt ? `Open now · Closes at ${closeAt}` : "Open now";
+  }
+  if (isOpenNow === false) return "Closed now";
+  return "Hours may vary";
+}
+
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [teamModalTab, setTeamModalTab] = useState<"about" | "services">("about");
+  const [mapImageUnavailable, setMapImageUnavailable] = useState(false);
+  const socialItems = useMemo(
+    () =>
+      [
+        { platform: "instagram" as const, url: props.socialLinks.instagramUrl, label: "Instagram" },
+        { platform: "facebook" as const, url: props.socialLinks.facebookUrl, label: "Facebook" },
+        { platform: "twitter" as const, url: props.socialLinks.twitterUrl, label: "X (Twitter)" },
+        { platform: "tiktok" as const, url: props.socialLinks.tiktokUrl, label: "TikTok" },
+        { platform: "website" as const, url: props.socialLinks.websiteUrl, label: "Website" },
+      ].filter((item): item is { platform: SocialPlatform; url: string; label: string } => Boolean(item.url)),
+    [props.socialLinks.facebookUrl, props.socialLinks.instagramUrl, props.socialLinks.tiktokUrl, props.socialLinks.twitterUrl, props.socialLinks.websiteUrl]
+  );
   const selectedMember = useMemo(
     () => props.teamPreview.find((member) => member.id === selectedMemberId) || null,
     [props.teamPreview, selectedMemberId]
@@ -184,6 +262,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     if (props.hero.isOpenNow === false) return "Closed now";
     return props.hero.openStatusLabel;
   }, [props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
+  const hoursStatusLine = useMemo(
+    () => buildHoursStatusLine(props.hero.isOpenNow, todayHours?.closeTime || null),
+    [props.hero.isOpenNow, todayHours]
+  );
   const todayDayOfWeek = useMemo(() => getTodayDayOfWeek(), []);
   const cardStyle = useMemo(
     () => ({ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }),
@@ -323,7 +405,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
               <Link
                 key={service.id}
                 href={`${props.bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-                className={`${BASE_CARD_CLASS} flex min-h-[132px] flex-col justify-between p-4 transition hover:-translate-y-0.5`}
+                className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
                 style={cardStyle}
                 onClick={() =>
                   trackPublicEvent("click_service_preview", {
@@ -334,13 +416,17 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                   })
                 }
               >
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <p className="font-medium">{service.name}</p>
                   <p className="text-sm text-[var(--pb-muted)]">
                     {service.durationMinutes ? `${service.durationMinutes} min` : "Duration on request"}
+                    {formatPrice(service.priceCents) ? ` · ${formatPrice(service.priceCents)}` : ""}
                   </p>
                 </div>
-                {formatPrice(service.priceCents) ? <p className="text-sm font-medium">{formatPrice(service.priceCents)}</p> : null}
+                <p className="inline-flex items-center gap-1 text-sm font-medium text-slate-700">
+                  <span>Book</span>
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+                </p>
               </Link>
             ))}
           </div>
@@ -357,7 +443,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                 <button
                   key={member.id}
                   type="button"
-                  className={`${BASE_CARD_CLASS} flex h-full flex-col gap-3 p-4 text-left transition hover:-translate-y-0.5`}
+                  className={`${BASE_CARD_CLASS} group flex h-full flex-col gap-3 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
                   style={cardStyle}
                   onClick={() => {
                     setSelectedMemberId(member.id);
@@ -395,7 +481,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                     </div>
                   </div>
 
-                  <p className="text-sm text-[var(--pb-muted)]">
+                  <p className="line-clamp-2 text-sm text-[var(--pb-muted)]">
                     {member.bio || "Experienced barber focused on precision cuts and clean grooming."}
                   </p>
 
@@ -406,7 +492,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                       </span>
                     ))}
                   </div>
-                  <p className="text-sm font-medium text-slate-700 underline underline-offset-2">View profile</p>
+                  <p className="inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium text-slate-700 transition group-hover:bg-slate-50">
+                    <span>View profile</span>
+                    <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+                  </p>
                 </button>
               ))}
             </div>
@@ -454,82 +543,127 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           </section>
         ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          <article className={`${BASE_CARD_CLASS} p-5 lg:col-span-2`} style={cardStyle}>
-            <h2 className="text-xl font-semibold">About</h2>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--pb-muted)]">{props.about.description}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {props.socialLinks.instagramUrl ? (
-                <a
-                  href={props.socialLinks.instagramUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  onClick={() =>
-                    trackPublicEvent("click_instagram", {
-                      salon_id: props.salonId,
-                      slug: props.slug,
-                      cta_location: "about",
-                    })
-                  }
-                >
-                  Instagram
-                </a>
+        <section className={`${BASE_CARD_CLASS} p-5 sm:p-6`} style={cardStyle}>
+          <div className="space-y-6">
+            <article>
+              <h2 className="text-xl font-semibold">About</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--pb-muted)]">{props.about.description}</p>
+              {socialItems.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {socialItems.map((item) => (
+                    <a
+                      key={item.platform}
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={item.label}
+                      aria-label={`Open ${item.label}`}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                      onClick={() => {
+                        if (item.platform === "instagram") {
+                          trackPublicEvent("click_instagram", {
+                            salon_id: props.salonId,
+                            slug: props.slug,
+                            cta_location: "about",
+                          });
+                        }
+                      }}
+                    >
+                      <SocialIcon platform={item.platform} />
+                    </a>
+                  ))}
+                </div>
               ) : null}
-              {props.socialLinks.websiteUrl ? (
-                <a
-                  href={props.socialLinks.websiteUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Website
-                </a>
-              ) : null}
-            </div>
-          </article>
-
-          <div className="space-y-4">
-            {props.mapLink ? (
-              <article className={`${BASE_CARD_CLASS} p-5`} style={cardStyle}>
-                <h2 className="text-lg font-semibold">Location</h2>
-                {props.hero.addressLine ? <p className="mt-2 text-sm text-[var(--pb-muted)]">{props.hero.addressLine}</p> : null}
-                <a
-                  href={props.mapLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex rounded-full border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  onClick={() =>
-                    trackPublicEvent("click_map", {
-                      salon_id: props.salonId,
-                      slug: props.slug,
-                      cta_location: "map",
-                    })
-                  }
-                >
-                  Open in Google Maps
-                </a>
-              </article>
-            ) : null}
-
-            <article className={`${BASE_CARD_CLASS} p-5`} style={cardStyle}>
-              <h2 className="text-lg font-semibold">Opening hours</h2>
-              <ul className="mt-3 space-y-2 text-sm">
-                {props.openingHours.map((item) => {
-                  const isToday = item.dayOfWeek === todayDayOfWeek;
-                  return (
-                    <li key={item.dayOfWeek} className="flex items-center justify-between">
-                      <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
-                        {WEEKDAYS[item.dayOfWeek] || "Day"}
-                      </span>
-                      <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
-                        {formatOpeningHoursRange(item)}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
             </article>
+
+            <div className="grid gap-4 border-t border-[var(--pb-border)] pt-5 lg:grid-cols-2">
+              <article className="space-y-3">
+                <h3 className="text-lg font-semibold">Visit</h3>
+                {props.mapLink ? (
+                  <a
+                    href={props.mapLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${props.hero.name} location in Google Maps`}
+                    className="group block overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
+                    onClick={() =>
+                      trackPublicEvent("click_map", {
+                        salon_id: props.salonId,
+                        slug: props.slug,
+                        cta_location: "map",
+                      })
+                    }
+                  >
+                    {props.mapPreviewImageUrl && !mapImageUnavailable ? (
+                      <div className="relative h-44 w-full bg-slate-100">
+                        <img
+                          src={props.mapPreviewImageUrl}
+                          alt=""
+                          aria-hidden="true"
+                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.01]"
+                          loading="lazy"
+                          onError={() => setMapImageUnavailable(true)}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white"
+                        aria-hidden="true"
+                      >
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(148,163,184,0.25),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.22),transparent_35%)]" />
+                        <div className="absolute inset-0 flex items-center justify-center text-center">
+                          <span className="text-xl" aria-hidden="true">📍</span>
+                        </div>
+                      </div>
+                    )}
+                  </a>
+                ) : (
+                  <div className="overflow-hidden rounded-xl border">
+                    {props.mapPreviewImageUrl && !mapImageUnavailable ? (
+                      <div className="relative h-44 w-full bg-slate-100" aria-label={`Map preview for ${props.hero.name}`}>
+                        <img
+                          src={props.mapPreviewImageUrl}
+                          alt={`Map preview for ${props.hero.name}`}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          onError={() => setMapImageUnavailable(true)}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white"
+                        aria-label={`Map preview for ${props.hero.name}`}
+                      >
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(148,163,184,0.25),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.22),transparent_35%)]" />
+                        <div className="absolute inset-0 flex items-center justify-center text-center">
+                          <span className="text-xl" aria-hidden="true">📍</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+
+              <article className="space-y-3">
+                <h3 className="text-lg font-semibold">Opening hours</h3>
+                <p className="text-sm font-medium text-slate-700">{hoursStatusLine}</p>
+                <ul className="space-y-1.5 text-sm">
+                  {props.openingHours.map((item) => {
+                    const isToday = item.dayOfWeek === todayDayOfWeek;
+                    return (
+                      <li key={item.dayOfWeek} className="flex items-center justify-between">
+                        <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                          {WEEKDAYS[item.dayOfWeek] || "Day"}
+                        </span>
+                        <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
+                          {formatOpeningHoursRange(item)}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </article>
+            </div>
           </div>
         </section>
       </main>
@@ -561,9 +695,8 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
               </DialogHeader>
               <Tabs
                 value={teamModalTab}
-                onValueChange={(value) =>
-                  {
-                    setTeamModalTab(value as "about" | "services");
+                onValueChange={(value) => {
+                  setTeamModalTab(value as "about" | "services");
                   trackPublicEvent("switch_team_member_tab", {
                     salon_id: props.salonId,
                     slug: props.slug,
@@ -571,8 +704,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
                     employee_id: selectedMember.id,
                     tab: value,
                   });
-                  }
-                }
+                }}
               >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="about">About</TabsTrigger>
