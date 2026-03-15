@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Tabs, TabsContent, TabsList, TabsTrigger } from "@teqbook/ui";
+import { Clock3, MapPin, Share2, Star, Wallet } from "lucide-react";
 import { buildPublicBookingCssVars } from "@/components/public-booking/publicBookingTokens";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import type { PublicBookingTokens } from "@/components/public-booking/types";
@@ -97,6 +98,13 @@ function fallbackAvatar(name: string): string {
   return letters.join("") || "TB";
 }
 
+function buildTagline(description: string): string {
+  const trimmed = description.trim();
+  if (!trimmed) return "Premium cuts, grooming, and salon care.";
+  if (trimmed.length <= 140) return trimmed;
+  return `${trimmed.slice(0, 137).trimEnd()}...`;
+}
+
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
@@ -104,6 +112,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     () => props.teamPreview.find((member) => member.id === selectedMemberId) || null,
     [props.teamPreview, selectedMemberId]
   );
+  const heroTagline = useMemo(() => buildTagline(props.about.description), [props.about.description]);
 
   const handleShare = async () => {
     trackPublicEvent("click_share_profile", {
@@ -151,55 +160,101 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     >
       <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:space-y-8">
         <section
-          className="overflow-hidden rounded-2xl border"
+          className="overflow-hidden rounded-3xl border shadow-sm"
           style={{ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }}
         >
-          {props.hero.coverImageUrl ? (
-            <div className="h-52 w-full bg-cover bg-center" style={{ backgroundImage: `url(${props.hero.coverImageUrl})` }} />
-          ) : (
-            <div className="h-40 w-full bg-gradient-to-r from-slate-100 to-slate-50" />
-          )}
-          <div className="space-y-4 p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-2">
-                <h1 className="text-2xl font-semibold sm:text-3xl">{props.hero.name}</h1>
-                {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
-                  <p className="text-sm text-[var(--pb-muted)]">
-                    {"⭐ "}
-                    {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} reviews)
-                  </p>
-                ) : null}
-                {props.hero.addressLine ? (
-                  <p className="text-sm text-[var(--pb-muted)]">{props.hero.addressLine}</p>
-                ) : null}
-                {props.hero.openStatusLabel ? (
-                  <p className="text-sm font-medium">{props.hero.openStatusLabel}</p>
-                ) : null}
-              </div>
+          <div className="grid md:grid-cols-[1.15fr_0.85fr]">
+            <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
+              {props.hero.coverImageUrl ? (
+                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${props.hero.coverImageUrl})` }} />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent md:bg-gradient-to-l md:from-black/15 md:to-transparent" />
               {props.hero.logoUrl ? (
-                <img src={props.hero.logoUrl} alt={props.hero.name} className="h-12 w-12 rounded-lg object-contain" />
+                <div className="absolute right-4 top-4 rounded-xl border bg-white/95 p-2.5 shadow-md backdrop-blur-sm">
+                  <img src={props.hero.logoUrl} alt={props.hero.name} className="h-10 w-10 rounded-md object-contain sm:h-12 sm:w-12" />
+                </div>
               ) : null}
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href={props.bookUrl}>
-                <Button
-                  onClick={() =>
-                    trackPublicEvent("click_book_from_profile", {
-                      salon_id: props.salonId,
-                      slug: props.slug,
-                      cta_location: "hero",
-                    })
-                  }
-                  style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
-                >
-                  Book appointment
+
+            <div className="order-2 space-y-5 p-5 sm:p-6 md:order-1 md:p-8">
+              <div className="space-y-3">
+                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{props.hero.name}</h1>
+
+                <div className="flex flex-wrap items-center gap-2.5 text-sm text-[var(--pb-muted)]">
+                  {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                      {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} reviews)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border px-3 py-1">New on TeqBook</span>
+                  )}
+
+                  {props.hero.openStatusLabel ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {props.hero.openStatusLabel}
+                    </span>
+                  ) : null}
+
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1">
+                    <Wallet className="h-3.5 w-3.5" />
+                    Pay in salon
+                  </span>
+                </div>
+
+                {props.hero.addressLine ? (
+                  <p className="inline-flex items-center gap-2 text-sm text-[var(--pb-muted)]">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span>{props.hero.addressLine}</span>
+                  </p>
+                ) : null}
+
+                <p className="max-w-xl text-sm leading-relaxed text-[var(--pb-muted)] sm:text-base">{heroTagline}</p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link href={props.bookUrl} className="w-full sm:w-auto">
+                  <Button
+                    className="h-11 w-full rounded-xl px-5 font-medium sm:w-auto"
+                    onClick={() =>
+                      trackPublicEvent("click_book_from_profile", {
+                        salon_id: props.salonId,
+                        slug: props.slug,
+                        cta_location: "hero",
+                      })
+                    }
+                    style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
+                  >
+                    Book appointment
+                  </Button>
+                </Link>
+
+                <Button variant="outline" onClick={handleShare} className="h-11 rounded-xl px-5 font-medium sm:w-auto">
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
                 </Button>
-              </Link>
-              <Button variant="outline" onClick={handleShare}>
-                Share
-              </Button>
-              {shareMessage ? <p className="self-center text-xs text-[var(--pb-muted)]">{shareMessage}</p> : null}
+
+                {shareMessage ? <p className="text-xs text-[var(--pb-muted)]">{shareMessage}</p> : null}
+              </div>
+
+              <div className="flex flex-wrap gap-2.5 text-xs font-medium text-[var(--pb-muted)]">
+                {props.hero.ratingAverage !== null && props.hero.ratingAverage >= 4.7 ? (
+                  <span className="rounded-full border px-2.5 py-1">Top rated</span>
+                ) : null}
+                <span className="rounded-full border px-2.5 py-1">Pay in salon</span>
+                {props.hero.isOpenNow !== null ? (
+                  <span className="rounded-full border px-2.5 py-1">
+                    {props.hero.isOpenNow ? "Open now" : "Closed now"}
+                  </span>
+                ) : null}
+              </div>
             </div>
+          </div>
+          <div className="sr-only" aria-live="polite">
+            {shareMessage}
           </div>
         </section>
 
