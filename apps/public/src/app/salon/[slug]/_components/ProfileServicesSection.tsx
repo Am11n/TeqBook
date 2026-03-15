@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { BASE_CARD_CLASS, formatPrice } from "../profile-helpers";
+import { getProfilePageMessages } from "../profile-i18n";
+import type { AppLocale } from "@/i18n/translations";
 import type { CardStyle, PublicService } from "../profile-types";
 
 type Props = {
@@ -11,12 +13,14 @@ type Props = {
   bookUrl: string;
   services: PublicService[];
   cardStyle: CardStyle;
+  locale: AppLocale;
 };
 
-export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardStyle }: Props) {
+export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardStyle, locale }: Props) {
+  const m = getProfilePageMessages(locale);
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold">Services</h2>
+      <h2 className="text-xl font-semibold">{m.servicesHeading}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {services.slice(0, 6).map((service) => (
           <Link
@@ -36,19 +40,19 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
             <div className="space-y-2">
               <p className="font-medium">{service.name}</p>
               <p className="text-sm text-[var(--pb-muted)]">
-                {service.durationMinutes ? `${service.durationMinutes} min` : "Duration on request"}
-                {formatPrice(service.priceCents) ? ` · ${formatPrice(service.priceCents)}` : ""}
+                {service.durationMinutes ? `${service.durationMinutes} ${m.minuteShort}` : m.durationOnRequest}
+                {formatPrice(service.priceCents, locale) ? ` · ${formatPrice(service.priceCents, locale)}` : ""}
               </p>
             </div>
             <p className="inline-flex items-center gap-1 text-sm font-medium text-slate-700">
-              <span>Book</span>
+              <span>{m.book}</span>
               <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
             </p>
           </Link>
         ))}
       </div>
       <Link href={bookUrl} className="inline-block text-sm font-medium text-slate-700 underline underline-offset-2">
-        See all services
+        {m.seeAllServices}
       </Link>
     </section>
   );

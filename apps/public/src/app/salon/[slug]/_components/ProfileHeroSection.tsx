@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Button } from "@teqbook/ui";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
+import type { AppLocale } from "@/i18n/translations";
+import { getProfilePageMessages } from "../profile-i18n";
 import type { CardStyle, PublicProfileClientProps } from "../profile-types";
 
 function MetaDivider() {
@@ -20,9 +22,11 @@ type Props = {
   shareMessage: string | null;
   onShare: () => void;
   cardStyle: CardStyle;
+  locale: AppLocale;
 };
 
 export function ProfileHeroSection(props: Props) {
+  const m = getProfilePageMessages(props.locale);
   return (
     <section className="overflow-hidden rounded-3xl border shadow-sm" style={props.cardStyle}>
       <div className="grid md:grid-cols-[1fr_1fr]">
@@ -48,7 +52,7 @@ export function ProfileHeroSection(props: Props) {
               {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
                 <span className="inline-flex items-center gap-1.5">
                   <span className="text-amber-500">★</span>
-                  {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} reviews)
+                  {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} {m.reviewsWord})
                 </span>
               ) : null}
               {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 && props.openCloseMeta ? <MetaDivider /> : null}
@@ -58,7 +62,7 @@ export function ProfileHeroSection(props: Props) {
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-[var(--pb-muted)]">
               {props.hero.addressLine ? <span>{props.hero.addressLine}</span> : null}
               {props.hero.addressLine ? <MetaDivider /> : null}
-              <span>Pay in salon</span>
+              <span>{m.payInSalon}</span>
             </p>
 
             <p className="max-w-xl text-sm leading-relaxed text-[var(--pb-muted)] sm:text-base">{props.heroTagline}</p>
@@ -77,14 +81,14 @@ export function ProfileHeroSection(props: Props) {
                 }
                 style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
               >
-                Book appointment
+                {m.bookAppointment}
               </Button>
             </Link>
 
             <Button
               variant="outline"
               onClick={props.onShare}
-              aria-label="Share profile"
+              aria-label={m.shareProfileAria}
               className="h-11 w-11 rounded-xl border-slate-300/80 bg-white/70 p-0 sm:w-11 hover:bg-white"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

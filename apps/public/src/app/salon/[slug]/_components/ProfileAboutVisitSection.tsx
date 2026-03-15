@@ -1,7 +1,9 @@
 "use client";
 
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
-import { BASE_CARD_CLASS, WEEKDAYS, formatOpeningHoursRange } from "../profile-helpers";
+import { BASE_CARD_CLASS, formatOpeningHoursRange } from "../profile-helpers";
+import { getLocalizedWeekdays, getProfilePageMessages } from "../profile-i18n";
+import type { AppLocale } from "@/i18n/translations";
 import type { CardStyle, SocialItem, SocialPlatform } from "../profile-types";
 
 function SocialIcon({ platform }: { platform: SocialPlatform }) {
@@ -69,14 +71,17 @@ type Props = {
   mapImageUnavailable: boolean;
   onMapImageError: () => void;
   cardStyle: CardStyle;
+  locale: AppLocale;
 };
 
 export function ProfileAboutVisitSection(props: Props) {
+  const m = getProfilePageMessages(props.locale);
+  const weekdays = getLocalizedWeekdays(props.locale);
   return (
     <section className={`${BASE_CARD_CLASS} p-5 sm:p-6`} style={props.cardStyle}>
       <div className="space-y-6">
         <article>
-          <h2 className="text-xl font-semibold">About</h2>
+          <h2 className="text-xl font-semibold">{m.aboutHeading}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--pb-muted)]">{props.aboutDescription}</p>
           {props.socialItems.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -87,7 +92,7 @@ export function ProfileAboutVisitSection(props: Props) {
                   target="_blank"
                   rel="noreferrer"
                   title={item.label}
-                  aria-label={`Open ${item.label}`}
+                  aria-label={`${m.openPrefix} ${item.label}`}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
                   onClick={() => {
                     if (item.platform === "instagram") {
@@ -108,13 +113,13 @@ export function ProfileAboutVisitSection(props: Props) {
 
         <div className="grid gap-4 border-t border-[var(--pb-border)] pt-5 lg:grid-cols-2">
           <article className="space-y-3">
-            <h3 className="text-lg font-semibold">Visit</h3>
+            <h3 className="text-lg font-semibold">{m.visitHeading}</h3>
             {props.mapLink ? (
               <a
                 href={props.mapLink}
                 target="_blank"
                 rel="noreferrer"
-                aria-label={`Open ${props.heroName} location in Google Maps`}
+                aria-label={`${m.openLocationInMaps}: ${props.heroName}`}
                 className="group block overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2"
                 onClick={() =>
                   trackPublicEvent("click_map", {
@@ -147,11 +152,11 @@ export function ProfileAboutVisitSection(props: Props) {
             ) : (
               <div className="overflow-hidden rounded-xl border">
                 {props.mapPreviewImageUrl && !props.mapImageUnavailable ? (
-                  <div className="relative h-44 w-full bg-slate-100" aria-label={`Map preview for ${props.heroName}`}>
-                    <img src={props.mapPreviewImageUrl} alt={`Map preview for ${props.heroName}`} className="h-full w-full object-cover" loading="lazy" onError={props.onMapImageError} />
+                  <div className="relative h-44 w-full bg-slate-100" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
+                    <img src={props.mapPreviewImageUrl} alt={`${m.mapPreviewFor} ${props.heroName}`} className="h-full w-full object-cover" loading="lazy" onError={props.onMapImageError} />
                   </div>
                 ) : (
-                  <div className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white" aria-label={`Map preview for ${props.heroName}`}>
+                  <div className="relative h-44 w-full bg-gradient-to-br from-slate-100 via-slate-50 to-white" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(148,163,184,0.25),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.22),transparent_35%)]" />
                     <div className="absolute inset-0 flex items-center justify-center text-center">
                       <span className="text-xl" aria-hidden="true">📍</span>
@@ -163,7 +168,7 @@ export function ProfileAboutVisitSection(props: Props) {
           </article>
 
           <article className="space-y-3">
-            <h3 className="text-lg font-semibold">Opening hours</h3>
+            <h3 className="text-lg font-semibold">{m.openingHoursHeading}</h3>
             <p className="text-sm font-medium text-slate-700">{props.hoursStatusLine}</p>
             <ul className="space-y-1.5 text-sm">
               {props.openingHours.map((item) => {
@@ -171,10 +176,10 @@ export function ProfileAboutVisitSection(props: Props) {
                 return (
                   <li key={item.dayOfWeek} className="flex items-center justify-between">
                     <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
-                      {WEEKDAYS[item.dayOfWeek] || "Day"}
+                      {weekdays[item.dayOfWeek] || m.dayFallback}
                     </span>
                     <span className={isToday ? "font-semibold text-slate-900" : "text-[var(--pb-muted)]"}>
-                      {formatOpeningHoursRange(item)}
+                      {formatOpeningHoursRange(item, props.locale)}
                     </span>
                   </li>
                 );

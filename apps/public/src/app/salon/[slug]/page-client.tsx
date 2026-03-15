@@ -20,6 +20,7 @@ import {
   getTodayOpeningHours,
   formatTimeShort,
 } from "./profile-helpers";
+import { getProfilePageMessages } from "./profile-i18n";
 import type { PublicProfileClientProps } from "./profile-types";
 
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
@@ -30,22 +31,23 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
   const lastTeamTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const heroTagline = useMemo(
-    () => buildTagline(props.about.description, props.hero.addressLine),
-    [props.about.description, props.hero.addressLine]
+    () => buildTagline(props.about.description, props.hero.addressLine, props.locale),
+    [props.about.description, props.hero.addressLine, props.locale]
   );
+  const m = useMemo(() => getProfilePageMessages(props.locale), [props.locale]);
   const socialItems = useMemo(() => buildSocialItems(props.socialLinks), [props.socialLinks]);
   const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
   const openCloseMeta = useMemo(() => {
     if (props.hero.isOpenNow === true) {
       const closeAt = formatTimeShort(todayHours?.closeTime || null);
-      return closeAt ? `Open now · Closes ${closeAt}` : "Open now";
+      return closeAt ? `${m.openNow} · ${m.closesLabel} ${closeAt}` : m.openNow;
     }
-    if (props.hero.isOpenNow === false) return "Closed now";
+    if (props.hero.isOpenNow === false) return m.closedNow;
     return props.hero.openStatusLabel;
-  }, [props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
+  }, [m.closedNow, m.closesLabel, m.openNow, props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
   const hoursStatusLine = useMemo(
-    () => buildHoursStatusLine(props.hero.isOpenNow, todayHours?.closeTime || null),
-    [props.hero.isOpenNow, todayHours]
+    () => buildHoursStatusLine(props.hero.isOpenNow, todayHours?.closeTime || null, props.locale),
+    [props.hero.isOpenNow, todayHours, props.locale]
   );
   const todayDayOfWeek = useMemo(() => getTodayDayOfWeek(), []);
   const cardStyle = useMemo(
@@ -70,7 +72,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     });
     const shareData = {
       title: `${props.hero.name} | TeqBook`,
-      text: `Book your next appointment at ${props.hero.name}`,
+      text: `${m.shareText} ${props.hero.name}`,
       url: props.shareUrl,
     };
 
@@ -90,10 +92,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         slug: props.slug,
         cta_location: "hero_share_fallback",
       });
-      setShareMessage("Link copied");
+      setShareMessage(m.linkCopied);
       setTimeout(() => setShareMessage(null), 2000);
     } catch {
-      setShareMessage("Copy failed");
+      setShareMessage(m.copyFailed);
       setTimeout(() => setShareMessage(null), 2000);
     }
   };
@@ -120,6 +122,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           shareMessage={shareMessage}
           onShare={handleShare}
           cardStyle={cardStyle}
+          locale={props.locale}
         />
 
         <ProfileServicesSection
@@ -128,6 +131,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           bookUrl={props.bookUrl}
           services={props.servicesPreview}
           cardStyle={cardStyle}
+          locale={props.locale}
         />
 
         <ProfileTeamSection
@@ -137,6 +141,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           cardStyle={cardStyle}
           primaryColor={props.tokens.colors.primary}
           openMemberId={selectedMember?.id || null}
+          locale={props.locale}
           onOpenMember={(member, trigger) => {
             lastTeamTriggerRef.current = trigger;
             setSelectedMember(member);
@@ -147,12 +152,14 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         <ProfilePortfolioSection
           items={props.portfolioPreview}
           borderColor={props.tokens.colors.border}
+          locale={props.locale}
         />
 
         <ProfileReviewsSection
           reviewsSummary={props.reviewsSummary}
           borderColor={props.tokens.colors.border}
           cardBackground={props.tokens.colors.cardBackground}
+          locale={props.locale}
         />
 
         <ProfileAboutVisitSection
@@ -169,6 +176,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           mapImageUnavailable={mapImageUnavailable}
           onMapImageError={() => setMapImageUnavailable(true)}
           cardStyle={cardStyle}
+          locale={props.locale}
         />
       </main>
 
@@ -185,7 +193,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
               })
             }
           >
-            Book appointment
+            {m.bookAppointment}
           </Button>
         </Link>
       </div>

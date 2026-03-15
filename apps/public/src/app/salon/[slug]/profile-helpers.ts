@@ -1,11 +1,12 @@
 import type { OpeningHourItem, SocialItem } from "./profile-types";
+import type { AppLocale } from "@/i18n/translations";
+import { getLocaleTag, getProfilePageMessages } from "./profile-i18n";
 
-export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const BASE_CARD_CLASS = "rounded-2xl border bg-[var(--pb-surface)] shadow-[var(--pb-shadow-1)]";
 
-export function formatPrice(priceCents: number | null): string | null {
+export function formatPrice(priceCents: number | null, locale: AppLocale): string | null {
   if (!priceCents || priceCents <= 0) return null;
-  return new Intl.NumberFormat("nb-NO", {
+  return new Intl.NumberFormat(getLocaleTag(locale), {
     style: "currency",
     currency: "NOK",
     maximumFractionDigits: 0,
@@ -31,12 +32,13 @@ function extractCity(addressLine: string | null): string | null {
   return parts.length > 1 ? parts[parts.length - 1] : null;
 }
 
-export function buildTagline(description: string, addressLine: string | null): string {
+export function buildTagline(description: string, addressLine: string | null, locale: AppLocale): string {
+  const m = getProfilePageMessages(locale);
   const trimmed = description.trim();
   const city = extractCity(addressLine);
   const premiumFallback = city
-    ? `Precision cuts, fades and beard grooming in ${city}.`
-    : "Precision cuts, fades and beard grooming.";
+    ? `${m.teamBioFallback} ${city}.`
+    : m.teamBioFallback;
   const genericSignals = [
     "professional barber",
     "professional barber in",
@@ -69,20 +71,26 @@ export function getTodayDayOfWeek(): number {
   return (new Date().getDay() + 6) % 7;
 }
 
-export function formatOpeningHoursRange(item: OpeningHourItem): string {
-  if (item.isClosed) return "Closed";
+export function formatOpeningHoursRange(item: OpeningHourItem, locale: AppLocale): string {
+  const m = getProfilePageMessages(locale);
+  if (item.isClosed) return m.closedDay;
   const open = formatTimeShort(item.openTime) || "--:--";
   const close = formatTimeShort(item.closeTime) || "--:--";
   return `${open} - ${close}`;
 }
 
-export function buildHoursStatusLine(isOpenNow: boolean | null, closeTime: string | null): string {
+export function buildHoursStatusLine(
+  isOpenNow: boolean | null,
+  closeTime: string | null,
+  locale: AppLocale
+): string {
+  const m = getProfilePageMessages(locale);
   if (isOpenNow === true) {
     const closeAt = formatTimeShort(closeTime);
-    return closeAt ? `Open now · Closes at ${closeAt}` : "Open now";
+    return closeAt ? `${m.openNow} · ${m.closesAtLabel} ${closeAt}` : m.openNow;
   }
-  if (isOpenNow === false) return "Closed now";
-  return "Hours may vary";
+  if (isOpenNow === false) return m.closedNow;
+  return m.hoursMayVary;
 }
 
 export function buildSocialItems(socialLinks: {

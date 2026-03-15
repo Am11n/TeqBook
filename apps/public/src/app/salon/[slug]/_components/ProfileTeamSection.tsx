@@ -2,6 +2,8 @@
 
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { BASE_CARD_CLASS, fallbackAvatar } from "../profile-helpers";
+import { getProfilePageMessages } from "../profile-i18n";
+import type { AppLocale } from "@/i18n/translations";
 import type { CardStyle, PublicTeamMember } from "../profile-types";
 
 type Props = {
@@ -11,15 +13,26 @@ type Props = {
   cardStyle: CardStyle;
   primaryColor: string;
   openMemberId: string | null;
+  locale: AppLocale;
   onOpenMember: (member: PublicTeamMember, trigger: HTMLButtonElement) => void;
 };
 
-export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryColor, openMemberId, onOpenMember }: Props) {
+export function ProfileTeamSection({
+  salonId,
+  slug,
+  members,
+  cardStyle,
+  primaryColor,
+  openMemberId,
+  locale,
+  onOpenMember,
+}: Props) {
+  const m = getProfilePageMessages(locale);
   if (!members.length) return null;
 
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold">Team</h2>
+      <h2 className="text-xl font-semibold">{m.teamHeading}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((member) => (
           <button
@@ -27,7 +40,7 @@ export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryC
             type="button"
             aria-haspopup="dialog"
             aria-expanded={openMemberId === member.id}
-            aria-label={`Open profile for ${member.name}`}
+            aria-label={`${m.openProfileFor} ${member.name}`}
             className={`${BASE_CARD_CLASS} group flex h-full flex-col gap-3 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
             style={cardStyle}
             onClick={(event) => {
@@ -58,23 +71,23 @@ export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryC
               )}
               <div className="min-w-0">
                 <p className="truncate font-medium">{member.name}</p>
-                <p className="truncate text-sm capitalize text-[var(--pb-muted)]">{member.title || "Team member"}</p>
+                <p className="truncate text-sm capitalize text-[var(--pb-muted)]">{member.title || m.teamMember}</p>
               </div>
             </div>
 
             <p className="line-clamp-2 text-sm text-[var(--pb-muted)]">
-              {member.bio || "Experienced barber focused on precision cuts and clean grooming."}
+              {member.bio || m.teamBioFallback}
             </p>
 
             <div className="mt-auto flex flex-wrap gap-1.5">
-              {(member.specialties.length ? member.specialties : ["Haircut", "Grooming"]).slice(0, 2).map((tag) => (
+              {(member.specialties.length ? member.specialties : [m.defaultSpecialty1, m.defaultSpecialty2]).slice(0, 2).map((tag) => (
                 <span key={`${member.id}-${tag}`} className="rounded-full border px-2 py-0.5 text-xs text-[var(--pb-muted)]">
                   {tag}
                 </span>
               ))}
             </div>
             <p className="inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium text-slate-700 transition group-hover:bg-slate-50">
-              <span>View profile</span>
+              <span>{m.viewProfile}</span>
               <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
             </p>
           </button>

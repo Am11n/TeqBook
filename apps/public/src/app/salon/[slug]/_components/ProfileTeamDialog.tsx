@@ -8,7 +8,7 @@ import { trackPublicEvent } from "@/components/public-booking/publicBookingTelem
 import { fallbackAvatar, formatPrice } from "../profile-helpers";
 import type { PublicTeamMember } from "../profile-types";
 import type { AppLocale } from "@/i18n/translations";
-import { formatProfileLanguageLabel, PROFILE_TEAM_DIALOG_MESSAGES } from "../profile-i18n";
+import { formatProfileLanguageLabel, getProfilePageMessages, PROFILE_TEAM_DIALOG_MESSAGES } from "../profile-i18n";
 
 type Props = {
   salonId: string;
@@ -26,6 +26,7 @@ type Props = {
 export function ProfileTeamDialog(props: Props) {
   const selectedMember = props.selectedMember;
   const m = PROFILE_TEAM_DIALOG_MESSAGES[props.locale] || PROFILE_TEAM_DIALOG_MESSAGES.en;
+  const pageMessages = getProfilePageMessages(props.locale);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export function ProfileTeamDialog(props: Props) {
         >
           <TabsList
             className="grid w-full grid-cols-2 rounded-xl border border-[var(--pb-border)] bg-[var(--pb-surface-muted)] p-1"
-            aria-label="Team member details tabs"
+            aria-label={m.teamMember}
           >
             <TabsTrigger
               value="about"
@@ -175,8 +176,8 @@ export function ProfileTeamDialog(props: Props) {
                 >
                   <p className="text-sm font-medium">{service.name}</p>
                   <p className="text-xs text-[var(--pb-muted)]">
-                    {service.durationMinutes ? `${service.durationMinutes} min` : "Duration on request"}
-                    {formatPrice(service.priceCents) ? ` · ${formatPrice(service.priceCents)}` : ""}
+                    {service.durationMinutes ? `${service.durationMinutes} ${pageMessages.minuteShort}` : pageMessages.durationOnRequest}
+                    {formatPrice(service.priceCents, props.locale) ? ` · ${formatPrice(service.priceCents, props.locale)}` : ""}
                   </p>
                 </Link>
               ))

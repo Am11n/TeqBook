@@ -1,19 +1,23 @@
 import type { PublicProfileClientProps } from "../profile-types";
+import type { AppLocale } from "@/i18n/translations";
+import { getProfilePageMessages } from "../profile-i18n";
 
 type Props = {
   reviewsSummary: PublicProfileClientProps["reviewsSummary"];
   borderColor: string;
   cardBackground: string;
+  locale: AppLocale;
 };
 
-export function ProfileReviewsSection({ reviewsSummary, borderColor, cardBackground }: Props) {
+export function ProfileReviewsSection({ reviewsSummary, borderColor, cardBackground, locale }: Props) {
+  const m = getProfilePageMessages(locale);
   if (!reviewsSummary) return null;
 
   return (
     <section className="space-y-3 rounded-xl border p-5" style={{ borderColor, background: cardBackground }}>
-      <h2 className="text-xl font-semibold">Reviews</h2>
+      <h2 className="text-xl font-semibold">{m.reviewsHeading}</h2>
       <p className="text-sm text-[var(--pb-muted)]">
-        ⭐ {reviewsSummary.ratingAverage.toFixed(1)} / 5 ({reviewsSummary.ratingCount} reviews)
+        ⭐ {reviewsSummary.ratingAverage.toFixed(1)} / 5 ({reviewsSummary.ratingCount} {m.reviewsWord})
       </p>
       <div className="space-y-3">
         {reviewsSummary.latest.map((review) => (
