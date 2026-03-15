@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@teqbook/ui";
 import { buildPublicBookingCssVars } from "@/components/public-booking/publicBookingTokens";
@@ -23,15 +23,12 @@ import {
 import type { PublicProfileClientProps } from "./profile-types";
 
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<PublicProfileClientProps["teamPreview"][number] | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [teamModalTab, setTeamModalTab] = useState<"about" | "services">("about");
   const [mapImageUnavailable, setMapImageUnavailable] = useState(false);
+  const lastTeamTriggerRef = useRef<HTMLButtonElement | null>(null);
 
-  const selectedMember = useMemo(
-    () => props.teamPreview.find((member) => member.id === selectedMemberId) || null,
-    [props.teamPreview, selectedMemberId]
-  );
   const heroTagline = useMemo(
     () => buildTagline(props.about.description, props.hero.addressLine),
     [props.about.description, props.hero.addressLine]
@@ -54,6 +51,15 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
   const cardStyle = useMemo(
     () => ({ borderColor: props.tokens.colors.border, background: props.tokens.colors.cardBackground }),
     [props.tokens.colors.border, props.tokens.colors.cardBackground]
+  );
+  const cssVars = useMemo(() => buildPublicBookingCssVars(props.tokens), [props.tokens]);
+  const dialogThemeStyle = useMemo(
+    () => ({
+      ...cssVars,
+      color: props.tokens.colors.text,
+      fontFamily: props.tokens.typography.fontFamily,
+    }),
+    [cssVars, props.tokens.colors.text, props.tokens.typography.fontFamily]
   );
 
   const handleShare = async () => {
@@ -96,7 +102,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     <div
       className="min-h-screen"
       style={{
-        ...buildPublicBookingCssVars(props.tokens),
+        ...cssVars,
         background: props.tokens.colors.pageBackground,
         color: props.tokens.colors.text,
         fontFamily: props.tokens.typography.fontFamily,
@@ -130,8 +136,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           members={props.teamPreview}
           cardStyle={cardStyle}
           primaryColor={props.tokens.colors.primary}
-          onOpenMember={(memberId) => {
-            setSelectedMemberId(memberId);
+          openMemberId={selectedMember?.id || null}
+          onOpenMember={(member, trigger) => {
+            lastTeamTriggerRef.current = trigger;
+            setSelectedMember(member);
             setTeamModalTab("about");
           }}
         />
@@ -190,8 +198,13 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         selectedMember={selectedMember}
         tab={teamModalTab}
         onTabChange={setTeamModalTab}
+        themeStyle={dialogThemeStyle}
         onOpenChange={(open) => {
-          if (!open) setSelectedMemberId(null);
+          if (!open) {
+            setSelectedMember(null);
+            const trigger = lastTeamTriggerRef.current;
+            if (trigger) setTimeout(() => trigger.focus(), 0);
+          }
         }}
       />
     </div>

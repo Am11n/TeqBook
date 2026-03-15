@@ -10,10 +10,11 @@ type Props = {
   members: PublicTeamMember[];
   cardStyle: CardStyle;
   primaryColor: string;
-  onOpenMember: (memberId: string) => void;
+  openMemberId: string | null;
+  onOpenMember: (member: PublicTeamMember, trigger: HTMLButtonElement) => void;
 };
 
-export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryColor, onOpenMember }: Props) {
+export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryColor, openMemberId, onOpenMember }: Props) {
   if (!members.length) return null;
 
   return (
@@ -24,10 +25,13 @@ export function ProfileTeamSection({ salonId, slug, members, cardStyle, primaryC
           <button
             key={member.id}
             type="button"
+            aria-haspopup="dialog"
+            aria-expanded={openMemberId === member.id}
+            aria-label={`Open profile for ${member.name}`}
             className={`${BASE_CARD_CLASS} group flex h-full flex-col gap-3 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--pb-shadow-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pb-primary)] focus-visible:ring-offset-2`}
             style={cardStyle}
-            onClick={() => {
-              onOpenMember(member.id);
+            onClick={(event) => {
+              onOpenMember(member, event.currentTarget);
               trackPublicEvent("click_team_member", {
                 salon_id: salonId,
                 slug,

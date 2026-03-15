@@ -18,6 +18,7 @@ export const PUBLIC_BOOKING_ANALYTICS_EVENTS = [
   "open_team_member_modal",
   "switch_team_member_tab",
   "click_book_from_team_modal",
+  "click_service_from_team_modal",
   "click_share_profile",
   "copy_profile_link",
   "copy_direct_booking_link",
