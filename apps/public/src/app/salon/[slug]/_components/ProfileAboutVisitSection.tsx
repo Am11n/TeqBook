@@ -115,7 +115,7 @@ export function ProfileAboutVisitSection(props: Props) {
                   rel="noreferrer"
                   title={item.label}
                   aria-label={`${m.openPrefix} ${item.label}`}
-                  className="inline-flex items-center justify-center text-[var(--pb-secondary-text)] transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 active:translate-y-px focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
+                  className="inline-flex items-center justify-center text-[var(--pb-secondary-text)] transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-px active:translate-y-px focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                   onClick={() => {
                     if (item.platform === "instagram") {
                       trackPublicEvent("click_instagram", {
@@ -143,7 +143,7 @@ export function ProfileAboutVisitSection(props: Props) {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${m.openLocationInMaps}: ${props.heroName}`}
-                className="group block overflow-hidden rounded-xl border border-[var(--pb-border-soft)] transition-[border-color,box-shadow,transform] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
+                className="group block overflow-hidden rounded-xl border border-[var(--pb-border-soft)] transition-[border-color,box-shadow,transform] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-[2px] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-card)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                 onClick={() =>
                   trackPublicEvent("click_map", {
                     salon_id: props.salonId,
