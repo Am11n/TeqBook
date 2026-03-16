@@ -29,7 +29,7 @@ export function ProfileHeroSection(props: Props) {
       className="group overflow-hidden rounded-3xl border border-[var(--pb-border-soft)] shadow-[var(--pb-shadow-1)] transition-[box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)]"
       style={props.cardStyle}
     >
-      <div className="grid md:grid-cols-[1.08fr_0.92fr]">
+      <div className="grid md:grid-cols-[1.1fr_0.9fr]">
         <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
           {props.hero.coverImageUrl ? (
             <div
@@ -53,7 +53,7 @@ export function ProfileHeroSection(props: Props) {
             className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[color-mix(in_srgb,var(--pb-accent-primary)_8%,transparent)] to-transparent"
           />
           <div className="relative space-y-2.5">
-            <h1 className="text-[clamp(1.82rem,3.1vw,2.58rem)] font-semibold tracking-[-0.026em] text-[var(--pb-text-primary)]">
+            <h1 className="text-[clamp(1.84rem,3.15vw,2.6rem)] font-semibold tracking-[-0.027em] text-[var(--pb-text-primary)]">
               {props.hero.name}
             </h1>
 
@@ -104,7 +104,7 @@ export function ProfileHeroSection(props: Props) {
               ) : null}
             </div>
 
-            <p className="max-w-[50ch] text-[15px] leading-[1.85] text-[var(--pb-text-secondary)] sm:text-[15.5px]">
+            <p className="max-w-[49ch] text-[15px] leading-[1.85] text-[var(--pb-text-secondary)] sm:text-[15.5px]">
               {props.heroTagline}
             </p>
           </div>
@@ -140,7 +140,7 @@ export function ProfileHeroSection(props: Props) {
                   <path d="M8.6 13.5l6.8 4" />
                   <path d="M15.4 6.5l-6.8 4" />
                 </svg>
-                <span className="hidden pl-2 text-sm font-medium sm:inline">{m.shareProfileAria}</span>
+                <span className="hidden pl-2 text-sm font-medium tracking-[0.01em] sm:inline">{m.shareProfileAria}</span>
               </Button>
             </div>
             {props.shareMessage ? <p className="mt-2 text-xs text-[var(--pb-muted)]">{props.shareMessage}</p> : null}

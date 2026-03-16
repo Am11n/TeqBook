@@ -43,7 +43,7 @@ export function ProfileTeamSection({
             aria-haspopup="dialog"
             aria-expanded={openMemberId === member.id}
             aria-label={`${m.openProfileFor} ${member.name}`}
-            className={`${BASE_CARD_CLASS} group flex h-full min-h-[220px] flex-col gap-3 p-4 text-left transition-[transform,box-shadow,border-color,background-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-[3px] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-card)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
+            className={`${BASE_CARD_CLASS} group flex h-full min-h-[218px] flex-col gap-3 p-4 text-left transition-[transform,box-shadow,border-color,background-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-[3px] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-card)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
             style={cardStyle}
             onClick={(event) => {
               onOpenMember(member, event.currentTarget);
@@ -76,7 +76,7 @@ export function ProfileTeamSection({
               )}
               <div className="min-w-0">
                 <p className="truncate text-[15px] font-semibold leading-5 text-[var(--pb-text-primary)]">{member.name}</p>
-                <p className="mt-0.5 inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-0.5 text-[11px] font-medium capitalize tracking-[0.01em] text-[var(--pb-secondary-text)]">
+                <p className="mt-0.5 inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-0.5 text-[11px] font-medium capitalize tracking-[0.015em] text-[var(--pb-secondary-text)]">
                   {member.title || m.teamMember}
                 </p>
               </div>
@@ -94,7 +94,7 @@ export function ProfileTeamSection({
               ))}
             </div>
             <p
-              className="inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold transition-[background-color,border-color,color,transform,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:-translate-y-px group-hover:shadow-[var(--pb-shadow-1)]"
+              className="inline-flex w-fit items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold transition-[background-color,border-color,color,transform,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:-translate-y-px group-hover:border-[var(--pb-border-strong)] group-hover:shadow-[var(--pb-shadow-1)]"
               style={{
                 borderColor: "color-mix(in srgb, var(--pb-primary) 22%, var(--pb-secondary-border) 78%)",
                 backgroundColor: "color-mix(in srgb, var(--pb-primary) 10%, var(--pb-secondary-bg) 90%)",
