@@ -1,7 +1,7 @@
 {
   "baseline": {
     "file": "supabase/supabase/baseline/BASELINE.sql",
-    "sha256": "c28f3de5c212b7c1ad3ea13f906d0bdfab72fc3d165b343814a7143240b2d88e"
+    "sha256": "5f6015a295438d22acb55ec5c2c6bb95f0728b216f76b1c962ae3b65c1da9771"
   },
   "postBaseline": []
 }
