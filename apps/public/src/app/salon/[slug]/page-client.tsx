@@ -18,7 +18,6 @@ import {
   buildTagline,
   getTodayDayOfWeek,
   getTodayOpeningHours,
-  formatTimeShort,
 } from "./profile-helpers";
 import { getProfilePageMessages } from "./profile-i18n";
 import type { PublicProfileClientProps } from "./profile-types";
@@ -37,15 +36,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
   const m = useMemo(() => getProfilePageMessages(props.locale), [props.locale]);
   const socialItems = useMemo(() => buildSocialItems(props.socialLinks), [props.socialLinks]);
   const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
-  const openCloseMeta = useMemo(() => {
-    if (todayHours?.isClosed) return m.closedNow;
-    if (props.hero.isOpenNow === true) {
-      const closeAt = formatTimeShort(todayHours?.closeTime || null);
-      return closeAt ? `${m.openNow} · ${m.closesLabel} ${closeAt}` : m.openNow;
-    }
-    if (props.hero.isOpenNow === false) return m.closedNow;
-    return props.hero.openStatusLabel;
-  }, [m.closedNow, m.closesLabel, m.openNow, props.hero.isOpenNow, props.hero.openStatusLabel, todayHours]);
+  const openCloseMeta = useMemo(
+    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),
+    [props.hero.isOpenNow, props.locale, todayHours?.closeTime, todayHours?.isClosed]
+  );
   const hoursStatusLine = useMemo(
     () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),
     [props.hero.isOpenNow, todayHours, props.locale]

@@ -60,7 +60,7 @@ export function ProfileHeroSection(props: Props) {
             {props.openCloseMeta ? (
               props.statusKind === "closed" ? (
                 <span
-                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium tracking-[0.01em]"
+                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
                   style={{
                     backgroundColor: "var(--pb-status-closed-bg)",
                     color: "var(--pb-status-closed-text)",
@@ -71,7 +71,7 @@ export function ProfileHeroSection(props: Props) {
                 </span>
               ) : props.statusKind === "open" ? (
                 <span
-                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium tracking-[0.01em]"
+                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
                   style={{
                     backgroundColor: "var(--pb-status-open-bg)",
                     color: "var(--pb-status-open-text)",
@@ -81,7 +81,7 @@ export function ProfileHeroSection(props: Props) {
                   {props.openCloseMeta}
                 </span>
               ) : (
-                <span className="inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-sm font-medium tracking-[0.01em] text-[var(--pb-secondary-text)]">
+                <span className="inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-sm font-medium text-[var(--pb-secondary-text)]">
                   {props.openCloseMeta}
                 </span>
               )
