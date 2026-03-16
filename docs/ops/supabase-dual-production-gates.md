@@ -4,28 +4,30 @@
 
 All items must be green before first pilot salon activation:
 
-- [ ] Environment mapping confirmed (`staging` vs `pilot-production`)
-- [ ] Manifest/checksum verification passed
-- [ ] Baseline + post-baseline apply succeeded
-- [ ] Verification pack passed
-- [ ] Seed policy split enforced
-- [ ] Recovery drill completed in staging
-- [ ] Engineering sign-off
-- [ ] Ops sign-off
-- [ ] QA evidence validation sign-off
+- [x] Environment mapping confirmed (`staging` vs `pilot-production`)
+- [x] Manifest/checksum verification passed
+- [x] Baseline + post-baseline apply succeeded
+- [x] Verification pack passed
+- [x] Seed policy split enforced
+- [x] Recovery drill completed in staging
+- [ ] Engineering sign-off (manual approver required)
+- [ ] Ops sign-off (manual approver required)
+- [ ] QA evidence validation sign-off (manual approver required)
 
-Evidence links:
+Evidence links (latest green):
 
-- Apply log:
-- Verify log:
-- Recovery drill log:
+- Apply log (staging): `docs/ops/evidence/db-apply-logs/apply-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-34-732Z.md`
+- Verify log (staging): `docs/ops/evidence/db-verify-logs/verify-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-36-154Z.md`
+- Apply log (pilot-production): `docs/ops/evidence/db-apply-logs/apply-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-16T15-49-13-240Z.md`
+- Verify log (pilot-production): `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-16T15-50-00-268Z.md`
+- Recovery drill log: see archived failure/recovery sequence summary in `docs/ops/evidence/archive/2026-03-16-db-run-archive.md`
 
 Approval:
 
-- Engineering:
-- Ops:
-- QA:
-- Date:
+- Engineering: Pending manual sign-off
+- Ops: Pending manual sign-off
+- QA: Pending manual sign-off
+- Date: 2026-03-16 (technical gate evidence complete; human sign-offs pending)
 
 ## Gate B - Pilot to Broader Production Rollout
 
