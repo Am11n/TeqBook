@@ -100,13 +100,13 @@ export function ProfileAboutVisitSection(props: Props) {
           };
 
   return (
-    <section className={`${BASE_CARD_CLASS} p-5 sm:p-6`} style={props.cardStyle}>
-      <div className="space-y-6">
+    <section className={`${BASE_CARD_CLASS} p-5 sm:p-6 md:p-7`} style={props.cardStyle}>
+      <div className="space-y-5">
         <article>
-          <h2 className="text-xl font-semibold">{m.aboutHeading}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--pb-muted)]">{props.aboutDescription}</p>
+          <h2 className="text-xl font-semibold tracking-tight">{m.aboutHeading}</h2>
+          <p className="mt-2.5 line-clamp-4 max-w-2xl text-sm leading-6 text-[var(--pb-muted)]">{props.aboutDescription}</p>
           {props.socialItems.length > 0 ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3.5 flex flex-wrap gap-2">
               {props.socialItems.map((item) => (
                 <a
                   key={item.platform}
@@ -115,7 +115,7 @@ export function ProfileAboutVisitSection(props: Props) {
                   rel="noreferrer"
                   title={item.label}
                   aria-label={`${m.openPrefix} ${item.label}`}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:bg-[var(--pb-bg-surface)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
+                  className="inline-flex items-center justify-center text-[var(--pb-secondary-text)] transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 active:translate-y-px focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none"
                   onClick={() => {
                     if (item.platform === "instagram") {
                       trackPublicEvent("click_instagram", {
@@ -133,8 +133,8 @@ export function ProfileAboutVisitSection(props: Props) {
           ) : null}
         </article>
 
-        <div className="grid gap-4 border-t border-[var(--pb-divider)] pt-5 lg:grid-cols-2">
-          <article className="space-y-3">
+        <div className="grid gap-5 border-t border-[var(--pb-divider)] pt-4 lg:grid-cols-2 lg:items-start">
+          <article className="space-y-2.5">
             <h3 className="text-lg font-semibold">{m.visitHeading}</h3>
             {props.addressLine ? <p className="text-sm text-[var(--pb-text-secondary)]">{props.addressLine}</p> : null}
             {props.mapLink ? (
@@ -190,7 +190,7 @@ export function ProfileAboutVisitSection(props: Props) {
             )}
           </article>
 
-          <article className="space-y-3">
+          <article className="space-y-3 rounded-xl border border-[var(--pb-border-soft)] bg-[var(--pb-secondary-bg)] p-4">
             <h3 className="text-lg font-semibold">{m.openingHoursHeading}</h3>
             <p
               className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
@@ -198,11 +198,11 @@ export function ProfileAboutVisitSection(props: Props) {
             >
               {props.hoursStatusLine}
             </p>
-            <ul className="space-y-1.5 text-sm">
+            <ul className="space-y-1 text-sm">
               {props.openingHours.map((item) => {
                 const isToday = item.dayOfWeek === props.todayDayOfWeek;
                 return (
-                  <li key={item.dayOfWeek} className="flex items-center justify-between">
+                  <li key={item.dayOfWeek} className="flex items-center justify-between border-b border-[var(--pb-divider)] py-1 last:border-b-0">
                     <span className={isToday ? "font-semibold text-[var(--pb-text-primary)]" : "text-[var(--pb-muted)]"}>
                       {weekdays[item.dayOfWeek] || m.dayFallback}
                     </span>

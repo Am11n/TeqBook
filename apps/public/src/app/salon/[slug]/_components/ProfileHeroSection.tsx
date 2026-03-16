@@ -25,7 +25,10 @@ type Props = {
 export function ProfileHeroSection(props: Props) {
   const m = getProfilePageMessages(props.locale);
   return (
-    <section className="group overflow-hidden rounded-3xl border border-[var(--pb-border-soft)] shadow-[var(--pb-shadow-1)]" style={props.cardStyle}>
+    <section
+      className="group overflow-hidden rounded-3xl border border-[var(--pb-border-soft)] shadow-[var(--pb-shadow-1)] transition-[box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)]"
+      style={props.cardStyle}
+    >
       <div className="grid md:grid-cols-[1fr_1fr]">
         <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
           {props.hero.coverImageUrl ? (
@@ -49,13 +52,15 @@ export function ProfileHeroSection(props: Props) {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[color-mix(in_srgb,var(--pb-accent-primary)_8%,transparent)] to-transparent"
           />
-          <div className="relative space-y-4">
-            <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold tracking-tight">{props.hero.name}</h1>
+          <div className="relative space-y-3.5">
+            <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold tracking-[-0.02em] text-[var(--pb-text-primary)]">
+              {props.hero.name}
+            </h1>
 
             {props.openCloseMeta ? (
               props.statusKind === "closed" ? (
                 <span
-                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
+                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium tracking-[0.01em]"
                   style={{
                     backgroundColor: "var(--pb-status-closed-bg)",
                     color: "var(--pb-status-closed-text)",
@@ -66,7 +71,7 @@ export function ProfileHeroSection(props: Props) {
                 </span>
               ) : props.statusKind === "open" ? (
                 <span
-                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
+                  className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium tracking-[0.01em]"
                   style={{
                     backgroundColor: "var(--pb-status-open-bg)",
                     color: "var(--pb-status-open-text)",
@@ -76,7 +81,7 @@ export function ProfileHeroSection(props: Props) {
                   {props.openCloseMeta}
                 </span>
               ) : (
-                <span className="inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-sm font-medium text-[var(--pb-secondary-text)]">
+                <span className="inline-flex w-fit rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-sm font-medium tracking-[0.01em] text-[var(--pb-secondary-text)]">
                   {props.openCloseMeta}
                 </span>
               )
@@ -89,6 +94,9 @@ export function ProfileHeroSection(props: Props) {
                   {props.hero.ratingAverage.toFixed(1)} ({props.hero.ratingCount} {m.reviewsWord})
                 </span>
               ) : null}
+              <span className="inline-flex items-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1">
+                {m.payInSalon}
+              </span>
               {props.hero.addressLine ? (
                 <span className="inline-flex items-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1">
                   {props.hero.addressLine}
@@ -96,14 +104,16 @@ export function ProfileHeroSection(props: Props) {
               ) : null}
             </div>
 
-            <p className="max-w-prose text-[15px] leading-7 text-[var(--pb-text-secondary)] sm:text-base">{props.heroTagline}</p>
+            <p className="max-w-[54ch] text-[15px] leading-7 text-[var(--pb-text-secondary)] sm:text-base">
+              {props.heroTagline}
+            </p>
           </div>
 
           <div className="relative mt-auto border-t border-[var(--pb-divider)] pt-4">
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
               <Link href={props.bookUrl} className="w-full sm:flex-1">
                 <Button
-                  className="h-11 w-full rounded-xl px-5 font-medium transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] active:translate-y-px motion-reduce:transform-none"
+                  className="h-11 w-full rounded-xl px-5 font-semibold shadow-[var(--pb-shadow-1)] transition-[transform,box-shadow,background-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
                   onClick={() =>
                     trackPublicEvent("click_book_from_profile", {
                       salon_id: props.salonId,
@@ -121,7 +131,7 @@ export function ProfileHeroSection(props: Props) {
                 variant="outline"
                 onClick={props.onShare}
                 aria-label={m.shareProfileAria}
-                className="h-11 min-w-11 rounded-xl border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 text-[var(--pb-secondary-text)] transition-all duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:bg-[var(--pb-bg-surface)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
+                className="h-11 min-w-11 rounded-xl border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-px hover:border-[var(--pb-border-strong)] hover:bg-[var(--pb-bg-surface)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="3" />

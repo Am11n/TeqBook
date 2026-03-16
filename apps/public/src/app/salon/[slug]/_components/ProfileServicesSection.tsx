@@ -20,13 +20,13 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
   const m = getProfilePageMessages(locale);
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold">{m.servicesHeading}</h2>
+      <h2 className="text-xl font-semibold tracking-tight">{m.servicesHeading}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {services.slice(0, 6).map((service) => (
           <Link
             key={service.id}
             href={`${bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-            className={`${BASE_CARD_CLASS} group flex min-h-[132px] flex-col justify-between p-4 transition-[transform,box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
+            className={`${BASE_CARD_CLASS} group relative flex min-h-[138px] flex-col justify-between p-4 transition-[transform,box-shadow,border-color,background-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-0.5 hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
             style={cardStyle}
             onClick={() =>
               trackPublicEvent("click_service_preview", {
@@ -37,17 +37,25 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
               })
             }
           >
-            <div className="space-y-2">
-              <p className="font-medium">{service.name}</p>
-              <p className="text-sm text-[var(--pb-muted)]">
-                {service.durationMinutes ? `${service.durationMinutes} ${m.minuteShort}` : m.durationOnRequest}
-                {formatPrice(service.priceCents, locale) ? ` · ${formatPrice(service.priceCents, locale)}` : ""}
+            <div className="space-y-1.5">
+              <p className="pr-8 font-medium text-[var(--pb-text-primary)]">{service.name}</p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-xs font-medium text-[var(--pb-secondary-text)]">
+                  {service.durationMinutes ? `${service.durationMinutes} ${m.minuteShort}` : m.durationOnRequest}
+                </span>
+                {formatPrice(service.priceCents, locale) ? (
+                  <span className="inline-flex items-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-xs font-medium text-[var(--pb-secondary-text)]">
+                    {formatPrice(service.priceCents, locale)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-end gap-2">
+              <p className="inline-flex items-center gap-1 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--pb-text-secondary)] transition-[background-color,border-color,transform] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:border-[var(--pb-border-strong)] group-hover:bg-[var(--pb-bg-surface)]">
+                <span>{m.book}</span>
+                <span aria-hidden="true" className="transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transform-none">→</span>
               </p>
             </div>
-            <p className="inline-flex items-center gap-1 text-sm font-medium text-[var(--pb-text-secondary)]">
-              <span>{m.book}</span>
-              <span aria-hidden="true" className="transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transform-none">→</span>
-            </p>
           </Link>
         ))}
       </div>
