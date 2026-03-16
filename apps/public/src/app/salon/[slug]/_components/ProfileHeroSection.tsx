@@ -29,7 +29,7 @@ export function ProfileHeroSection(props: Props) {
       className="group overflow-hidden rounded-3xl border border-[var(--pb-border-soft)] shadow-[var(--pb-shadow-1)] transition-[box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)]"
       style={props.cardStyle}
     >
-      <div className="grid md:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid md:grid-cols-[1.08fr_0.92fr]">
         <div className="relative order-1 min-h-[230px] md:order-2 md:min-h-[340px]">
           {props.hero.coverImageUrl ? (
             <div
@@ -52,8 +52,8 @@ export function ProfileHeroSection(props: Props) {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[color-mix(in_srgb,var(--pb-accent-primary)_8%,transparent)] to-transparent"
           />
-          <div className="relative space-y-3">
-            <h1 className="text-[clamp(1.78rem,3vw,2.52rem)] font-semibold tracking-[-0.024em] text-[var(--pb-text-primary)]">
+          <div className="relative space-y-2.5">
+            <h1 className="text-[clamp(1.82rem,3.1vw,2.58rem)] font-semibold tracking-[-0.026em] text-[var(--pb-text-primary)]">
               {props.hero.name}
             </h1>
 
@@ -87,7 +87,7 @@ export function ProfileHeroSection(props: Props) {
               )
             ) : null}
 
-            <div className="flex flex-wrap items-center gap-1.5 text-sm text-[var(--pb-text-secondary)]">
+            <div className="flex flex-wrap items-center gap-1.5 text-[13.5px] text-[var(--pb-text-secondary)]">
               {props.hero.ratingAverage !== null && props.hero.ratingCount > 0 ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1">
                   <span className="text-[var(--pb-accent-primary)]">★</span>
@@ -104,7 +104,7 @@ export function ProfileHeroSection(props: Props) {
               ) : null}
             </div>
 
-            <p className="max-w-[52ch] text-[15px] leading-7 text-[var(--pb-text-secondary)] sm:text-[15.5px]">
+            <p className="max-w-[50ch] text-[15px] leading-[1.85] text-[var(--pb-text-secondary)] sm:text-[15.5px]">
               {props.heroTagline}
             </p>
           </div>
@@ -113,7 +113,7 @@ export function ProfileHeroSection(props: Props) {
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
               <Link href={props.bookUrl} className="w-full sm:flex-1">
                 <Button
-                  className="h-[2.875rem] w-full rounded-xl border border-transparent px-5 font-semibold shadow-[var(--pb-shadow-1)] transition-[transform,box-shadow,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
+                  className="h-[2.875rem] w-full rounded-xl border border-transparent px-5 text-[0.95rem] font-semibold shadow-[var(--pb-shadow-1)] transition-[transform,box-shadow,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
                   onClick={() =>
                     trackPublicEvent("click_book_from_profile", {
                       salon_id: props.salonId,

@@ -26,7 +26,7 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
           <Link
             key={service.id}
             href={`${bookUrl}?serviceId=${encodeURIComponent(service.id)}`}
-            className={`${BASE_CARD_CLASS} group relative flex min-h-[136px] flex-col justify-between p-4 transition-[transform,box-shadow,border-color,background-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-[2px] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-card)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
+            className={`${BASE_CARD_CLASS} group relative flex min-h-[130px] flex-col justify-between p-4 transition-[transform,box-shadow,border-color,background-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:-translate-y-[3px] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-card)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none motion-reduce:transition-none`}
             style={cardStyle}
             onClick={() =>
               trackPublicEvent("click_service_preview", {
@@ -37,7 +37,7 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
               })
             }
           >
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <p className="pr-8 font-medium leading-5 text-[var(--pb-text-primary)]">{service.name}</p>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2.5 py-1 text-xs font-medium text-[var(--pb-secondary-text)]">
@@ -50,12 +50,12 @@ export function ProfileServicesSection({ salonId, slug, bookUrl, services, cardS
                 ) : null}
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-end gap-2 border-t border-[var(--pb-divider)] pt-2.5">
-              <p className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:-translate-y-px group-hover:shadow-[var(--pb-shadow-1)]"
+            <div className="mt-2 flex items-center justify-end gap-2 border-t border-[var(--pb-divider)] pt-2">
+              <p className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-[background-color,border-color,color,transform,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] group-hover:-translate-y-px group-hover:scale-[1.01] group-hover:shadow-[var(--pb-shadow-1)]"
                 style={{
-                  borderColor: "color-mix(in srgb, var(--pb-primary) 22%, var(--pb-secondary-border) 78%)",
-                  backgroundColor: "color-mix(in srgb, var(--pb-primary) 10%, var(--pb-secondary-bg) 90%)",
-                  color: "color-mix(in srgb, var(--pb-text-primary) 88%, var(--pb-primary) 12%)",
+                  borderColor: "color-mix(in srgb, var(--pb-primary) 26%, var(--pb-secondary-border) 74%)",
+                  backgroundColor: "color-mix(in srgb, var(--pb-primary) 13%, var(--pb-secondary-bg) 87%)",
+                  color: "color-mix(in srgb, var(--pb-text-primary) 84%, var(--pb-primary) 16%)",
                 }}
               >
                 <span>{m.book}</span>

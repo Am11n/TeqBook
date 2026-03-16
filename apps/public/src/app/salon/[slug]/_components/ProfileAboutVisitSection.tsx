@@ -101,12 +101,12 @@ export function ProfileAboutVisitSection(props: Props) {
 
   return (
     <section className={`${BASE_CARD_CLASS} p-5 sm:p-6 md:p-7`} style={props.cardStyle}>
-      <div className="space-y-5">
+      <div className="space-y-4">
         <article>
           <h2 className="text-xl font-semibold tracking-tight">{m.aboutHeading}</h2>
-          <p className="mt-2.5 line-clamp-4 max-w-2xl text-sm leading-6 text-[var(--pb-muted)]">{props.aboutDescription}</p>
+          <p className="mt-2 line-clamp-3 max-w-[62ch] text-sm leading-6 text-[var(--pb-muted)]">{props.aboutDescription}</p>
           {props.socialItems.length > 0 ? (
-            <div className="mt-3.5 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {props.socialItems.map((item) => (
                 <a
                   key={item.platform}
@@ -133,7 +133,7 @@ export function ProfileAboutVisitSection(props: Props) {
           ) : null}
         </article>
 
-        <div className="grid gap-5 border-t border-[var(--pb-divider)] pt-4 lg:grid-cols-2 lg:items-start">
+        <div className="grid gap-6 border-t border-[var(--pb-divider)] pt-3.5 lg:grid-cols-2 lg:items-start">
           <article className="space-y-2.5">
             <h3 className="text-lg font-semibold">{m.visitHeading}</h3>
             {props.addressLine ? <p className="text-sm text-[var(--pb-text-secondary)]">{props.addressLine}</p> : null}
@@ -190,7 +190,7 @@ export function ProfileAboutVisitSection(props: Props) {
             )}
           </article>
 
-          <article className="space-y-3 rounded-xl border border-[var(--pb-border-soft)] bg-[var(--pb-secondary-bg)] p-4">
+          <article className="space-y-3 rounded-xl border border-[var(--pb-border-soft)] bg-[var(--pb-secondary-bg)] p-3.5 sm:p-4">
             <h3 className="text-lg font-semibold">{m.openingHoursHeading}</h3>
             <p
               className="inline-flex w-fit rounded-full border px-2.5 py-1 text-sm font-medium"
