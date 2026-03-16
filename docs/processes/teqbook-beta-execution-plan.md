@@ -19,6 +19,25 @@ Run a controlled beta with 3-5 pilot salons, proving reliable daily usage of cor
 - **P1:** post-pilot improvements (notifications, reporting improvements, imports, admin assist, additional fully QA-tested locales).
 - **P2:** billing, multi-salon, gift cards, packages, waitlist growth, loyalty, advanced analytics/commissions.
 
+## Environment Selection Protocol (2-Project Setup)
+
+Canonical mapping:
+
+- `staging` -> existing Supabase project used for development/staging validation.
+- `pilot-production` -> `teqbook-pilot` Supabase project.
+
+Mandatory env switch before DB commands:
+
+- `cp .env.staging .env.local` for staging work.
+- `cp .env.pilot .env.local` for pilot-production work.
+
+Preflight before every DB command:
+
+1. Write target env in before-change note.
+2. Confirm `.env.local` source (`.env.staging` or `.env.pilot`).
+3. Confirm project ref matches target env.
+4. Proceed only if all checks pass.
+
 ## Timeboxes
 
 - Phase 1: 1-2 days

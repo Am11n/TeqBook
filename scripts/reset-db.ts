@@ -28,6 +28,12 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const targetEnv = process.env.TEQBOOK_ENV_TARGET;
+if (targetEnv !== "staging") {
+  console.error("❌ reset:db is only allowed when TEQBOOK_ENV_TARGET=staging");
+  process.exit(1);
+}
+
 async function resetDatabase() {
   console.log("⚠️  WARNING: This will delete ALL data in the database!");
   console.log("   Press Ctrl+C to cancel, or wait 5 seconds to continue...\n");

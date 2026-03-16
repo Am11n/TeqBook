@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "baseline": "supabase/supabase/baseline/BASELINE.sql",
+  "postBaseline": []
+}
+

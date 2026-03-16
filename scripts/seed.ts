@@ -38,6 +38,15 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 const TEST_SALON_SLUG = "test-salon";
 
+function getTargetEnv(): "staging" | "pilot-production" {
+  const target = process.env.TEQBOOK_ENV_TARGET;
+  if (target !== "staging" && target !== "pilot-production") {
+    console.error("❌ TEQBOOK_ENV_TARGET must be set to 'staging' or 'pilot-production'");
+    process.exit(1);
+  }
+  return target;
+}
+
 async function checkExistingSalon(): Promise<string | null> {
   const { data } = await supabase.from("salons").select("id").eq("slug", TEST_SALON_SLUG).single();
   return data?.id || null;
@@ -446,6 +455,19 @@ async function reset() {
 const args = process.argv.slice(2);
 const shouldReset = args.includes("--reset");
 const shouldForce = args.includes("--force");
+const allowPilotBootstrap = args.includes("--allow-pilot-bootstrap");
+const targetEnv = getTargetEnv();
+
+if (targetEnv === "pilot-production" && !allowPilotBootstrap) {
+  console.error("❌ Refusing to run seed in pilot-production.");
+  console.error("   Use --allow-pilot-bootstrap only for approved minimal bootstrap operations.");
+  process.exit(1);
+}
+
+if (targetEnv === "pilot-production" && shouldReset) {
+  console.error("❌ --reset is forbidden in pilot-production.");
+  process.exit(1);
+}
 
 (async () => {
   if (shouldReset) {

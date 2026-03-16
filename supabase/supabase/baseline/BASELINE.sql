@@ -1,0 +1,15 @@
+-- TeqBook Controlled Production Baseline
+-- Immutable after initial capture.
+-- Source: trusted current database state (staging sign-off required).
+--
+-- Rules:
+-- 1) Do not hand-edit this file after baseline capture.
+-- 2) All future DB changes must be new files in postBaseline manifest entries.
+-- 3) Never include demo/test fixture data here.
+--
+-- Capture workflow:
+-- - Export trusted schema/function/RLS state to this file.
+-- - Review and sign off.
+-- - Run: pnpm run db:manifest:lock
+-- - Commit baseline + manifest + checksums together.
+
