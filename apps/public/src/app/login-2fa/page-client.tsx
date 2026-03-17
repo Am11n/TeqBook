@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { challengeTOTP, verifyTOTPChallenge } from "@/lib/services/two-factor-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
+import { hasCompletedOnboarding } from "@/lib/services/onboarding-completion-service";
 import { getCurrentUser } from "@/lib/services/auth-service";
 import { logError, logSecurity } from "@/lib/services/logger";
 import { initSession } from "@/lib/services/session-service";
@@ -112,8 +113,8 @@ export default function Login2FAPageClient() {
       return;
     }
 
-    // If user has a salon, redirect to dashboard (trailing slash = stay on teqbook.com)
-    if (profile.salon_id) {
+    const onboardingComplete = await hasCompletedOnboarding(profile);
+    if (onboardingComplete) {
       router.push("/dashboard/");
       return;
     }

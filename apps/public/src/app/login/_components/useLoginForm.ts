@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
+import { hasCompletedOnboarding } from "@/lib/services/onboarding-completion-service";
 import {
   recordFailedAttempt, clearRateLimit, isRateLimited,
   formatTimeRemaining, getTimeUntilReset,
@@ -162,7 +163,8 @@ export function useLoginForm() {
     }
     if (!profile) { router.push("/onboarding"); return; }
     if (profile.is_superadmin) { router.push("/admin/"); return; }
-    if (profile.salon_id) { router.push("/dashboard/"); return; }
+    const onboardingComplete = await hasCompletedOnboarding(profile);
+    if (onboardingComplete) { router.push("/dashboard/"); return; }
     router.push("/onboarding");
   }
 
