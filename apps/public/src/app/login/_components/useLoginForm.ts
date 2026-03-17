@@ -14,6 +14,11 @@ import { logSecurity, logError } from "@/lib/services/logger";
 
 const MAX_LOGIN_ATTEMPTS = 5;
 
+function isUpstreamLoginThrottleError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return normalized.includes("too many failed login attempts");
+}
+
 export function useLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -60,6 +65,15 @@ export function useLoginForm() {
     }
 
     if (signInError) {
+      if (isUpstreamLoginThrottleError(signInError)) {
+        setError(
+          "Too many failed login attempts. Please wait a few minutes before trying again."
+        );
+        setStatus("error");
+        logSecurity("Upstream login throttle triggered", { email, error: signInError });
+        return;
+      }
+
       if (email) {
         try {
           const serverRL = await incrementRateLimit(email, "login");
