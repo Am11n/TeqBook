@@ -234,3 +234,43 @@ export async function updateProfile(
   }
 }
 
+/**
+ * Ensure a profile row exists for the authenticated user and optionally patch core fields.
+ */
+export async function ensureProfileForUser(
+  input: {
+    user_id: string;
+    salon_id?: string | null;
+    role?: string | null;
+    preferred_language?: string | null;
+    is_superadmin?: boolean;
+    user_preferences?: Record<string, unknown>;
+  }
+): Promise<{ error: string | null }> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          user_id: input.user_id,
+          salon_id: input.salon_id ?? null,
+          role: input.role ?? "owner",
+          preferred_language: input.preferred_language ?? "nb",
+          is_superadmin: input.is_superadmin ?? false,
+          user_preferences: input.user_preferences ?? {},
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+

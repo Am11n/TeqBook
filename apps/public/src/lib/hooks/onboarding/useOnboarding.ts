@@ -2,6 +2,8 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { createSalonForCurrentUser, createOpeningHours } from "@/lib/services/onboarding-service";
+import { getCurrentUser } from "@/lib/services/auth-service";
+import { ensureProfileForUser } from "@/lib/services/profiles-service";
 import type { AppLocale } from "@/i18n/translations";
 import type { OpeningHours, SalonType, OnboardingStep } from "@/lib/utils/onboarding/onboarding-utils";
 import { DEFAULT_OPENING_HOURS } from "@/lib/utils/onboarding/onboarding-utils";
@@ -37,6 +39,25 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
     setStatus("loading");
     setError(null);
 
+    const { data: currentUser, error: userError } = await getCurrentUser();
+    if (userError || !currentUser) {
+      setError(userError ?? translations.createError);
+      setStatus("error");
+      return;
+    }
+
+    const { error: ensureProfileError } = await ensureProfileForUser({
+      user_id: currentUser.id,
+      role: "owner",
+      preferred_language: preferredLanguage,
+    });
+
+    if (ensureProfileError) {
+      setError(ensureProfileError);
+      setStatus("error");
+      return;
+    }
+
     // First create the salon
     const { data: salonId, error: salonError } = await createSalonForCurrentUser({
       salon_name: name,
@@ -49,6 +70,19 @@ export function useOnboarding({ initialLocale, translations }: UseOnboardingOpti
 
     if (salonError || !salonId) {
       setError(salonError ?? translations.createError);
+      setStatus("error");
+      return;
+    }
+
+    const { error: linkSalonError } = await ensureProfileForUser({
+      user_id: currentUser.id,
+      salon_id: salonId,
+      role: "owner",
+      preferred_language: preferredLanguage,
+    });
+
+    if (linkSalonError) {
+      setError(linkSalonError);
       setStatus("error");
       return;
     }

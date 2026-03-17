@@ -4,7 +4,12 @@
 // Business logic layer for user profiles
 // Orchestrates repository calls and handles domain rules
 
-import { getProfileByUserId, updateUserPreferences, updateProfile as updateProfileRepo } from "@/lib/repositories/profiles";
+import {
+  ensureProfileForUser as ensureProfileRepo,
+  getProfileByUserId,
+  updateUserPreferences,
+  updateProfile as updateProfileRepo,
+} from "@/lib/repositories/profiles";
 import type { Profile } from "@/lib/types";
 
 // Re-export Profile type for consumers
@@ -101,5 +106,25 @@ export async function updateProfile(
 
   // Call repository
   return await updateProfileRepo(userId, updates);
+}
+
+/**
+ * Ensure a profile exists for a user and patch minimal core fields.
+ */
+export async function ensureProfileForUser(
+  input: {
+    user_id: string;
+    salon_id?: string | null;
+    role?: string | null;
+    preferred_language?: string | null;
+    is_superadmin?: boolean;
+    user_preferences?: Record<string, unknown>;
+  }
+): Promise<{ error: string | null }> {
+  if (!input.user_id) {
+    return { error: "User ID is required" };
+  }
+
+  return await ensureProfileRepo(input);
 }
 
