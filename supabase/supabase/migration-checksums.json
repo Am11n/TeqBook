@@ -3,5 +3,10 @@
     "file": "supabase/supabase/baseline/BASELINE.sql",
     "sha256": "5f6015a295438d22acb55ec5c2c6bb95f0728b216f76b1c962ae3b65c1da9771"
   },
-  "postBaseline": []
+  "postBaseline": [
+    {
+      "file": "supabase/supabase/migrations/20260317162000_pilot_access_recovery.sql",
+      "sha256": "f424e2e899aaf5bae130227d72c6f5d76a844ee3d9d80ddcd99b28d643eb43ad"
+    }
+  ]
 }

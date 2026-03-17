@@ -1,6 +1,8 @@
 {
   "version": 1,
   "baseline": "supabase/supabase/baseline/BASELINE.sql",
-  "postBaseline": []
+  "postBaseline": [
+    "supabase/supabase/migrations/20260317162000_pilot_access_recovery.sql"
+  ]
 }
 
