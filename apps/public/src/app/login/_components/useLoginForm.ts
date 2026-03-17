@@ -19,6 +19,14 @@ function isUpstreamLoginThrottleError(message: string): boolean {
   return normalized.includes("too many failed login attempts");
 }
 
+function isRateLimitInfrastructureFailure(result: {
+  allowed: boolean;
+  degraded?: boolean;
+  source?: "server" | "client_fallback" | "fail_closed";
+}): boolean {
+  return !result.allowed && result.degraded === true && result.source === "fail_closed";
+}
+
 export function useLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -40,6 +48,10 @@ export function useLoginForm() {
       try {
         const serverRateLimit = await checkRateLimit(email, "login");
         setRateLimitInfo({ limited: !serverRateLimit.allowed, remainingAttempts: serverRateLimit.remainingAttempts, resetTime: serverRateLimit.resetTime });
+        if (isRateLimitInfrastructureFailure(serverRateLimit)) {
+          // Avoid locking out legitimate users when the rate-limit edge endpoint is unavailable (e.g. CORS/auth misconfig).
+          logError("Rate limit precheck degraded (fail-closed), bypassing login precheck", serverRateLimit, { email });
+        } else
         if (!serverRateLimit.allowed) {
           setError(`Too many failed login attempts. Please try again in ${formatTimeRemaining(getTimeUntilReset(serverRateLimit.resetTime))}.`);
           setStatus("error");
@@ -78,6 +90,9 @@ export function useLoginForm() {
         try {
           const serverRL = await incrementRateLimit(email, "login");
           setRateLimitInfo({ limited: !serverRL.allowed, remainingAttempts: serverRL.remainingAttempts, resetTime: serverRL.resetTime });
+          if (isRateLimitInfrastructureFailure(serverRL)) {
+            logError("Rate limit increment degraded (fail-closed), skipping lock message", serverRL, { email });
+          } else
           if (!serverRL.allowed) {
             setError(`Too many failed login attempts. Your account has been temporarily blocked. Please try again in ${formatTimeRemaining(getTimeUntilReset(serverRL.resetTime))}.`);
             setStatus("error");
