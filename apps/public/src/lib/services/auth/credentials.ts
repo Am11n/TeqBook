@@ -119,3 +119,40 @@ export async function updatePassword(
     return { error: err instanceof Error ? err.message : "Unknown error" };
   }
 }
+
+export async function requestPasswordReset(
+  email: string,
+  redirectTo: string
+): Promise<{ error: string | null }> {
+  if (!email) return { error: "Email is required" };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Invalid email format" };
+  if (!redirectTo) return { error: "Reset redirect URL is required" };
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+
+    if (error) return { error: error.message };
+    return { error: null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
+
+export async function completePasswordReset(
+  newPassword: string
+): Promise<{ error: string | null }> {
+  if (!newPassword) return { error: "New password is required" };
+
+  const pwErr = validatePasswordStrength(newPassword);
+  if (pwErr) return { error: pwErr };
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    return { error: null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}

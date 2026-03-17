@@ -6,6 +6,8 @@ export {
   signUp,
   signOut,
   updatePassword,
+  requestPasswordReset,
+  completePasswordReset,
   getSession,
   updateUserMetadata,
   getEmailVerificationStatus,

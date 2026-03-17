@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -16,16 +16,19 @@ import { useLoginForm } from "./_components/useLoginForm";
 
 type LoginUiMessages = {
   confirmedBanner: string;
+  passwordResetBanner: string;
 };
 
 const loginUiEn: LoginUiMessages = {
   confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+  passwordResetBanner: "Your password has been reset successfully. You can log in now.",
 };
 
 const loginUiByLocale: Record<string, LoginUiMessages> = {
   en: loginUiEn,
   nb: {
     confirmedBanner: "Du har bekreftet sign up. Velkommen til TeqBook - du kan logge inn nå.",
+    passwordResetBanner: "Passordet ditt er oppdatert. Du kan logge inn nå.",
   },
 };
 
@@ -34,8 +37,14 @@ export default function LoginPage() {
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].login;
   const extra = getPublicPageTranslations(appLocale).adminLogin;
-  const searchParams = useSearchParams();
-  const showConfirmedBanner = searchParams.get("confirmed") === "1";
+  const [showConfirmedBanner] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("confirmed") === "1";
+  });
+  const [showPasswordResetBanner] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("reset") === "1";
+  });
   const ui = loginUiByLocale[appLocale] ?? loginUiEn;
 
   const {
@@ -83,6 +92,11 @@ export default function LoginPage() {
                   {ui.confirmedBanner}
                 </p>
               )}
+              {showPasswordResetBanner && (
+                <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" aria-live="polite">
+                  {ui.passwordResetBanner}
+                </p>
+              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label htmlFor="email" className="text-sm font-medium text-slate-800">{t.emailLabel}</label>
@@ -103,7 +117,7 @@ export default function LoginPage() {
                     <input type="checkbox" checked={keepLoggedIn} onChange={(e) => setKeepLoggedIn(e.target.checked)} className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-600/40" />
                     <span>{t.keepMeLoggedIn}</span>
                   </label>
-                  <Link href="#" className="font-medium text-blue-600 hover:underline">{t.forgotPassword}</Link>
+                  <Link href="/forgot-password" className="font-medium text-blue-600 hover:underline">{t.forgotPassword}</Link>
                 </div>
                 <button type="submit" disabled={status === "loading"} className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70">
                   {status === "loading" ? t.loggingIn : t.loginButton}
