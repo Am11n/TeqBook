@@ -7,7 +7,7 @@ import Image from "next/image";
 import { challengeTOTP, verifyTOTPChallenge } from "@/lib/services/two-factor-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { getCurrentUser } from "@/lib/services/auth-service";
-import { logSecurity } from "@/lib/services/logger";
+import { logError, logSecurity } from "@/lib/services/logger";
 import { initSession } from "@/lib/services/session-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,8 +91,10 @@ export default function Login2FAPageClient() {
     const { data: profile, error: profileError } = await getProfileForUser(user.id);
 
     if (profileError) {
-      setError(t.failedProfile);
-      setStatus("error");
+      logError("2FA profile lookup failed; routing to onboarding fallback", new Error(profileError), {
+        userId: user.id,
+      });
+      router.push("/onboarding");
       return;
     }
 

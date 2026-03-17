@@ -151,7 +151,15 @@ export function useLoginForm() {
     logSecurity("Successful login", { email, userId: signInData.user.id });
 
     const { data: profile, error: profileError } = await getProfileForUser(signInData.user.id);
-    if (profileError) { setError("Could not load user profile."); setStatus("error"); return; }
+    if (profileError) {
+      // Never block newly confirmed users from reaching onboarding if profile bootstrap is missing or delayed.
+      logError("Profile lookup failed after successful login; routing to onboarding fallback", new Error(profileError), {
+        email,
+        userId: signInData.user.id,
+      });
+      router.push("/onboarding");
+      return;
+    }
     if (!profile) { router.push("/onboarding"); return; }
     if (profile.is_superadmin) { router.push("/admin/"); return; }
     if (profile.salon_id) { router.push("/dashboard/"); return; }
