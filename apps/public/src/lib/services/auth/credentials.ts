@@ -47,7 +47,10 @@ export async function signUp(
   email: string,
   password: string,
   options?: { redirectTo?: string; firstName?: string; lastName?: string }
-): Promise<{ data: { user: User | null } | null; error: string | null }> {
+): Promise<{
+  data: { user: User | null; session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] | null } | null;
+  error: string | null;
+}> {
   if (!email || !password) return { data: null, error: "Email and password are required" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { data: null, error: "Invalid email format" };
 
@@ -64,7 +67,7 @@ export async function signUp(
       },
     });
     if (error) return { data: null, error: error.message };
-    return { data: { user: data.user }, error: null };
+    return { data: { user: data.user, session: data.session }, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
   }

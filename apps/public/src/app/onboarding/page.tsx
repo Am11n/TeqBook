@@ -166,9 +166,6 @@ export default function OnboardingPage() {
                 )}
               </form>
 
-              <p className="mt-6 text-[11px] text-center text-slate-400">
-                {t.footerHint}
-              </p>
             </motion.div>
           </section>
         </div>

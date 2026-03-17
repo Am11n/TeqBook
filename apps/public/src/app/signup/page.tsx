@@ -18,6 +18,7 @@ type SignupUiMessages = {
   firstNameRequired: string;
   lastNameRequired: string;
   termsRequired: string;
+  confirmationSent: string;
   show: string;
   hide: string;
 };
@@ -32,6 +33,8 @@ const signupUiEn: SignupUiMessages = {
   firstNameRequired: "First name is required",
   lastNameRequired: "Last name is required",
   termsRequired: "You must agree to the terms",
+  confirmationSent:
+    "Check your email to confirm your account, then return to TeqBook and log in.",
   show: "Show",
   hide: "Hide",
 };
@@ -48,6 +51,8 @@ const signupUiByLocale: Record<AppLocale, SignupUiMessages> = {
     firstNameRequired: "Fornavn er påkrevd",
     lastNameRequired: "Etternavn er påkrevd",
     termsRequired: "Du må godta vilkårene",
+    confirmationSent:
+      "Sjekk e-posten din for å bekrefte kontoen. Deretter kan du logge inn i TeqBook.",
     show: "Vis",
     hide: "Skjul",
   },
@@ -81,6 +86,7 @@ export default function SignUpPage() {
       firstNameRequired: ui.firstNameRequired,
       lastNameRequired: ui.lastNameRequired,
       termsRequired: ui.termsRequired,
+      confirmationSent: ui.confirmationSent,
     },
   });
 
@@ -123,6 +129,7 @@ export default function SignUpPage() {
               setAgreeToTerms={signup.setAgreeToTerms}
               status={signup.status}
               error={signup.error}
+              successMessage={signup.successMessage}
               onSubmit={signup.handleSubmit}
               translations={{
                 title: signupT.title,

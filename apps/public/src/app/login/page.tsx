@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -13,11 +14,29 @@ const MotionDiv = dynamic(
 );
 import { useLoginForm } from "./_components/useLoginForm";
 
+type LoginUiMessages = {
+  confirmedBanner: string;
+};
+
+const loginUiEn: LoginUiMessages = {
+  confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+};
+
+const loginUiByLocale: Record<string, LoginUiMessages> = {
+  en: loginUiEn,
+  nb: {
+    confirmedBanner: "Du har bekreftet sign up. Velkommen til TeqBook - du kan logge inn nå.",
+  },
+};
+
 export default function LoginPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].login;
   const extra = getPublicPageTranslations(appLocale).adminLogin;
+  const searchParams = useSearchParams();
+  const showConfirmedBanner = searchParams.get("confirmed") === "1";
+  const ui = loginUiByLocale[appLocale] ?? loginUiEn;
 
   const {
     email, setEmail, password, setPassword,
@@ -59,6 +78,11 @@ export default function LoginPage() {
                 <h2 className="text-xl font-semibold text-slate-900">{t.title}</h2>
                 <p className="mt-1 text-sm text-slate-600">{t.formSubtitle}</p>
               </div>
+              {showConfirmedBanner && (
+                <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" aria-live="polite">
+                  {ui.confirmedBanner}
+                </p>
+              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label htmlFor="email" className="text-sm font-medium text-slate-800">{t.emailLabel}</label>

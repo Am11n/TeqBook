@@ -11,6 +11,7 @@ interface UseSignupOptions {
     firstNameRequired: string;
     lastNameRequired: string;
     termsRequired: string;
+    confirmationSent: string;
   };
 }
 
@@ -24,13 +25,25 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const resolveEmailRedirectTo = () => {
+    const fallbackBase =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "https://teqbook.com");
+
+    const redirectUrl = new URL("/login", fallbackBase);
+    redirectUrl.searchParams.set("confirmed", "1");
+    return redirectUrl.toString();
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setStatus("loading");
     setError(null);
+    setSuccessMessage(null);
 
     // Validation
     if (!firstName.trim()) {
@@ -67,7 +80,11 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
 
     try {
       // Sign up user
-      const { data: signUpData, error: signUpError } = await signUp(email, password);
+      const { data: signUpData, error: signUpError } = await signUp(email, password, {
+        redirectTo: resolveEmailRedirectTo(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
 
       if (signUpError || !signUpData?.user) {
         setError(signUpError || "Failed to create account");
@@ -86,7 +103,14 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
         console.error("Failed to update profile:", profileError);
       }
 
-      // Redirect to onboarding
+      // If email confirmation is required, Supabase returns no session.
+      if (!signUpData.session) {
+        setStatus("success");
+        setSuccessMessage(translations.confirmationSent);
+        return;
+      }
+
+      // Session exists -> user can continue onboarding immediately.
       router.push("/onboarding");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
@@ -113,6 +137,7 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
     setAgreeToTerms,
     status,
     error,
+    successMessage,
     handleSubmit,
   };
 }

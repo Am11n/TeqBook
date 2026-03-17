@@ -24,8 +24,9 @@ interface SignupFormProps {
   setShowConfirmPassword: (show: boolean) => void;
   agreeToTerms: boolean;
   setAgreeToTerms: (agree: boolean) => void;
-  status: "idle" | "loading" | "error";
+  status: "idle" | "loading" | "error" | "success";
   error: string | null;
+  successMessage: string | null;
   onSubmit: (e: FormEvent) => void;
   translations: {
     title: string;
@@ -73,6 +74,7 @@ export function SignupForm({
   setAgreeToTerms,
   status,
   error,
+  successMessage,
   onSubmit,
   translations,
 }: SignupFormProps) {
@@ -189,6 +191,11 @@ export function SignupForm({
             {error}
           </p>
         )}
+        {successMessage && (
+          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" aria-live="polite">
+            {successMessage}
+          </p>
+        )}
 
         <div className="mt-3 flex items-center justify-between text-xs">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -204,7 +211,7 @@ export function SignupForm({
 
         <button
           type="submit"
-          disabled={status === "loading" || !agreeToTerms}
+          disabled={status === "loading" || status === "success" || !agreeToTerms}
           className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.75 text-sm font-medium text-white shadow-[0_16px_40px_rgba(15,23,42,0.45)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70"
         >
           {status === "loading" ? translations.signingUp : translations.signupButton}
