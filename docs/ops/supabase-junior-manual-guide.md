@@ -9,6 +9,7 @@ Use this guide for manual steps that CLI does not perform.
 - Set Edge Function secrets.
 - Manage team access and least privilege.
 - Configure backup/PITR for pilot-production.
+- Check and maintain DB/network allowlist rules (unban approved operator IPs when blocked).
 
 ## Do Not Do Manually
 
@@ -44,4 +45,14 @@ Fill this immediately after command completion:
 3. `pnpm run db:apply`
 4. `pnpm run db:verify`
 5. Update before/after logs and decision log
+
+## If Verification Fails Before SQL Runs
+
+If errors mention `Circuit breaker open` or `SSL connection has been closed unexpectedly`:
+
+1. Verify project is `Running` in Supabase.
+2. Run `select now();` in SQL Editor.
+3. Confirm Session Pooler URI and `?sslmode=require` in `.env.local`.
+4. Check if your operator IP is blocked and unban/allowlist it.
+5. Re-run `pnpm run db:verify` and save log evidence.
 

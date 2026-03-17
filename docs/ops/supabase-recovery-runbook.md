@@ -39,6 +39,29 @@ This runbook prioritizes continuity for live salon data.
 - Prefer PITR target closest to incident timestamp.
 - Document exact restore point and post-restore verification evidence.
 
+## Connection Block / IP Ban Playbook
+
+Use this when CLI verification fails before SQL checks with errors like:
+
+- `Circuit breaker open: Unable to establish connection to upstream database`
+- `SSL connection has been closed unexpectedly`
+- `password authentication failed` immediately after password rotation
+
+Checklist:
+
+1. Confirm project health in Supabase Dashboard (`Running`).
+2. Confirm `select now();` succeeds in SQL Editor.
+3. Confirm `.env.pilot` uses Session Pooler URI with `?sslmode=require`.
+4. Check whether the client IP is blocked/banned in Supabase/network controls.
+5. If blocked, unban/allowlist the IP and retry `pnpm run db:verify`.
+6. Attach verify log evidence after recovery.
+
+### 2026-03-17 Incident Note
+
+- Root cause: runner/client IP was blocked for pilot-production access.
+- Recovery action: IP was unbanned, then verification succeeded.
+- Evidence: `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-17T09-06-35-748Z.md`
+
 ## Staging Drill Requirements
 
 - Run recovery rehearsal in staging first.
