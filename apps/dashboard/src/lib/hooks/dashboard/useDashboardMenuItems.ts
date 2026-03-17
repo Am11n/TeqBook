@@ -96,10 +96,6 @@ export function useDashboardMenuItems({
       }
     }
 
-    if (!items.some((i) => i.href === "/reports")) {
-      items.push({ href: "/reports", label: texts.reports, icon: TrendingUp });
-    }
-
     items.push({
       href: "/sales/gift-cards",
       label: texts.sales ?? "Sales",
