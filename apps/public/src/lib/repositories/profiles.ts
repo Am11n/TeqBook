@@ -248,22 +248,83 @@ export async function ensureProfileForUser(
   }
 ): Promise<{ error: string | null }> {
   try {
-    const { error } = await supabase
+    const { data: existingProfile, error: existingProfileError } = await supabase
       .from("profiles")
-      .upsert(
-        {
-          user_id: input.user_id,
-          salon_id: input.salon_id ?? null,
-          role: input.role ?? "owner",
-          preferred_language: input.preferred_language ?? "nb",
-          is_superadmin: input.is_superadmin ?? false,
-          user_preferences: input.user_preferences ?? {},
-        },
-        { onConflict: "user_id" }
-      );
+      .select("user_id")
+      .eq("user_id", input.user_id)
+      .maybeSingle();
 
-    if (error) {
-      return { error: error.message };
+    if (existingProfileError) {
+      return { error: existingProfileError.message };
+    }
+
+    if (!existingProfile) {
+      const insertPayload: {
+        user_id: string;
+        salon_id?: string | null;
+        role: string;
+        preferred_language: string;
+        is_superadmin: boolean;
+        user_preferences: Record<string, unknown>;
+      } = {
+        user_id: input.user_id,
+        role: input.role ?? "owner",
+        preferred_language: input.preferred_language ?? "nb",
+        is_superadmin: input.is_superadmin ?? false,
+        user_preferences: input.user_preferences ?? {},
+      };
+
+      if (Object.hasOwn(input, "salon_id")) {
+        insertPayload.salon_id = input.salon_id ?? null;
+      }
+
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert(insertPayload);
+
+      if (insertError) {
+        return { error: insertError.message };
+      }
+      return { error: null };
+    }
+
+    const updatePayload: {
+      salon_id?: string | null;
+      role?: string | null;
+      preferred_language?: string | null;
+      is_superadmin?: boolean;
+      user_preferences?: Record<string, unknown>;
+    } = {};
+
+    // Important: only update fields explicitly provided. This prevents accidental
+    // removal of salon ownership (salon_id -> null) when onboarding is re-opened.
+    if (Object.hasOwn(input, "salon_id")) {
+      updatePayload.salon_id = input.salon_id ?? null;
+    }
+    if (Object.hasOwn(input, "role")) {
+      updatePayload.role = input.role ?? null;
+    }
+    if (Object.hasOwn(input, "preferred_language")) {
+      updatePayload.preferred_language = input.preferred_language ?? null;
+    }
+    if (Object.hasOwn(input, "is_superadmin")) {
+      updatePayload.is_superadmin = input.is_superadmin;
+    }
+    if (Object.hasOwn(input, "user_preferences")) {
+      updatePayload.user_preferences = input.user_preferences ?? {};
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return { error: null };
+    }
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update(updatePayload)
+      .eq("user_id", input.user_id);
+
+    if (updateError) {
+      return { error: updateError.message };
     }
 
     return { error: null };
