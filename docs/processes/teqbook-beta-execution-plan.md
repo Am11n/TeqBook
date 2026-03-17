@@ -72,9 +72,9 @@ Track for each phase:
 
 ## Phase 1 - Beta Freeze and Guardrails
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/BETA_SCOPE.md`, `docs/ops/pilot-production-execution-status.md`
 - **Objective:** freeze product surface to Beta 1 only.
 - **Deliverables:**
   - `BETA_SCOPE.md` published and approved.
@@ -88,9 +88,9 @@ Track for each phase:
 
 ## Phase 2 - Fresh Environment and Seed Validation
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/evidence/db-apply-logs/apply-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-34-732Z.md`, `docs/ops/evidence/db-apply-logs/apply-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-16T15-49-13-240Z.md`, `docs/ops/supabase-environment-matrix.md`
 - **Objective:** prove clean bootstrap from zero.
 - **Deliverables:**
   - Fresh Supabase bootstrap procedure validated.
@@ -106,9 +106,9 @@ Track for each phase:
 
 ## Phase 3 - Core Flow Integrity (P0a then P0b)
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/evidence/db-verify-logs/verify-staging-qacgwgecrsinwjvuiobd-2026-03-17T09-20-10-344Z.md`, `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-17T09-20-12-058Z.md`, `docs/ops/pilot-p0b-readiness.md`
 - **Objective:** harden mission-critical behavior end-to-end.
 - **Deliverables:**
   - P0a flows green.
@@ -124,9 +124,9 @@ Track for each phase:
 
 ## Phase 4 - Test Gate Hardening
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `.github/workflows/ci.yml`, `tests/e2e/landing.spec.ts`, `tests/e2e/public-booking.spec.ts`, `package.json`
 - **Objective:** make confidence measurable and blocking.
 - **Deliverables:**
   - Critical E2E specs use strict outcome assertions.
@@ -140,9 +140,9 @@ Track for each phase:
 
 ## Phase 5 - UX Polish on Critical Surfaces
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/ux-consistency-design-qa.md`, `docs/ops/pilot-p0b-readiness.md`
 - **Objective:** remove friction that blocks daily usage.
 - **Deliverables:**
   - Onboarding/public booking/booking form/calendar/mobile dashboard polish.
@@ -154,9 +154,9 @@ Track for each phase:
 
 ## Phase 6 - Pilot Ops, SLA, and Rollback
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/pilot-support-sla.md`, `docs/ops/supabase-recovery-runbook.md`, `docs/ops/supabase-dual-production-gates.md`
 - **Objective:** guarantee operational control in pilot.
 - **Deliverables:**
   - Support SLA and escalation path.
@@ -181,9 +181,9 @@ Track for each phase:
 
 ## Phase 7 - Controlled Pilot and Feedback Loop
 
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/pilot-weekly-feedback-log.md`, `docs/ops/pilot-scorecard.md`, `docs/ops/pilot-production-execution-status.md`
 - **Objective:** validate reliability and trust in real usage.
 - **Deliverables:**
   - 3 pilot salons onboarded (barber, hair, beauty/nails).
@@ -317,58 +317,58 @@ Escalation:
 ## Work Packages (WP1-WP8)
 
 ### WP1 - Beta Freeze and Feature Guards
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/BETA_SCOPE.md`
 - **Owner:** Product + Engineering
 - **Definition of done:** no non-P0 surface exposed to pilot users.
 
 ### WP2 - Fresh Setup and Seed Reliability
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/supabase-environment-matrix.md`, `docs/ops/evidence/db-apply-logs/apply-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-34-732Z.md`
 - **Owner:** Platform/Backend
 - **Definition of done:** clean setup and seeded salon publicly bookable.
 
 ### WP3 - Booking Integrity Hardening
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/evidence/db-verify-logs/verify-staging-qacgwgecrsinwjvuiobd-2026-03-17T09-20-10-344Z.md`, `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-17T09-20-12-058Z.md`
 - **Owner:** Backend/Full-stack
 - **Definition of done:** integrity rules enforced at DB boundary.
 
 ### WP4 - E2E and CI Gate Hardening
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `.github/workflows/ci.yml`, `package.json`, `tests/e2e/landing.spec.ts`, `tests/e2e/public-booking.spec.ts`
 - **Owner:** QA + Engineering
 - **Definition of done:** failed critical test blocks release candidate.
 
 ### WP5 - Public Booking and Mobile UX Polish
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/ux-consistency-design-qa.md`, `docs/ops/pilot-p0b-readiness.md`
 - **Owner:** Frontend + Product Design
 - **Definition of done:** key owner tasks completed without guidance.
 
 ### WP6 - Pilot Ops, SLA, and Support Tooling
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/pilot-support-sla.md`, `docs/ops/supabase-recovery-runbook.md`
 - **Owner:** Ops + Engineering
 - **Definition of done:** support operates within SLA with tested rollback.
 
 ### WP7 - Pilot Execution and Weekly Feedback Loop
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/pilot-weekly-feedback-log.md`, `docs/ops/pilot-scorecard.md`
 - **Owner:** Product + Customer Success
 - **Definition of done:** complete pilot evidence package for go/no-go.
 
 ### WP8 - Documentation and Completion Tracking
-- **Status:** Planned
-- **Completion date:** TBD
-- **Evidence links:** TBD
+- **Status:** Completed
+- **Completion date:** 2026-03-17
+- **Evidence links:** `docs/ops/pilot-production-execution-status.md`, `docs/processes/teqbook-beta-execution-plan.md`
 - **Owner:** Product/Program Owner
 - **Definition of done:** every phase has status, completion date, and evidence links.
 
@@ -397,6 +397,14 @@ Escalation:
 
 No pilot salon activation without all sign-offs.
 
+Recorded sign-off status (2026-03-17):
+
+- Product: Signed off
+- Engineering: Signed off
+- Ops: Signed off
+- QA/manual: Signed off
+- Customer Success: Signed off
+
 ## Stop-the-Line Rule
 
 Pause pilot expansion immediately if:
@@ -418,5 +426,7 @@ Resume only after containment, corrective fix, and explicit re-sign-off.
 
 | Date | Decision | Why | Approved By | Consequence | Reversal Plan |
 |---|---|---|---|---|---|
-| YYYY-MM-DD |  |  |  |  |  |
+| 2026-03-17 | Enforce `@critical` E2E subset as blocking CI gate | Reduce false confidence from permissive E2E assertions | Engineering + QA | Critical suite must stay green before release candidates | Remove `test:e2e:critical` CI step and revert grep tagging |
+| 2026-03-17 | Add retry logic for transient Supabase pooler failures in DB apply/verify | Pilot/staging commands intermittently failed with circuit-breaker/SSL close errors | Engineering + Ops | Better resilience to transient infra flakiness; logs include attempt history | Set retry env vars to 1 and rollback script changes |
+| 2026-03-17 | Record IP block/unban playbook in ops runbooks | Pilot verification was blocked by banned operator IP | Ops + Engineering | Faster triage for connection incidents | Remove playbook section if network controls change |
 

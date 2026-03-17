@@ -14,6 +14,9 @@ Enable 3-5 pilot salons to run core daily booking operations reliably, with cont
 - Public booking: salon page, service/staff selection, valid time selection, customer info, confirmation.
 - Booking visibility: newly created booking appears in owner dashboard.
 
+Owner: Product + Engineering
+Evidence: critical E2E results, staging verification log, manual replay notes
+
 ## In Scope (P0b)
 
 - Booking operations: reschedule and cancel.
@@ -21,6 +24,9 @@ Enable 3-5 pilot salons to run core daily booking operations reliably, with cont
 - Calendar: day/week baseline usability.
 - Mobile baseline: owner can complete core daily tasks without guidance.
 - Minimum observability: booking errors logged and traceable.
+
+Owner: Product Design + Frontend + Engineering + Ops
+Evidence: mobile checklist, alert/log screenshots, reschedule/cancel replay notes
 
 ## Out of Scope for Beta 1 (Hidden/Disabled/Post-Beta)
 
@@ -31,10 +37,38 @@ Enable 3-5 pilot salons to run core daily booking operations reliably, with cont
 - Multi-salon capabilities.
 - Non-critical admin/premium growth modules.
 
+Guard strategy:
+- Hidden: route/menu entries removed from pilot UI.
+- Disabled: visible but non-interactive with explicit "Post-beta" messaging.
+- Post-beta: backlog only, no pilot commitment.
+
+## Feature Inventory and Classification
+
+| Feature Surface | Class | Pilot Visibility | Owner | Evidence |
+|---|---|---|---|---|
+| Authentication (signup/login/logout/forgot) | P0a | Enabled | Engineering | E2E auth setup results |
+| Onboarding (salon basics + opening hours) | P0a | Enabled | Product + Engineering | Onboarding replay notes |
+| Services CRUD (incl. deactivate) | P0a | Enabled | Engineering | Dashboard functional check |
+| Employees CRUD (incl. active/inactive) | P0a | Enabled | Engineering | Booking eligibility validation |
+| Public booking (bookable salon only) | P0a | Enabled | Engineering | Public booking E2E + DB verification |
+| Booking visibility in dashboard | P0a | Enabled | Engineering | Created booking appears in dashboard |
+| Reschedule/cancel booking | P0b | Enabled | Engineering | Calendar state update replay |
+| Customer basics (create/search/view) | P0b | Enabled | Product + Engineering | Manual acceptance checklist |
+| Day/week calendar baseline | P0b | Enabled | Frontend | UX checklist + screenshots |
+| Mobile owner baseline | P0b | Enabled | Frontend + Product Design | iPhone Safari / Android Chrome checklist |
+| Minimum observability (booking failure logs) | P0b | Enabled | Ops + Engineering | Error tracking evidence |
+| Billing/monetization hardening | Post-beta | Hidden | Product | Backlog entry only |
+| Gift cards/packages/loyalty/waitlist growth | Post-beta | Hidden | Product | Backlog entry only |
+| Advanced analytics/commissions | Post-beta | Hidden | Product | Backlog entry only |
+| Multi-salon management | Post-beta | Hidden | Product + Engineering | Backlog entry only |
+| Non-critical admin growth modules | Disabled | Disabled | Product + Engineering | Route guard screenshots |
+
 ## Language Scope
 
 - Only 2-3 approved pilot locales are fully supported.
 - Incomplete locale surfaces are hidden or deferred.
+
+Pilot locales (approved): `en`, `nb`, `pl`
 
 ## Out-of-Scope Enforcement
 
@@ -63,4 +97,10 @@ Pilot expansion pauses immediately if:
 - Critical E2E gate is red on release candidate.
 
 Expansion resumes only after containment, fix, and re-sign-off.
+
+## Scope Sign-off
+
+- Product sign-off: Completed
+- Engineering sign-off: Completed
+- Date: 2026-03-17
 

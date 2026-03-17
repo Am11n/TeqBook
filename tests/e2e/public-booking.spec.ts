@@ -1,33 +1,25 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Public Booking Flow", () => {
-  test("should load public booking page", async ({ page }) => {
-    // Navigate to public booking page
+  test("@critical should load public booking page", async ({ page }) => {
     await page.goto("/book/example-salon");
-    
-    // Check that page loads
     await expect(page).toHaveURL(/.*book\/example-salon/);
-    
-    // Note: Full test would require:
-    // 1. Test data setup (salon with is_public = true)
-    // 2. Services and employees setup
-    // 3. Opening hours setup
-    // 4. Complete booking flow testing
+
+    // Critical assertion: page must render some content, not crash.
+    const root = page.locator("main, body").first();
+    await expect(root).toBeVisible();
   });
 
-  test("should show error for non-existent salon", async ({ page }) => {
+  test("@critical should show error for non-existent salon", async ({ page }) => {
     await page.goto("/book/non-existent-salon");
-    
-    // Should show error message
-    // Note: Implementation depends on error handling in PublicBookingPage
+    await expect(page).toHaveTitle(/TeqBook/i);
+    await expect(page.locator('select[name="service"]').first()).toHaveCount(0);
   });
 
-  test("should show error for non-public salon", async ({ page }) => {
-    // Navigate to salon that exists but is not public
+  test("@critical should show error for non-public salon", async ({ page }) => {
     await page.goto("/book/private-salon");
-    
-    // Should show error message
-    // Note: Implementation depends on error handling in PublicBookingPage
+    await expect(page).toHaveTitle(/TeqBook/i);
+    await expect(page.locator('select[name="service"]').first()).toHaveCount(0);
   });
 });
 

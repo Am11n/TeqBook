@@ -17,9 +17,9 @@ All items must be green before first pilot salon activation:
 Evidence links (latest green):
 
 - Apply log (staging): `docs/ops/evidence/db-apply-logs/apply-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-34-732Z.md`
-- Verify log (staging): `docs/ops/evidence/db-verify-logs/verify-staging-qacgwgecrsinwjvuiobd-2026-03-16T15-42-36-154Z.md`
+- Verify log (staging): `docs/ops/evidence/db-verify-logs/verify-staging-qacgwgecrsinwjvuiobd-2026-03-17T09-20-10-344Z.md`
 - Apply log (pilot-production): `docs/ops/evidence/db-apply-logs/apply-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-16T15-49-13-240Z.md`
-- Verify log (pilot-production): `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-17T09-06-35-748Z.md`
+- Verify log (pilot-production): `docs/ops/evidence/db-verify-logs/verify-pilot-production-mdqnburqfzvzhvsicdyo-2026-03-17T09-20-12-058Z.md`
 - Recovery drill log: see archived failure/recovery sequence summary in `docs/ops/evidence/archive/2026-03-16-db-run-archive.md`
 - Operational incident note: pilot verification was blocked by banned operator IP and recovered after unban (see `docs/ops/supabase-recovery-runbook.md`).
 

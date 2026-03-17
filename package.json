@@ -36,6 +36,7 @@
     "test:load:dashboard": "k6 run tests/load/dashboard-api-smoke.js",
     "test:load:staging": "pnpm run test:load:public && pnpm run test:load:dashboard",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:critical": "playwright test --grep @critical",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
     "seed:force": "tsx scripts/seed.ts --force",
