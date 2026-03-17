@@ -6,6 +6,41 @@ This directory contains utility scripts for development and maintenance. **Run a
 
 ### Database Scripts
 
+#### Controlled Production DB Scripts
+
+#### `db-manifest.ts` - Manifest and Checksum Governance
+
+Validates canonical apply order and file checksums.
+
+```bash
+pnpm run db:manifest:verify
+pnpm run db:manifest:lock
+```
+
+#### `db-apply.ts` - Deterministic Apply Workflow
+
+Applies baseline + post-baseline migrations from `supabase/supabase/migration-manifest.json` using `psql`.
+
+```bash
+pnpm run db:apply
+```
+
+Required env:
+- `TEQBOOK_ENV_TARGET` (`staging` or `pilot-production`)
+- `SUPABASE_DB_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+
+#### `db-verify.ts` - Verification Pack Runner
+
+Runs SQL verification files:
+- `supabase/supabase/verification/00_schema_and_security.sql`
+- `supabase/supabase/verification/01_booking_integrity.sql`
+- `supabase/supabase/verification/02_data_quality.sql`
+
+```bash
+pnpm run db:verify
+```
+
 #### `seed.ts` - Seed Database
 
 Seeds the database with initial test data.
@@ -46,7 +81,7 @@ pnpm run migrate:local
 pnpm run migrate:local -- --file=supabase/supabase/migrations/my-migration.sql
 ```
 
-**Note:** Uses Supabase RPC `exec_sql` if available; otherwise run migrations manually in the Supabase SQL Editor.
+**Note:** This is staging-only. Controlled production rollout should use `db:apply`.
 
 **Environment Variables Required:**
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -93,16 +128,29 @@ pnpm run setup:e2e:clean            # Cleanup then create
 
 ### Initial Setup
 
-1. Set up environment variables in **repository root** `.env.local` (or `.env`).
-2. Run migrations:
+1. Select env file and copy to root `.env.local`:
    ```bash
-   pnpm run migrate:local
+   cp .env.staging .env.local
+   # or
+   cp .env.pilot .env.local
    ```
-3. Seed test data:
+2. Verify manifest integrity:
+   ```bash
+   pnpm run db:manifest:verify
+   ```
+3. Run controlled apply:
+   ```bash
+   pnpm run db:apply
+   ```
+4. Run verification pack:
+   ```bash
+   pnpm run db:verify
+   ```
+5. Staging only: seed fixtures if needed.
    ```bash
    pnpm run seed
    ```
-4. (Optional) Create E2E users for Playwright:
+6. (Optional) Create E2E users for Playwright:
    ```bash
    pnpm run setup:e2e
    ```
@@ -150,16 +198,25 @@ Create `.env.local` (or `.env`) in the **repository root** with:
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_DB_URL=postgresql://...
+TEQBOOK_ENV_TARGET=staging
 ```
 
-### "RPC exec_sql not available"
+### "psql not found"
 
-The migration script tries to use a Supabase RPC function that may not exist. In this case:
-1. Open Supabase Dashboard
-2. Go to SQL Editor
-3. Run the migration SQL manually
+Install PostgreSQL client tools so `psql` is available in your shell.
+
+### "Manifest checksum verification failed"
+
+If file changes are intentional:
+
+```bash
+pnpm run db:manifest:lock
+```
+
+Then commit updated `migration-checksums.json`.
 
 ### "Permission denied" errors
 
-Make sure you're using the `SUPABASE_SERVICE_ROLE_KEY` (not the anon key) for scripts that modify data.
+Make sure you're using the `SUPABASE_SERVICE_ROLE_KEY` (not anon key) and the correct `.env.local` target.
 

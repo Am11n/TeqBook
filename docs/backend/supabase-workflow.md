@@ -1,212 +1,129 @@
-# Supabase Migration Workflow
+# Supabase Workflow (Controlled Production)
 
-This document describes how to safely manage database migrations and admin scripts in TeqBook.
+This document defines TeqBook's database workflow for a 2-project setup:
 
-## Directory Structure
+- `staging`: resettable validation environment
+- `pilot-production`: live controlled production environment
 
-```
-supabase/
-├── migrations/     # Deterministic migrations (auto-run)
-├── admin/          # One-time admin scripts (manual run only)
-└── functions/      # Edge Functions (Deno)
-```
+## Core Rules
 
-## Migrations (`supabase/migrations/`)
+1. Pilot is restricted production, not disposable beta.
+2. No normal schema rollout via manual SQL Editor copy/paste.
+3. Baseline is immutable after capture.
+4. Post-baseline migrations are the only forward path.
+5. Manifest order is canonical apply order.
+6. Staging fixtures are allowed only in staging.
+7. Pilot-production data is real production data from day one.
 
-**Purpose**: Schema changes, table creation, RLS policies, functions, and other deterministic database changes.
+## Directory Layout
 
-**Auto-executed**: Yes, via `npm run migrate:local`
-
-**Naming Convention**:
-- **Recommended**: `YYYYMMDD-HHMMSS-description.sql`
-  - Example: `20241220-143000-add-profile-fields.sql`
-- **Alternative**: Sequential numbers `001-description.sql`, `002-description.sql`, etc.
-
-**Rules**:
-- Must be deterministic (same result every time)
-- Must be idempotent (safe to run multiple times)
-- Should not contain data-specific operations
-- Should not delete data without explicit user action
-
-**Example Migration**:
-```sql
--- 20241220-143000-add-profile-fields.sql
-ALTER TABLE profiles 
-ADD COLUMN IF NOT EXISTS first_name TEXT,
-ADD COLUMN IF NOT EXISTS last_name TEXT,
-ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+```text
+supabase/supabase/
+├── baseline/
+│   └── BASELINE.sql
+├── migrations/
+├── verification/
+│   ├── 00_schema_and_security.sql
+│   ├── 01_booking_integrity.sql
+│   └── 02_data_quality.sql
+├── migration-manifest.json
+└── migration-checksums.json
 ```
 
-## Admin Scripts (`supabase/admin/`)
+## Environment Switching
 
-**Purpose**: One-time fixes, data migrations, debugging queries, manual operations.
+Use root env files:
 
-**Auto-executed**: No, must be run manually
+- `.env.staging`
+- `.env.pilot`
 
-**Naming Convention**: Descriptive names like `fix-profiles-rls.sql`, `reset-admin-password.sql`
-
-**Rules**:
-- Never run automatically
-- May contain data-specific operations
-- May delete or modify existing data
-- Should be documented with purpose and usage
-
-**Example Admin Script**:
-```sql
--- fix-profiles-rls.sql
--- Purpose: Fix RLS policies for profiles table
--- Usage: Run manually in Supabase SQL Editor when needed
-
-DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
-CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT USING (auth.uid() = user_id);
-```
-
-## Running Migrations
-
-### Local Development
+Before DB commands:
 
 ```bash
-# Run all migrations
-npm run migrate:local
+# staging
+cp .env.staging .env.local
 
-# Run specific migration
-npm run migrate:local -- --file supabase/migrations/20241220-143000-add-profile-fields.sql
+# pilot-production
+cp .env.pilot .env.local
 ```
 
-### Production
+Required in `.env.local`:
 
-Migrations should be run manually in Supabase Dashboard SQL Editor, or via Supabase CLI if configured.
+- `TEQBOOK_ENV_TARGET` (`staging` or `pilot-production`)
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_DB_URL` (for psql-based apply/verify)
 
-**Never** run migrations automatically in production without review.
+Optional safety refs:
 
-## Creating a New Migration
+- `TEQBOOK_STAGING_PROJECT_REF`
+- `TEQBOOK_PILOT_PROJECT_REF`
 
-1. **Create the migration file**:
-   ```bash
-   touch supabase/migrations/$(date +%Y%m%d-%H%M%S)-your-description.sql
-   ```
+## Scripts
 
-2. **Write the migration**:
-   ```sql
-   -- Use IF NOT EXISTS, IF EXISTS, etc. for idempotency
-   -- Add comments explaining what the migration does
-   -- Test locally before committing
-   ```
+From repository root:
 
-3. **Test locally**:
-   ```bash
-   npm run migrate:local
-   ```
+```bash
+# Manifest governance
+pnpm run db:manifest:verify
+pnpm run db:manifest:lock
 
-4. **Commit and push**:
-   ```bash
-   git add supabase/migrations/
-   git commit -m "Add migration: your-description"
-   ```
+# Apply and verification
+pnpm run db:apply
+pnpm run db:verify
 
-## Creating an Admin Script
+# Existing staging-only helpers
+pnpm run migrate:local
+pnpm run seed
+pnpm run reset:db
+```
 
-1. **Create the admin script**:
-   ```bash
-   touch supabase/admin/your-script-name.sql
-   ```
+### Guardrails
 
-2. **Add documentation**:
-   ```sql
-   -- Purpose: Brief description of what this script does
-   -- Usage: When and how to run this script
-   -- Warning: Any destructive operations or data changes
-   ```
+- `migrate:local` is restricted to `TEQBOOK_ENV_TARGET=staging`.
+- `reset:db` is restricted to `TEQBOOK_ENV_TARGET=staging`.
+- `seed` blocks in pilot-production unless `--allow-pilot-bootstrap`.
 
-3. **Test in development first**:
-   - Run manually in Supabase SQL Editor
-   - Verify results
-   - Document any side effects
+## Standard Flow
 
-4. **Commit**:
-   ```bash
-   git add supabase/admin/
-   git commit -m "Add admin script: your-script-name"
-   ```
+### Staging
 
-## Best Practices
+1. Switch to staging env.
+2. Verify manifest/checksums.
+3. Apply baseline + post-baseline migrations.
+4. Run verification SQL pack.
+5. Run staging fixture seed (if needed).
+6. Run data quality checks and keep evidence.
 
-### Migrations
+### Pilot-Production
 
-✅ **Do**:
-- Use `IF NOT EXISTS` / `IF EXISTS` for idempotency
-- Add comments explaining the change
-- Test locally before committing
-- Keep migrations small and focused
-- Use transactions where appropriate
+1. Switch to pilot env.
+2. Verify manifest/checksums.
+3. Apply baseline + post-baseline migrations.
+4. Run verification SQL pack.
+5. Do minimal bootstrap only (no fixture/demo data).
+6. Preserve continuity for already onboarded salons.
 
-❌ **Don't**:
-- Delete data without user action
-- Hardcode specific IDs or data
-- Run admin scripts as migrations
-- Skip testing locally
+## Emergency SQL Exception
 
-### Admin Scripts
+Manual SQL Editor use is allowed only for approved emergency investigation/repair.
 
-✅ **Do**:
-- Document purpose and usage
-- Add warnings for destructive operations
-- Test in development first
-- Keep a backup before running
+After emergency SQL:
 
-❌ **Don't**:
-- Put admin scripts in `migrations/` directory
-- Run admin scripts automatically
-- Skip documentation
+1. Document incident and exact SQL.
+2. Reconcile into version-controlled SQL.
+3. Complete reconciliation before next normal release cycle.
 
-## Migration Script Details
+## Recovery Posture
 
-The `migrate-local.ts` script:
+### Staging
 
-1. **Only runs files from `supabase/migrations/`**
-   - Admin scripts in `supabase/admin/` are never auto-run
-   - This prevents accidental execution of one-time fixes
+- Aggressive rollback rehearsal is allowed.
 
-2. **Validates file naming**
-   - Warns if files don't follow naming convention
-   - Still runs them, but warns for consistency
+### Pilot-Production
 
-3. **Sorts files deterministically**
-   - Date format: sorted by timestamp
-   - Sequential: sorted by number
-   - Ensures same execution order every time
-
-4. **Logs execution**
-   - Shows which files are being run
-   - Logs success/failure for each file
-
-## Troubleshooting
-
-### Migration fails
-
-1. Check error message in console
-2. Verify SQL syntax in Supabase SQL Editor
-3. Check if migration is idempotent (safe to re-run)
-4. If needed, create a fix migration
-
-### Admin script needed
-
-1. Create script in `supabase/admin/`
-2. Document purpose and usage
-3. Run manually in Supabase SQL Editor
-4. Commit script for reference
-
-### Migration order issues
-
-1. Ensure files follow naming convention
-2. Check sort order in migration script output
-3. If needed, rename files to correct order
-
-## Security Notes
-
-- **Never commit sensitive data** in migrations or admin scripts
-- **Review all migrations** before running in production
-- **Backup database** before running admin scripts
-- **Use RLS policies** to protect data, not just migrations
+- Prefer forward-fix or isolated repair.
+- Full DB rollback is last resort after approval and impact review.
+- Use PITR/backup restore when unavoidable.
+- Keep booking-level manual recovery runbook ready.
 

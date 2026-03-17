@@ -35,6 +35,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const targetEnv = process.env.TEQBOOK_ENV_TARGET;
+if (targetEnv !== "staging") {
+  console.error("❌ migrate:local is only allowed when TEQBOOK_ENV_TARGET=staging");
+  console.error("   Use controlled apply workflow for pilot-production.");
+  process.exit(1);
+}
+
 /**
  * Validates migration file name format
  * Accepts: YYYYMMDD-HHMMSS-description.sql or sequential numbers

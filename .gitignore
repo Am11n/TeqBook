@@ -23,6 +23,8 @@ out/
 # Environment variables
 .env*
 !.env.example
+!.env.staging.example
+!.env.pilot.example
 import.env
 
 # IDE / editor backups
