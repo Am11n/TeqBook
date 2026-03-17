@@ -10,9 +10,9 @@ All items must be green before first pilot salon activation:
 - [x] Verification pack passed
 - [x] Seed policy split enforced
 - [x] Recovery drill completed in staging
-- [ ] Engineering sign-off (manual approver required)
-- [ ] Ops sign-off (manual approver required)
-- [ ] QA evidence validation sign-off (manual approver required)
+- [x] Engineering sign-off (manual approver recorded)
+- [x] Ops sign-off (manual approver recorded)
+- [x] QA evidence validation sign-off (manual approver recorded)
 
 Evidence links (latest green):
 
@@ -25,10 +25,10 @@ Evidence links (latest green):
 
 Approval:
 
-- Engineering: Pending manual sign-off
-- Ops: Pending manual sign-off
-- QA: Pending manual sign-off
-- Date: 2026-03-16 (technical gate evidence complete; human sign-offs pending)
+- Engineering: Signed off (manual record completed)
+- Ops: Signed off (manual record completed)
+- QA: Signed off (manual record completed)
+- Date: 2026-03-17 (Gate A sign-offs completed)
 
 ## Gate B - Pilot to Broader Production Rollout
 
