@@ -3,13 +3,10 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { requestPasswordReset } from "@/lib/services/auth-service";
+import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
 
 function resolveResetRedirectTo(): string {
-  const fallbackBase =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (typeof window !== "undefined" ? window.location.origin : "https://teqbook.com");
-
-  return new URL("/reset-password", fallbackBase).toString();
+  return buildPublicAuthRedirect("/reset-password");
 }
 
 export default function ForgotPasswordPage() {

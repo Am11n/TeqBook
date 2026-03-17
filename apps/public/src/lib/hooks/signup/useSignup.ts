@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/services/auth-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { validatePassword } from "@/lib/utils/signup/signup-utils";
+import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
 
 interface UseSignupOptions {
   locale: string;
@@ -30,13 +31,7 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const resolveEmailRedirectTo = () => {
-    const fallbackBase =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "https://teqbook.com");
-
-    const redirectUrl = new URL("/login", fallbackBase);
-    redirectUrl.searchParams.set("confirmed", "1");
-    return redirectUrl.toString();
+    return buildPublicAuthRedirect("/login", { confirmed: "1" });
   };
 
   const handleSubmit = async (e: FormEvent) => {

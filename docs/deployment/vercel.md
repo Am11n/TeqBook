@@ -56,7 +56,7 @@ Mål:
     - [x] `NEXT_PUBLIC_SUPABASE_URL=`
     - [x] `NEXT_PUBLIC_SUPABASE_ANON_KEY=`
     - [x] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=` (valgfritt, for billing)
-    - [x] `NEXT_PUBLIC_APP_URL=` (valgfritt, for production)
+    - [x] `NEXT_PUBLIC_APP_URL=` (required for production auth email redirects)
   - [x] Ikke legg inn faktiske secrets, kun placeholders.
   - [x] Opprettet/oppdatert `.env.example` med alle nødvendige variabler.
 
@@ -74,7 +74,7 @@ Mål:
     - [x] `NEXT_PUBLIC_SUPABASE_URL`
     - [x] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
     - [x] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (hvis billing er aktivert)
-    - [x] `NEXT_PUBLIC_APP_URL` (hvis satt)
+    - [x] `NEXT_PUBLIC_APP_URL` (must be set in production)
   - [x] Pass på å legge dem under riktig miljø:
     - [x] `Production`
     - [x] `Preview` (valgfritt)
@@ -146,7 +146,7 @@ Mål:
 - [x] Oppdater eventuelle steder i koden hvor URL hardkodes:
   - [x] Søkt gjennom kodebasen: Ingen hardkodede absolute URLs funnet.
   - [x] Alle lenker bruker relative paths (f.eks. `/book/${slug}/confirmation`), som fungerer perfekt.
-  - [x] `NEXT_PUBLIC_APP_URL` er klar for bruk hvis det trengs i fremtiden (f.eks. for email-lenker, sitemap, etc.).
+  - [x] `NEXT_PUBLIC_APP_URL` brukes i auth redirect flows (signup/password reset), så den må holdes oppdatert ved domeneendringer.
 
 ---
 
