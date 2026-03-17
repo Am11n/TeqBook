@@ -24,7 +24,7 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
     maxAttempts: 5,
     windowMs: FIFTEEN_MINUTES_MS,
     blockDurationMs: THIRTY_MINUTES_MS,
-    failurePolicy: "fail_closed",
+    failurePolicy: "fail_open",
   },
   booking: {
     endpointType: "booking",
