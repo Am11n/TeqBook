@@ -15,6 +15,7 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.profiles TO authenticated;
 GRANT SELECT, UPDATE ON TABLE public.salons TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.opening_hours TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.opening_hours_breaks TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.services TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.employees TO authenticated;
@@ -29,6 +30,43 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.addons TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.feedback_entries TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.support_cases TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.packages TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.feedback_comments TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.admin_notes TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.booking_products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.calendar_connections TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.calendar_event_mappings TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.changelog_entries TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.contact_submissions TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.customer_packages TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.data_requests TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.email_log TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.feature_flags TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.incidents TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.no_show_policies TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.notification_attempts TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.notification_events TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.notification_jobs TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.notification_preferences TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.owner_invitations TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.portfolio TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.push_subscriptions TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.reminders TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.reviews TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.salon_closures TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.salon_ownerships TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.shift_overrides TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.sms_usage TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.template_shares TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.templates TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.waitlist_entries TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.waitlist_lifecycle_events TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.waitlist_offers TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.commission_rules TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.import_batches TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.sms_log TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.support_case_messages TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.time_blocks TO authenticated;
 GRANT SELECT ON TABLE public.features TO anon, authenticated;
 GRANT SELECT ON TABLE public.plan_features TO anon, authenticated;
 
@@ -36,6 +74,7 @@ GRANT SELECT ON TABLE public.plan_features TO anon, authenticated;
 GRANT ALL PRIVILEGES ON TABLE public.profiles TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.salons TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.opening_hours TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.opening_hours_breaks TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.notifications TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.services TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.employees TO service_role;
@@ -50,6 +89,43 @@ GRANT ALL PRIVILEGES ON TABLE public.addons TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.feedback_entries TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.support_cases TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.packages TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.feedback_comments TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.admin_notes TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.booking_products TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.calendar_connections TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.calendar_event_mappings TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.changelog_entries TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.contact_submissions TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.customer_packages TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.data_requests TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.email_log TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.feature_flags TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.incidents TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.no_show_policies TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.notification_attempts TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.notification_events TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.notification_jobs TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.notification_preferences TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.owner_invitations TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.portfolio TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.products TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.push_subscriptions TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.reminders TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.reviews TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.salon_closures TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.salon_ownerships TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.shift_overrides TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.sms_usage TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.template_shares TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.templates TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.waitlist_entries TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.waitlist_lifecycle_events TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.waitlist_offers TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.commission_rules TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.import_batches TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.sms_log TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.support_case_messages TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.time_blocks TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.features TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.plan_features TO service_role;
 
@@ -57,6 +133,7 @@ GRANT ALL PRIVILEGES ON TABLE public.plan_features TO service_role;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.salons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.opening_hours ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.opening_hours_breaks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
@@ -71,6 +148,43 @@ ALTER TABLE public.addons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedback_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.support_cases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.packages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feedback_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.booking_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.calendar_connections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.calendar_event_mappings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.changelog_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customer_packages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.data_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.email_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feature_flags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.no_show_policies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_jobs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.owner_invitations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.portfolio ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reminders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.salon_closures ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.salon_ownerships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.shift_overrides ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sms_usage ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.template_shares ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.waitlist_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.waitlist_lifecycle_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.waitlist_offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.commission_rules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.import_batches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sms_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.support_case_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.time_blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.plan_features ENABLE ROW LEVEL SECURITY;
 
@@ -171,6 +285,66 @@ CREATE POLICY "Users can update opening_hours for their salon"
     )
   )
   WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+-- Opening hours breaks policies
+DROP POLICY IF EXISTS "Users can view breaks for their salon" ON public.opening_hours_breaks;
+CREATE POLICY "Users can view breaks for their salon"
+  ON public.opening_hours_breaks
+  FOR SELECT
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can insert breaks for their salon" ON public.opening_hours_breaks;
+CREATE POLICY "Users can insert breaks for their salon"
+  ON public.opening_hours_breaks
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can update breaks for their salon" ON public.opening_hours_breaks;
+CREATE POLICY "Users can update breaks for their salon"
+  ON public.opening_hours_breaks
+  FOR UPDATE
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can delete breaks for their salon" ON public.opening_hours_breaks;
+CREATE POLICY "Users can delete breaks for their salon"
+  ON public.opening_hours_breaks
+  FOR DELETE
+  TO authenticated
+  USING (
     salon_id IN (
       SELECT p.salon_id
       FROM public.profiles p
@@ -805,6 +979,293 @@ CREATE POLICY "Users can update packages for their salon"
       WHERE p.user_id = auth.uid()
     )
   );
+
+-- Multi-salon recursion fix + safe ownership policies
+DROP POLICY IF EXISTS "Users can view their own salon ownerships" ON public.salon_ownerships;
+DROP POLICY IF EXISTS "Owners can view salon ownerships for their salons" ON public.salon_ownerships;
+DROP POLICY IF EXISTS "Owners can insert salon ownerships" ON public.salon_ownerships;
+DROP POLICY IF EXISTS "Owners can delete salon ownerships" ON public.salon_ownerships;
+DROP POLICY IF EXISTS "Service role can access all salon ownerships" ON public.salon_ownerships;
+
+CREATE POLICY "Users can view their own salon ownerships"
+  ON public.salon_ownerships
+  FOR SELECT
+  TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = salon_ownerships.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+CREATE POLICY "Owners can insert salon ownerships"
+  ON public.salon_ownerships
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    user_id = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = salon_ownerships.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+CREATE POLICY "Owners can delete salon ownerships"
+  ON public.salon_ownerships
+  FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = salon_ownerships.salon_id
+      AND p.role = 'owner'
+    )
+    AND user_id <> auth.uid()
+  );
+
+DROP POLICY IF EXISTS "Users can view invitations for their email" ON public.owner_invitations;
+DROP POLICY IF EXISTS "Owners can view invitations for their salons" ON public.owner_invitations;
+DROP POLICY IF EXISTS "Owners can create invitations" ON public.owner_invitations;
+DROP POLICY IF EXISTS "Users can accept their invitations" ON public.owner_invitations;
+DROP POLICY IF EXISTS "Service role can access all owner invitations" ON public.owner_invitations;
+
+CREATE POLICY "Users can view invitations for their email"
+  ON public.owner_invitations
+  FOR SELECT
+  TO authenticated
+  USING (
+    email = COALESCE(auth.jwt()->>'email', '')
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = owner_invitations.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+CREATE POLICY "Owners can create invitations"
+  ON public.owner_invitations
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    invited_by = auth.uid()
+    AND EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = owner_invitations.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+CREATE POLICY "Users can accept their invitations"
+  ON public.owner_invitations
+  FOR UPDATE
+  TO authenticated
+  USING (
+    email = COALESCE(auth.jwt()->>'email', '')
+  )
+  WITH CHECK (
+    email = COALESCE(auth.jwt()->>'email', '')
+  );
+
+-- Template policies without cyclic RLS dependencies
+DROP POLICY IF EXISTS "Users can view their salon templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can view public templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can view shared templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can create templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can update their templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can delete their templates" ON public.templates;
+DROP POLICY IF EXISTS "Service role can access all templates" ON public.templates;
+DROP POLICY IF EXISTS "Users can view templates for own or public scope" ON public.templates;
+DROP POLICY IF EXISTS "Users can create templates for own salon" ON public.templates;
+DROP POLICY IF EXISTS "Users can update templates for own salon" ON public.templates;
+DROP POLICY IF EXISTS "Users can delete templates for own salon" ON public.templates;
+
+CREATE POLICY "Users can view templates for own or public scope"
+  ON public.templates
+  FOR SELECT
+  TO authenticated
+  USING (
+    visibility = 'public'
+    OR created_by = auth.uid()
+    OR salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+    )
+  );
+
+CREATE POLICY "Users can create templates for own salon"
+  ON public.templates
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    created_by = auth.uid()
+    AND salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+    )
+  );
+
+CREATE POLICY "Users can update templates for own salon"
+  ON public.templates
+  FOR UPDATE
+  TO authenticated
+  USING (
+    created_by = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = templates.salon_id
+      AND p.role = 'owner'
+    )
+  )
+  WITH CHECK (
+    created_by = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = templates.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+CREATE POLICY "Users can delete templates for own salon"
+  ON public.templates
+  FOR DELETE
+  TO authenticated
+  USING (
+    created_by = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = templates.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can view shares for their templates" ON public.template_shares;
+DROP POLICY IF EXISTS "Users can create shares" ON public.template_shares;
+DROP POLICY IF EXISTS "Users can delete shares they created" ON public.template_shares;
+DROP POLICY IF EXISTS "Service role can access all template shares" ON public.template_shares;
+DROP POLICY IF EXISTS "Users can view template shares for own salon" ON public.template_shares;
+DROP POLICY IF EXISTS "Users can create template shares for own salon" ON public.template_shares;
+DROP POLICY IF EXISTS "Users can delete template shares they created" ON public.template_shares;
+
+CREATE POLICY "Users can view template shares for own salon"
+  ON public.template_shares
+  FOR SELECT
+  TO authenticated
+  USING (
+    shared_by = auth.uid()
+    OR shared_with_salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+    )
+  );
+
+CREATE POLICY "Users can create template shares for own salon"
+  ON public.template_shares
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    shared_by = auth.uid()
+    AND EXISTS (
+      SELECT 1
+      FROM public.templates t
+      WHERE t.id = template_shares.template_id
+      AND (
+        t.created_by = auth.uid()
+        OR t.salon_id IN (
+          SELECT p.salon_id
+          FROM public.profiles p
+          WHERE p.user_id = auth.uid()
+          AND p.role = 'owner'
+        )
+      )
+    )
+  );
+
+CREATE POLICY "Users can delete template shares they created"
+  ON public.template_shares
+  FOR DELETE
+  TO authenticated
+  USING (shared_by = auth.uid());
+
+-- Superadmin fallback policies for admin-facing tables
+DO $$
+DECLARE
+  tbl TEXT;
+  policy_name TEXT;
+BEGIN
+  FOREACH tbl IN ARRAY ARRAY[
+    'admin_notes',
+    'booking_products',
+    'calendar_connections',
+    'calendar_event_mappings',
+    'changelog_entries',
+    'contact_submissions',
+    'customer_packages',
+    'data_requests',
+    'email_log',
+    'feature_flags',
+    'feedback_comments',
+    'incidents',
+    'no_show_policies',
+    'notification_attempts',
+    'notification_events',
+    'notification_jobs',
+    'notification_preferences',
+    'portfolio',
+    'products',
+    'push_subscriptions',
+    'reminders',
+    'reviews',
+    'salon_closures',
+    'salon_ownerships',
+    'owner_invitations',
+    'shift_overrides',
+    'sms_usage',
+    'template_shares',
+    'templates',
+    'waitlist_entries',
+    'waitlist_lifecycle_events',
+    'waitlist_offers',
+    'commission_rules',
+    'import_batches',
+    'sms_log',
+    'support_case_messages',
+    'time_blocks'
+  ]
+  LOOP
+    policy_name := format('Superadmins can manage %s', tbl);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', policy_name, tbl);
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.user_id = auth.uid() AND p.is_superadmin = true)) WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.user_id = auth.uid() AND p.is_superadmin = true))',
+      policy_name,
+      tbl
+    );
+  END LOOP;
+END $$;
 
 -- Storage recovery: salon-assets bucket + object policies
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

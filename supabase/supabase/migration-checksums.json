@@ -6,7 +6,7 @@
   "postBaseline": [
     {
       "file": "supabase/supabase/migrations/20260317162000_pilot_access_recovery.sql",
-      "sha256": "c9a1a04f1fe028975dfa7b6e7044a5143f6a38618187d7ddfe3d841e01d27e57"
+      "sha256": "da66819ac60330dae636bbd172200f1fef7bb6666136bc8690ae201910808fe8"
     }
   ]
 }
