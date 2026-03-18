@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createClient as createAdminAppClient } from "@/lib/supabase/server";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
@@ -50,9 +49,21 @@ export async function GET() {
     (async () => {
       try {
         const start = Date.now();
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        const { error } = await supabase.from("salons").select("id").limit(1);
-        checks.supabase = { status: error ? "degraded" : "up", latency_ms: Date.now() - start, error: error?.message };
+        /**
+         * Use the authenticated admin app client for DB reachability checks.
+         * An anon-key query against protected tables can return permission
+         * errors even when Supabase is healthy.
+         */
+        const { error } = await appClient
+          .from("profiles")
+          .select("user_id")
+          .eq("user_id", user.id)
+          .limit(1);
+        checks.supabase = {
+          status: error ? "degraded" : "up",
+          latency_ms: Date.now() - start,
+          error: error?.message,
+        };
       } catch (err) {
         checks.supabase = { status: "down", latency_ms: 0, error: err instanceof Error ? err.message : "Unknown" };
       }
