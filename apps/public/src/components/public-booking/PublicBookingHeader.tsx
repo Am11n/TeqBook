@@ -175,7 +175,7 @@ export function PublicBookingHeader({
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center justify-end gap-2">
             {whatsappNumber ? (
               <a
                 href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
@@ -183,12 +183,12 @@ export function PublicBookingHeader({
                 rel="noopener noreferrer"
                 className="hidden min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-medium transition hover:opacity-90 sm:inline-flex"
                 style={{
-                  border: `1px solid ${tokens.colors.border}`,
-                  backgroundColor: tokens.colors.surface,
-                  color: tokens.colors.mutedText,
+                  border: "1px solid #1fa855",
+                  backgroundColor: "#25D366",
+                  color: "#ffffff",
                 }}
               >
-                Chat on WhatsApp
+                WhatsApp
               </a>
             ) : null}
 

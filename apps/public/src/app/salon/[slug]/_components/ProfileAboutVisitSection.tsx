@@ -6,12 +6,6 @@ import { getLocalizedWeekdays, getProfilePageMessages } from "../profile-i18n";
 import type { AppLocale } from "@/i18n/translations";
 import type { CardStyle, SocialItem, SocialPlatform } from "../profile-types";
 
-function buildGoogleEmbedUrl(address: string | null): string | null {
-  const query = address?.trim();
-  if (!query) return null;
-  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
-}
-
 function SocialIcon({ platform }: { platform: SocialPlatform }) {
   if (platform === "instagram") {
     return (
@@ -86,7 +80,6 @@ type Props = {
 export function ProfileAboutVisitSection(props: Props) {
   const m = getProfilePageMessages(props.locale);
   const weekdays = getLocalizedWeekdays(props.locale);
-  const mapEmbedUrl = buildGoogleEmbedUrl(props.addressLine);
   const statusStyle =
     props.isClosedToday || props.isOpenNow === false
       ? {
@@ -170,16 +163,6 @@ export function ProfileAboutVisitSection(props: Props) {
                       onError={props.onMapImageError}
                     />
                   </div>
-                ) : mapEmbedUrl ? (
-                  <div className="relative h-44 w-full bg-[var(--pb-bg-surface-subtle)]">
-                    <iframe
-                      title={`${m.mapPreviewFor} ${props.heroName}`}
-                      src={mapEmbedUrl}
-                      className="h-full w-full border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
                 ) : (
                   <div className="relative h-44 w-full bg-gradient-to-br from-[var(--pb-bg-surface-subtle)] via-[var(--pb-bg-surface)] to-[var(--pb-bg-page)]" aria-hidden="true">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(139,118,99,0.18),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(160,138,116,0.15),transparent_35%)]" />
@@ -194,16 +177,6 @@ export function ProfileAboutVisitSection(props: Props) {
                 {props.mapPreviewImageUrl && !props.mapImageUnavailable ? (
                   <div className="relative h-44 w-full bg-[var(--pb-bg-surface-subtle)]" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
                     <img src={props.mapPreviewImageUrl} alt={`${m.mapPreviewFor} ${props.heroName}`} className="h-full w-full object-cover" loading="lazy" onError={props.onMapImageError} />
-                  </div>
-                ) : mapEmbedUrl ? (
-                  <div className="relative h-44 w-full bg-[var(--pb-bg-surface-subtle)]" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
-                    <iframe
-                      title={`${m.mapPreviewFor} ${props.heroName}`}
-                      src={mapEmbedUrl}
-                      className="h-full w-full border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
                   </div>
                 ) : (
                   <div className="relative h-44 w-full bg-gradient-to-br from-[var(--pb-bg-surface-subtle)] via-[var(--pb-bg-surface)] to-[var(--pb-bg-page)]" aria-label={`${m.mapPreviewFor} ${props.heroName}`}>
