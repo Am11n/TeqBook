@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { spawnSync } from "child_process";
 import * as dotenv from "dotenv";
+import { Client } from "pg";
 import {
   ensureRootEnvLoaded,
   getTargetFromEnv,
@@ -44,12 +45,24 @@ function isRetryablePsqlError(output: string) {
   return RETRYABLE_PSQL_PATTERNS.some((pattern) => pattern.test(output));
 }
 
-function runPsqlFile(dbUrl: string, relativeFile: string, logFile: string) {
-  const filePath = resolve(process.cwd(), relativeFile);
-  if (!existsSync(filePath)) {
-    throw new Error(`Missing SQL file: ${relativeFile}`);
+function normalizeDbUrlForPg(dbUrl: string) {
+  if (dbUrl.includes("sslmode=")) {
+    return dbUrl.replace(/sslmode=[^&]+/i, "sslmode=no-verify");
   }
+  const separator = dbUrl.includes("?") ? "&" : "?";
+  return `${dbUrl}${separator}sslmode=no-verify`;
+}
 
+function hasPsqlMetaCommands(sql: string) {
+  return /^\s*\\/m.test(sql);
+}
+
+function isPsqlAvailable() {
+  const probe = spawnSync("psql", ["--version"], { encoding: "utf-8" });
+  return probe.status === 0;
+}
+
+function runPsqlFile(dbUrl: string, filePath: string, relativeFile: string, logFile: string) {
   const retryAttempts = getPositiveIntEnv("TEQBOOK_DB_RETRY_ATTEMPTS", DEFAULT_RETRY_ATTEMPTS);
   const retryBaseDelayMs = getPositiveIntEnv("TEQBOOK_DB_RETRY_BASE_DELAY_MS", DEFAULT_RETRY_BASE_DELAY_MS);
 
@@ -66,15 +79,14 @@ function runPsqlFile(dbUrl: string, relativeFile: string, logFile: string) {
       logFile,
       [
         `\n## ${relativeFile} (attempt ${attempt}/${retryAttempts})`,
+        "runner=psql",
         `elapsed_ms=${end - start}`,
         result.stdout || "",
         result.stderr || "",
       ].join("\n"),
     );
 
-    if (result.status === 0) {
-      return;
-    }
+    if (result.status === 0) return;
 
     const combinedOutput = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
     const retryable = isRetryablePsqlError(combinedOutput);
@@ -83,15 +95,83 @@ function runPsqlFile(dbUrl: string, relativeFile: string, logFile: string) {
     }
 
     const delayMs = retryBaseDelayMs * attempt;
-    appendFileSync(
-      logFile,
-      `retrying_after_ms=${delayMs} reason=transient_connection_error\n`,
-    );
+    appendFileSync(logFile, `retrying_after_ms=${delayMs} reason=transient_connection_error\n`);
     sleepMs(delayMs);
   }
 }
 
-function main() {
+async function runSqlFile(dbUrl: string, relativeFile: string, logFile: string) {
+  const filePath = resolve(process.cwd(), relativeFile);
+  if (!existsSync(filePath)) {
+    throw new Error(`Missing SQL file: ${relativeFile}`);
+  }
+  const sql = readFileSync(filePath, "utf-8");
+  if (hasPsqlMetaCommands(sql)) {
+    if (!isPsqlAvailable()) {
+      throw new Error(
+        `Cannot apply ${relativeFile}: file contains psql meta commands, but 'psql' is not installed.`,
+      );
+    }
+    runPsqlFile(dbUrl, filePath, relativeFile, logFile);
+    return;
+  }
+
+  const retryAttempts = getPositiveIntEnv("TEQBOOK_DB_RETRY_ATTEMPTS", DEFAULT_RETRY_ATTEMPTS);
+  const retryBaseDelayMs = getPositiveIntEnv("TEQBOOK_DB_RETRY_BASE_DELAY_MS", DEFAULT_RETRY_BASE_DELAY_MS);
+
+  for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
+    const start = Date.now();
+    const client = new Client({
+      connectionString: normalizeDbUrlForPg(dbUrl),
+    });
+    try {
+      await client.connect();
+      await client.query(sql);
+      const end = Date.now();
+      appendFileSync(
+        logFile,
+        [
+          `\n## ${relativeFile} (attempt ${attempt}/${retryAttempts})`,
+          "runner=pg",
+          `elapsed_ms=${end - start}`,
+          "status=success",
+        ].join("\n"),
+      );
+      await client.end();
+      return;
+    } catch (error) {
+      const end = Date.now();
+      const errorMessage = error instanceof Error ? error.stack || error.message : String(error);
+
+      appendFileSync(
+        logFile,
+        [
+          `\n## ${relativeFile} (attempt ${attempt}/${retryAttempts})`,
+          "runner=pg",
+          `elapsed_ms=${end - start}`,
+          "status=failed",
+          errorMessage,
+        ].join("\n"),
+      );
+
+      await client.end().catch(() => undefined);
+
+      const retryable = isRetryablePsqlError(errorMessage);
+      if (!retryable || attempt === retryAttempts) {
+        throw new Error(`SQL apply failed for ${relativeFile}: ${errorMessage}`);
+      }
+
+      const delayMs = retryBaseDelayMs * attempt;
+      appendFileSync(
+        logFile,
+        `retrying_after_ms=${delayMs} reason=transient_connection_error\n`,
+      );
+      sleepMs(delayMs);
+    }
+  }
+}
+
+async function main() {
   dotenv.config({ path: resolve(process.cwd(), ".env.local") });
   ensureRootEnvLoaded();
   const target = getTargetFromEnv();
@@ -123,14 +203,17 @@ function main() {
     ].join("\n"),
   );
 
-  runPsqlFile(dbUrl, manifest.baseline, logFile);
+  await runSqlFile(dbUrl, manifest.baseline, logFile);
   for (const migrationFile of manifest.postBaseline) {
-    runPsqlFile(dbUrl, migrationFile, logFile);
+    await runSqlFile(dbUrl, migrationFile, logFile);
   }
 
   appendFileSync(logFile, `\ncompleted_at=${new Date().toISOString()}\nstatus=success\n`);
   console.log(`DB apply completed. Log: ${logFile}`);
 }
 
-main();
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});
 
