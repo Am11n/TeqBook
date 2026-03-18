@@ -25,6 +25,10 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.personalliste_entries TO authentica
 GRANT SELECT, INSERT ON TABLE public.security_audit_log TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON TABLE public.gift_cards TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.shifts TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.addons TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.feedback_entries TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.support_cases TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.packages TO authenticated;
 GRANT SELECT ON TABLE public.features TO anon, authenticated;
 GRANT SELECT ON TABLE public.plan_features TO anon, authenticated;
 
@@ -42,6 +46,10 @@ GRANT ALL PRIVILEGES ON TABLE public.personalliste_entries TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.security_audit_log TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.gift_cards TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.shifts TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.addons TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.feedback_entries TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.support_cases TO service_role;
+GRANT ALL PRIVILEGES ON TABLE public.packages TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.features TO service_role;
 GRANT ALL PRIVILEGES ON TABLE public.plan_features TO service_role;
 
@@ -59,6 +67,10 @@ ALTER TABLE public.personalliste_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.security_audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gift_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.addons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feedback_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.support_cases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.packages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.plan_features ENABLE ROW LEVEL SECURITY;
 
@@ -559,6 +571,347 @@ CREATE POLICY "Users can delete shifts for their salon"
       WHERE p.user_id = auth.uid()
     )
   );
+
+-- Addons policies
+DROP POLICY IF EXISTS "Users can view addons for their salon" ON public.addons;
+CREATE POLICY "Users can view addons for their salon"
+  ON public.addons
+  FOR SELECT
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can insert addons for their salon" ON public.addons;
+CREATE POLICY "Users can insert addons for their salon"
+  ON public.addons
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can update addons for their salon" ON public.addons;
+CREATE POLICY "Users can update addons for their salon"
+  ON public.addons
+  FOR UPDATE
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can delete addons for their salon" ON public.addons;
+CREATE POLICY "Users can delete addons for their salon"
+  ON public.addons
+  FOR DELETE
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+-- Feedback entries policies
+DROP POLICY IF EXISTS "superadmins_feedback" ON public.feedback_entries;
+CREATE POLICY "superadmins_feedback"
+  ON public.feedback_entries
+  FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  );
+
+DROP POLICY IF EXISTS "Salon owners can read own feedback" ON public.feedback_entries;
+CREATE POLICY "Salon owners can read own feedback"
+  ON public.feedback_entries
+  FOR SELECT
+  TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = feedback_entries.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "Salon owners can update own feedback when new" ON public.feedback_entries;
+CREATE POLICY "Salon owners can update own feedback when new"
+  ON public.feedback_entries
+  FOR UPDATE
+  TO authenticated
+  USING (
+    user_id = auth.uid()
+    AND status = 'new'
+  )
+  WITH CHECK (
+    user_id = auth.uid()
+    AND status = 'new'
+  );
+
+-- Support cases policies
+DROP POLICY IF EXISTS "Superadmins can read support cases" ON public.support_cases;
+CREATE POLICY "Superadmins can read support cases"
+  ON public.support_cases
+  FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  );
+
+DROP POLICY IF EXISTS "Superadmins can insert support cases" ON public.support_cases;
+CREATE POLICY "Superadmins can insert support cases"
+  ON public.support_cases
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  );
+
+DROP POLICY IF EXISTS "Superadmins can update support cases" ON public.support_cases;
+CREATE POLICY "Superadmins can update support cases"
+  ON public.support_cases
+  FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.is_superadmin = true
+    )
+  );
+
+DROP POLICY IF EXISTS "Salon owners can read own support cases" ON public.support_cases;
+CREATE POLICY "Salon owners can read own support cases"
+  ON public.support_cases
+  FOR SELECT
+  TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+      AND p.salon_id = support_cases.salon_id
+      AND p.role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "No deletes on support cases" ON public.support_cases;
+CREATE POLICY "No deletes on support cases"
+  ON public.support_cases
+  FOR DELETE
+  TO authenticated
+  USING (false);
+
+-- Packages policies
+DROP POLICY IF EXISTS "Users can view packages for their salon" ON public.packages;
+CREATE POLICY "Users can view packages for their salon"
+  ON public.packages
+  FOR SELECT
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can insert packages for their salon" ON public.packages;
+CREATE POLICY "Users can insert packages for their salon"
+  ON public.packages
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can update packages for their salon" ON public.packages;
+CREATE POLICY "Users can update packages for their salon"
+  ON public.packages
+  FOR UPDATE
+  TO authenticated
+  USING (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    salon_id IN (
+      SELECT p.salon_id
+      FROM public.profiles p
+      WHERE p.user_id = auth.uid()
+    )
+  );
+
+-- Storage recovery: salon-assets bucket + object policies
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'salon-assets',
+  'salon-assets',
+  true,
+  10485760,
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/*']
+)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public can read salon logos" ON storage.objects;
+CREATE POLICY "Public can read salon logos"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'salon-assets');
+
+DROP POLICY IF EXISTS "Salon members can upload salon logos" ON storage.objects;
+CREATE POLICY "Salon members can upload salon logos"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'logos'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+DROP POLICY IF EXISTS "Salon members can delete salon logos" ON storage.objects;
+CREATE POLICY "Salon members can delete salon logos"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'logos'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+DROP POLICY IF EXISTS "Salon members can upload cover images" ON storage.objects;
+CREATE POLICY "Salon members can upload cover images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'covers'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+DROP POLICY IF EXISTS "Salon members can delete cover images" ON storage.objects;
+CREATE POLICY "Salon members can delete cover images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'covers'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+DROP POLICY IF EXISTS "Salon members can upload employee images" ON storage.objects;
+CREATE POLICY "Salon members can upload employee images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'employees'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
+
+DROP POLICY IF EXISTS "Salon members can delete employee images" ON storage.objects;
+CREATE POLICY "Salon members can delete employee images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'salon-assets'
+  AND (storage.foldername(name))[1] = 'employees'
+  AND (storage.foldername(name))[2] IN (
+    SELECT p.salon_id::text
+    FROM public.profiles p
+    WHERE p.user_id = auth.uid()
+      AND p.salon_id IS NOT NULL
+  )
+);
 
 -- Public feature catalog policies
 DROP POLICY IF EXISTS "Anyone can view features" ON public.features;

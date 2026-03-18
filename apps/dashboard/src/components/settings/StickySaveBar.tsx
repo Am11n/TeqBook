@@ -108,7 +108,7 @@ export function StickySaveBar({
             {!saving && saveError && (
               <>
                 <AlertTriangle className="h-4 w-4 text-destructive" />
-                <span className="text-destructive">{labels.saveError}</span>
+                <span className="text-destructive">{saveError || labels.saveError}</span>
               </>
             )}
             {!saving && !saveError && showSaved && (
