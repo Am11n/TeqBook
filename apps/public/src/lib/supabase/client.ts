@@ -6,5 +6,5 @@ import { createBrowserSupabaseClient } from "@teqbook/shared";
  * Uses shared factory from @teqbook/shared for consistent config
  */
 export function createClient(): SupabaseClient {
-  return createBrowserSupabaseClient();
+  return createBrowserSupabaseClient(undefined, { flowType: "implicit" });
 }

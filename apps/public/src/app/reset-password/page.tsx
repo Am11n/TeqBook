@@ -21,9 +21,20 @@ export default function ResetPasswordPage() {
     const bootstrapRecoverySession = async () => {
       try {
         const currentUrl = new URL(window.location.href);
+        const tokenHash = currentUrl.searchParams.get("token_hash");
+        const resetType = currentUrl.searchParams.get("type");
         const code = currentUrl.searchParams.get("code");
 
-        if (code) {
+        if (tokenHash && resetType === "recovery") {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "recovery",
+          });
+          if (verifyError) throw verifyError;
+          currentUrl.searchParams.delete("token_hash");
+          currentUrl.searchParams.delete("type");
+          window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}`);
+        } else if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) throw exchangeError;
           currentUrl.searchParams.delete("code");
@@ -59,7 +70,12 @@ export default function ResetPasswordPage() {
       } catch (err) {
         if (!cancelled) {
           setCanReset(false);
-          setError(err instanceof Error ? err.message : "Reset link is invalid or expired.");
+          const rawError = err instanceof Error ? err.message : "";
+          if (/pkce code verifier not found/i.test(rawError)) {
+            setError("Reset link is invalid or expired. Please request a new password reset email.");
+          } else {
+            setError(rawError || "Reset link is invalid or expired.");
+          }
         }
       } finally {
         if (!cancelled) setCheckingLink(false);
