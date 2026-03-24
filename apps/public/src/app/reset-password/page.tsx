@@ -38,6 +38,12 @@ export default function ResetPasswordPage() {
         const code = combinedParams.get("code");
         const accessToken = combinedParams.get("access_token");
         const refreshToken = combinedParams.get("refresh_token");
+        const hadAuthParams = Boolean(
+          (tokenHash && resetType === "recovery") ||
+            (accessToken && refreshToken) ||
+            code ||
+            (tokenHash && resetType),
+        );
 
         if (tokenHash && resetType === "recovery") {
           const { error: verifyError } = await supabase.auth.verifyOtp({
@@ -59,17 +65,33 @@ export default function ResetPasswordPage() {
           window.history.replaceState({}, "", `${currentUrl.pathname}`);
         }
 
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const readSession = async () => {
+          const {
+            data: { session: s },
+          } = await supabase.auth.getSession();
+          return s;
+        };
+
+        let session = await readSession();
+        if (!session) {
+          await new Promise((r) => setTimeout(r, 150));
+          session = await readSession();
+        }
 
         if (!cancelled) {
           if (session) {
             setCanReset(true);
             setError(null);
+          } else if (!hadAuthParams) {
+            setCanReset(false);
+            setError(
+              "Use the password reset link from your email. If you opened this page manually, go to Forgot password and request a new link.",
+            );
           } else {
             setCanReset(false);
-            setError("Reset link is invalid or expired. Please request a new password reset email.");
+            setError(
+              "Reset link is invalid or expired. Request a new reset email from the same device and browser you use to log in, then open the link once.",
+            );
           }
         }
       } catch (err) {

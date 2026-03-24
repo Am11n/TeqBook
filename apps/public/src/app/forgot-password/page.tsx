@@ -6,7 +6,7 @@ import { requestPasswordReset } from "@/lib/services/auth-service";
 import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
 
 function resolveResetRedirectTo(): string {
-  return buildPublicAuthRedirect("/reset-password");
+  return buildPublicAuthRedirect("/auth/callback", { next: "/reset-password" });
 }
 
 const COOLDOWN_STORAGE_KEY = "teqbook_forgot_password_cooldown_until_ms";
@@ -45,6 +45,21 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     setCooldownUntil(readCooldownUntil());
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get("error");
+    if (urlError) {
+      const decoded = decodeURIComponent(urlError);
+      if (/missing_auth_code/i.test(decoded)) {
+        setError(
+          "Reset link was incomplete. Request a new password reset and open the new link from your email.",
+        );
+      } else {
+        setError(decoded);
+      }
+      setStatus("error");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
 
   useEffect(() => {
