@@ -1,10 +1,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createBrowserSupabaseClient } from "@teqbook/shared";
+import { createBrowserClient } from "@supabase/ssr";
 
 /**
  * Create a Supabase client for client components
- * Uses shared factory from @teqbook/shared for consistent config
+ * Uses implicit flow to keep password reset links resilient across browsers/devices
  */
 export function createClient(): SupabaseClient {
-  return createBrowserSupabaseClient(undefined, { flowType: "implicit" });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    auth: { flowType: "implicit" },
+  }) as unknown as SupabaseClient;
 }
