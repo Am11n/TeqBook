@@ -351,7 +351,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://teqbook.com");
   const safeOrigin = origin.replace(/\/$/, "");
   const shareUrl = `${safeOrigin}/salon/${salon.slug}`;
-  const bookUrl = `${safeOrigin}/book/${salon.slug}`;
+  const bookUrl = `/book/${salon.slug}`;
   const mapLink = salon.business_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.business_address)}`
     : null;
