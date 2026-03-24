@@ -21,9 +21,23 @@ export default function ResetPasswordPage() {
     const bootstrapRecoverySession = async () => {
       try {
         const currentUrl = new URL(window.location.href);
-        const tokenHash = currentUrl.searchParams.get("token_hash");
-        const resetType = currentUrl.searchParams.get("type");
-        const code = currentUrl.searchParams.get("code");
+        const hashParams = new URLSearchParams(currentUrl.hash.replace(/^#/, ""));
+        const combinedParams = new URLSearchParams(currentUrl.search);
+        for (const [key, value] of hashParams.entries()) {
+          if (!combinedParams.has(key)) combinedParams.set(key, value);
+        }
+
+        const errorDescription =
+          combinedParams.get("error_description") || combinedParams.get("error");
+        if (errorDescription) {
+          throw new Error(errorDescription);
+        }
+
+        const tokenHash = combinedParams.get("token_hash");
+        const resetType = combinedParams.get("type");
+        const code = combinedParams.get("code");
+        const accessToken = combinedParams.get("access_token");
+        const refreshToken = combinedParams.get("refresh_token");
 
         if (tokenHash && resetType === "recovery") {
           const { error: verifyError } = await supabase.auth.verifyOtp({
@@ -31,27 +45,18 @@ export default function ResetPasswordPage() {
             type: "recovery",
           });
           if (verifyError) throw verifyError;
-          currentUrl.searchParams.delete("token_hash");
-          currentUrl.searchParams.delete("type");
-          window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}`);
+          window.history.replaceState({}, "", `${currentUrl.pathname}`);
+        } else if (accessToken && refreshToken) {
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (setSessionError) throw setSessionError;
+          window.history.replaceState({}, "", `${currentUrl.pathname}`);
         } else if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) throw exchangeError;
-          currentUrl.searchParams.delete("code");
-          window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}`);
-        } else if (currentUrl.hash) {
-          const hashParams = new URLSearchParams(currentUrl.hash.replace(/^#/, ""));
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
-
-          if (accessToken && refreshToken) {
-            const { error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            if (setSessionError) throw setSessionError;
-            window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}`);
-          }
+          window.history.replaceState({}, "", `${currentUrl.pathname}`);
         }
 
         const {
