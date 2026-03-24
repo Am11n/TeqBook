@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { requestPasswordReset } from "@/lib/services/auth-service";
 import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
 
@@ -9,28 +9,94 @@ function resolveResetRedirectTo(): string {
   return buildPublicAuthRedirect("/reset-password");
 }
 
+const COOLDOWN_STORAGE_KEY = "teqbook_forgot_password_cooldown_until_ms";
+const LONG_COOLDOWN_AFTER_RATE_LIMIT_MS = 15 * 60_000;
+const SHORT_COOLDOWN_AFTER_SUCCESS_MS = 90_000;
+
+function readCooldownUntil(): number {
+  if (typeof window === "undefined") return 0;
+  const raw = sessionStorage.getItem(COOLDOWN_STORAGE_KEY);
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function writeCooldownUntil(ts: number) {
+  sessionStorage.setItem(COOLDOWN_STORAGE_KEY, String(ts));
+}
+
+function formatWaitMessage(untilMs: number): string {
+  const sec = Math.max(0, Math.ceil((untilMs - Date.now()) / 1000));
+  if (sec >= 120) {
+    const min = Math.ceil(sec / 60);
+    return `Please wait about ${min} minutes before requesting another reset email.`;
+  }
+  if (sec >= 60) return "Please wait about 1 minute before requesting another reset email.";
+  return `Please wait ${sec} seconds before requesting another reset email.`;
+}
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const submittingRef = useRef(false);
+
+  useEffect(() => {
+    setCooldownUntil(readCooldownUntil());
+  }, []);
+
+  useEffect(() => {
+    if (cooldownUntil <= Date.now()) return undefined;
+    const tick = setInterval(() => {
+      const until = readCooldownUntil();
+      if (Date.now() >= until) setCooldownUntil(0);
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [cooldownUntil]);
+
+  const inCooldown = cooldownUntil > Date.now();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+
+    const now = Date.now();
+    const until = readCooldownUntil();
+    if (now < until) {
+      setError(formatWaitMessage(until));
+      setStatus("error");
+      setSuccessMessage(null);
+      return;
+    }
+
+    submittingRef.current = true;
     setStatus("loading");
     setError(null);
     setSuccessMessage(null);
 
-    const { error: resetError } = await requestPasswordReset(
+    const { error: resetError, rateLimited } = await requestPasswordReset(
       email.trim(),
       resolveResetRedirectTo(),
     );
 
+    submittingRef.current = false;
+
     if (resetError) {
+      if (rateLimited) {
+        const longUntil = Date.now() + LONG_COOLDOWN_AFTER_RATE_LIMIT_MS;
+        writeCooldownUntil(longUntil);
+        setCooldownUntil(longUntil);
+      }
       setError(resetError);
       setStatus("error");
       return;
     }
+
+    const shortUntil = Date.now() + SHORT_COOLDOWN_AFTER_SUCCESS_MS;
+    writeCooldownUntil(shortUntil);
+    setCooldownUntil(shortUntil);
 
     setSuccessMessage(
       "We sent you a password reset link. Check your email and follow the link to set a new password.",
@@ -80,10 +146,14 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            disabled={status === "loading"}
+            disabled={status === "loading" || inCooldown}
             className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.75 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {status === "loading" ? "Sending reset link..." : "Send reset link"}
+            {status === "loading"
+              ? "Sending reset link..."
+              : inCooldown
+                ? "Please wait…"
+                : "Send reset link"}
           </button>
         </form>
 

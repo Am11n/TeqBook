@@ -120,10 +120,29 @@ export async function updatePassword(
   }
 }
 
+const PASSWORD_RESET_RATE_LIMIT_MESSAGE =
+  "Too many reset emails were sent. Please wait 15–60 minutes before trying again. If you still need access, contact support.";
+
+function isAuthRecoverRateLimited(error: { message: string; status?: number } | null): boolean {
+  if (!error) return false;
+  const status =
+    "status" in error && typeof (error as { status?: number }).status === "number"
+      ? (error as { status: number }).status
+      : undefined;
+  if (status === 429) return true;
+  const m = error.message.toLowerCase();
+  return (
+    m.includes("429") ||
+    m.includes("rate limit") ||
+    m.includes("too many requests") ||
+    m.includes("email rate limit")
+  );
+}
+
 export async function requestPasswordReset(
   email: string,
   redirectTo: string
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; rateLimited?: boolean }> {
   if (!email) return { error: "Email is required" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Invalid email format" };
   if (!redirectTo) return { error: "Reset redirect URL is required" };
@@ -133,10 +152,19 @@ export async function requestPasswordReset(
       redirectTo,
     });
 
-    if (error) return { error: error.message };
+    if (error) {
+      if (isAuthRecoverRateLimited(error)) {
+        return { error: PASSWORD_RESET_RATE_LIMIT_MESSAGE, rateLimited: true };
+      }
+      return { error: error.message };
+    }
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    const message = err instanceof Error ? err.message : "Unknown error";
+    if (/429|rate limit|too many/i.test(message)) {
+      return { error: PASSWORD_RESET_RATE_LIMIT_MESSAGE, rateLimited: true };
+    }
+    return { error: message };
   }
 }
 
