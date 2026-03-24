@@ -1,27 +1,73 @@
-# Pilot Salon Activation Checklist
+# TeqBook Pilot Share Readiness Checklist
 
-Use this checklist before enabling any salon in `pilot-production`.
+Use this checklist before sharing TeqBook with pilot salons in `pilot-production`.
 
-## Required Checks (All must pass)
+## How to Use
 
-- [ ] Salon profile is complete (name, slug, contact, timezone).
-- [ ] At least 1 active staff member exists.
-- [ ] At least 3 active services exist.
-- [ ] Opening hours/shifts are configured.
+- Review every section in order.
+- Mark each checkbox only when you have evidence.
+- If any critical item fails, stop and fix before sharing with the next salon.
+
+## 1) Environment and Access
+
+- [ ] `https://teqbook.com` is reachable from desktop and mobile.
+- [ ] Public app, dashboard, and admin point to `pilot-production` (not staging).
+- [ ] No active Sev1 incident is open.
+- [ ] Designated on-call owner is assigned for the current week.
+
+## 2) Core Product Flows (Must Pass)
+
+- [ ] Signup, login, forgot password, and logout work.
+- [ ] Onboarding can be completed without manual DB fixes.
+- [ ] Salon has at least 1 active staff member.
+- [ ] Salon has at least 3 active services.
+- [ ] Opening hours or shifts are configured.
 - [ ] Public booking slug resolves correctly.
-- [ ] Owner login works on mobile.
-- [ ] Support contact and SLA have been shared with owner.
-- [ ] Owner has acknowledged known beta limitations.
+- [ ] A real test booking can be created from the public flow.
+- [ ] New booking appears in owner dashboard/calendar.
+- [ ] Reschedule flow works end-to-end.
+- [ ] Cancel flow works end-to-end.
 
-## Evidence to Attach
+## 3) Integrity and Safety Gates (Must Pass)
 
-- Dashboard screenshots for staff/services/opening hours.
-- Public booking URL proof.
-- Mobile login proof (iPhone Safari or Android Chrome).
-- Link to latest `db:verify` log in `docs/ops/evidence/db-verify-logs/`.
+- [ ] Inactive services/employees are not bookable.
+- [ ] Overlap and invalid-time bookings are blocked.
+- [ ] No tenant isolation issue is observed (salon A cannot see salon B data).
+- [ ] No critical release gate in CI is red for the release candidate.
+
+## 4) Pilot Operations Readiness
+
+- [ ] Support contact channel is shared with salon owner.
+- [ ] SLA expectations are shared and acknowledged by salon owner.
+- [ ] Known beta limitations are shared and acknowledged by salon owner.
+- [ ] Rollback path is confirmed (disable booking, restore previous deploy).
+
+## 5) Observability and Incident Readiness
+
+- [ ] Booking failures are logged and traceable.
+- [ ] Alert/monitoring path for booking failures is active.
+- [ ] Incident severity model (Sev1/Sev2/Sev3) is known by responders.
+- [ ] Escalation path is confirmed for support hours.
+
+## 6) Evidence to Attach
+
+- [ ] Screenshot: services/staff/opening hours configured in dashboard.
+- [ ] URL proof: public booking page with correct slug.
+- [ ] Proof: test booking created and visible in dashboard.
+- [ ] Proof: reschedule and cancel actions completed.
+- [ ] Mobile proof: owner login on iPhone Safari or Android Chrome.
+- [ ] Link to latest `db:verify` evidence in `docs/ops/evidence/db-verify-logs/`.
+- [ ] Link to latest critical E2E run or CI job evidence.
+
+## 7) Go/No-Go Decision
+
+Go only if all critical checks are complete and evidence is attached.
+
+- [ ] GO: Ready to share with this pilot salon.
+- [ ] NO-GO: Block sharing until failed items are fixed.
 
 ## Activation Decision Record
 
-| Date | Salon | Activated By | Result | Evidence Link | Notes |
+| Date | Salon | Reviewed By | Result | Evidence Link | Notes |
 |---|---|---|---|---|---|
-| YYYY-MM-DD |  |  | Pass / Blocked |  |  |
+| YYYY-MM-DD |  |  | GO / NO-GO |  |  |
