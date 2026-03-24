@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import type {
@@ -18,7 +17,7 @@ import type {
 } from "./types";
 import { ANY_EMPLOYEE_VALUE as ANY_EMPLOYEE } from "./types";
 import { loadSlots, submitBooking, submitWaitlist } from "./publicBookingHandlers";
-import { useInitialBookingLoad, useNoSlotsTelemetry, useQueryPrefill } from "./publicBookingEffects";
+import { useInitialBookingLoad, useNoSlotsTelemetry } from "./publicBookingEffects";
 import {
   buildPublicBookingTokens,
   computeEffectiveBranding,
@@ -42,10 +41,6 @@ function isSlotConflict(errorCode?: string, errorMessage?: string | null): boole
 }
 
 export function usePublicBooking(slug: string) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const isPreview = searchParams.get("preview") === "true";
   const { locale, setLocale } = useLocale();
   const t = translations[locale].publicBooking;
 
@@ -81,7 +76,6 @@ export function usePublicBooking(slug: string) {
   const [, setEmployeeShiftWeekdays] = useState<Record<string, number[]>>({});
   const [employeeServiceMap, setEmployeeServiceMap] = useState<Record<string, string[]>>({});
 
-  const hasAppliedQueryPrefill = useRef(false);
   const noSlotsTelemetryKey = useRef<string | null>(null);
   const slotRequestIdRef = useRef(0);
   const slotAbortControllerRef = useRef<AbortController | null>(null);
@@ -146,25 +140,6 @@ export function usePublicBooking(slug: string) {
     if (Object.keys(employeeServiceMap).length === 0) return employees;
     return employees.filter((employee) => (employeeServiceMap[employee.id] ?? []).includes(serviceId));
   }, [employeeServiceMap, employees, serviceId]);
-
-  useQueryPrefill({
-    loading,
-    hasApplied: hasAppliedQueryPrefill.current,
-    searchParams,
-    services,
-    employees,
-    slug,
-    setModeWaitlist: () => {
-      setMode("waitlist");
-      setWaitlistEntrySource("direct");
-    },
-    setServiceId,
-    setEmployeeId,
-    setDate,
-    markApplied: () => {
-      hasAppliedQueryPrefill.current = true;
-    },
-  });
 
   useNoSlotsTelemetry({
     mode,
@@ -414,12 +389,7 @@ export function usePublicBooking(slug: string) {
       }
 
       setSlotConflictActive(false);
-      if (!isPreview) {
-        window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
-      } else {
-        setSuccessMessage(t.successMessage);
-        setSaving(false);
-      }
+      window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
     } catch {
       setSlotConflictActive(false);
       setError(t.createError);
@@ -494,20 +464,6 @@ export function usePublicBooking(slug: string) {
   }, [date, mode, requestSlots, salon, selectionStatus, serviceId, employeeId]);
 
   useEffect(() => {
-    if (loading || !hasAppliedQueryPrefill.current) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("mode", mode);
-    if (serviceId) params.set("serviceId", serviceId); else params.delete("serviceId");
-    if (employeeId) params.set("employeeId", employeeId); else params.delete("employeeId");
-    if (date) params.set("date", date); else params.delete("date");
-    params.delete("selectedSlot");
-    const next = params.toString();
-    const current = searchParams.toString();
-    if (next === current) return;
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }, [date, employeeId, loading, mode, pathname, router, searchParams, serviceId]);
-
-  useEffect(() => {
     const nextStep: "service" | "date" | "slot" | "details" = !serviceId
       ? "service"
       : !date
@@ -577,6 +533,13 @@ export function usePublicBooking(slug: string) {
     return () => {
       slotAbortControllerRef.current?.abort();
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.location.search) return;
+    const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", cleanUrl);
   }, []);
 
   return {

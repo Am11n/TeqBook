@@ -10,14 +10,14 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 
 ## 1) Environment and Access
 
-- [ ] `https://teqbook.com` is reachable from desktop and mobile.
+- [x] `https://teqbook.com` is reachable from desktop and mobile.
 - [ ] Public app, dashboard, and admin point to `pilot-production` (not staging).
 - [ ] No active Sev1 incident is open.
 - [ ] Designated on-call owner is assigned for the current week.
 
 ## 2) Core Product Flows (Must Pass)
 
-- [ ] Signup, login, forgot password, and logout work.
+- [x] Signup, login, forgot password, and logout work.
 - [ ] Onboarding can be completed without manual DB fixes.
 - [ ] Salon has at least 1 active staff member.
 - [ ] Salon has at least 3 active services.
