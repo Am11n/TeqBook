@@ -90,7 +90,7 @@ export default function ResetPasswordPage() {
           } else {
             setCanReset(false);
             setError(
-              "Reset link is invalid or expired. Request a new reset email from the same device and browser you use to log in, then open the link once.",
+              "Reset link is invalid or expired. Request a new password reset email and open the link once before it expires.",
             );
           }
         }

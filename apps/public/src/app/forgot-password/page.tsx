@@ -6,7 +6,7 @@ import { requestPasswordReset } from "@/lib/services/auth-service";
 import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
 
 function resolveResetRedirectTo(): string {
-  return buildPublicAuthRedirect("/auth/callback", { next: "/reset-password" });
+  return buildPublicAuthRedirect("/reset-password");
 }
 
 const COOLDOWN_STORAGE_KEY = "teqbook_forgot_password_cooldown_until_ms";
