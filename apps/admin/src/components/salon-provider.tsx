@@ -14,7 +14,6 @@ import { getProfileForUser } from "@/lib/services/profiles-service";
 import { getSalonByIdForUser } from "@/lib/services/salons-service";
 import { setErrorContext, clearErrorContext } from "@/lib/services/error-tracking-service";
 import { useLocale } from "@/components/locale-provider";
-import { LoadingScreen } from "@/components/loading-screen";
 import type { AppLocale } from "@/i18n/translations";
 import type { Salon } from "@/lib/types";
 
@@ -249,15 +248,6 @@ export function SalonProvider({ children }: SalonProviderProps) {
     return (
       <SalonContext.Provider value={value}>
         {children}
-      </SalonContext.Provider>
-    );
-  }
-
-  // On client, show loading screen if loading
-  if (state.status === "loading") {
-    return (
-      <SalonContext.Provider value={value}>
-        <LoadingScreen />
       </SalonContext.Provider>
     );
   }
