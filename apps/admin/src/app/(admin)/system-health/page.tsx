@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -37,16 +37,27 @@ export default function SystemHealthPage() {
   const [pageError, setPageError] = useState<string | null>(null);
   const [authState, setAuthState] = useState<"checking" | "authorized" | "unauthorized">("checking");
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const requestInFlightRef = useRef(false);
+  const healthRef = useRef<HealthResponse | null>(null);
+
+  useEffect(() => {
+    healthRef.current = health;
+  }, [health]);
 
   const fetchHealth = useCallback(async () => {
-    const isInitialLoad = !health;
+    if (requestInFlightRef.current) return;
+    requestInFlightRef.current = true;
+
+    const isInitialLoad = !healthRef.current;
     if (isInitialLoad) setLoading(true);
     else setRefreshing(true);
     setPageError(null);
     try {
-      const res = await fetch("/api/health/", {
-        signal: AbortSignal.timeout(8000),
-      });
+      // Promise.race timeout works consistently across browsers.
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Health API timeout")), 8000)
+      );
+      const res = (await Promise.race([fetch("/api/health/"), timeoutPromise])) as Response;
       if (res.status === 401 || res.status === 403) {
         setAuthState("unauthorized");
         throw new Error("Unauthorized");
@@ -59,16 +70,17 @@ export default function SystemHealthPage() {
       setHealth(data);
       setLastRefresh(new Date());
     } catch (err) {
-      if (!health) setHealth(null);
+      if (!healthRef.current) setHealth(null);
       const message = err instanceof Error ? err.message : "Could not load system health";
       if (message !== "Unauthorized") {
         setPageError(message);
       }
     } finally {
+      requestInFlightRef.current = false;
       setLoading(false);
       setRefreshing(false);
     }
-  }, [health]);
+  }, []);
 
   useEffect(() => {
     void fetchHealth();
