@@ -11,7 +11,7 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 ## 1) Environment and Access
 
 - [x] `https://teqbook.com` is reachable from desktop and mobile.
-- [ ] Public app, dashboard, and admin point to `pilot-production` (not staging).
+- [x] Public app, dashboard, and admin point to `pilot-production` (not staging).
 - [ ] No active Sev1 incident is open.
 - [ ] Designated on-call owner is assigned for the current week.
 
@@ -58,6 +58,15 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 - [ ] Mobile proof: owner login on iPhone Safari or Android Chrome.
 - [ ] Link to latest `db:verify` evidence in `docs/ops/evidence/db-verify-logs/`.
 - [ ] Link to latest critical E2E run or CI job evidence.
+
+### Auth Email Setup Evidence (2026-03-25)
+
+- [x] Password reset email branding proof captured.
+  - Screenshot file: `/Users/aminismail/.cursor/projects/Users-aminismail-Documents-GitHub-TeqBook/assets/image-eb057d48-864d-4426-ad05-21989de0716e.png`
+  - Verified: TeqBook logo/header, professional copy, support footer, Supabase reset URL present.
+- [x] Supabase custom SMTP configuration proof captured.
+  - Screenshot file: `/Users/aminismail/.cursor/projects/Users-aminismail-Documents-GitHub-TeqBook/assets/image-89b2c756-a515-43c5-804a-347ecf921cf7.png`
+  - Verified: Custom SMTP enabled, sender `no-reply@teqbook.com`, sender name `TeqBook`, host `smtp.resend.com`, port `465`, username `resend`.
 
 ## 7) Go/No-Go Decision
 
