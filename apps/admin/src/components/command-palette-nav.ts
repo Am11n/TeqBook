@@ -18,7 +18,7 @@ export type SearchResult = {
 };
 
 export const navigationItems: SearchResult[] = [
-  { id: "nav-dashboard", type: "navigation", label: "Go to Dashboard", href: "/dashboard", icon: Settings },
+  { id: "nav-dashboard", type: "navigation", label: "Go to Dashboard", href: "/", icon: Settings },
   { id: "nav-calendar", type: "navigation", label: "Go to Calendar", href: "/calendar", icon: Calendar },
   { id: "nav-create-booking", type: "navigation", label: "New booking", href: "/bookings?new=true", icon: BookOpen },
   { id: "nav-create-customer", type: "navigation", label: "New customer", href: "/customers?new=true", icon: UserCircle },

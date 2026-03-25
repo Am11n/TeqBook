@@ -29,7 +29,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
 function AdminShellContent({ children }: { children: ReactNode }) {
   const { locale, setLocale } = useLocale();
-  const { isSuperAdmin, profile, salon } = useCurrentSalon();
+  const { isSuperAdmin, loading, profile, salon } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -42,8 +42,8 @@ function AdminShellContent({ children }: { children: ReactNode }) {
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
   useEffect(() => {
-    if (mounted && !isSuperAdmin) router.push("/dashboard");
-  }, [mounted, isSuperAdmin, router]);
+    if (mounted && !loading && !isSuperAdmin) router.push("/login");
+  }, [mounted, loading, isSuperAdmin, router]);
 
   const appLocale = (VALID_LOCALES.has(locale) ? locale : "en") as AppLocale;
   const texts = translations[appLocale].admin;
@@ -69,7 +69,7 @@ function AdminShellContent({ children }: { children: ReactNode }) {
 
   const activeHref = computeActiveHref(pathname);
 
-  if (!mounted || !isSuperAdmin) return null;
+  if (!mounted || loading || !isSuperAdmin) return null;
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-white">
