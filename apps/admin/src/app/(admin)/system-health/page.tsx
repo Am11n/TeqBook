@@ -36,19 +36,28 @@ export default function SystemHealthPage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [contextTimedOut, setContextTimedOut] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchHealth = useCallback(async () => {
     const isInitialLoad = !health;
     if (isInitialLoad) setLoading(true);
     else setRefreshing(true);
+    setPageError(null);
     try {
-      const res = await fetch("/api/health/");
-      const data = await res.json();
+      const res = await fetch("/api/health/", {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        throw new Error(`Health API failed (${res.status})`);
+      }
+      const data = (await res.json()) as HealthResponse;
       setHealth(data);
       setLastRefresh(new Date());
-    } catch {
-      setHealth(null);
+    } catch (err) {
+      if (!health) setHealth(null);
+      setPageError(err instanceof Error ? err.message : "Could not load system health");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -60,6 +69,17 @@ export default function SystemHealthPage() {
     if (isSuperAdmin) fetchHealth();
   }, [isSuperAdmin, contextLoading, router, fetchHealth]);
 
+  useEffect(() => {
+    if (!contextLoading) {
+      setContextTimedOut(false);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setContextTimedOut(true);
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [contextLoading]);
+
   // Auto-refresh every 30s
   useEffect(() => {
     if (!isSuperAdmin) return;
@@ -67,7 +87,33 @@ export default function SystemHealthPage() {
     return () => clearInterval(interval);
   }, [isSuperAdmin, fetchHealth]);
 
-  if (contextLoading) return null;
+  if (contextLoading) {
+    return (
+      <ErrorBoundary>
+        <AdminShell>
+          <PageLayout
+            title="System Health"
+            description={contextTimedOut ? "Auth check is taking longer than expected." : "Loading system access..."}
+            actions={
+              contextTimedOut ? (
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                  Reload page
+                </Button>
+              ) : undefined
+            }
+          >
+            <Card>
+              <CardContent className="py-8 text-sm text-muted-foreground">
+                {contextTimedOut
+                  ? "Still waiting for auth context. This is often caused by a stale session or browser extension interference. Try Reload page, then open again in an incognito window."
+                  : "Checking permissions..."}
+              </CardContent>
+            </Card>
+          </PageLayout>
+        </AdminShell>
+      </ErrorBoundary>
+    );
+  }
   if (!isSuperAdmin) return null;
 
   return (
@@ -83,6 +129,11 @@ export default function SystemHealthPage() {
             </Button>
           }
         >
+          {pageError && (
+            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {pageError}
+            </div>
+          )}
           {/* Overall status banner */}
           <div className={`rounded-lg border px-5 py-4 mb-6 flex items-center justify-between ${health?.status === "healthy" ? "bg-emerald-50 border-emerald-200" : health?.status === "degraded" ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}`}>
             <div className="flex items-center gap-3">
