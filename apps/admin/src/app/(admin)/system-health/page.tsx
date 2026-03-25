@@ -7,7 +7,6 @@ import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCurrentSalon } from "@/components/salon-provider";
 import { HeartPulse, Database, CreditCard, Activity, RefreshCcw, Clock, Mail, Cloud, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,13 +30,12 @@ const SERVICE_ICONS: Record<string, typeof Database> = {
 };
 
 export default function SystemHealthPage() {
-  const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [contextTimedOut, setContextTimedOut] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<"checking" | "authorized" | "unauthorized">("checking");
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchHealth = useCallback(async () => {
@@ -49,6 +47,11 @@ export default function SystemHealthPage() {
       const res = await fetch("/api/health/", {
         signal: AbortSignal.timeout(8000),
       });
+      if (res.status === 401 || res.status === 403) {
+        setAuthState("unauthorized");
+        throw new Error("Unauthorized");
+      }
+      setAuthState("authorized");
       if (!res.ok) {
         throw new Error(`Health API failed (${res.status})`);
       }
@@ -57,7 +60,10 @@ export default function SystemHealthPage() {
       setLastRefresh(new Date());
     } catch (err) {
       if (!health) setHealth(null);
-      setPageError(err instanceof Error ? err.message : "Could not load system health");
+      const message = err instanceof Error ? err.message : "Could not load system health";
+      if (message !== "Unauthorized") {
+        setPageError(message);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -65,48 +71,33 @@ export default function SystemHealthPage() {
   }, [health]);
 
   useEffect(() => {
-    if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
-    if (isSuperAdmin) fetchHealth();
-  }, [isSuperAdmin, contextLoading, router, fetchHealth]);
-
-  useEffect(() => {
-    if (!contextLoading) {
-      setContextTimedOut(false);
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setContextTimedOut(true);
-    }, 10000);
-    return () => window.clearTimeout(timer);
-  }, [contextLoading]);
+    void fetchHealth();
+  }, [fetchHealth]);
 
   // Auto-refresh every 30s
   useEffect(() => {
-    if (!isSuperAdmin) return;
+    if (authState !== "authorized") return;
     const interval = setInterval(fetchHealth, 30000);
     return () => clearInterval(interval);
-  }, [isSuperAdmin, fetchHealth]);
+  }, [authState, fetchHealth]);
 
-  if (contextLoading) {
+  useEffect(() => {
+    if (authState === "unauthorized") {
+      router.push("/login");
+    }
+  }, [authState, router]);
+
+  if (authState === "checking" && loading) {
     return (
       <ErrorBoundary>
         <AdminShell>
           <PageLayout
             title="System Health"
-            description={contextTimedOut ? "Auth check is taking longer than expected." : "Loading system access..."}
-            actions={
-              contextTimedOut ? (
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                  Reload page
-                </Button>
-              ) : undefined
-            }
+            description="Loading system access..."
           >
             <Card>
               <CardContent className="py-8 text-sm text-muted-foreground">
-                {contextTimedOut
-                  ? "Still waiting for auth context. This is often caused by a stale session or browser extension interference. Try Reload page, then open again in an incognito window."
-                  : "Checking permissions..."}
+                Checking permissions...
               </CardContent>
             </Card>
           </PageLayout>
@@ -114,7 +105,7 @@ export default function SystemHealthPage() {
       </ErrorBoundary>
     );
   }
-  if (!isSuperAdmin) return null;
+  if (authState === "unauthorized") return null;
 
   return (
     <ErrorBoundary>
