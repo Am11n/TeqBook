@@ -6,6 +6,15 @@ import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const resendApiKey = process.env.RESEND_API_KEY ?? "";
+const HEALTH_CHECK_TIMEOUT_MS = 2500;
+const HEALTH_CACHE_TTL_MS = 15_000;
+type HealthCheck = { status: string; latency_ms: number; error?: string };
+type HealthPayload = {
+  status: string;
+  timestamp: string;
+  checks: Record<string, HealthCheck>;
+};
+let cachedHealth: { payload: HealthPayload; cachedAt: number } | null = null;
 
 export async function GET() {
   const appClient = await createAdminAppClient();
@@ -41,6 +50,10 @@ export async function GET() {
     failurePolicy: rateLimitPolicy.failurePolicy,
   });
 
+  if (cachedHealth && Date.now() - cachedHealth.cachedAt < HEALTH_CACHE_TTL_MS) {
+    return NextResponse.json(cachedHealth.payload);
+  }
+
   const checks: Record<string, { status: string; latency_ms: number; error?: string }> = {};
 
   // Run all checks in parallel for speed
@@ -73,7 +86,10 @@ export async function GET() {
     (async () => {
       try {
         const start = Date.now();
-        const res = await fetch("https://api.stripe.com/v1/", { method: "GET", signal: AbortSignal.timeout(5000) });
+        const res = await fetch("https://api.stripe.com/v1/", {
+          method: "GET",
+          signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
+        });
         checks.stripe = { status: res.status >= 500 ? "degraded" : "up", latency_ms: Date.now() - start };
       } catch {
         checks.stripe = { status: "down", latency_ms: 0, error: "Could not reach Stripe" };
@@ -90,7 +106,7 @@ export async function GET() {
         const start = Date.now();
         const res = await fetch("https://api.resend.com/domains", {
           headers: { Authorization: `Bearer ${resendApiKey}` },
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
         });
         checks.resend = {
           status: res.status >= 500 ? "degraded" : res.status === 401 ? "degraded" : "up",
@@ -113,7 +129,7 @@ export async function GET() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({}),
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
         });
         // Any response means the Edge Functions runtime is reachable
         checks.edge_functions = { status: res.status >= 500 ? "degraded" : "up", latency_ms: Date.now() - start };
@@ -126,7 +142,10 @@ export async function GET() {
     (async () => {
       try {
         const start = Date.now();
-        const res = await fetch("https://teqbook.com", { method: "HEAD", signal: AbortSignal.timeout(5000) });
+        const res = await fetch("https://teqbook.com", {
+          method: "HEAD",
+          signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
+        });
         checks.vercel = { status: res.status >= 500 ? "degraded" : "up", latency_ms: Date.now() - start };
       } catch {
         checks.vercel = { status: "down", latency_ms: 0, error: "Could not reach Vercel hosting" };
@@ -136,9 +155,12 @@ export async function GET() {
 
   const allUp = Object.values(checks).every((c) => c.status === "up");
 
-  return NextResponse.json({
+  const payload: HealthPayload = {
     status: allUp ? "healthy" : "degraded",
     timestamp: new Date().toISOString(),
     checks,
-  });
+  };
+  cachedHealth = { payload, cachedAt: Date.now() };
+
+  return NextResponse.json(payload);
 }

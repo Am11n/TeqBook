@@ -35,10 +35,13 @@ export default function SystemHealthPage() {
   const router = useRouter();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchHealth = useCallback(async () => {
-    setLoading(true);
+    const isInitialLoad = !health;
+    if (isInitialLoad) setLoading(true);
+    else setRefreshing(true);
     try {
       const res = await fetch("/api/health/");
       const data = await res.json();
@@ -48,8 +51,9 @@ export default function SystemHealthPage() {
       setHealth(null);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, []);
+  }, [health]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -73,8 +77,8 @@ export default function SystemHealthPage() {
           title="System Health"
           description="Real-time platform status and service monitoring"
           actions={
-            <Button variant="outline" size="sm" onClick={fetchHealth} disabled={loading} className="gap-1">
-              <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <Button variant="outline" size="sm" onClick={fetchHealth} disabled={loading || refreshing} className="gap-1">
+              <RefreshCcw className={`h-4 w-4 ${loading || refreshing ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           }
@@ -85,7 +89,7 @@ export default function SystemHealthPage() {
               <HeartPulse className={`h-6 w-6 ${health?.status === "healthy" ? "text-emerald-600" : health?.status === "degraded" ? "text-amber-600" : "text-red-600"}`} />
               <div>
                 <p className="font-semibold text-sm">{health?.status === "healthy" ? "All Systems Operational" : health?.status === "degraded" ? "Some Systems Degraded" : "Loading..."}</p>
-                {lastRefresh && <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Last checked: {lastRefresh.toLocaleTimeString()}</p>}
+                {lastRefresh && <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Last checked: {lastRefresh.toLocaleTimeString()} {refreshing ? "(refreshing...)" : ""}</p>}
               </div>
             </div>
             <Badge variant="outline" className={STATUS_ICON[health?.status ?? "unknown"]}>{health?.status ?? "checking"}</Badge>
