@@ -51,7 +51,7 @@ export default function SystemHealthPage() {
     const isInitialLoad = !healthRef.current;
     if (isInitialLoad) setLoading(true);
     else setRefreshing(true);
-    setPageError(null);
+    if (!healthRef.current) setPageError(null);
     try {
       // Promise.race timeout works consistently across browsers.
       const timeoutPromise = new Promise<never>((_, reject) =>
@@ -89,7 +89,7 @@ export default function SystemHealthPage() {
   // Auto-refresh every 30s
   useEffect(() => {
     if (authState !== "authorized") return;
-    const interval = setInterval(fetchHealth, 30000);
+    const interval = setInterval(fetchHealth, 60000);
     return () => clearInterval(interval);
   }, [authState, fetchHealth]);
 

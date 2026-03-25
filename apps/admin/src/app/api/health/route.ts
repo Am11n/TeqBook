@@ -35,6 +35,11 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Serve hot cache first to keep UI snappy and avoid unnecessary rate-limit churn.
+  if (cachedHealth && Date.now() - cachedHealth.cachedAt < HEALTH_CACHE_TTL_MS) {
+    return NextResponse.json(cachedHealth.payload);
+  }
+
   const rateLimitPolicy = getRateLimitPolicy("admin-health");
   const rateLimitResult = await checkRateLimit(user.id, "admin-health", {
     identifierType: "user_id",
@@ -42,6 +47,10 @@ export async function GET() {
     failurePolicy: rateLimitPolicy.failurePolicy,
   });
   if (!rateLimitResult.allowed) {
+    // If we have any cached payload, prefer returning stale data over hard-failing UI.
+    if (cachedHealth) {
+      return NextResponse.json(cachedHealth.payload);
+    }
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
   await incrementRateLimit(user.id, "admin-health", {
@@ -49,10 +58,6 @@ export async function GET() {
     endpointType: "admin-health",
     failurePolicy: rateLimitPolicy.failurePolicy,
   });
-
-  if (cachedHealth && Date.now() - cachedHealth.cachedAt < HEALTH_CACHE_TTL_MS) {
-    return NextResponse.json(cachedHealth.payload);
-  }
 
   const checks: Record<string, { status: string; latency_ms: number; error?: string }> = {};
 
