@@ -117,14 +117,7 @@ export function DialogSelect({
             {!selected.isSpecial ? (
               <OptionAvatar label={selected.label} avatarUrl={selected.avatarUrl} />
             ) : null}
-            <span className="min-w-0 text-left">
-              <span className="block truncate">{selected.label}</span>
-              {selected.description ? (
-                <span className="block truncate text-[11px] text-muted-foreground">
-                  {selected.description}
-                </span>
-              ) : null}
-            </span>
+            <span className="block min-w-0 truncate text-left">{selected.label}</span>
           </span>
         ) : (
           <span className="truncate">{placeholder}</span>
