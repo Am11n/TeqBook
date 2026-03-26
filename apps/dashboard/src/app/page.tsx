@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
@@ -15,6 +15,8 @@ import { StaffOverviewCard } from "@/components/dashboard/StaffOverviewCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { PerformanceSnapshotCard } from "@/components/dashboard/PerformanceSnapshotCard";
 import { AnnouncementsCard } from "@/components/dashboard/AnnouncementsCard";
+import type { DashboardAnnouncement } from "@/lib/types/announcements";
+import { listPublishedAnnouncements } from "@/lib/services/announcements-service";
 
 type TimeRange = "daily" | "weekly" | "monthly";
 
@@ -25,6 +27,8 @@ export default function DashboardHomePage() {
   const t = translations[appLocale].home;
   const { hasFeature } = useFeatures();
   const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
+  const [announcements, setAnnouncements] = useState<DashboardAnnouncement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
 
   const {
     mounted,
@@ -37,6 +41,20 @@ export default function DashboardHomePage() {
   } = useDashboardData(timeRange);
 
   const featuresMounted = mounted;
+
+  useEffect(() => {
+    let active = true;
+    async function loadAnnouncements() {
+      const { data } = await listPublishedAnnouncements();
+      if (!active) return;
+      setAnnouncements(data);
+      setAnnouncementsLoading(false);
+    }
+    void loadAnnouncements();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (!mounted) {
     return (
@@ -114,11 +132,11 @@ export default function DashboardHomePage() {
         )}
 
         <AnnouncementsCard
+          announcements={announcements}
+          loading={announcementsLoading}
           translations={{
             announcements: t.announcements,
-            announcementWalkIn: t.announcementWalkIn,
-            announcementLanguages: t.announcementLanguages,
-            announcementDashboardUpdate: t.announcementDashboardUpdate,
+            noAnnouncementsYet: t.noInsightsYet ?? "No announcements yet.",
             viewAllUpdates: t.viewAllUpdates,
           }}
         />

@@ -2,7 +2,9 @@
   "version": 1,
   "baseline": "supabase/supabase/baseline/BASELINE.sql",
   "postBaseline": [
-    "supabase/supabase/migrations/20260317162000_pilot_access_recovery.sql"
+    "supabase/supabase/migrations/20260317162000_pilot_access_recovery.sql",
+    "supabase/supabase/migrations/20260326095500_fix_announcements_superadmin_rls.sql",
+    "supabase/supabase/migrations/20260326101000_fix_announcements_table_grants.sql"
   ]
 }
 

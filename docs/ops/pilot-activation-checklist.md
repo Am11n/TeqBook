@@ -12,8 +12,8 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 
 - [x] `https://teqbook.com` is reachable from desktop and mobile.
 - [x] Public app, dashboard, and admin point to `pilot-production` (not staging).
-- [ ] No active Sev1 incident is open.
-- [ ] Designated on-call owner is assigned for the current week.
+- [x] No active Sev1 incident is open.
+- [x] Designated on-call owner is assigned for the current week.
 
 ## 2) Core Product Flows (Must Pass)
 

@@ -103,5 +103,58 @@ export function buildDetailDialogTranslations(t: Record<string, string>) {
     roleStaff: t.roleStaff ?? "Staff",
     preferredLang: t.preferredLanguageLabel,
     servicesLabel: t.servicesLabel,
+    saveChanges: t.saveChanges ?? "Save changes",
+    editDescriptionRich:
+      t.editDescriptionRich ?? "Update staff information, public profile, and services.",
+    profileContextLine:
+      t.profileContextLine ?? "Staff profile and booking visibility",
+    basicInfoSectionTitle: t.basicInfoSectionTitle ?? "Basic info",
+    basicInfoSectionDescription:
+      t.basicInfoSectionDescription ?? "Core contact and role details.",
+    publicProfileSectionTitle: t.publicProfileSectionTitle ?? "Public profile",
+    publicProfileSectionDescription:
+      t.publicProfileSectionDescription ?? "Shown on your public booking page.",
+    servicesSectionTitle: t.servicesSectionTitle ?? "Services",
+    servicesSectionDescription:
+      t.servicesSectionDescription ?? "Choose which services this staff member can perform.",
+    publicTitleLabel: t.publicTitleLabel ?? "Public title",
+    publicTitlePlaceholder: t.publicTitlePlaceholder ?? "Senior Barber",
+    publicSortOrderLabel: t.publicSortOrderLabel ?? "Public sort order",
+    publicSortOrderPlaceholder: t.publicSortOrderPlaceholder ?? "0",
+    publicSortOrderHint:
+      t.publicSortOrderHint ?? "Lower numbers appear first in public booking.",
+    profileImageLabel: t.profileImageLabel ?? "Profile image",
+    profileImageHint: t.profileImageHint ?? "JPG, PNG, or WebP up to 5 MB.",
+    uploadImage: t.uploadImage ?? "Upload image",
+    removeImage: t.removeImage ?? "Remove image",
+    uploadingImage: t.uploadingImage ?? "Uploading image…",
+    retryUploadImage: t.retryUploadImage ?? "Try upload again",
+    specialtiesLabel: t.specialtiesLabel ?? "Specialties",
+    specialtiesHint:
+      t.specialtiesHint ?? "Press Enter or comma to add specialties.",
+    specialtiesPlaceholder: t.specialtiesPlaceholder ?? "e.g. Fade",
+    bioLabel: t.bioLabel ?? "Bio",
+    bioHint:
+      t.bioHint ??
+      "Tip: Keep it short and customer-friendly (recommended max 240 characters).",
+    bioPlaceholder:
+      t.bioPlaceholder ??
+      "Tell customers briefly about experience, style, or what they can expect.",
+    publicProfileVisibleLabel:
+      t.publicProfileVisibleLabel ?? "Visible on public profile",
+    selectedServicesCount: t.selectedServicesCount ?? "{count} selected services",
+    validationNameRequired: t.validationNameRequired ?? "Name is required.",
+    validationNameMin: t.validationNameMin ?? "Name must be at least 2 characters.",
+    validationEmailInvalid:
+      t.validationEmailInvalid ?? "Please enter a valid email address.",
+    validationSortOrderInvalid:
+      t.validationSortOrderInvalid ?? "Sort order must be a whole number 0 or above.",
+    validationTagTooLong:
+      t.validationTagTooLong ?? "Each specialty must be 32 characters or less.",
+    validationImageInvalidType:
+      t.validationImageInvalidType ??
+      "Invalid image format. Use JPG, PNG, or WebP.",
+    validationImageTooLarge:
+      t.validationImageTooLarge ?? "Image is too large. Maximum size is 5 MB.",
   };
 }

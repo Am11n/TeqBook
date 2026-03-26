@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SetupBadge } from "@/components/setup-badge";
 import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -31,6 +32,21 @@ export interface EmployeeDetailDialogTranslations {
   emailLabel: string; phoneLabel: string; roleLabel: string;
   selectRole: string; roleOwner: string; roleManager: string;
   roleStaff: string; preferredLang: string; servicesLabel: string;
+  saveChanges: string; editDescriptionRich: string; profileContextLine: string;
+  basicInfoSectionTitle: string; basicInfoSectionDescription: string;
+  publicProfileSectionTitle: string; publicProfileSectionDescription: string;
+  servicesSectionTitle: string; servicesSectionDescription: string;
+  publicTitleLabel: string; publicTitlePlaceholder: string;
+  publicSortOrderLabel: string; publicSortOrderPlaceholder: string;
+  publicSortOrderHint: string; profileImageLabel: string; profileImageHint: string;
+  uploadImage: string; removeImage: string; uploadingImage: string; retryUploadImage: string;
+  specialtiesLabel: string; specialtiesHint: string; specialtiesPlaceholder: string;
+  bioLabel: string; bioHint: string; bioPlaceholder: string;
+  publicProfileVisibleLabel: string; selectedServicesCount: string;
+  validationNameRequired: string; validationNameMin: string;
+  validationEmailInvalid: string; validationSortOrderInvalid: string;
+  validationTagTooLong: string; validationImageInvalidType: string;
+  validationImageTooLarge: string;
 }
 
 interface EmployeeDetailDialogProps {
@@ -187,14 +203,37 @@ export function EmployeeDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl p-0">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "edit" ? t.editTitle : employee.full_name}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "edit" ? t.editDescription : t.detailDescription}
-          </DialogDescription>
+          <div className="border-b px-6 py-5">
+            {mode === "edit" ? (
+              <div className="flex items-start gap-3 pr-8">
+                <Avatar className="h-11 w-11 border">
+                  <AvatarImage src={profileImageUrl || undefined} alt={employee.full_name} />
+                  <AvatarFallback>
+                    {employee.full_name
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <DialogTitle>{t.editTitle}</DialogTitle>
+                  <DialogDescription>{t.editDescriptionRich}</DialogDescription>
+                  <p className="text-xs text-muted-foreground">
+                    {employee.full_name} · {t.profileContextLine}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <DialogTitle>{employee.full_name}</DialogTitle>
+                <DialogDescription>{t.detailDescription}</DialogDescription>
+              </>
+            )}
+          </div>
         </DialogHeader>
 
         {mode === "view" ? (
@@ -297,6 +336,7 @@ export function EmployeeDetailDialog({
             specialtiesInput={specialtiesInput} setSpecialtiesInput={setSpecialtiesInput}
             publicSortOrder={publicSortOrder} setPublicSortOrder={setPublicSortOrder}
             profileImageUrl={profileImageUrl} setProfileImageUrl={setProfileImageUrl}
+            profileImageFile={profileImageFile}
             onProfileImageChange={setProfileImageFile}
             services={services} saving={saving} error={error}
             onSubmit={handleSubmit} onCancel={onSwitchToView}

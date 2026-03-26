@@ -4,7 +4,7 @@ import {
   Users, UserCheck,
   FileText, ShieldCheck, Database,
   TrendingUp, BarChart3, ToggleRight,
-  MessageSquare,
+  MessageSquare, Megaphone,
 } from "lucide-react";
 
 export type NavItem = {
@@ -68,6 +68,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Product",
     items: [
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
       { href: "/changelog", label: "Changelog", icon: GitBranch },
       { href: "/feedback", label: "Feedback", icon: MessageSquare },
     ],
