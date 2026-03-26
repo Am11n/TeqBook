@@ -228,18 +228,30 @@ export function EmployeeDetailDialog({
                 </div>
               </div>
             ) : (
-              <>
-                <DialogTitle>{employee.full_name}</DialogTitle>
-                <DialogDescription>{t.detailDescription}</DialogDescription>
-              </>
+              <div className="flex items-start gap-3 pr-8">
+                <Avatar className="h-11 w-11 border">
+                  <AvatarImage src={employee.profile_image_url ?? undefined} alt={employee.full_name} />
+                  <AvatarFallback>
+                    {employee.full_name
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <DialogTitle>{employee.full_name}</DialogTitle>
+                  <DialogDescription>{t.detailDescription}</DialogDescription>
+                </div>
+              </div>
             )}
           </div>
         </DialogHeader>
 
         {mode === "view" ? (
-          <div className="space-y-4">
-            {/* Status row */}
-            <div className="flex items-center gap-2">
+          <div className="space-y-6 px-6 pb-6 pt-4">
+            <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 p-3">
               <Badge
                 variant="outline"
                 className={`cursor-pointer ${
@@ -254,26 +266,27 @@ export function EmployeeDetailDialog({
                 {employee.is_active ? t.active : t.inactive}
               </Badge>
               {bookable ? (
-                <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                   <Check className="h-3.5 w-3.5" /> {t.canBeBooked}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600">
                   <X className="h-3.5 w-3.5" /> {t.notBookable}
                 </span>
               )}
+              <div className="ml-auto">
+                <SetupBadge issues={issues} />
+              </div>
             </div>
 
-            <SetupBadge issues={issues} />
-
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
+              <div className="rounded-md border p-3">
                 <p className="text-xs text-muted-foreground">{t.detailRole}</p>
-                <p className="text-sm font-medium">{employee.role || "-"}</p>
+                <p className="mt-1 text-sm font-medium">{employee.role || "-"}</p>
               </div>
-              <div>
+              <div className="rounded-md border p-3">
                 <p className="text-xs text-muted-foreground">{t.detailContact}</p>
-                <p className="text-sm">
+                <p className="mt-1 text-sm">
                   {employee.email || employee.phone || t.noContact}
                 </p>
                 {employee.email && employee.phone && (
@@ -284,10 +297,12 @@ export function EmployeeDetailDialog({
               </div>
             </div>
 
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t.detailServices}</p>
+            <div className="space-y-3 rounded-md border p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t.detailServices}
+              </p>
               {empServices.length > 0 ? (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {empServices.map((s) => (
                     <Badge key={s.id} variant="outline" className="text-xs">
                       {s.name}
@@ -300,24 +315,24 @@ export function EmployeeDetailDialog({
             </div>
 
             {hasShiftsFeature !== false && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">{t.shiftsLabel}</p>
+              <div className="rounded-md border p-3">
+                <p className="text-xs text-muted-foreground">{t.shiftsLabel}</p>
                 {empShifts.length > 0 ? (
-                  <p className="text-sm">
+                  <p className="mt-1 text-sm font-medium">
                     {empShifts.length} {t.shiftsRegistered}
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground">{t.noShifts}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t.noShifts}</p>
                 )}
               </div>
             )}
 
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t.close}
               </Button>
               <Button onClick={onSwitchToEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="mr-2 h-4 w-4" />
                 {t.edit}
               </Button>
             </DialogFooter>

@@ -467,6 +467,41 @@ export type EmployeesMessages = {
   setupShifts?: string;
   // Staff count
   staffCount?: string;
+  // Enhanced employee detail/edit modal
+  editDescriptionRich?: string;
+  profileContextLine?: string;
+  basicInfoSectionTitle?: string;
+  basicInfoSectionDescription?: string;
+  publicProfileSectionTitle?: string;
+  publicProfileSectionDescription?: string;
+  servicesSectionTitle?: string;
+  servicesSectionDescription?: string;
+  publicTitleLabel?: string;
+  publicTitlePlaceholder?: string;
+  publicSortOrderLabel?: string;
+  publicSortOrderPlaceholder?: string;
+  publicSortOrderHint?: string;
+  profileImageLabel?: string;
+  profileImageHint?: string;
+  uploadImage?: string;
+  removeImage?: string;
+  uploadingImage?: string;
+  retryUploadImage?: string;
+  specialtiesLabel?: string;
+  specialtiesHint?: string;
+  specialtiesPlaceholder?: string;
+  bioLabel?: string;
+  bioHint?: string;
+  bioPlaceholder?: string;
+  publicProfileVisibleLabel?: string;
+  selectedServicesCount?: string;
+  validationNameRequired?: string;
+  validationNameMin?: string;
+  validationEmailInvalid?: string;
+  validationSortOrderInvalid?: string;
+  validationTagTooLong?: string;
+  validationImageInvalidType?: string;
+  validationImageTooLarge?: string;
 };
 
 export type ServicesMessages = {
