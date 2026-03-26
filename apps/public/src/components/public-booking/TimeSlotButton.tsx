@@ -1,9 +1,14 @@
 "use client";
 
+"use client";
+
+import { useState } from "react";
+
 type TimeSlotButtonProps = {
   id: string;
   timeRange: string;
   employeeName: string | null;
+  employeeAvatarUrl?: string | null;
   selected: boolean;
   recommended?: boolean;
   disabled?: boolean;
@@ -12,10 +17,46 @@ type TimeSlotButtonProps = {
   onSelect: (id: string) => void;
 };
 
+function initialsFromName(name: string): string {
+  return name
+    .split(" ")
+    .map((part) => part.trim()[0] || "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function SlotAvatar({
+  employeeName,
+  employeeAvatarUrl,
+}: {
+  employeeName: string;
+  employeeAvatarUrl?: string | null;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(employeeAvatarUrl) && !imageFailed;
+  return (
+    <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-muted text-[9px] font-semibold text-muted-foreground">
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={employeeAvatarUrl || undefined}
+          alt={employeeName}
+          className="h-full w-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span>{initialsFromName(employeeName)}</span>
+      )}
+    </span>
+  );
+}
+
 export function TimeSlotButton({
   id,
   timeRange,
   employeeName,
+  employeeAvatarUrl,
   selected,
   recommended = false,
   disabled = false,
@@ -67,14 +108,17 @@ export function TimeSlotButton({
           </span>
         ) : null}
         {employeeName ? (
-          <span
-            className="text-[12px] font-normal"
-            style={{
-              color: selected ? "var(--pb-slot-selected-text)" : "var(--pb-muted)",
-              opacity: selected ? 0.9 : 0.6,
-            }}
-          >
-            {employeeName}
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <SlotAvatar employeeName={employeeName} employeeAvatarUrl={employeeAvatarUrl} />
+            <span
+              className="truncate text-[12px] font-normal"
+              style={{
+                color: selected ? "var(--pb-slot-selected-text)" : "var(--pb-muted)",
+                opacity: selected ? 0.9 : 0.7,
+              }}
+            >
+              {employeeName}
+            </span>
           </span>
         ) : null}
       </span>

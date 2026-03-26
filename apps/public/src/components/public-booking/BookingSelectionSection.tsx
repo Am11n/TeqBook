@@ -52,6 +52,14 @@ function getGroupKey(slot: Slot): GroupKey {
   return "evening";
 }
 
+function getEmployeeSecondaryText(employee: Employee): string | undefined {
+  const publicTitle = employee.public_title?.trim();
+  if (publicTitle) return publicTitle;
+  const role = employee.role?.trim();
+  if (role) return role;
+  return undefined;
+}
+
 export function BookingSelectionSection({
   t,
   selectionStatus,
@@ -138,6 +146,10 @@ export function BookingSelectionSection({
     }
     return groups;
   }, [slots]);
+  const employeesById = useMemo(
+    () => Object.fromEntries(employees.map((employee) => [employee.id, employee])),
+    [employees],
+  );
 
   const groupedOrder: GroupKey[] = ["morning", "afternoon", "evening"];
   const groupedLabels: Record<GroupKey, string> = {
@@ -152,6 +164,42 @@ export function BookingSelectionSection({
     : null;
 
   const recommendedSlotId = slots[0]?.id || "";
+  const likelyAvailableLabel = t.likelyAvailable ?? "Likely available";
+  const noTimesLabel = t.noTimesForSelectedDate ?? "No times available";
+  const bestAvailableLabel = t.bestAvailableRecommended ?? t.employeeAny ?? "Best available";
+  const employeeOptions = useMemo(() => {
+    return [
+      {
+        value: anyEmployeeValue,
+        label: bestAvailableLabel,
+        description: t.bestAvailableHint ?? undefined,
+        isSpecial: true,
+      },
+      ...employees.map((employee) => {
+        const status = employeeAvailability[employee.id] ?? "unknown";
+        const availabilityBadge = status === "likely_available"
+          ? likelyAvailableLabel
+          : status === "no_times"
+            ? noTimesLabel
+            : undefined;
+        return {
+          value: employee.id,
+          label: employee.full_name,
+          description: getEmployeeSecondaryText(employee),
+          avatarUrl: employee.profile_image_url ?? null,
+          badge: availabilityBadge,
+        };
+      }),
+    ];
+  }, [
+    anyEmployeeValue,
+    bestAvailableLabel,
+    employeeAvailability,
+    employees,
+    likelyAvailableLabel,
+    noTimesLabel,
+    t.bestAvailableHint,
+  ]);
   const localToday = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -300,18 +348,7 @@ export function BookingSelectionSection({
               required={!isWaitlistMode}
               disabled={isSelectionBlocked || employees.length === 0}
               placeholder={isWaitlistMode ? t.employeeAny : t.employeePlaceholder}
-              options={[
-                { value: anyEmployeeValue, label: t.bestAvailableRecommended ?? "" },
-                ...employees.map((emp) => {
-                  const status = employeeAvailability[emp.id] ?? "unknown";
-                  const statusLabel = status === "likely_available"
-                    ? ` · ${t.likelyAvailable}`
-                    : status === "no_times"
-                      ? ` · ${t.noTimesForSelectedDate}`
-                      : "";
-                  return { value: emp.id, label: `${emp.full_name}${statusLabel}` };
-                }),
-              ]}
+              options={employeeOptions}
             />
             <p className="text-xs text-[var(--pb-muted)]">
               {t.bestAvailableHint}
@@ -384,12 +421,14 @@ export function BookingSelectionSection({
                     {groupSlots.map((slot, index) => {
                       const isSelected = selectedSlot === slot.id;
                       const slotDisplay = parseSlotLabel(slot.label);
+                      const slotEmployee = employeesById[slot.employeeId];
                       return (
                         <TimeSlotButton
                           key={`${groupKey}-${index}`}
                           id={slot.id}
                           timeRange={slotDisplay.timeRange}
-                          employeeName={slotDisplay.employeeName}
+                          employeeName={slotEmployee?.full_name ?? slotDisplay.employeeName}
+                          employeeAvatarUrl={slotEmployee?.profile_image_url ?? null}
                           selected={isSelected}
                           recommended={slot.id === recommendedSlotId}
                           onSelect={(id) => {

@@ -79,6 +79,9 @@ export const nb: TranslationNamespaces = {
     nextAvailableToday: "Neste ledige i dag",
     joinWaitlist: "Bli med på venteliste",
     mobileChangeSelectionLabel: "Endre valg",
+    bestAvailableRecommended: "Best tilgjengelig (anbefalt)",
+    likelyAvailable: "Sannsynlig ledig",
+    noTimesForSelectedDate: "Ingen tider for valgt dato",
   },
   login: {
     title: "Logg inn",

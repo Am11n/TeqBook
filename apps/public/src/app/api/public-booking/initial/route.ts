@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         .limit(1000),
       supabase
         .from("employees")
-        .select("id, full_name")
+        .select("id, full_name, profile_image_url, public_title, role")
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .order("full_name", { ascending: true })

@@ -191,6 +191,9 @@ export type Service = {
 export type Employee = {
   id: string;
   full_name: string;
+  profile_image_url?: string | null;
+  public_title?: string | null;
+  role?: string | null;
 };
 
 export type Slot = {
