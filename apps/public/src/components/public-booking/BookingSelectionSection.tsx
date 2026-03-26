@@ -182,12 +182,18 @@ export function BookingSelectionSection({
           : status === "no_times"
             ? noTimesLabel
             : undefined;
+        const availabilityBadgeTone = status === "likely_available"
+          ? "success"
+          : status === "no_times"
+            ? "danger"
+            : "neutral";
         return {
           value: employee.id,
           label: employee.full_name,
           description: getEmployeeSecondaryText(employee),
           avatarUrl: employee.profile_image_url ?? null,
           badge: availabilityBadge,
+          badgeTone: availabilityBadgeTone,
         };
       }),
     ];

@@ -10,6 +10,7 @@ export interface DialogSelectOption {
   description?: string;
   avatarUrl?: string | null;
   badge?: string;
+  badgeTone?: "success" | "danger" | "neutral";
   isSpecial?: boolean;
 }
 
@@ -89,6 +90,15 @@ export function DialogSelect({
   useClickOutside(containerRef, open, () => setOpen(false));
 
   const selected = options.find((o) => o.value === value);
+  const badgeToneClass = (tone?: DialogSelectOption["badgeTone"]) => {
+    if (tone === "success") {
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    }
+    if (tone === "danger") {
+      return "border-red-200 bg-red-50 text-red-700";
+    }
+    return "border text-muted-foreground";
+  };
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -106,11 +116,7 @@ export function DialogSelect({
           <span className="flex min-w-0 items-center gap-2">
             {!selected.isSpecial ? (
               <OptionAvatar label={selected.label} avatarUrl={selected.avatarUrl} />
-            ) : (
-              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border bg-muted text-[11px] text-muted-foreground">
-                *
-              </span>
-            )}
+            ) : null}
             <span className="min-w-0 text-left">
               <span className="block truncate">{selected.label}</span>
               {selected.description ? (
@@ -165,11 +171,7 @@ export function DialogSelect({
                 />
                 {!opt.isSpecial ? (
                   <OptionAvatar label={opt.label} avatarUrl={opt.avatarUrl} />
-                ) : (
-                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border bg-muted text-[11px] text-muted-foreground">
-                    *
-                  </span>
-                )}
+                ) : null}
                 <span className="min-w-0 flex-1 text-left">
                   <span className="block truncate">{opt.label}</span>
                   {opt.description ? (
@@ -179,7 +181,12 @@ export function DialogSelect({
                   ) : null}
                 </span>
                 {opt.badge ? (
-                  <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                      badgeToneClass(opt.badgeTone),
+                    )}
+                  >
                     {opt.badge}
                   </span>
                 ) : null}
