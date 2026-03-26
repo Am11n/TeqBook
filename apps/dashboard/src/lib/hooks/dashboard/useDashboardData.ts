@@ -20,15 +20,31 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
     setMounted(true);
   }, []);
 
-  // Get owner name: prefer first_name from profile, fall back to email prefix
+  // Get owner name: prefer first_name, then first token from full_name, then email prefix
   useEffect(() => {
-    if (profile?.first_name) {
-      setOwnerName(profile.first_name);
-    } else if (user?.email) {
+    const firstName = profile?.first_name?.trim();
+    if (firstName) {
+      setOwnerName(firstName);
+      return;
+    }
+
+    const fullName = (profile as { full_name?: string | null } | null)?.full_name?.trim();
+    if (fullName) {
+      const parsedFirstName = fullName.split(/\s+/)[0];
+      if (parsedFirstName) {
+        setOwnerName(parsedFirstName);
+        return;
+      }
+    }
+
+    if (user?.email) {
       const name = user.email.split("@")[0];
       setOwnerName(name.charAt(0).toUpperCase() + name.slice(1));
+      return;
     }
-  }, [profile?.first_name, user?.email]);
+
+    setOwnerName("");
+  }, [profile, user?.email]);
 
   const loadPerformanceData = async (salonId: string, range: TimeRange) => {
     const now = new Date();
