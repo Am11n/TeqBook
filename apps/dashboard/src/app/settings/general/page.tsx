@@ -167,8 +167,19 @@ export default function GeneralSettingsPage() {
     }
   };
 
-  const publicProfileUrl = typeof window !== "undefined" && salon?.slug
-    ? `${window.location.origin}/salon/${salon.slug}`
+  const buildPublicAppOrigin = () => {
+    if (typeof window === "undefined") return null;
+    const current = new URL(window.location.href);
+    const isLocal =
+      current.hostname === "localhost" || current.hostname === "127.0.0.1";
+    if (isLocal && current.port === "3002") current.port = "3001";
+    return current.origin;
+  };
+
+  const publicAppOrigin = buildPublicAppOrigin();
+
+  const publicProfileUrl = publicAppOrigin && salon?.slug
+    ? `${publicAppOrigin}/salon/${salon.slug}`
     : null;
 
   const handleCoverImageUpload = useCallback(async (file: File) => {
@@ -186,8 +197,8 @@ export default function GeneralSettingsPage() {
     form.setValue("coverImage", data.url);
     setUploadingCoverImage(false);
   }, [salon?.id, form]);
-  const directBookingUrl = typeof window !== "undefined" && salon?.slug
-    ? `${window.location.origin}/book/${salon.slug}`
+  const directBookingUrl = publicAppOrigin && salon?.slug
+    ? `${publicAppOrigin}/book/${salon.slug}`
     : null;
 
   const status = (() => {
