@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogSelect } from "@/components/ui/dialog-select";
+import type { DialogSelectOption } from "@/components/ui/dialog-select";
 import { Input } from "@/components/ui/input";
 import { BookingFlowSection } from "./BookingFlowSection";
 import { ServiceCard } from "./ServiceCard";
@@ -167,7 +168,7 @@ export function BookingSelectionSection({
   const likelyAvailableLabel = t.likelyAvailable ?? "Likely available";
   const noTimesLabel = t.noTimesForSelectedDate ?? "No times available";
   const bestAvailableLabel = t.bestAvailableRecommended ?? t.employeeAny ?? "Best available";
-  const employeeOptions = useMemo(() => {
+  const employeeOptions = useMemo<DialogSelectOption[]>(() => {
     return [
       {
         value: anyEmployeeValue,
@@ -182,7 +183,7 @@ export function BookingSelectionSection({
           : status === "no_times"
             ? noTimesLabel
             : undefined;
-        const availabilityBadgeTone = status === "likely_available"
+        const availabilityBadgeTone: DialogSelectOption["badgeTone"] = status === "likely_available"
           ? "success"
           : status === "no_times"
             ? "danger"
