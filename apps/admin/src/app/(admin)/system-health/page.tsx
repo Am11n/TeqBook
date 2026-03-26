@@ -13,6 +13,13 @@ import { Button } from "@/components/ui/button";
 type HealthCheck = { status: string; latency_ms: number; error?: string };
 type HealthResponse = { status: string; timestamp: string; checks: Record<string, HealthCheck> };
 
+function resolveHealthApiUrl(): string {
+  if (typeof window === "undefined") return "/api/health/";
+  const path = window.location.pathname;
+  const hasAdminBasePath = path === "/admin" || path.startsWith("/admin/");
+  return hasAdminBasePath ? "/admin/api/health/" : "/api/health/";
+}
+
 const STATUS_ICON: Record<string, string> = {
   up: "bg-emerald-100 text-emerald-700",
   healthy: "bg-emerald-100 text-emerald-700",
@@ -57,7 +64,8 @@ export default function SystemHealthPage() {
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Health API timeout")), 8000)
       );
-      const res = (await Promise.race([fetch("/api/health/"), timeoutPromise])) as Response;
+      const healthApiUrl = resolveHealthApiUrl();
+      const res = (await Promise.race([fetch(healthApiUrl), timeoutPromise])) as Response;
       if (res.status === 401 || res.status === 403) {
         setAuthState("unauthorized");
         throw new Error("Unauthorized");
