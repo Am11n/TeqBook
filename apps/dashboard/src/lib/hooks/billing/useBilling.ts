@@ -42,7 +42,7 @@ export function useBilling() {
       const [addonsResult, employeesResult, employeeLimitResult, languageLimitResult, invoicesResult] =
         await Promise.all([
           getAddonsForSalon(salon.id),
-          getEmployeesForSalon(salon.id, { page: 1, pageSize: 1000 }),
+          getEmployeesForSalon(salon.id, { page: 0, pageSize: 1000 }),
           getEffectiveLimit(salon.id, plan, "employees"),
           getEffectiveLimit(salon.id, plan, "languages"),
           listBillingInvoices(salon.id),
