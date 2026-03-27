@@ -12,6 +12,7 @@ import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { uploadCoverImage } from "@/lib/services/storage-service";
+import { syncUsageDerivedAddons } from "@/lib/services/billing-service";
 import { useRouter } from "next/navigation";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import { SettingsGrid } from "@/components/settings/SettingsGrid";
@@ -123,7 +124,11 @@ export default function GeneralSettingsPage() {
       if (profileError) throw new Error(profileError);
     }
 
+    const previousLanguageCount = salon?.supported_languages?.length ?? 0;
     await refreshSalon();
+    if (v.supportedLanguages.length !== previousLanguageCount) {
+      await syncUsageDerivedAddons(salon.id).catch(() => {});
+    }
 
     if (v.userPreferredLanguage && v.userPreferredLanguage !== locale) {
       setLocale(v.userPreferredLanguage as AppLocale);

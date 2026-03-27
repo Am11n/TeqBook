@@ -24,16 +24,16 @@ export default function BillingSettingsPage() {
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].settings;
 
-  const { currentPlan, addons, loading } = useBilling();
+  const { currentPlan, addons, summary, loading, refetch } = useBilling();
   const {
     salon,
     actionLoading,
     error,
-    setError,
     hasSubscription,
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,
+    handleSyncUsageAddons,
   } = useBillingActions();
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
@@ -86,6 +86,9 @@ export default function BillingSettingsPage() {
   const handlePaymentSuccess = async () => {
     setShowPaymentForm(false);
     setClientSecret(null);
+    await refetch();
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await refetch();
   };
 
   const handleCancelConfirm = async () => {
@@ -103,6 +106,21 @@ export default function BillingSettingsPage() {
       setShowPaymentForm(true);
     }
   };
+
+  const estimate = useMemo(() => {
+    const basePlan = activePlan.price.replace("$", "");
+    const basePlanMinor = Number.isNaN(Number(basePlan)) ? 0 : Number(basePlan);
+    const extraStaffMinor = (summary?.usage.employeesExtraBilled ?? 0) * 5;
+    const extraLanguagesMinor = (summary?.usage.languagesExtraBilled ?? 0) * 10;
+    const smsOverageMinor = smsUsage?.overageCostEstimate ?? 0;
+    const total = basePlanMinor + extraStaffMinor + extraLanguagesMinor + smsOverageMinor;
+    return { basePlanMinor, extraStaffMinor, extraLanguagesMinor, smsOverageMinor, total };
+  }, [
+    activePlan.price,
+    summary?.usage.employeesExtraBilled,
+    summary?.usage.languagesExtraBilled,
+    smsUsage?.overageCostEstimate,
+  ]);
 
   useEffect(() => {
     const loadSmsUsage = async () => {
@@ -166,6 +184,16 @@ export default function BillingSettingsPage() {
         hasSubscription={hasSubscription}
         actionLoading={actionLoading}
         error={error}
+        usage={
+          summary
+            ? {
+                employeesActive: summary.usage.employeesActive,
+                employeesIncluded: summary.usage.employeesIncluded,
+                languagesActive: summary.usage.languagesActive,
+                languagesIncluded: summary.usage.languagesIncluded,
+              }
+            : null
+        }
         onShowPlanDialog={() => setShowPlanDialog(true)}
         onUpdatePaymentMethod={handleUpdatePayment}
         onShowCancelDialog={() => setShowCancelDialog(true)}
@@ -175,7 +203,16 @@ export default function BillingSettingsPage() {
         }}
       />
 
-      <AddonsCard addons={addonDisplay} />
+      <AddonsCard
+        addons={addonDisplay}
+        usage={summary?.usage ?? null}
+        actionLoading={actionLoading}
+        onSyncUsage={async () => {
+          await handleSyncUsageAddons();
+          refetch();
+        }}
+        onManagePlan={() => setShowPlanDialog(true)}
+      />
 
       <Card className="p-6">
         <div className="space-y-4">
@@ -245,6 +282,39 @@ export default function BillingSettingsPage() {
         </div>
       </Card>
 
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold">Estimated next invoice</h3>
+            <p className="text-sm text-muted-foreground">
+              This is an estimate and may change until the invoice is finalized.
+            </p>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Base plan</span>
+              <span>${estimate.basePlanMinor.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Extra staff</span>
+              <span>${estimate.extraStaffMinor.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Extra languages</span>
+              <span>${estimate.extraLanguagesMinor.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">SMS overage</span>
+              <span>{estimate.smsOverageMinor.toFixed(2)} NOK</span>
+            </div>
+            <div className="border-t pt-2 mt-2 flex items-center justify-between font-semibold">
+              <span>Estimated total</span>
+              <span>${estimate.total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Billing History -- collapsed by default */}
       <Card className="p-0 overflow-hidden">
         <details className="group">
@@ -258,15 +328,54 @@ export default function BillingSettingsPage() {
             <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="px-6 pb-4 border-t">
-            <div className="flex flex-col items-center py-6 text-center">
-              <FileText className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Your invoices will appear here once you have an active subscription.
-              </p>
-              <a href="#" className="text-xs text-primary hover:underline mt-1">
-                Learn how billing works
-              </a>
-            </div>
+            {summary?.history.length ? (
+              <div className="divide-y">
+                {summary.history.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between gap-3 py-3">
+                    <div>
+                      <p className="text-sm font-medium">{invoice.id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(invoice.date).toLocaleDateString()} • {invoice.status}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {(invoice.amount_minor / 100).toFixed(2)} {invoice.currency}
+                      </p>
+                      <div className="flex gap-2 justify-end">
+                        {invoice.hosted_invoice_url && (
+                          <a
+                            href={invoice.hosted_invoice_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Open
+                          </a>
+                        )}
+                        {invoice.invoice_pdf && (
+                          <a
+                            href={invoice.invoice_pdf}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            PDF
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-6 text-center">
+                <FileText className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No invoices yet. They will appear here after your first successful billing cycle.
+                </p>
+              </div>
+            )}
           </div>
         </details>
       </Card>

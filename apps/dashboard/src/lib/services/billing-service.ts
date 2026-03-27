@@ -4,6 +4,8 @@ export {
   updateSubscriptionPlan,
   cancelSubscription,
   getPaymentMethodSetupIntent,
+  syncUsageDerivedAddons,
+  listBillingInvoices,
   handlePaymentFailure,
   retryFailedPayment,
   checkSalonPaymentAccess,

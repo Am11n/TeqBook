@@ -54,7 +54,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
       public_sort_order: publicSortOrder.trim()
         ? Number.parseInt(publicSortOrder.trim(), 10) || null
         : null,
-    });
+    }, salon.plan);
 
     if (createdError || !createdData) {
       setError(createdError ?? "Failed to create employee");

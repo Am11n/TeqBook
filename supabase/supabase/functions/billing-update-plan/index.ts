@@ -14,6 +14,12 @@ import {
   checkRateLimit,
   createRateLimitErrorResponse,
 } from "../_shared/rate-limit.ts";
+import {
+  computeExtraQuantity,
+  getBaseLimits,
+  getBillingPriceConfig,
+  isValidStripePriceId,
+} from "../_shared/billing.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -74,15 +80,8 @@ interface UpdatePlanRequest {
   salon_id: string;
   subscription_id: string;
   new_plan: "starter" | "pro" | "business";
+  idempotency_key?: string;
 }
-
-// Plan to Stripe price ID mapping
-// IMPORTANT: These are fallback values. Set actual Price IDs in Supabase Edge Functions secrets!
-const PLAN_PRICE_IDS: Record<string, string> = {
-  starter: Deno.env.get("STRIPE_PRICE_STARTER") || "",
-  pro: Deno.env.get("STRIPE_PRICE_PRO") || "",
-  business: Deno.env.get("STRIPE_PRICE_BUSINESS") || "",
-};
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -172,27 +171,15 @@ serve(async (req) => {
       );
     }
 
-    // Debug: Log what we're getting from environment
-    console.log("Price IDs from environment:", {
-      starter: Deno.env.get("STRIPE_PRICE_STARTER"),
-      pro: Deno.env.get("STRIPE_PRICE_PRO"),
-      business: Deno.env.get("STRIPE_PRICE_BUSINESS"),
-    });
-    console.log("PLAN_PRICE_IDS object:", PLAN_PRICE_IDS);
-    
-    const newPriceId = PLAN_PRICE_IDS[body.new_plan];
-    console.log(`Selected price ID for ${body.new_plan}:`, newPriceId);
-    
-    if (!newPriceId || !newPriceId.startsWith("price_")) {
+    const priceConfig = getBillingPriceConfig();
+    const newPriceId = priceConfig.planPriceIds[body.new_plan];
+
+    if (!isValidStripePriceId(newPriceId)) {
       return new Response(
         JSON.stringify({ 
           error: `Price ID not configured for plan: ${body.new_plan}`,
-          details: `Please set STRIPE_PRICE_${body.new_plan.toUpperCase()} in Supabase Edge Functions secrets with your actual Stripe price ID (starts with 'price_'). Current value: ${newPriceId}`,
+          details: `Please set STRIPE_PRICE_${body.new_plan.toUpperCase()} in Supabase Edge Functions secrets with your actual Stripe price ID (starts with 'price_'). Current value: ${String(newPriceId)}`,
           hint: "Go to Stripe Dashboard → Products → [Your Product] → Pricing to find the price ID. After setting the secret, you must REDEPLOY the Edge Function for changes to take effect.",
-          debug: {
-            env_var: Deno.env.get(`STRIPE_PRICE_${body.new_plan.toUpperCase()}`),
-            plan_price_ids: PLAN_PRICE_IDS,
-          }
         }),
         {
           status: 400,
@@ -286,13 +273,70 @@ serve(async (req) => {
     // Option 2: Wait for payment to complete
     // For now, we'll prevent the update and suggest completing payment first
 
-    // Update subscription with new price
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const [{ count: activeEmployeesCount }, { data: salonRow }] = await Promise.all([
+      supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("salon_id", body.salon_id)
+        .eq("is_active", true),
+      supabase
+        .from("salons")
+        .select("supported_languages")
+        .eq("id", body.salon_id)
+        .maybeSingle(),
+    ]);
+
+    const activeEmployees = activeEmployeesCount ?? 0;
+    const activeLanguages = Array.isArray(salonRow?.supported_languages)
+      ? salonRow.supported_languages.length
+      : 0;
+    const baseLimits = getBaseLimits(body.new_plan);
+    const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
+    const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
+
+    const extraStaffPriceId = priceConfig.addonPriceIds.extra_staff;
+    const extraLanguagesPriceId = priceConfig.addonPriceIds.extra_languages;
+
+    const currentItems = subscription.items.data;
+    const planPriceSet = new Set(Object.values(priceConfig.planPriceIds));
+    const planItem =
+      currentItems.find((item) => planPriceSet.has(item.price.id)) ??
+      currentItems[0];
+    const updateItems: Stripe.SubscriptionUpdateParams.Item[] = [
+      { id: planItem.id, price: newPriceId },
+    ];
+    const itemsByPriceId = new Map(
+      currentItems
+        .map((item) => [item.price.id, item] as const)
+    );
+
+    const applyAddonItem = (
+      addonPriceId: string,
+      quantity: number,
+    ) => {
+      if (!isValidStripePriceId(addonPriceId)) return;
+      const existing = itemsByPriceId.get(addonPriceId);
+      if (existing && quantity <= 0) {
+        updateItems.push({ id: existing.id, deleted: true });
+        return;
+      }
+      if (existing) {
+        updateItems.push({ id: existing.id, quantity });
+        return;
+      }
+      if (quantity > 0) {
+        updateItems.push({ price: addonPriceId, quantity });
+      }
+    };
+
+    applyAddonItem(extraStaffPriceId, extraStaffQty);
+    applyAddonItem(extraLanguagesPriceId, extraLanguagesQty);
+
+    // Update subscription with new price and usage-derived addons.
     // Only use proration_behavior for active subscriptions
     const updateParams: Stripe.SubscriptionUpdateParams = {
-      items: [{
-        id: subscription.items.data[0].id,
-        price: newPriceId,
-      }],
+      items: updateItems,
       metadata: {
         ...subscription.metadata,
         plan: body.new_plan,
@@ -306,7 +350,13 @@ serve(async (req) => {
 
     let updatedSubscription: Stripe.Subscription;
     try {
-      updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams);
+      const requestIdempotencyKey =
+        body.idempotency_key ||
+        req.headers.get("x-idempotency-key") ||
+        `update-plan:${body.salon_id}:${body.subscription_id}:${body.new_plan}`;
+      updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams, {
+        idempotencyKey: requestIdempotencyKey,
+      });
     } catch (updateError) {
       // Handle Stripe errors, especially for canceled subscriptions
       if (updateError instanceof Stripe.errors.StripeError) {
@@ -337,7 +387,6 @@ serve(async (req) => {
     const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
 
     // Update salon with new plan using service role key
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { error: updateError } = await supabase
       .from("salons")
       .update({

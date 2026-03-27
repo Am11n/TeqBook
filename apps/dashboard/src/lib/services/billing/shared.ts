@@ -54,6 +54,29 @@ export interface SetupPaymentMethodResponse {
   setup_intent_id: string;
 }
 
+export interface BillingInvoiceResponse {
+  id: string;
+  date: string;
+  amount_minor: number;
+  currency: string;
+  status: string;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+}
+
+export interface ListBillingInvoicesResponse {
+  invoices: BillingInvoiceResponse[];
+}
+
+export interface SyncAddonUsageResponse {
+  synced: boolean;
+  reason?: string;
+  active_employees?: number;
+  active_languages?: number;
+  extra_staff_qty?: number;
+  extra_languages_qty?: number;
+}
+
 export async function safeFetch<T>(
   url: string,
   options: RequestInit

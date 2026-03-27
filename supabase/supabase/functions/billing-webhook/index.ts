@@ -11,6 +11,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  getBillingPriceConfig,
+  getPlanFromPriceId,
+  type BillingPlan,
+} from "../_shared/billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +42,78 @@ function jsonResponse(
       [REQUEST_ID_HEADER]: requestId,
     },
   });
+}
+
+async function syncSubscriptionProjection(
+  supabase: ReturnType<typeof createClient>,
+  subscription: Stripe.Subscription,
+  priceConfig: ReturnType<typeof getBillingPriceConfig>,
+) {
+  const salonId = subscription.metadata.salon_id;
+  if (!salonId) {
+    console.warn("Subscription missing salon_id in metadata:", subscription.id);
+    return;
+  }
+
+  const planPriceSet = new Set(Object.values(priceConfig.planPriceIds));
+  const itemByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
+  const planItem = subscription.items.data.find((item) => planPriceSet.has(item.price.id));
+
+  const planFromPrice = planItem ? getPlanFromPriceId(planItem.price.id, priceConfig.planPriceIds) : null;
+  const plan = (planFromPrice ?? (subscription.metadata.plan as BillingPlan | undefined) ?? null);
+  const currentPeriodEndIso = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : null;
+
+  const addonRows = [
+    {
+      salon_id: salonId,
+      type: "extra_staff",
+      qty: itemByPrice.get(priceConfig.addonPriceIds.extra_staff)?.quantity ?? 0,
+    },
+    {
+      salon_id: salonId,
+      type: "extra_languages",
+      qty: itemByPrice.get(priceConfig.addonPriceIds.extra_languages)?.quantity ?? 0,
+    },
+  ] as const;
+
+  const rowsToUpsert = addonRows.filter((row) => row.qty > 0);
+  const rowsToDeleteTypes = addonRows.filter((row) => row.qty <= 0).map((row) => row.type);
+
+  if (rowsToUpsert.length > 0) {
+    const { error: addonUpsertError } = await supabase
+      .from("addons")
+      .upsert(rowsToUpsert, { onConflict: "salon_id,type" });
+    if (addonUpsertError) {
+      console.error("Failed to upsert addon projection from webhook:", addonUpsertError);
+    }
+  }
+
+  if (rowsToDeleteTypes.length > 0) {
+    const { error: addonDeleteError } = await supabase
+      .from("addons")
+      .delete()
+      .eq("salon_id", salonId)
+      .in("type", rowsToDeleteTypes);
+    if (addonDeleteError) {
+      console.error("Failed to delete zero-qty addon projection rows:", addonDeleteError);
+    }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    billing_subscription_id: subscription.status === "canceled" ? null : subscription.id,
+    current_period_end: currentPeriodEndIso,
+  };
+  if (plan) updatePayload.plan = plan;
+
+  const { error: updateError } = await supabase
+    .from("salons")
+    .update(updatePayload)
+    .eq("id", salonId);
+  if (updateError) {
+    console.error("Error updating salon billing projection:", updateError);
+  }
 }
 
 serve(async (req) => {
@@ -135,6 +212,7 @@ serve(async (req) => {
 
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const priceConfig = getBillingPriceConfig();
 
     // Idempotency gate: store event first, skip if already processed.
     const { error: insertWebhookError } = await supabase
@@ -171,31 +249,6 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const salonId = subscription.metadata.salon_id;
 
-        if (!salonId) {
-          console.warn("Subscription missing salon_id in metadata:", subscription.id);
-          break;
-        }
-
-        // If subscription is canceled, clear subscription_id but keep current_period_end
-        if (subscription.status === "canceled" || subscription.canceled_at) {
-          const { error: updateError } = await supabase
-            .from("salons")
-            .update({
-              billing_subscription_id: null,
-              current_period_end: subscription.current_period_end 
-                ? new Date(subscription.current_period_end * 1000).toISOString()
-                : null,
-            })
-            .eq("id", salonId);
-
-          if (updateError) {
-            console.error("Error updating salon after subscription cancellation:", updateError);
-          } else {
-            console.log(`Cleared subscription for salon ${salonId} - subscription was canceled`);
-          }
-          break;
-        }
-
         // Do not activate plan for incomplete subscriptions.
         if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
           const { error: updateError } = await supabase
@@ -213,48 +266,13 @@ serve(async (req) => {
           break;
         }
 
-        // Update salon with subscription details for active/trialing states
-        const { error: updateError } = await supabase
-          .from("salons")
-          .update({
-            billing_subscription_id: subscription.id,
-            plan: subscription.metadata.plan || null,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          })
-          .eq("id", salonId);
-
-        if (updateError) {
-          console.error("Error updating salon subscription:", updateError);
-        } else {
-          console.log(`Updated salon ${salonId} with subscription ${subscription.id}`);
-        }
+        await syncSubscriptionProjection(supabase, subscription, priceConfig);
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        const salonId = subscription.metadata.salon_id;
-
-        if (!salonId) {
-          console.warn("Subscription missing salon_id in metadata:", subscription.id);
-          break;
-        }
-
-        // Optionally: Set plan to null or a default value when subscription is cancelled
-        // For now, we'll keep the plan but clear the subscription_id
-        const { error: updateError } = await supabase
-          .from("salons")
-          .update({
-            billing_subscription_id: null,
-            // Optionally: plan: null, or keep the plan for grace period
-          })
-          .eq("id", salonId);
-
-        if (updateError) {
-          console.error("Error updating salon after subscription deletion:", updateError);
-        } else {
-          console.log(`Cleared subscription for salon ${salonId}`);
-        }
+        await syncSubscriptionProjection(supabase, subscription, priceConfig);
         break;
       }
 
@@ -268,11 +286,11 @@ serve(async (req) => {
           const salonId = subscription.metadata.salon_id;
 
           if (salonId) {
-            // Update current_period_end and reset payment failure status
+            // Update projection and reset payment failure status
+            await syncSubscriptionProjection(supabase, subscription, priceConfig);
             const { error: updateError } = await supabase
               .from("salons")
               .update({
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
                 payment_failure_count: 0,
                 payment_failed_at: null,
                 last_payment_retry_at: null,
@@ -490,6 +508,31 @@ serve(async (req) => {
       case "invoice.upcoming": {
         const invoice = event.data.object as Stripe.Invoice;
         console.log("Invoice upcoming received - SMS overage hook is preview-only in this phase", {
+          invoice_id: invoice.id,
+          customer_id: invoice.customer,
+          subscription_id: invoice.subscription,
+        });
+        break;
+      }
+
+      case "invoice.payment_action_required": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
+        if (customerId) {
+          const { error: updateError } = await supabase
+            .from("salons")
+            .update({ payment_status: "requires_action" })
+            .eq("billing_customer_id", customerId);
+          if (updateError) {
+            console.error("Failed to set requires_action payment status:", updateError);
+          }
+        }
+        break;
+      }
+
+      case "invoice.finalization_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.warn("Invoice finalization failed", {
           invoice_id: invoice.id,
           customer_id: invoice.customer,
           subscription_id: invoice.subscription,

@@ -4,6 +4,8 @@ export {
   createStripeSubscription,
   updateSubscriptionPlan,
   cancelSubscription,
+  syncUsageDerivedAddons,
+  listBillingInvoices,
 } from "./subscription";
 
 export { getPaymentMethodSetupIntent } from "./payment-setup";

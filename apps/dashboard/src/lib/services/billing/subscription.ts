@@ -7,6 +7,8 @@ import {
   type CreateSubscriptionResponse,
   type UpdatePlanResponse,
   type CancelSubscriptionResponse,
+  type ListBillingInvoicesResponse,
+  type SyncAddonUsageResponse,
 } from "./shared";
 
 function isRecoverableSubscriptionStateError(message: string): boolean {
@@ -52,6 +54,7 @@ export async function createStripeSubscription(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `create-subscription:${salonId}:${customerId}:${plan}`,
         },
         body: JSON.stringify({
           salon_id: salonId,
@@ -138,6 +141,7 @@ export async function updateSubscriptionPlan(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `update-plan:${salonId}:${subscriptionId}:${newPlan}`,
         },
         body: JSON.stringify({
           salon_id: salonId,
@@ -281,5 +285,71 @@ export async function cancelSubscription(
       data: null,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+
+export async function syncUsageDerivedAddons(
+  salonId: string,
+): Promise<{ data: SyncAddonUsageResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    const { data, error } = await safeFetch<SyncAddonUsageResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-sync-addon-usage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `sync-addon-usage:${salonId}:${Date.now()}`,
+        },
+        body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
+    if (!error && data?.synced && session?.user) {
+      await logBillingEvent({
+        userId: session.user.id,
+        salonId,
+        action: "addon_synced",
+        resourceId: salonId,
+        metadata: {
+          active_employees: data.active_employees,
+          active_languages: data.active_languages,
+          extra_staff_qty: data.extra_staff_qty,
+          extra_languages_qty: data.extra_languages_qty,
+        },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {});
+    }
+    return { data, error };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function listBillingInvoices(
+  salonId: string,
+): Promise<{ data: ListBillingInvoicesResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<ListBillingInvoicesResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-list-invoices`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        },
+        body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }

@@ -26,6 +26,14 @@ function getBillingState(
     return "past_due";
   }
 
+  if (
+    hasSubscription &&
+    typeof salon?.billing_subscription_id === "string" &&
+    Boolean((salon as Salon & { cancel_at_period_end?: boolean }).cancel_at_period_end)
+  ) {
+    return "cancelling";
+  }
+
   // Active subscription
   if (hasSubscription) return "active";
 
@@ -59,6 +67,12 @@ interface CurrentPlanCardProps {
     billingTitle?: string;
     billingDescription?: string;
   };
+  usage?: {
+    employeesActive: number;
+    employeesIncluded: number | null;
+    languagesActive: number;
+    languagesIncluded: number | null;
+  } | null;
 }
 
 // ─── Component ──────────────────────────────────────
@@ -73,6 +87,7 @@ export function CurrentPlanCard({
   onUpdatePaymentMethod,
   onShowCancelDialog,
   translations: t,
+  usage,
 }: CurrentPlanCardProps) {
   const PlanIcon = activePlan.icon;
   const state = getBillingState(hasSubscription, salon);
@@ -241,13 +256,13 @@ export function CurrentPlanCard({
         <div className="mt-3 pt-3 border-t space-y-2">
           <SettingsLimitBar
             label="Employees"
-            current={0} // Will be populated by parent
-            limit={activePlan.limits.employees}
+            current={usage?.employeesActive ?? 0}
+            limit={usage?.employeesIncluded ?? activePlan.limits.employees}
           />
           <SettingsLimitBar
             label="Languages"
-            current={0} // Will be populated by parent
-            limit={activePlan.limits.languages}
+            current={usage?.languagesActive ?? 0}
+            limit={usage?.languagesIncluded ?? activePlan.limits.languages}
           />
         </div>
       </div>

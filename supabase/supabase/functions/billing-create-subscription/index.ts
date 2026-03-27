@@ -11,6 +11,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
+import {
+  computeExtraQuantity,
+  getBaseLimits,
+  getBillingPriceConfig,
+  isValidStripePriceId,
+} from "../_shared/billing.ts";
 
 function extractIdentifier(
   req: Request,
@@ -83,16 +89,8 @@ interface CreateSubscriptionRequest {
   salon_id: string;
   customer_id: string;
   plan: "starter" | "pro" | "business";
+  idempotency_key?: string;
 }
-
-// Plan to Stripe price ID mapping
-// IMPORTANT: Set actual Price IDs in Supabase Edge Functions secrets!
-// You can find them in Stripe Dashboard → Products → [Your Product] → Pricing
-const PLAN_PRICE_IDS: Record<string, string> = {
-  starter: Deno.env.get("STRIPE_PRICE_STARTER") || "",
-  pro: Deno.env.get("STRIPE_PRICE_PRO") || "",
-  business: Deno.env.get("STRIPE_PRICE_BUSINESS") || "",
-};
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -181,12 +179,13 @@ serve(async (req) => {
       );
     }
 
-    const priceId = PLAN_PRICE_IDS[body.plan];
-    if (!priceId || !priceId.startsWith("price_")) {
+    const priceConfig = getBillingPriceConfig();
+    const priceId = priceConfig.planPriceIds[body.plan];
+    if (!isValidStripePriceId(priceId)) {
       return new Response(
         JSON.stringify({ 
           error: `Price ID not configured for plan: ${body.plan}`,
-          details: `Please set STRIPE_PRICE_${body.plan.toUpperCase()} in Supabase Edge Functions secrets with your actual Stripe price ID (starts with 'price_'). Current value: ${priceId}`,
+          details: `Please set STRIPE_PRICE_${body.plan.toUpperCase()} in Supabase Edge Functions secrets with your actual Stripe price ID (starts with 'price_'). Current value: ${String(priceId)}`,
           hint: "Go to Stripe Dashboard → Products → [Your Product] → Pricing to find the price ID"
         }),
         {
@@ -216,10 +215,46 @@ serve(async (req) => {
       console.warn("Could not retrieve customer default payment method:", customerErr);
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Load active usage to derive add-on quantities.
+    const [{ count: activeEmployeesCount }, { data: salonRow }] = await Promise.all([
+      supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("salon_id", body.salon_id)
+        .eq("is_active", true),
+      supabase
+        .from("salons")
+        .select("supported_languages")
+        .eq("id", body.salon_id)
+        .maybeSingle(),
+    ]);
+
+    const activeEmployees = activeEmployeesCount ?? 0;
+    const activeLanguages = Array.isArray(salonRow?.supported_languages)
+      ? salonRow.supported_languages.length
+      : 0;
+
+    const baseLimits = getBaseLimits(body.plan);
+    const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
+    const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
+
+    const subscriptionItems: Stripe.SubscriptionCreateParams.Item[] = [{ price: priceId }];
+    const extraStaffPriceId = priceConfig.addonPriceIds.extra_staff;
+    const extraLanguagesPriceId = priceConfig.addonPriceIds.extra_languages;
+
+    if (extraStaffQty > 0 && isValidStripePriceId(extraStaffPriceId)) {
+      subscriptionItems.push({ price: extraStaffPriceId, quantity: extraStaffQty });
+    }
+    if (extraLanguagesQty > 0 && isValidStripePriceId(extraLanguagesPriceId)) {
+      subscriptionItems.push({ price: extraLanguagesPriceId, quantity: extraLanguagesQty });
+    }
+
     // Create Stripe subscription
     const subscriptionParams: Stripe.SubscriptionCreateParams = {
       customer: body.customer_id,
-      items: [{ price: priceId }],
+      items: subscriptionItems,
       metadata: {
         salon_id: body.salon_id,
         plan: body.plan,
@@ -237,7 +272,13 @@ serve(async (req) => {
       subscriptionParams.default_payment_method = defaultPaymentMethodId;
     }
 
-    const subscription = await stripe.subscriptions.create(subscriptionParams);
+    const requestIdempotencyKey =
+      body.idempotency_key ||
+      req.headers.get("x-idempotency-key") ||
+      `create-subscription:${body.salon_id}:${body.customer_id}:${body.plan}`;
+    const subscription = await stripe.subscriptions.create(subscriptionParams, {
+      idempotencyKey: requestIdempotencyKey,
+    });
 
     // Calculate current period end
     const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
@@ -250,7 +291,6 @@ serve(async (req) => {
       subscription.status === "active" || subscription.status === "trialing";
 
     // Update salon billing linkage using service role key
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const salonUpdate: Record<string, unknown> = {
       billing_subscription_id: subscription.id,
     };

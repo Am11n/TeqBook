@@ -6,6 +6,7 @@ import {
   updateSubscriptionPlan,
   cancelSubscription,
   getPaymentMethodSetupIntent,
+  syncUsageDerivedAddons,
 } from "@/lib/services/billing-service";
 import type { PlanType } from "@/lib/types";
 
@@ -205,6 +206,17 @@ export function useBillingActions() {
     return data.client_secret;
   };
 
+  const handleSyncUsageAddons = async () => {
+    if (!salon?.id) return false;
+    const { error: syncError } = await syncUsageDerivedAddons(salon.id);
+    if (syncError) {
+      setError(syncError);
+      return false;
+    }
+    await refreshSalon();
+    return true;
+  };
+
   return {
     salon,
     actionLoading,
@@ -215,6 +227,7 @@ export function useBillingActions() {
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,
+    handleSyncUsageAddons,
   };
 }
 

@@ -15,6 +15,11 @@ import {
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
 import { canAddEmployee, getEffectiveLimit } from "./plan-limits-service";
 import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
+import { syncUsageDerivedAddons } from "@/lib/services/billing-service";
+
+async function syncUsageDerivedAddonsBestEffort(salonId: string): Promise<void> {
+  await syncUsageDerivedAddons(salonId).catch(() => {});
+}
 
 /**
  * Get employees for current salon
@@ -124,6 +129,7 @@ export async function createEmployee(
     }).catch(() => {
       // Silent fail - don't block employee creation if audit fails
     });
+    await syncUsageDerivedAddonsBestEffort(input.salon_id);
   }
 
   return result;
@@ -207,6 +213,7 @@ export async function updateEmployee(
     }).catch(() => {
       // Silent fail - don't block employee update if audit fails
     });
+    await syncUsageDerivedAddonsBestEffort(salonId);
   }
 
   return result;
@@ -248,6 +255,7 @@ export async function deleteEmployee(
     }).catch(() => {
       // Silent fail - don't block employee deletion if audit fails
     });
+    await syncUsageDerivedAddonsBestEffort(salonId);
   }
 
   return result;
