@@ -18,3 +18,28 @@ verify_jwt = false
 [functions.process-waitlist-expiry]
 # Intended for scheduled invocation.
 verify_jwt = false
+
+[functions.billing-create-customer]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false
+
+[functions.billing-create-subscription]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false
+
+[functions.billing-update-plan]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false
+
+[functions.billing-cancel-subscription]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false
+
+[functions.billing-update-payment-method]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false
