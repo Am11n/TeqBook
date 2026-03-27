@@ -6,7 +6,10 @@ export {
   cancelSubscription,
 } from "./subscription";
 
-export { getPaymentMethodSetupIntent } from "./payment-setup";
+export {
+  getPaymentMethodSetupIntent,
+  finalizeSetupIntentDefaultPaymentMethod,
+} from "./payment-setup";
 
 export {
   handlePaymentFailure,

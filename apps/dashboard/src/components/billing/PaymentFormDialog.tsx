@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Elements } from "@stripe/react-stripe-js";
-import { PaymentForm } from "./PaymentForm";
+import { PaymentForm, type PaymentFormSuccessDetails } from "./PaymentForm";
 import { stripePromise, stripePublishableKey } from "@/lib/utils/billing/stripe-utils";
 
 interface PaymentFormDialogProps {
@@ -16,7 +16,7 @@ interface PaymentFormDialogProps {
   onOpenChange: (open: boolean) => void;
   clientSecret: string | null;
   paymentFormType: "subscription" | "payment_method";
-  onSuccess: () => void;
+  onSuccess: (details?: PaymentFormSuccessDetails) => void;
   onCancel: () => void;
 }
 

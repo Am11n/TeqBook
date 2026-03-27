@@ -4,6 +4,7 @@ export {
   updateSubscriptionPlan,
   cancelSubscription,
   getPaymentMethodSetupIntent,
+  finalizeSetupIntentDefaultPaymentMethod,
   handlePaymentFailure,
   retryFailedPayment,
   checkSalonPaymentAccess,

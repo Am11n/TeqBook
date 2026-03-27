@@ -54,6 +54,10 @@ export interface SetupPaymentMethodResponse {
   setup_intent_id: string;
 }
 
+export interface FinalizeSetupIntentResponse {
+  success: boolean;
+}
+
 export interface BillingInvoiceResponse {
   id: string;
   date: string;

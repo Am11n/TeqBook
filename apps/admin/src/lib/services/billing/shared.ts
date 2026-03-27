@@ -54,6 +54,10 @@ export interface SetupPaymentMethodResponse {
   setup_intent_id: string;
 }
 
+export interface FinalizeSetupIntentResponse {
+  success: boolean;
+}
+
 export async function safeFetch<T>(
   url: string,
   options: RequestInit

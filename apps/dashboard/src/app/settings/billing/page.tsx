@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
+import { finalizeSetupIntentDefaultPaymentMethod } from "@/lib/services/billing-service";
 import { getPlans, getAddonDisplay } from "@/lib/utils/billing/billing-utils";
 import { supabase } from "@/lib/supabase-client";
 import { CurrentPlanCard } from "@/components/billing/CurrentPlanCard";
@@ -34,11 +36,13 @@ export default function BillingSettingsPage() {
     salon,
     actionLoading,
     error,
+    setError,
     hasSubscription,
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,
   } = useBillingActions();
+  const { refreshSalon } = useCurrentSalon();
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
@@ -60,6 +64,7 @@ export default function BillingSettingsPage() {
   const [smsUsageIsStale, setSmsUsageIsStale] = useState(false);
   const [smsUsageMessage, setSmsUsageMessage] = useState<string | null>(null);
   const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
+  const pendingSetupIntentIdRef = useRef<string | null>(null);
 
   const plans = getPlans({
     planStarter: t.planStarter,
@@ -91,12 +96,35 @@ export default function BillingSettingsPage() {
     }
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (details?: { setupIntentId?: string }) => {
+    const setupIntentId =
+      details?.setupIntentId ?? pendingSetupIntentIdRef.current ?? undefined;
+
+    if (
+      paymentFormType === "payment_method" &&
+      salon?.id &&
+      salon.billing_customer_id &&
+      setupIntentId
+    ) {
+      const { error: finalizeError } = await finalizeSetupIntentDefaultPaymentMethod(
+        salon.id,
+        salon.billing_customer_id,
+        setupIntentId
+      );
+      if (finalizeError) {
+        setError(finalizeError);
+        return;
+      }
+    }
+
+    pendingSetupIntentIdRef.current = null;
     setShowPaymentForm(false);
     setClientSecret(null);
     await refetch();
+    await refreshSalon();
     await new Promise((resolve) => setTimeout(resolve, 1500));
     await refetch();
+    await refreshSalon();
   };
 
   const handleCancelConfirm = async () => {
@@ -107,9 +135,10 @@ export default function BillingSettingsPage() {
   };
 
   const handleUpdatePayment = async () => {
-    const secret = await handleUpdatePaymentMethod();
-    if (secret) {
-      setClientSecret(secret);
+    const setup = await handleUpdatePaymentMethod();
+    if (setup) {
+      pendingSetupIntentIdRef.current = setup.setupIntentId;
+      setClientSecret(setup.clientSecret);
       setPaymentFormType("payment_method");
       setShowPaymentForm(true);
     }
@@ -440,13 +469,20 @@ export default function BillingSettingsPage() {
 
       <PaymentFormDialog
         open={showPaymentForm}
-        onOpenChange={setShowPaymentForm}
+        onOpenChange={(open) => {
+          setShowPaymentForm(open);
+          if (!open) {
+            setClientSecret(null);
+            pendingSetupIntentIdRef.current = null;
+          }
+        }}
         clientSecret={clientSecret}
         paymentFormType={paymentFormType}
         onSuccess={handlePaymentSuccess}
         onCancel={() => {
           setShowPaymentForm(false);
           setClientSecret(null);
+          pendingSetupIntentIdRef.current = null;
         }}
       />
 

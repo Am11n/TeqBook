@@ -9,6 +9,11 @@ import {
 } from "@/lib/services/billing-service";
 import type { PlanType } from "@/lib/types";
 
+export type UpdatePaymentMethodSetupResult = {
+  clientSecret: string;
+  setupIntentId: string;
+};
+
 export function useBillingActions() {
   const { salon, refreshSalon, user } = useCurrentSalon();
   const [actionLoading, setActionLoading] = useState(false);
@@ -184,8 +189,8 @@ export function useBillingActions() {
     return true;
   };
 
-  const handleUpdatePaymentMethod = async () => {
-    if (!salon?.id || !salon?.billing_customer_id) return;
+  const handleUpdatePaymentMethod = async (): Promise<UpdatePaymentMethodSetupResult | null> => {
+    if (!salon?.id || !salon?.billing_customer_id) return null;
 
     setActionLoading(true);
     setError(null);
@@ -202,7 +207,10 @@ export function useBillingActions() {
     }
 
     setActionLoading(false);
-    return data.client_secret;
+    return {
+      clientSecret: data.client_secret,
+      setupIntentId: data.setup_intent_id,
+    };
   };
 
   return {

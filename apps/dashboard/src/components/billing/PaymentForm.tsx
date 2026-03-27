@@ -4,9 +4,13 @@ import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
+export type PaymentFormSuccessDetails = {
+  setupIntentId?: string;
+};
+
 interface PaymentFormProps {
   clientSecret: string;
-  onSuccess: () => void;
+  onSuccess: (details?: PaymentFormSuccessDetails) => void;
   onCancel: () => void;
   mode?: "payment" | "setup";
 }
@@ -38,7 +42,7 @@ export function PaymentForm({
 
     if (mode === "setup") {
       // For setup intents (payment method updates)
-      const { error: confirmError } = await stripe.confirmSetup({
+      const { error: confirmError, setupIntent } = await stripe.confirmSetup({
         elements,
         clientSecret,
         confirmParams: {
@@ -51,7 +55,9 @@ export function PaymentForm({
         setError(confirmError.message || "Setup failed");
         setProcessing(false);
       } else {
-        onSuccess();
+        onSuccess(
+          setupIntent?.id ? { setupIntentId: setupIntent.id } : undefined
+        );
       }
     } else {
       // For payment intents (subscriptions)

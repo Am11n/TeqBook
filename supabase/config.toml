@@ -43,3 +43,8 @@ verify_jwt = false
 # Browser-triggered; preflight OPTIONS has no JWT.
 # Function performs its own Bearer-token auth in code.
 verify_jwt = false
+
+[functions.billing-finalize-setup-intent]
+# Browser-triggered; preflight OPTIONS has no JWT.
+# Function performs its own Bearer-token auth in code.
+verify_jwt = false

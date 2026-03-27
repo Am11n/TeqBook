@@ -4,6 +4,7 @@ export {
   updateSubscriptionPlan,
   cancelSubscription,
   getPaymentMethodSetupIntent,
+  finalizeSetupIntentDefaultPaymentMethod,
   syncUsageDerivedAddons,
   listBillingInvoices,
   handlePaymentFailure,
