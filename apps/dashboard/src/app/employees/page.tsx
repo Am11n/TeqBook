@@ -66,7 +66,6 @@ export default function EmployeesPage() {
   });
 
   const planLimits = usePlanLimits({ employees: employees.length });
-  const isAtLimit = planLimits.employees?.blocked ?? false;
 
   const handleUpgrade = () => router.push("/settings/billing");
 
@@ -90,7 +89,7 @@ export default function EmployeesPage() {
             title: t.emptyTitle,
             description: t.emptyActionDescription ?? t.emptyDescription,
             action: (
-              <Button size="sm" onClick={() => setIsDialogOpen(true)} disabled={isAtLimit}>
+              <Button size="sm" onClick={() => setIsDialogOpen(true)}>
                 {t.addButton}
               </Button>
             ),
@@ -115,7 +114,6 @@ export default function EmployeesPage() {
             label: t.addButton,
             onClick: () => setIsDialogOpen(true),
             priority: "primary",
-            disabled: isAtLimit,
           },
         ]}
         stats={buildStatsItems(t, stats)}

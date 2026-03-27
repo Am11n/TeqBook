@@ -48,7 +48,7 @@ export function SettingsLimitBar({
           className={cn(
             "h-full rounded-full transition-all duration-300",
             isOverLimit
-              ? "bg-destructive"
+              ? "bg-primary/70"
               : isAtLimit
                 ? "bg-muted-foreground/50"
                 : "bg-primary/40",

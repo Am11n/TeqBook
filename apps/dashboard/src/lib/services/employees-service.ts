@@ -95,23 +95,12 @@ export async function createEmployee(
     return { data: null, error: "Phone number must be at least 8 characters" };
   }
 
-  // Check plan limits if plan is provided
+  // Soft allow: staff beyond included plan seats is billed as usage-derived add-ons.
+  // Still surface limit check errors (e.g. DB), but never hard-block creation.
   if (salonPlan !== undefined) {
-    const { canAdd, currentCount, limit, error: limitError } = await canAddEmployee(
-      input.salon_id,
-      salonPlan
-    );
-
+    const { error: limitError } = await canAddEmployee(input.salon_id, salonPlan);
     if (limitError) {
       return { data: null, error: limitError };
-    }
-
-    if (!canAdd && limit !== null) {
-      return {
-        data: null,
-        error: `Employee limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more staff seats.`,
-        limitReached: true,
-      };
     }
   }
 
@@ -159,36 +148,14 @@ export async function updateEmployee(
     return { data: null, error: "Phone number must be at least 8 characters" };
   }
 
-  // Check plan limits if reactivating an inactive employee
-  // Only count currently ACTIVE employees against the limit, since reactivating
-  // an existing employee doesn't increase the total headcount.
+  // Soft allow: reactivating staff when already at included count may add billable seats.
   if (input.is_active === true && salonPlan !== undefined) {
-    // Get current employee to check if it's being reactivated
     const { data: employeeData } = await getEmployeeWithServices(salonId, employeeId);
     const currentEmployee = employeeData?.employee;
-    
-    // If employee was inactive and is being reactivated, check active count vs limit
     if (currentEmployee && currentEmployee.is_active === false) {
-      const { data: allEmployees, error: listError } = await getEmployeesForCurrentSalon(salonId);
-
-      if (listError) {
-        return { data: null, error: listError };
-      }
-
-      const activeCount = allEmployees?.filter((e) => e.is_active).length ?? 0;
-
-      const { limit, error: limitError } = await getEffectiveLimit(salonId, salonPlan, "employees");
-
+      const { error: limitError } = await getEffectiveLimit(salonId, salonPlan, "employees");
       if (limitError) {
         return { data: null, error: limitError };
-      }
-
-      if (limit !== null && activeCount >= limit) {
-        return {
-          data: null,
-          error: `Active employee limit reached. Current: ${activeCount}/${limit}. Please upgrade your plan or deactivate another employee first.`,
-          limitReached: true,
-        };
       }
     }
   }

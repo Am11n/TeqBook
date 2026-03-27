@@ -968,8 +968,9 @@ export const en: TranslationNamespaces = {
     bookingLanguagesDescription: "Languages customers can use when booking.",
     searchLanguages: "Search languages...",
     languagesUsed: "Languages used",
-    upgradePlan: "Upgrade plan",
-    languageLimitReached: "Language limit reached. Upgrade to add more.",
+    upgradePlan: "Billing & add-ons",
+    languageLimitReached:
+      "You’ve used your included languages. Extra languages are billed — open Billing to review.",
     recommendedLanguages: "Recommended",
     moreLanguages: "More languages",
     showMoreLanguages: "Show more languages",

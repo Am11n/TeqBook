@@ -180,7 +180,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
       ),
     );
 
-    const { error: toggleError, limitReached } = await toggleEmployeeActive(
+    const { error: toggleError } = await toggleEmployeeActive(
       salon.id,
       employeeId,
       currentStatus,

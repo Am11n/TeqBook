@@ -993,8 +993,9 @@ export const nb: TranslationNamespaces = {
     bookingLanguagesDescription: "Språk kundene kan bruke ved booking.",
     searchLanguages: "Søk etter språk...",
     languagesUsed: "Språk brukt",
-    upgradePlan: "Oppgrader plan",
-    languageLimitReached: "Språkgrensen er nådd. Oppgrader for å legge til flere.",
+    upgradePlan: "Fakturering og tillegg",
+    languageLimitReached:
+      "Du har brukt inkluderte språk. Ekstra språk faktureres — se Fakturering.",
     recommendedLanguages: "Anbefalt",
     moreLanguages: "Flere språk",
     showMoreLanguages: "Vis flere språk",

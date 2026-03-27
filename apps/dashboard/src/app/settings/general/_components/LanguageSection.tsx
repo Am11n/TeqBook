@@ -44,11 +44,6 @@ export function LanguageSection({
   const filteredRecommended = filter(recommended);
   const filteredOthers = filter(others);
 
-  const isDisabled = (code: string) => {
-    if (languageLimit === null) return false;
-    return supportedLanguages.length >= languageLimit && !supportedLanguages.includes(code);
-  };
-
   return (
     <SettingsSection
       title={t.bookingLanguagesTitle ?? "Booking Languages"}
@@ -93,9 +88,8 @@ export function LanguageSection({
                 <input
                   type="checkbox"
                   checked={supportedLanguages.includes(lang.code)}
-                  disabled={isDisabled(lang.code)}
                   onChange={(e) => onToggleLanguage(lang.code, e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                  className="h-3.5 w-3.5 rounded border-input"
                 />
                 <span className="text-sm">{lang.flag} {lang.label}</span>
               </label>
@@ -115,9 +109,8 @@ export function LanguageSection({
                 <input
                   type="checkbox"
                   checked={supportedLanguages.includes(lang.code)}
-                  disabled={isDisabled(lang.code)}
                   onChange={(e) => onToggleLanguage(lang.code, e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-input disabled:opacity-40"
+                  className="h-3.5 w-3.5 rounded border-input"
                 />
                 <span className="text-sm">{lang.flag} {lang.label}</span>
               </label>

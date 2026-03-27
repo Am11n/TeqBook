@@ -103,9 +103,9 @@ export async function updateSalonSettings(
     return { error: "Salon name cannot be empty" };
   }
 
-  // Check language limits if supported_languages is being updated and plan is provided
+  // Soft allow: languages beyond included plan count are billed as usage-derived add-ons.
   if (updates.supported_languages !== undefined && salonPlan !== undefined) {
-    const { canAdd, currentCount, limit, error: limitError } = await canAddLanguage(
+    const { error: limitError } = await canAddLanguage(
       salonId,
       salonPlan,
       updates.supported_languages || []
@@ -113,13 +113,6 @@ export async function updateSalonSettings(
 
     if (limitError) {
       return { error: limitError };
-    }
-
-    if (!canAdd && limit !== null) {
-      return {
-        error: `Language limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more language seats.`,
-        limitReached: true,
-      };
     }
   }
 

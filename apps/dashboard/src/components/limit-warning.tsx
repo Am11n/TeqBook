@@ -49,10 +49,10 @@ export function CapacityBanner({
       translations?.deactivateButton ??
       `Remove one to free up space`,
     blockedTitle:
-      translations?.blockedTitle ?? `Limit reached for ${entityLabel}`,
+      translations?.blockedTitle ?? `Included ${entityLabel} in use`,
     blockedMessage:
       translations?.blockedMessage ??
-      `You are using ${current} of ${limit} ${entityLabel}. You cannot add more, but you can remove one to free up space.`,
+      `You are using ${current} of ${limit} included ${entityLabel}. You can add more; extra seats are billed as add-ons (see Billing).`,
   };
 
   // At limit: neutral blue/gray banner -- NOT red
@@ -216,7 +216,7 @@ export function LimitWarning({
     current: currentCount,
     limit,
     atLimit: currentCount >= limit,
-    blocked: currentCount >= limit,
+    blocked: false,
     percentage: (currentCount / limit) * 100,
   };
 

@@ -6,7 +6,8 @@ export type LimitInfo = {
   current: number;
   limit: number | null; // null = unlimited
   atLimit: boolean;
-  blocked: boolean; // true when trying to exceed limit
+  /** Always false: exceeding included seats is allowed and billed as add-ons. */
+  blocked: boolean;
   percentage: number; // 0-100
 };
 
@@ -62,7 +63,7 @@ export function usePlanLimits(currentCounts: {
           current: currentCounts.employees,
           limit: employeeLimit,
           atLimit: currentCounts.employees >= employeeLimit,
-          blocked: currentCounts.employees >= employeeLimit,
+          blocked: false,
           percentage: Math.min(
             (currentCounts.employees / employeeLimit) * 100,
             100,
