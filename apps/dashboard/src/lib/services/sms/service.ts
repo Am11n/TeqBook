@@ -5,6 +5,7 @@ import { logSmsBillingWindowResolved } from "@/lib/services/sms/sms-billing-obse
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { normalizeToE164 } from "./e164";
 import { resolveSmsPolicyForSalon } from "./policy";
+import { includedQuotaForRpc } from "./sms-plan-defaults";
 import { TwilioAdapter } from "./twilio-adapter";
 import type {
   SendSmsInput,
@@ -54,11 +55,18 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
     }
 
     const { data: policy, error: policyError } = await resolveSmsPolicyForSalon(input.salonId);
-    if (policyError || !policy) {
+    if (policyError) {
       return {
         allowed: false,
         status: "failed",
-        error: policyError || "SMS policy could not be resolved",
+        error: policyError,
+      };
+    }
+    if (!policy) {
+      return {
+        allowed: false,
+        status: "blocked",
+        blockedReason: "SMS is not enabled for this plan",
       };
     }
 
@@ -127,7 +135,7 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
       p_idempotency_key: input.idempotencyKey,
       p_recipient_phone: normalizedPhone,
       p_sms_type: input.type,
-      p_included_quota: policy.includedQuota,
+      p_included_quota: includedQuotaForRpc(policy.includedQuota),
       p_hard_cap: policy.hardCap,
       p_effective_unit_price_at_send: policy.effectiveUnitPrice,
       p_plan_at_send: policy.plan,

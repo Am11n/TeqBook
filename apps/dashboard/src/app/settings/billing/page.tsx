@@ -52,6 +52,8 @@ export default function BillingSettingsPage() {
   const [emailOnly, setEmailOnly] = useState(false);
   const [smsUsage, setSmsUsage] = useState<SmsUsageSummaryMetrics | null>(null);
   const [smsUsageLoading, setSmsUsageLoading] = useState(false);
+  /** Plan has SMS_NOTIFICATIONS in admin plan features — otherwise the whole SMS block is hidden. */
+  const [smsBillingPackActive, setSmsBillingPackActive] = useState(false);
   const [smsUsageUiMode, setSmsUsageUiMode] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
@@ -70,7 +72,7 @@ export default function BillingSettingsPage() {
   const smsMetricsTrustedForEstimate = smsUsageUiMode === "ready" && smsUsage !== null;
 
   const usagePercent = useMemo(() => {
-    if (!smsUsage || smsUsage.included <= 0) return 0;
+    if (!smsUsage || smsUsage.included === null || smsUsage.included <= 0) return 0;
     return Math.round((smsUsage.used / smsUsage.included) * 100);
   }, [smsUsage]);
 
@@ -132,6 +134,7 @@ export default function BillingSettingsPage() {
   useEffect(() => {
     const loadSmsUsage = async () => {
       if (!salon?.id) {
+        setSmsBillingPackActive(false);
         setSmsUsageLoading(false);
         setSmsUsageUiMode("unavailable");
         setSmsUsage(null);
@@ -146,6 +149,17 @@ export default function BillingSettingsPage() {
         plan: (salon.plan || "starter") as PlanType,
         currentPeriodEnd: salon.current_period_end ?? null,
       });
+
+      if (result.status === "no_sms_feature") {
+        setSmsBillingPackActive(false);
+        smsLastGoodRef.current = null;
+        setSmsUsage(null);
+        setSmsUsageLoading(false);
+        setSmsUsageMessage(null);
+        return;
+      }
+
+      setSmsBillingPackActive(true);
 
       const windowKey = smsBillingWindowKey(result.window);
 
@@ -230,12 +244,13 @@ export default function BillingSettingsPage() {
         onManagePlan={() => setShowPlanDialog(true)}
       />
 
+      {smsBillingPackActive ? (
       <Card className="p-6">
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold">SMS Usage</h3>
             <p className="text-sm text-muted-foreground">
-              Track included quota, usage, overage estimate, and hard-cap status for this billing period.
+              Included quota comes from admin plan features. Unlimited means no included cap for this period.
             </p>
           </div>
 
@@ -255,7 +270,9 @@ export default function BillingSettingsPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-md border p-3">
                   <div className="text-xs text-muted-foreground">Included SMS</div>
-                  <div className="text-xl font-semibold">{smsUsage?.included ?? "—"}</div>
+                  <div className="text-xl font-semibold">
+                    {smsUsage == null ? "—" : smsUsage.included === null ? "Unlimited" : smsUsage.included}
+                  </div>
                 </div>
                 <div className="rounded-md border p-3">
                   <div className="text-xs text-muted-foreground">Used</div>
@@ -310,6 +327,7 @@ export default function BillingSettingsPage() {
           </div>
         </div>
       </Card>
+      ) : null}
 
       <Card className="p-6">
         <div className="space-y-4">

@@ -1,12 +1,13 @@
-import type { PlanType } from "@/lib/types";
+/**
+ * Technical included quota for Postgres RPC when admin leaves SMS enabled with no numeric cap.
+ * Keeps overage at zero for any realistic send volume (INTEGER max).
+ */
+export const SMS_UNLIMITED_INCLUDED_QUOTA = 2_147_483_647 as const;
 
-/** Shared with billing UI and `resolveSmsPolicyForSalon` — single source, no drift. */
-export const DEFAULT_INCLUDED_QUOTA_BY_PLAN: Record<PlanType, number> = {
-  starter: 100,
-  pro: 500,
-  business: 2000,
-};
+export function includedQuotaForRpc(included: number | null): number {
+  return included === null ? SMS_UNLIMITED_INCLUDED_QUOTA : included;
+}
 
-export function getDefaultIncludedSmsQuota(plan: PlanType): number {
-  return DEFAULT_INCLUDED_QUOTA_BY_PLAN[plan];
+export function isStoredUnlimitedIncludedQuota(stored: number): boolean {
+  return stored >= SMS_UNLIMITED_INCLUDED_QUOTA;
 }

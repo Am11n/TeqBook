@@ -17,7 +17,8 @@ export type SmsLogStatus =
 
 export interface SmsPolicy {
   plan: PlanType;
-  includedQuota: number;
+  /** Included SMS per billing period; null = unlimited (plan feature on, no numeric limit). */
+  includedQuota: number | null;
   hardCap: number | null;
   effectiveUnitPrice: number;
   allowedTypes: SmsType[];

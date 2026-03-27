@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PlanType } from "@/lib/types";
 import { getBillingWindow } from "./billing-window";
-import { getDefaultIncludedSmsQuota } from "./sms-plan-defaults";
+import { isStoredUnlimitedIncludedQuota } from "./sms-plan-defaults";
 import { logSmsBillingWindowResolved, logSmsBillingWindowMismatch } from "./sms-billing-observability";
 
 export type SmsUsageSummaryMetrics = {
-  included: number;
+  /** null = unlimited included quota for this period */
+  included: number | null;
   used: number;
   overage: number;
   overageCostEstimate: number;
@@ -15,7 +16,7 @@ export type SmsUsageSummaryMetrics = {
 export type LoadSmsUsageSummaryResult = {
   window: { periodStart: string; periodEnd: string };
   metrics: SmsUsageSummaryMetrics | null;
-  status: "ok" | "unavailable" | "duplicate_row";
+  status: "ok" | "unavailable" | "duplicate_row" | "no_sms_feature";
   usageError: string | null;
   featureError: string | null;
 };
@@ -28,8 +29,15 @@ function smsNotificationFeatureKey(row: {
   return f?.key;
 }
 
+function includedFromPlanLimit(limitVal: number | null | undefined): number | null {
+  if (limitVal === null || limitVal === undefined) {
+    return null;
+  }
+  return Math.max(0, Math.floor(limitVal));
+}
+
 /**
- * Load SMS usage for the billing settings card: same window as all SMS writes (getBillingWindow).
+ * Load SMS usage for billing: only when SMS_NOTIFICATIONS is enabled for the plan in admin plan features.
  */
 export async function loadSmsUsageSummaryForBilling(
   supabase: SupabaseClient,
@@ -37,6 +45,34 @@ export async function loadSmsUsageSummaryForBilling(
 ): Promise<LoadSmsUsageSummaryResult> {
   const { periodStart, periodEnd } = getBillingWindow(input.currentPeriodEnd ?? null);
   logSmsBillingWindowResolved("billing_read", input.salonId, periodStart, periodEnd);
+
+  const { data: featureRows, error: featureError } = await supabase
+    .from("plan_features")
+    .select("limit_value, features:feature_id(key)")
+    .eq("plan_type", input.plan);
+
+  if (featureError) {
+    return {
+      window: { periodStart, periodEnd },
+      metrics: null,
+      status: "unavailable",
+      usageError: null,
+      featureError: featureError.message,
+    };
+  }
+
+  const smsPlanRow = featureRows?.find((r) => smsNotificationFeatureKey(r) === "SMS_NOTIFICATIONS");
+  if (!smsPlanRow) {
+    return {
+      window: { periodStart, periodEnd },
+      metrics: null,
+      status: "no_sms_feature",
+      usageError: null,
+      featureError: null,
+    };
+  }
+
+  const planIncluded = includedFromPlanLimit(smsPlanRow.limit_value);
 
   const { data: rows, error: usageError } = await supabase
     .from("sms_usage")
@@ -77,10 +113,13 @@ export async function loadSmsUsageSummaryForBilling(
   const row = rowList[0] ?? null;
 
   if (row) {
+    const includedDisplay = isStoredUnlimitedIncludedQuota(row.included_quota)
+      ? null
+      : row.included_quota;
     return {
       window: { periodStart, periodEnd },
       metrics: {
-        included: row.included_quota,
+        included: includedDisplay,
         used: row.used_count,
         overage: row.overage_count,
         overageCostEstimate: Number(row.overage_cost_estimate ?? 0),
@@ -92,30 +131,10 @@ export async function loadSmsUsageSummaryForBilling(
     };
   }
 
-  const { data: featureRows, error: featureError } = await supabase
-    .from("plan_features")
-    .select("limit_value, features:feature_id(key)")
-    .eq("plan_type", input.plan);
-
-  if (featureError) {
-    return {
-      window: { periodStart, periodEnd },
-      metrics: null,
-      status: "unavailable",
-      usageError: null,
-      featureError: featureError.message,
-    };
-  }
-
-  const smsRow = featureRows?.find((r) => smsNotificationFeatureKey(r) === "SMS_NOTIFICATIONS");
-  const limitVal = smsRow?.limit_value;
-  const included =
-    typeof limitVal === "number" ? Math.floor(limitVal) : getDefaultIncludedSmsQuota(input.plan);
-
   return {
     window: { periodStart, periodEnd },
     metrics: {
-      included,
+      included: planIncluded,
       used: 0,
       overage: 0,
       overageCostEstimate: 0,

@@ -1,7 +1,6 @@
 import type { PlanType } from "@/lib/types";
 import { getFeatureLimit } from "@/lib/services/feature-flags-service";
 import { getSalonById } from "@/lib/repositories/salons";
-import { DEFAULT_INCLUDED_QUOTA_BY_PLAN } from "./sms-plan-defaults";
 import type { SmsPolicy, SmsType } from "./types";
 
 const DEFAULT_HARD_CAP_BY_PLAN: Record<PlanType, number | null> = {
@@ -34,17 +33,22 @@ export async function resolveSmsPolicyForSalon(salonId: string): Promise<{
 
     const plan = (salon.plan || "starter") as PlanType;
     const { limit, error: limitError } = await getFeatureLimit(salonId, "SMS_NOTIFICATIONS");
-    if (limitError && limitError !== "Feature not available in plan") {
+
+    if (limitError === "Feature not available in plan") {
+      return { data: null, error: null };
+    }
+    if (limitError) {
       return { data: null, error: limitError };
     }
 
-    const includedQuota = limit ?? DEFAULT_INCLUDED_QUOTA_BY_PLAN[plan];
+    const includedQuota: number | null =
+      limit === null ? null : Math.max(0, Math.floor(limit));
 
     return {
       data: {
         plan,
-        includedQuota: Math.max(0, Math.floor(includedQuota)),
-        hardCap: DEFAULT_HARD_CAP_BY_PLAN[plan],
+        includedQuota,
+        hardCap: includedQuota === null ? null : DEFAULT_HARD_CAP_BY_PLAN[plan],
         effectiveUnitPrice: DEFAULT_UNIT_PRICE_BY_PLAN[plan],
         allowedTypes: ALLOWED_TYPES_BY_PLAN[plan],
       },
