@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { logError } from "@/lib/services/logger";
+import { logError, logWarn } from "@/lib/services/logger";
+import { logSmsBillingWindowResolved } from "@/lib/services/sms/sms-billing-observability";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { normalizeToE164 } from "./e164";
 import { resolveSmsPolicyForSalon } from "./policy";
@@ -115,6 +116,10 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
       raw_recipient_input: input.recipient,
     };
 
+    logSmsBillingWindowResolved("sms_write", input.salonId, input.billingPeriodStart, input.billingPeriodEnd, {
+      sms_type: input.type,
+    });
+
     const { data: rpcData, error: rpcError } = await supabase.rpc("increment_sms_usage_and_log", {
       p_salon_id: input.salonId,
       p_period_start: input.billingPeriodStart,
@@ -133,6 +138,14 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
     });
 
     if (rpcError || !rpcData) {
+      logWarn("increment_sms_usage_and_log failed", {
+        app: "dashboard",
+        salon_id: input.salonId,
+        period_start: input.billingPeriodStart,
+        period_end: input.billingPeriodEnd,
+        sms_type: input.type,
+        rpc_error: rpcError?.message ?? "no data",
+      });
       return {
         allowed: false,
         status: "failed",

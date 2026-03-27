@@ -7,6 +7,8 @@ import { handleWaitlistCancellation } from "@/lib/services/waitlist-cancellation
 import { sendSms } from "@/lib/services/sms";
 import { sendEmail } from "@/lib/services/email-service";
 import { getSalonById } from "@/lib/repositories/salons";
+import { getBillingWindow } from "@/lib/services/sms/billing-window";
+import { logSmsBillingWindowResolved } from "@/lib/services/sms/sms-billing-observability";
 
 type ExpiredOfferRow = {
   id: string;
@@ -35,19 +37,6 @@ type ReminderOfferRow = {
   slot_end: string | null;
   token_expires_at: string;
 };
-
-function getBillingWindow(periodEndIso?: string | null): { start: string; end: string } {
-  if (periodEndIso) {
-    const end = new Date(periodEndIso);
-    const start = new Date(end);
-    start.setMonth(start.getMonth() - 1);
-    return { start: start.toISOString(), end: end.toISOString() };
-  }
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0));
-  return { start: start.toISOString(), end: end.toISOString() };
-}
 
 function getPublicAppBaseUrl(): string {
   const configuredRaw =
@@ -143,7 +132,10 @@ export async function processDueWaitlistReminders(maxRows = 200): Promise<{
 
       if (entry.customer_phone) {
         const { data: salon } = await getSalonById(offer.salon_id);
-        const { start, end } = getBillingWindow(salon?.current_period_end ?? null);
+        const { periodStart, periodEnd } = getBillingWindow(salon?.current_period_end ?? null);
+        logSmsBillingWindowResolved("waitlist_sms", offer.salon_id, periodStart, periodEnd, {
+          trigger: "waitlist_reminder",
+        });
         const smsResult = await sendSms({
           salonId: offer.salon_id,
           recipient: entry.customer_phone,
@@ -151,8 +143,8 @@ export async function processDueWaitlistReminders(maxRows = 200): Promise<{
           body:
             `Hei ${entry.customer_name}, påminnelse: tilbudet ditt utløper snart (${offer.slot_date}). ` +
             `Bekreft her: ${acceptUrl} Avslå: ${declineUrl}`,
-          billingPeriodStart: start,
-          billingPeriodEnd: end,
+          billingPeriodStart: periodStart,
+          billingPeriodEnd: periodEnd,
           idempotencyKey: randomUUID(),
           waitlistId: offer.waitlist_entry_id,
           metadata: {

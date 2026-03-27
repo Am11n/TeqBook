@@ -8,19 +8,8 @@ import { sendSms } from "@/lib/services/sms";
 import { sendEmail } from "@/lib/services/email-service";
 import { logWarn } from "@/lib/services/logger";
 import { getAdminClient } from "@/lib/supabase/admin";
-
-function getBillingWindow(periodEndIso?: string | null): { start: string; end: string } {
-  if (periodEndIso) {
-    const end = new Date(periodEndIso);
-    const start = new Date(end);
-    start.setMonth(start.getMonth() - 1);
-    return { start: start.toISOString(), end: end.toISOString() };
-  }
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0));
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0));
-  return { start: start.toISOString(), end: end.toISOString() };
-}
+import { getBillingWindow } from "@/lib/services/sms/billing-window";
+import { logSmsBillingWindowResolved } from "@/lib/services/sms/sms-billing-observability";
 
 function getPublicAppBaseUrl(): string {
   const configuredRaw =
@@ -149,7 +138,8 @@ export async function createAndSendWaitlistOffer(
   if (entry.customer_phone) {
     try {
       const { data: salon } = await getSalonById(input.salonId);
-      const { start, end } = getBillingWindow(salon?.current_period_end ?? null);
+      const { periodStart, periodEnd } = getBillingWindow(salon?.current_period_end ?? null);
+      logSmsBillingWindowResolved("waitlist_offer_sms", input.salonId, periodStart, periodEnd);
       const message =
         `Hei ${entry.customer_name}! En tid ble ledig hos ${salon?.name ?? "salongen"} ${input.date}. ` +
         `Bekreft innen ${claimExpiryMinutes} minutter: ${acceptUrl} ` +
@@ -159,8 +149,8 @@ export async function createAndSendWaitlistOffer(
         recipient: entry.customer_phone,
         type: "waitlist_claim",
         body: message,
-        billingPeriodStart: start,
-        billingPeriodEnd: end,
+        billingPeriodStart: periodStart,
+        billingPeriodEnd: periodEnd,
         idempotencyKey: randomUUID(),
         waitlistId: entry.id,
         metadata: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,11 @@ import { PaymentFormDialog } from "@/components/billing/PaymentFormDialog";
 import { CancelSubscriptionDialog } from "@/components/billing/CancelSubscriptionDialog";
 import { ChevronDown, FileText } from "lucide-react";
 import type { PlanType } from "@/lib/types";
+import {
+  loadSmsUsageSummaryForBilling,
+  smsBillingWindowKey,
+  type SmsUsageSummaryMetrics,
+} from "@/lib/services/sms/load-sms-usage-summary";
 
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
@@ -45,14 +50,14 @@ export default function BillingSettingsPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [smsDisabled, setSmsDisabled] = useState(false);
   const [emailOnly, setEmailOnly] = useState(false);
-  const [smsUsage, setSmsUsage] = useState<{
-    included: number;
-    used: number;
-    overage: number;
-    overageCostEstimate: number;
-    hardCapReached: boolean;
-  } | null>(null);
+  const [smsUsage, setSmsUsage] = useState<SmsUsageSummaryMetrics | null>(null);
   const [smsUsageLoading, setSmsUsageLoading] = useState(false);
+  const [smsUsageUiMode, setSmsUsageUiMode] = useState<"loading" | "ready" | "unavailable">(
+    "loading",
+  );
+  const [smsUsageIsStale, setSmsUsageIsStale] = useState(false);
+  const [smsUsageMessage, setSmsUsageMessage] = useState<string | null>(null);
+  const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
 
   const plans = getPlans({
     planStarter: t.planStarter,
@@ -62,6 +67,8 @@ export default function BillingSettingsPage() {
 
   const addonDisplay = getAddonDisplay(addons);
   const activePlan = plans.find((p) => p.id === currentPlan) || plans[0];
+  const smsMetricsTrustedForEstimate = smsUsageUiMode === "ready" && smsUsage !== null;
+
   const usagePercent = useMemo(() => {
     if (!smsUsage || smsUsage.included <= 0) return 0;
     return Math.round((smsUsage.used / smsUsage.included) * 100);
@@ -111,7 +118,7 @@ export default function BillingSettingsPage() {
     const basePlanMinor = Number.isNaN(Number(basePlan)) ? 0 : Number(basePlan);
     const extraStaffMinor = (summary?.usage.employeesExtraBilled ?? 0) * 5;
     const extraLanguagesMinor = (summary?.usage.languagesExtraBilled ?? 0) * 10;
-    const smsOverageMinor = smsUsage?.overageCostEstimate ?? 0;
+    const smsOverageMinor = smsMetricsTrustedForEstimate ? (smsUsage?.overageCostEstimate ?? 0) : 0;
     const total = basePlanMinor + extraStaffMinor + extraLanguagesMinor + smsOverageMinor;
     return { basePlanMinor, extraStaffMinor, extraLanguagesMinor, smsOverageMinor, total };
   }, [
@@ -119,50 +126,64 @@ export default function BillingSettingsPage() {
     summary?.usage.employeesExtraBilled,
     summary?.usage.languagesExtraBilled,
     smsUsage?.overageCostEstimate,
+    smsMetricsTrustedForEstimate,
   ]);
 
   useEffect(() => {
     const loadSmsUsage = async () => {
-      if (!salon?.id) return;
+      if (!salon?.id) {
+        setSmsUsageLoading(false);
+        setSmsUsageUiMode("unavailable");
+        setSmsUsage(null);
+        setSmsUsageMessage(null);
+        return;
+      }
       setSmsUsageLoading(true);
+      setSmsUsageUiMode("loading");
 
-      const nowIso = new Date().toISOString();
-      const [usageRes, featureRes] = await Promise.all([
-        supabase
-          .from("sms_usage")
-          .select("included_quota, used_count, overage_count, overage_cost_estimate, hard_cap_reached")
-          .eq("salon_id", salon.id)
-          .lte("period_start", nowIso)
-          .gt("period_end", nowIso)
-          .order("period_start", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("plan_features")
-          .select("limit_value, features:feature_id(key)")
-          .eq("plan_type", (salon.plan || "starter") as PlanType),
-      ]);
-
-      const featureLimit =
-        featureRes.data?.find(
-          (row) =>
-            (row.features as unknown as { key?: string } | null)?.key === "SMS_NOTIFICATIONS"
-        )?.limit_value ?? null;
-
-      setSmsUsage({
-        included:
-          usageRes.data?.included_quota ??
-          (typeof featureLimit === "number" ? Math.floor(featureLimit) : 0),
-        used: usageRes.data?.used_count ?? 0,
-        overage: usageRes.data?.overage_count ?? 0,
-        overageCostEstimate: usageRes.data?.overage_cost_estimate ?? 0,
-        hardCapReached: usageRes.data?.hard_cap_reached ?? false,
+      const result = await loadSmsUsageSummaryForBilling(supabase, {
+        salonId: salon.id,
+        plan: (salon.plan || "starter") as PlanType,
+        currentPeriodEnd: salon.current_period_end ?? null,
       });
+
+      const windowKey = smsBillingWindowKey(result.window);
+
+      if (result.status === "ok" && result.metrics) {
+        smsLastGoodRef.current = { windowKey, metrics: result.metrics };
+        setSmsUsage(result.metrics);
+        setSmsUsageUiMode("ready");
+        setSmsUsageIsStale(false);
+        setSmsUsageMessage(null);
+        setSmsUsageLoading(false);
+        return;
+      }
+
+      const detail =
+        result.status === "duplicate_row"
+          ? "Multiple SMS usage records exist for this billing window. Please contact support."
+          : result.usageError
+            ? `Could not load SMS usage: ${result.usageError}`
+            : result.featureError
+              ? `Could not load plan data for SMS quota: ${result.featureError}`
+              : "SMS usage is temporarily unavailable. Please try again.";
+
+      if (smsLastGoodRef.current?.windowKey === windowKey) {
+        setSmsUsage(smsLastGoodRef.current.metrics);
+        setSmsUsageUiMode("ready");
+        setSmsUsageIsStale(true);
+        setSmsUsageMessage(`${detail} Showing last loaded values for this billing period.`);
+      } else {
+        setSmsUsage(null);
+        setSmsUsageUiMode("unavailable");
+        setSmsUsageIsStale(false);
+        setSmsUsageMessage(detail);
+      }
       setSmsUsageLoading(false);
     };
 
     void loadSmsUsage();
-  }, [salon?.id, salon?.plan]);
+  }, [salon?.id, salon?.plan, salon?.current_period_end]);
 
   if (loading) {
     return (
@@ -220,34 +241,47 @@ export default function BillingSettingsPage() {
 
           {smsUsageLoading ? (
             <div className="text-sm text-muted-foreground">Loading SMS usage...</div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-md border p-3">
-                <div className="text-xs text-muted-foreground">Included SMS</div>
-                <div className="text-xl font-semibold">{smsUsage?.included ?? 0}</div>
-              </div>
-              <div className="rounded-md border p-3">
-                <div className="text-xs text-muted-foreground">Used</div>
-                <div className="text-xl font-semibold">{smsUsage?.used ?? 0}</div>
-              </div>
-              <div className="rounded-md border p-3">
-                <div className="text-xs text-muted-foreground">Estimated overage</div>
-                <div className="text-xl font-semibold">{smsUsage?.overage ?? 0}</div>
-              </div>
-              <div className="rounded-md border p-3">
-                <div className="text-xs text-muted-foreground">Expected extra cost</div>
-                <div className="text-xl font-semibold">{(smsUsage?.overageCostEstimate ?? 0).toFixed(2)} NOK</div>
-              </div>
+          ) : smsUsageUiMode === "unavailable" ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+              {smsUsageMessage ?? "SMS usage is temporarily unavailable. Please try again."}
             </div>
+          ) : (
+            <>
+              {smsUsageIsStale && smsUsageMessage ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                  {smsUsageMessage}
+                </div>
+              ) : null}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">Included SMS</div>
+                  <div className="text-xl font-semibold">{smsUsage?.included ?? "—"}</div>
+                </div>
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">Used</div>
+                  <div className="text-xl font-semibold">{smsUsage?.used ?? "—"}</div>
+                </div>
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">Estimated overage</div>
+                  <div className="text-xl font-semibold">{smsUsage?.overage ?? "—"}</div>
+                </div>
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">Expected extra cost</div>
+                  <div className="text-xl font-semibold">
+                    {smsUsage != null ? `${smsUsage.overageCostEstimate.toFixed(2)} NOK` : "—"}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
-          {usagePercent >= 95 ? (
+          {smsUsageUiMode === "ready" && !smsUsageIsStale && usagePercent >= 95 ? (
             <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
               You have used {usagePercent}% of your included SMS quota. Consider upgrading to avoid overage costs.
             </div>
           ) : null}
 
-          {smsUsage?.hardCapReached ? (
+          {smsUsageUiMode === "ready" && smsUsage?.hardCapReached ? (
             <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900">
               Hard cap reached for current period. New transactional SMS may be blocked.
             </div>

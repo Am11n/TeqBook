@@ -1,13 +1,8 @@
 import type { PlanType } from "@/lib/types";
 import { getFeatureLimit } from "@/lib/services/feature-flags-service";
 import { getSalonById } from "@/lib/repositories/salons";
+import { DEFAULT_INCLUDED_QUOTA_BY_PLAN } from "./sms-plan-defaults";
 import type { SmsPolicy, SmsType } from "./types";
-
-const DEFAULT_INCLUDED_QUOTA_BY_PLAN: Record<PlanType, number> = {
-  starter: 100,
-  pro: 500,
-  business: 2000,
-};
 
 const DEFAULT_HARD_CAP_BY_PLAN: Record<PlanType, number | null> = {
   starter: 500,
