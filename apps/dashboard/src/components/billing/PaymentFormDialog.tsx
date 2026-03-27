@@ -8,12 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import { PaymentForm } from "./PaymentForm";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder"
-);
+import { stripePromise, stripePublishableKey } from "@/lib/utils/billing/stripe-utils";
 
 interface PaymentFormDialogProps {
   open: boolean;
@@ -47,7 +43,12 @@ export function PaymentFormDialog({
               : "Update your payment method for future billing"}
           </DialogDescription>
         </DialogHeader>
-        {clientSecret && (
+        {!stripePublishableKey && (
+          <p className="text-sm text-destructive">
+            Stripe publishable key is missing. Set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` for dashboard env.
+          </p>
+        )}
+        {clientSecret && stripePromise && (
           <Elements
             stripe={stripePromise}
             options={{

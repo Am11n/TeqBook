@@ -105,15 +105,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     failurePolicy: "fail_closed",
   },
   "billing-create-customer": {
-    maxAttempts: 10,
-    windowMs: FIFTEEN_MINUTES_MS,
-    blockDurationMs: THIRTY_MINUTES_MS,
+    maxAttempts: 200,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
   "billing-create-subscription": {
-    maxAttempts: 5,
-    windowMs: FIFTEEN_MINUTES_MS,
-    blockDurationMs: THIRTY_MINUTES_MS,
+    maxAttempts: 100,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
   "billing-update-plan": {
@@ -123,15 +123,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     failurePolicy: "fail_closed",
   },
   "billing-cancel-subscription": {
-    maxAttempts: 5,
-    windowMs: FIFTEEN_MINUTES_MS,
-    blockDurationMs: THIRTY_MINUTES_MS,
+    maxAttempts: 100,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
   "billing-update-payment-method": {
-    maxAttempts: 10,
-    windowMs: FIFTEEN_MINUTES_MS,
-    blockDurationMs: THIRTY_MINUTES_MS,
+    maxAttempts: 200,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
   "whatsapp-send": {

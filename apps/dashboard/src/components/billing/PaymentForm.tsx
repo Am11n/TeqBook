@@ -75,7 +75,11 @@ export function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <PaymentElement
+        onLoaderror={() => {
+          setError("Could not load card form. Please refresh and try again.");
+        }}
+      />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex gap-3">
         <Button type="button" variant="outline" onClick={onCancel} disabled={processing}>

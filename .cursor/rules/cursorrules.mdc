@@ -1,6 +1,7 @@
 ---
 name: cursorrules
 description: This is a new rule
+alwaysApply: true
 ---
 
 # TeqBook Cursor Rules
@@ -192,6 +193,7 @@ import {
 - Use `useSearchParams()` only inside a `<Suspense>` boundary to avoid prerendering errors.
 - Keep files under 300 lines when practical; if a file grows beyond that, split by concern (for example locale dictionaries into dedicated i18n modules per feature/locale).
 - For large translation dictionaries, prefer separate locale/i18n files over embedding dictionaries inside page/component files.
+- If a change requires a dev server restart (env/config/dependency/runtime state), the agent should restart it proactively without asking the user to do it.
 
 ## Public Profile i18n
 

@@ -196,7 +196,24 @@ serve(async (req) => {
           break;
         }
 
-        // Update salon with subscription details
+        // Do not activate plan for incomplete subscriptions.
+        if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
+          const { error: updateError } = await supabase
+            .from("salons")
+            .update({
+              billing_subscription_id: subscription.id,
+            })
+            .eq("id", salonId);
+
+          if (updateError) {
+            console.error("Error linking incomplete subscription to salon:", updateError);
+          } else {
+            console.log(`Linked incomplete subscription ${subscription.id} to salon ${salonId}`);
+          }
+          break;
+        }
+
+        // Update salon with subscription details for active/trialing states
         const { error: updateError } = await supabase
           .from("salons")
           .update({

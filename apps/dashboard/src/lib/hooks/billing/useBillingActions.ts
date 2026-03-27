@@ -17,6 +17,19 @@ export function useBillingActions() {
   const hasSubscription = !!salon?.billing_subscription_id;
   const hasCustomer = !!salon?.billing_customer_id;
 
+  const isInvalidSubscriptionStateError = (message: string) => {
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes("incomplete") ||
+      normalized.includes("incomplete_expired") ||
+      normalized.includes("cannot update incomplete subscription") ||
+      normalized.includes("canceled") ||
+      normalized.includes("a canceled subscription") ||
+      normalized.includes("cancel_at_period_end") ||
+      normalized.includes("scheduled for cancellation")
+    );
+  };
+
   const handleChangePlan = async (selectedPlan: PlanType): Promise<{ success: boolean; clientSecret: string | null }> => {
     if (!salon?.id) {
       return { success: false, clientSecret: null };
@@ -25,8 +38,11 @@ export function useBillingActions() {
     setActionLoading(true);
     setError(null);
 
+    let currentCustomerId = salon.billing_customer_id || null;
+    let currentSubscriptionId = salon.billing_subscription_id || null;
+
     // If no customer, create one first
-    if (!hasCustomer) {
+    if (!currentCustomerId) {
       let userEmail = "test@example.com";
       if (user?.email) {
         userEmail = user.email;
@@ -46,14 +62,15 @@ export function useBillingActions() {
         return { success: false, clientSecret: null };
       }
 
+      currentCustomerId = customerData.customer_id;
       await refreshSalon();
     }
 
     // If no subscription, create one
-    if (!hasSubscription && salon?.billing_customer_id) {
+    if (!currentSubscriptionId && currentCustomerId) {
       const { data: subscriptionData, error: subscriptionError } = await createStripeSubscription(
         salon.id,
-        salon.billing_customer_id,
+        currentCustomerId,
         selectedPlan
       );
 
@@ -72,32 +89,18 @@ export function useBillingActions() {
         setActionLoading(false);
         return { success: true, clientSecret: null };
       }
-    } else if (hasSubscription && salon?.billing_subscription_id && selectedPlan) {
+    } else if (currentSubscriptionId && selectedPlan) {
       // Update existing subscription
       const { data: updateData, error: updateError } = await updateSubscriptionPlan(
         salon.id,
-        salon.billing_subscription_id,
+        currentSubscriptionId,
         selectedPlan
       );
 
       if (updateError || !updateData) {
-        // Check if error is about incomplete or canceled subscription
         const errorMessage = updateError || "Failed to update plan";
-        
-        // Check for various invalid subscription states
-        if (
-          errorMessage.includes("incomplete") ||
-          errorMessage.includes("incomplete_expired") ||
-          errorMessage.includes("canceled") || 
-          errorMessage.includes("A canceled subscription") ||
-          errorMessage.includes("cancel_at_period_end") ||
-          errorMessage.includes("scheduled for cancellation")
-        ) {
-          // Subscription is in invalid state, treat it as if it doesn't exist
-          // and create a new one
-          console.log("Subscription is in invalid state, creating new subscription instead");
-          
-          if (!salon?.billing_customer_id) {
+        if (isInvalidSubscriptionStateError(errorMessage)) {
+          if (!currentCustomerId) {
             setError("Cannot create subscription: missing customer ID");
             setActionLoading(false);
             return { success: false, clientSecret: null };
@@ -105,7 +108,7 @@ export function useBillingActions() {
 
           const { data: subscriptionData, error: subscriptionError } = await createStripeSubscription(
             salon.id,
-            salon.billing_customer_id,
+            currentCustomerId,
             selectedPlan
           );
 

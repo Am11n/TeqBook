@@ -201,8 +201,23 @@ serve(async (req) => {
       apiVersion: "2024-11-20.acacia",
     });
 
+    // Reuse existing default payment method when available.
+    // This allows plan changes without forcing card re-entry every time.
+    let defaultPaymentMethodId: string | null = null;
+    try {
+      const customer = await stripe.customers.retrieve(body.customer_id);
+      if (!("deleted" in customer) || !customer.deleted) {
+        const pm = customer.invoice_settings?.default_payment_method;
+        if (typeof pm === "string") {
+          defaultPaymentMethodId = pm;
+        }
+      }
+    } catch (customerErr) {
+      console.warn("Could not retrieve customer default payment method:", customerErr);
+    }
+
     // Create Stripe subscription
-    const subscription = await stripe.subscriptions.create({
+    const subscriptionParams: Stripe.SubscriptionCreateParams = {
       customer: body.customer_id,
       items: [{ price: priceId }],
       metadata: {
@@ -216,20 +231,36 @@ serve(async (req) => {
         save_default_payment_method: "on_subscription",
       },
       expand: ["latest_invoice.payment_intent"],
-    });
+    };
+
+    if (defaultPaymentMethodId) {
+      subscriptionParams.default_payment_method = defaultPaymentMethodId;
+    }
+
+    const subscription = await stripe.subscriptions.create(subscriptionParams);
 
     // Calculate current period end
     const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
-    // Update salon with subscription ID and plan using service role key
+    // IMPORTANT:
+    // Do not switch salon plan before first successful payment.
+    // For default_incomplete subscriptions we only store subscription id,
+    // then webhook updates plan/current_period_end after payment succeeds.
+    const shouldActivatePlanImmediately =
+      subscription.status === "active" || subscription.status === "trialing";
+
+    // Update salon billing linkage using service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const salonUpdate: Record<string, unknown> = {
+      billing_subscription_id: subscription.id,
+    };
+    if (shouldActivatePlanImmediately) {
+      salonUpdate.plan = body.plan;
+      salonUpdate.current_period_end = currentPeriodEnd;
+    }
     const { error: updateError } = await supabase
       .from("salons")
-      .update({
-        billing_subscription_id: subscription.id,
-        plan: body.plan,
-        current_period_end: currentPeriodEnd,
-      })
+      .update(salonUpdate)
       .eq("id", body.salon_id);
 
     if (updateError) {

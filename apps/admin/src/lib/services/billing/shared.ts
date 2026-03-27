@@ -3,6 +3,25 @@ import { supabase } from "@/lib/supabase-client";
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 export const EDGE_FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
 
+function getExpectedProjectRef(): string | null {
+  try {
+    return new URL(SUPABASE_URL).hostname.split(".")[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function decodeJwtRef(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const decoded = JSON.parse(atob(payload)) as { ref?: string };
+    return decoded.ref ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export interface CreateCustomerResponse {
   customer_id: string;
   email: string;
@@ -97,5 +116,41 @@ export async function getAuthSession() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  return session;
+  if (!session?.access_token) {
+    return null;
+  }
+
+  const expectedRef = getExpectedProjectRef();
+  const tokenRef = decodeJwtRef(session.access_token);
+
+  // If the browser still holds a token from another Supabase project, clear it.
+  if (expectedRef && tokenRef && tokenRef !== expectedRef) {
+    await supabase.auth.signOut();
+    return null;
+  }
+
+  const { error: userError } = await supabase.auth.getUser(session.access_token);
+  if (!userError) {
+    return session;
+  }
+
+  const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+  if (refreshError || !refreshed.session?.access_token) {
+    await supabase.auth.signOut();
+    return null;
+  }
+
+  const refreshedRef = decodeJwtRef(refreshed.session.access_token);
+  if (expectedRef && refreshedRef && refreshedRef !== expectedRef) {
+    await supabase.auth.signOut();
+    return null;
+  }
+
+  const { error: refreshedUserError } = await supabase.auth.getUser(refreshed.session.access_token);
+  if (refreshedUserError) {
+    await supabase.auth.signOut();
+    return null;
+  }
+
+  return refreshed.session;
 }

@@ -9,6 +9,17 @@ import {
   type CancelSubscriptionResponse,
 } from "./shared";
 
+function isRecoverableSubscriptionStateError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("cannot update incomplete subscription") ||
+    normalized.includes("incomplete_expired") ||
+    normalized.includes("cannot update canceled subscription") ||
+    normalized.includes("scheduled for cancellation") ||
+    normalized.includes("cancel_at_period_end")
+  );
+}
+
 /**
  * Create a Stripe subscription for a salon
  */
@@ -137,13 +148,24 @@ export async function updateSubscriptionPlan(
     );
 
     if (fetchError) {
-      logError("Failed to update subscription plan", new Error(fetchError), {
-        correlationId: crypto.randomUUID(),
-        salonId,
-        subscriptionId,
-        newPlan,
-        error: fetchError,
-      });
+      const correlationId = crypto.randomUUID();
+      if (isRecoverableSubscriptionStateError(fetchError)) {
+        logInfo("Update plan rejected due to recoverable subscription state", {
+          correlationId,
+          salonId,
+          subscriptionId,
+          newPlan,
+          error: fetchError,
+        });
+      } else {
+        logError("Failed to update subscription plan", new Error(fetchError), {
+          correlationId,
+          salonId,
+          subscriptionId,
+          newPlan,
+          error: fetchError,
+        });
+      }
       return { data: null, error: fetchError };
     }
 

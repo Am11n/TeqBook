@@ -4,8 +4,11 @@
 
 import { loadStripe } from "@stripe/stripe-js";
 
-// Initialize Stripe
-export const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder"
-);
+export const stripePublishableKey =
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+
+// Never fallback to placeholder key. Placeholder causes Stripe 401 at runtime.
+export const stripePromise = stripePublishableKey
+  ? loadStripe(stripePublishableKey)
+  : null;
 

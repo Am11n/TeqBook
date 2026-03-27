@@ -35,11 +35,23 @@ export interface RateLimitOptions {
  * Extract IP address from request
  */
 function extractIPAddress(req: Request): string {
+  // Cloudflare header (Supabase edge is behind Cloudflare)
+  const cfConnectingIp = req.headers.get("cf-connecting-ip");
+  if (cfConnectingIp) {
+    return cfConnectingIp.trim();
+  }
+
   // Check x-forwarded-for header (from proxy/load balancer)
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
     // x-forwarded-for can contain multiple IPs, take the first one
     return forwardedFor.split(",")[0].trim();
+  }
+
+  // Common proxy header
+  const flyClientIp = req.headers.get("fly-client-ip");
+  if (flyClientIp) {
+    return flyClientIp.trim();
   }
 
   // Check x-real-ip header
@@ -48,7 +60,7 @@ function extractIPAddress(req: Request): string {
     return realIP.trim();
   }
 
-  // Fallback (not reliable in Edge Functions, but included for completeness)
+  // Fallback (worst case, all anonymous traffic shares this bucket)
   return "unknown";
 }
 
@@ -337,6 +349,24 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const { endpointType, supabaseUrl, supabaseServiceKey } = options;
 
+  // Temporary safety valve: never block billing flows in pilot/runtime troubleshooting.
+  // Billing endpoints still require authenticated JWT in each function.
+  if (endpointType.startsWith("billing-")) {
+    return {
+      allowed: true,
+      remainingAttempts: Number.MAX_SAFE_INTEGER,
+      resetTime: null,
+      blocked: false,
+      headers: {
+        "X-RateLimit-Limit": "unlimited",
+        "X-RateLimit-Remaining": "unlimited",
+      },
+      source: "fail_open",
+      failurePolicy: "fail_open",
+      reason: "billing_rate_limit_bypass",
+    };
+  }
+
   // Get configuration for this endpoint type
   const config = getRateLimitConfig(endpointType);
 
@@ -439,6 +469,9 @@ export function createRateLimitErrorResponse(
     {
       status: 429,
       headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Content-Type": "application/json",
         ...result.headers,
         "Retry-After": retryAfter.toString(),

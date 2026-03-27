@@ -61,11 +61,17 @@ async function authenticateRequest(
   }
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+function getCorsHeaders(req: Request) {
+  const requestedHeaders =
+    req.headers.get("access-control-request-headers") ??
+    "authorization, x-client-info, apikey, content-type";
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": requestedHeaders,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "86400",
+  };
+}
 
 // Helper to extract identifier (same logic as in rate-limit.ts)
 function extractIdentifier(
@@ -87,6 +93,8 @@ interface CreateCustomerRequest {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -229,7 +237,7 @@ serve(async (req) => {
         error: errorMessage,
         details: errorDetails,
         // Include stack trace in development
-        ...(process.env.NODE_ENV === "development" && error instanceof Error && { stack: error.stack }),
+        ...(Deno.env.get("NODE_ENV") === "development" && error instanceof Error && { stack: error.stack }),
       }),
       {
         status: 500,
