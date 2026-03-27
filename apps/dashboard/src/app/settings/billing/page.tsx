@@ -33,7 +33,6 @@ export default function BillingSettingsPage() {
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,
-    handleSyncUsageAddons,
   } = useBillingActions();
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
@@ -207,10 +206,6 @@ export default function BillingSettingsPage() {
         addons={addonDisplay}
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}
-        onSyncUsage={async () => {
-          await handleSyncUsageAddons();
-          refetch();
-        }}
         onManagePlan={() => setShowPlanDialog(true)}
       />
 

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AddonDisplay } from "@/lib/utils/billing/billing-utils";
-import { CircleAlert } from "lucide-react";
 
 interface AddonsCardProps {
   addons: AddonDisplay[];
@@ -18,7 +17,6 @@ interface AddonsCardProps {
     languagesExtraBilled: number;
   } | null;
   actionLoading?: boolean;
-  onSyncUsage?: () => void;
   onManagePlan?: () => void;
 }
 
@@ -26,7 +24,6 @@ export function AddonsCard({
   addons,
   usage,
   actionLoading = false,
-  onSyncUsage,
   onManagePlan,
 }: AddonsCardProps) {
   const addonByType = new Map(addons.map((addon) => [addon.type, addon] as const));
@@ -95,23 +92,6 @@ export function AddonsCard({
               Review languages
             </Button>
           </div>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-md border bg-muted/30 p-3 text-sm">
-        <div className="flex items-start gap-2">
-          <CircleAlert className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <p className="text-muted-foreground">
-            Add-on quantities are usage-derived and synced to Stripe subscription items. If values look stale, run a sync.
-          </p>
-        </div>
-        <div className="mt-3 flex gap-2">
-          <Button variant="outline" size="sm" onClick={onSyncUsage} disabled={actionLoading}>
-            Sync usage now
-          </Button>
-          <Button size="sm" onClick={onManagePlan} disabled={actionLoading}>
-            Upgrade plan
-          </Button>
         </div>
       </div>
     </Card>
