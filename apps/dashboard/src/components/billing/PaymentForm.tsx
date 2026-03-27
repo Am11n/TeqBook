@@ -76,7 +76,7 @@ export function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement
-        onLoaderror={() => {
+        onLoadError={() => {
           setError("Could not load card form. Please refresh and try again.");
         }}
       />
