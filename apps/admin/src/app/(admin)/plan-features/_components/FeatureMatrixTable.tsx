@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PLAN_TYPES, FEATURE_LIMITS, type PlanType } from "@/lib/config/feature-limits";
 import type { MatrixFeatureKey } from "@/lib/plan-features/matrix-feature-keys";
+import { getPlanFeatureDisplay } from "@/lib/plan-features/feature-display-overrides";
 import type { FeatureRow, MatrixState } from "./types";
 import { PlanColumnHeader } from "./PlanColumnHeader";
 
@@ -70,6 +71,7 @@ export function FeatureMatrixTable({
               </tr>
               {catFeatures.map((feature) => {
                 const limitConfig = FEATURE_LIMITS[feature.key as MatrixFeatureKey];
+                const display = getPlanFeatureDisplay(feature);
                 return (
                   <tr
                     key={feature.id}
@@ -77,9 +79,9 @@ export function FeatureMatrixTable({
                   >
                     <td className="px-4 py-3 sticky left-0 bg-background z-10">
                       <div>
-                        <p className="font-medium">{feature.name}</p>
+                        <p className="font-medium">{display.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {feature.description ?? feature.key}
+                          {display.description}
                         </p>
                       </div>
                     </td>

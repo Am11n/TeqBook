@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { PlanType } from "@/lib/config/feature-limits";
 import { FEATURE_CATEGORIES } from "@/lib/config/feature-limits";
+import { getPlanFeatureDisplay } from "@/lib/plan-features/feature-display-overrides";
 import { type MatrixState, type FeatureRow, deepCloneMatrix } from "./types";
 
 export function useMatrixActions(
@@ -69,11 +70,14 @@ export function filterFeaturesByCategory(
     for (const key of keys) {
       const f = featureByKey[key];
       if (!f) continue;
+      const display = getPlanFeatureDisplay(f);
       if (
         lowerSearch === "" ||
         f.name.toLowerCase().includes(lowerSearch) ||
         f.key.toLowerCase().includes(lowerSearch) ||
-        (f.description ?? "").toLowerCase().includes(lowerSearch)
+        (f.description ?? "").toLowerCase().includes(lowerSearch) ||
+        display.name.toLowerCase().includes(lowerSearch) ||
+        display.description.toLowerCase().includes(lowerSearch)
       ) {
         catFeatures.push(f);
       }
