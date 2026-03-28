@@ -12,8 +12,14 @@ import { EntityLink } from "@/components/shared/entity-link";
 import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/notes-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { getSupportCases, updateCaseStatus, type SupportCase } from "@/lib/services/support-service";
+import {
+  getSupportCases,
+  updateCaseStatus,
+  type SupportCase,
+  type SupportCaseFilters,
+} from "@/lib/services/support-service";
 import { supabase } from "@/lib/supabase-client";
 import { Paperclip, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
@@ -38,6 +44,19 @@ const columns: ColumnDef<SupportCase>[] = [
   { id: "type", header: "Type", cell: (r) => <Badge variant="outline" className="text-xs">{r.type.replace(/_/g, " ")}</Badge>, sortable: true },
   { id: "category", header: "Category", cell: (r) => r.category ? <Badge variant="secondary" className="text-xs">{r.category.replace(/_/g, " ")}</Badge> : "-" },
   { id: "salon_name", header: "Salon", cell: (r) => r.salon_name ?? "-" },
+  {
+    id: "salon_plan",
+    header: "Plan",
+    cell: (r) =>
+      r.salon_plan ? (
+        <Badge variant="outline" className="text-xs capitalize">
+          {r.salon_plan}
+        </Badge>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+    sortable: true,
+  },
   { id: "status", header: "Status", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? ""}`}>{r.status}</span>, sortable: true },
   { id: "priority", header: "Priority", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[r.priority] ?? ""}`}>{r.priority}</span>, sortable: true },
   { id: "assignee_email", header: "Assignee", cell: (r) => r.assignee_email ?? "Unassigned", defaultVisible: true },
@@ -45,6 +64,13 @@ const columns: ColumnDef<SupportCase>[] = [
   { id: "updated_at", header: "Updated", cell: (r) => format(new Date(r.updated_at), "MMM d, HH:mm"), defaultVisible: false },
 ];
 const PAGE_SIZE = 10;
+
+const SALON_PLAN_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "All plans" },
+  { value: "starter", label: "Starter" },
+  { value: "pro", label: "Pro" },
+  { value: "business", label: "Business" },
+];
 
 export default function SupportInboxPage() {
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
@@ -55,9 +81,14 @@ export default function SupportInboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const [salonPlanFilter, setSalonPlanFilter] = useState("");
   const handleSearchChange = useCallback((value: string) => {
     setPage(0);
     setSearch(value);
+  }, []);
+  const handlePlanFilterChange = useCallback((value: string) => {
+    setPage(0);
+    setSalonPlanFilter(value);
   }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<SupportCase | null>(null);
@@ -65,12 +96,14 @@ export default function SupportInboxPage() {
 
   const loadCases = useCallback(async () => {
     setLoading(true);
-    const filters = search.trim() ? { search: search.trim() } : {};
+    const filters: SupportCaseFilters = {};
+    if (search.trim()) filters.search = search.trim();
+    if (salonPlanFilter) filters.salon_plan = salonPlanFilter;
     const { data, total: t, error: e } = await getSupportCases(filters, PAGE_SIZE, page * PAGE_SIZE);
     if (e) setError(e);
     else { setCases(data ?? []); setTotal(t); }
     setLoading(false);
-  }, [page, search]);
+  }, [page, search, salonPlanFilter]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -111,6 +144,25 @@ export default function SupportInboxPage() {
       <AdminShell>
         <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button size="sm">Create Case</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
+          <div className="flex flex-wrap items-end gap-4 mb-4">
+            <div className="space-y-1.5 min-w-[180px]">
+              <Label htmlFor="support-plan-filter" className="text-xs text-muted-foreground">
+                Filter by salon plan
+              </Label>
+              <select
+                id="support-plan-filter"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                value={salonPlanFilter}
+                onChange={(e) => handlePlanFilterChange(e.target.value)}
+              >
+                {SALON_PLAN_FILTER_OPTIONS.map((o) => (
+                  <option key={o.value || "all"} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <DataTable
             columns={columns}
             data={cases}
@@ -136,6 +188,16 @@ export default function SupportInboxPage() {
                   <div><span className="text-muted-foreground">Status:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${STATUS_COLORS[selectedCase.status]}`}>{selectedCase.status.replace(/_/g, " ")}</span></div>
                   <div><span className="text-muted-foreground">Priority:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${PRIORITY_COLORS[selectedCase.priority]}`}>{selectedCase.priority}</span></div>
                   <div><span className="text-muted-foreground">Salon:</span> {selectedCase.salon_id ? <EntityLink type="salon" id={selectedCase.salon_id} label={selectedCase.salon_name} /> : <span className="text-muted-foreground">N/A</span>}</div>
+                  <div>
+                    <span className="text-muted-foreground">Plan:</span>{" "}
+                    {selectedCase.salon_plan ? (
+                      <Badge variant="outline" className="ml-1 text-xs capitalize">
+                        {selectedCase.salon_plan}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground ml-1">—</span>
+                    )}
+                  </div>
                   <div><span className="text-muted-foreground">Assignee:</span> {selectedCase.assignee_email ?? "Unassigned"}</div>
                   {selectedCase.category && <div><span className="text-muted-foreground">Category:</span> <Badge variant="secondary" className="ml-1 text-xs">{selectedCase.category.replace(/_/g, " ")}</Badge></div>}
                   <div className="col-span-2"><span className="text-muted-foreground">Created:</span> {format(new Date(selectedCase.created_at), "PPpp")}</div>

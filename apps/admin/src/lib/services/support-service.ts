@@ -9,6 +9,8 @@ export type SupportCase = {
   id: string;
   salon_id: string | null;
   salon_name: string | null;
+  /** Subscription plan from salons.plan (null if no salon linked) */
+  salon_plan: string | null;
   user_id: string | null;
   type: string;
   status: string;
@@ -31,6 +33,8 @@ export type SupportCaseFilters = {
   priority?: string;
   assignee_id?: string;
   search?: string;
+  /** starter | pro | business — omit or empty for all */
+  salon_plan?: string;
 };
 
 /**
@@ -48,6 +52,7 @@ export async function getSupportCases(
     if (filters.priority) filterJson.priority = filters.priority;
     if (filters.assignee_id) filterJson.assignee_id = filters.assignee_id;
     if (filters.search) filterJson.search = filters.search;
+    if (filters.salon_plan) filterJson.salon_plan = filters.salon_plan;
 
     const { data, error } = await supabase.rpc("get_support_cases_list", {
       filters: filterJson,

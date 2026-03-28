@@ -1,0 +1,20 @@
+---
+description: Agent runs Supabase migrations after schema/RPC changes; do not leave manual db push to the user by default
+alwaysApply: true
+---
+
+# Supabase migrations (agent responsibility)
+
+When you add or change files under `supabase/supabase/migrations/` (or otherwise change database schema/RPCs that require a migration):
+
+1. **Proactively run migrations** against the linked local or remote database using the project’s normal workflow, typically from the repo root:
+   - `supabase db push` (remote linked project), or
+   - `supabase migration up` / `supabase db reset` when the task explicitly targets local dev only.
+
+2. **Do not** end the task with only “run this yourself” unless:
+   - the command fails because **Supabase CLI is missing**, **not logged in** (`supabase login`), or **no project link** (`supabase link`), or
+   - the user’s rules forbid network/remote changes for that session.
+
+3. If push fails for auth/link reasons, report the exact error and the one-line fix (e.g. `supabase link --project-ref …`), then stop—do not pretend the DB is updated.
+
+4. Never commit secrets; `.env` and keys stay local.
