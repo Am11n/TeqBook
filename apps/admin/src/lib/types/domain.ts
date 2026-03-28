@@ -43,9 +43,7 @@ export type FeatureKey =
   | "BRANDING"
   | "ROLES_ACCESS"
   | "EXPORTS"
-  | "CUSTOMER_HISTORY"
-  | "ONLINE_PAYMENTS"
-  | "ADVANCED_PERMISSIONS";
+  | "CUSTOMER_HISTORY";
 
 export type NotificationType = 
   | "sms"

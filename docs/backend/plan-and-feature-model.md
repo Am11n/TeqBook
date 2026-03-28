@@ -75,7 +75,8 @@ Alle tilgjengelige features:
 - `ROLES_ACCESS` - Advanced role-based access control
 - `EXPORTS` - Export data to CSV and other formats
 - `CUSTOMER_HISTORY` - View customer booking history
-- `ONLINE_PAYMENTS` - Accept online payments from customers
+
+Keys that are **not** in the admin Plan Features matrix (e.g. legacy or future keys) may still exist only in code/types until added to the product matrix and database.
 
 ---
 

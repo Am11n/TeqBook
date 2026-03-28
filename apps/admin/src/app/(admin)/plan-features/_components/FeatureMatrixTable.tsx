@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PLAN_TYPES, FEATURE_LIMITS, type PlanType } from "@/lib/config/feature-limits";
+import type { MatrixFeatureKey } from "@/lib/plan-features/matrix-feature-keys";
 import type { FeatureRow, MatrixState } from "./types";
 import { PlanColumnHeader } from "./PlanColumnHeader";
 
@@ -68,7 +69,7 @@ export function FeatureMatrixTable({
                 </td>
               </tr>
               {catFeatures.map((feature) => {
-                const limitConfig = FEATURE_LIMITS[feature.key];
+                const limitConfig = FEATURE_LIMITS[feature.key as MatrixFeatureKey];
                 return (
                   <tr
                     key={feature.id}

@@ -56,7 +56,7 @@ export const hiCopy: { hi: LandingCopyEntry } = {
           "Pro के सारे फीचर्स",
           "roles और access‑control (owner, manager, reception, staff)",
           "accounting और reporting के लिए deep stats और data‑export",
-          "urgent cases में priority सपोर्ट",
+          "पूरी ग्राहक बुकिंग हिस्ट्री",
         ],
       },
     ],

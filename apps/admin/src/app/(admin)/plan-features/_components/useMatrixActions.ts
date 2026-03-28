@@ -63,14 +63,12 @@ export function filterFeaturesByCategory(
   for (const f of features) featureByKey[f.key] = f;
 
   const result: { category: string; features: FeatureRow[] }[] = [];
-  const categorized = new Set<string>();
 
   for (const [category, keys] of Object.entries(FEATURE_CATEGORIES)) {
     const catFeatures: FeatureRow[] = [];
     for (const key of keys) {
       const f = featureByKey[key];
       if (!f) continue;
-      categorized.add(f.id);
       if (
         lowerSearch === "" ||
         f.name.toLowerCase().includes(lowerSearch) ||
@@ -83,13 +81,5 @@ export function filterFeaturesByCategory(
     if (catFeatures.length > 0) result.push({ category, features: catFeatures });
   }
 
-  const uncategorized = features.filter(
-    (f) =>
-      !categorized.has(f.id) &&
-      (lowerSearch === "" ||
-        f.name.toLowerCase().includes(lowerSearch) ||
-        f.key.toLowerCase().includes(lowerSearch))
-  );
-  if (uncategorized.length > 0) result.push({ category: "Other", features: uncategorized });
   return result;
 }

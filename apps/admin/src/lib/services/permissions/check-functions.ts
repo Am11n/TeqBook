@@ -16,7 +16,7 @@ export async function hasPermission(
   try {
     if (!role) return { allowed: false, error: null };
     if (role === "superadmin") return { allowed: true, error: null };
-    const { hasFeature } = await featuresService.hasFeature(salonId, "ADVANCED_PERMISSIONS");
+    const { hasFeature } = await featuresService.hasFeature(salonId, "ROLES_ACCESS");
     if (!hasFeature) return { allowed: hasDefaultPermission(role, resource, action), error: null };
     const cacheKey = `permissions:${salonId}:${role}:${resource}:${action}`;
     return await cacheGetOrSet(cacheKey, async () => ({ allowed: hasDefaultPermission(role, resource, action), error: null as string | null }), CacheTTL.MEDIUM);

@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { supabase } from "@/lib/supabase-client";
+import { PLAN_TYPES, type PlanType } from "@/lib/config/feature-limits";
 import {
-  FEATURE_CATEGORIES,
-  PLAN_TYPES,
-  type PlanType,
-} from "@/lib/config/feature-limits";
+  MATRIX_FEATURE_KEYS,
+  isMatrixFeatureKey,
+} from "@/lib/plan-features/matrix-feature-keys";
 import { Save, Search, CheckCircle2 } from "lucide-react";
 import {
   type FeatureRow,
@@ -87,7 +87,16 @@ export default function PlanFeaturesPage() {
       if (featuresRes.error) throw new Error(featuresRes.error.message);
       if (pfRes.error) throw new Error(pfRes.error.message);
 
-      const featureRows = (featuresRes.data ?? []) as FeatureRow[];
+      const allRows = (featuresRes.data ?? []) as FeatureRow[];
+      const featureRows = allRows.filter((f) => isMatrixFeatureKey(f.key));
+      const keysFromDb = new Set(featureRows.map((f) => f.key));
+      const missingKeys = MATRIX_FEATURE_KEYS.filter((k) => !keysFromDb.has(k));
+      if (missingKeys.length > 0) {
+        throw new Error(
+          `Missing plan features in database: ${missingKeys.join(", ")}. Run migrations or sync features.`
+        );
+      }
+
       setFeatures(featureRows);
 
       const m: MatrixState = {};

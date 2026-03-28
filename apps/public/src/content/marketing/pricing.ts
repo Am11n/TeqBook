@@ -68,9 +68,8 @@ export const PRICING = {
     { id: "staff", label: "Staff & Operations", order: 2 },
     { id: "notifications", label: "Notifications", order: 3 },
     { id: "reporting", label: "Reporting & Data", order: 4 },
-    { id: "products", label: "Products & Payments", order: 5 },
+    { id: "products", label: "Products", order: 5 },
     { id: "branding", label: "Branding & Language", order: 6 },
-    { id: "support", label: "Support", order: 7 },
   ] satisfies FeatureCategory[],
 
   features: [
@@ -94,15 +93,12 @@ export const PRICING = {
     { id: "exports", category: "reporting", label: "Data export for accounting", order: 2, values: { starter: false, pro: false, business: true } },
     { id: "customer-history", category: "reporting", label: "Full customer booking history", order: 3, values: { starter: false, pro: false, business: true } },
 
-    // Products & Payments
+    // Products
     { id: "inventory", category: "products", label: "Lightweight product inventory", order: 1, values: { starter: false, pro: true, business: true } },
 
     // Branding & Language
     { id: "multilingual", category: "branding", label: "Languages", order: 1, values: { starter: 2, pro: 5, business: "Unlimited" } },
     { id: "branding", category: "branding", label: "Branded booking page (logo & colors)", order: 2, values: { starter: false, pro: true, business: true } },
-
-    // Support
-    { id: "support", category: "support", label: "Priority support", order: 1, values: { starter: false, pro: false, business: true } },
   ] satisfies PricingFeature[],
 
   addons: [

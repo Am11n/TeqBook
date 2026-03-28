@@ -19,7 +19,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Lett produktlager",
     Languages: "Språk",
     "Branded booking page (logo & colors)": "Profilert bookingside (logo og farger)",
-    "Priority support": "Prioritert støtte",
   },
   ar: {
     "Online booking": "الحجز عبر الإنترنت",
@@ -38,7 +37,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "مخزون منتجات خفيف",
     Languages: "اللغات",
     "Branded booking page (logo & colors)": "صفحة حجز بعلامتك (شعار وألوان)",
-    "Priority support": "دعم أولوية",
   },
   so: {
     "Online booking": "Ballansasho online ah",
@@ -57,7 +55,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Kayd alaab fudud",
     Languages: "Luuqado",
     "Branded booking page (logo & colors)": "Bog ballansasho sumadeysan (logo iyo midabyo)",
-    "Priority support": "Taageero mudnaan leh",
   },
   ti: {
     "Online booking": "ኦንላይን ምዝገባ",
@@ -76,7 +73,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "ቀሊል መዝገብ ፍርያት",
     Languages: "ቋንቋታት",
     "Branded booking page (logo & colors)": "ብራንድ ዘለዎ ገጽ ምዝገባ (ሎጎን ሕብርታትን)",
-    "Priority support": "ቀዳማይ ደገፍ",
   },
   am: {
     "Online booking": "ኦንላይን ቦታ ማስያዝ",
@@ -95,7 +91,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "ቀላል የምርት ክምችት",
     Languages: "ቋንቋዎች",
     "Branded booking page (logo & colors)": "ብራንድ ያለው የቦታ ማስያዝ ገጽ (ሎጎ እና ቀለሞች)",
-    "Priority support": "ቅድሚያ ድጋፍ",
   },
   tr: {
     "Online booking": "Online rezervasyon",
@@ -114,7 +109,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Hafif urun envanteri",
     Languages: "Diller",
     "Branded booking page (logo & colors)": "Markali rezervasyon sayfasi (logo ve renkler)",
-    "Priority support": "Oncelikli destek",
   },
   pl: {
     "Online booking": "Rezerwacje online",
@@ -133,7 +127,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Lekki magazyn produktow",
     Languages: "Jezyki",
     "Branded booking page (logo & colors)": "Brandowana strona rezerwacji (logo i kolory)",
-    "Priority support": "Wsparcie priorytetowe",
   },
   vi: {
     "Online booking": "Dat lich online",
@@ -152,7 +145,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Kho san pham gon nhe",
     Languages: "Ngon ngu",
     "Branded booking page (logo & colors)": "Trang dat lich theo thuong hieu (logo va mau sac)",
-    "Priority support": "Ho tro uu tien",
   },
   zh: {
     "Online booking": "在线预约",
@@ -170,7 +162,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "轻量商品库存",
     Languages: "语言",
     "Branded booking page (logo & colors)": "品牌化预约页（Logo 和颜色）",
-    "Priority support": "优先支持",
   },
   tl: {
     "Online booking": "Online booking",
@@ -189,7 +180,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "Lightweight product inventory",
     Languages: "Mga wika",
     "Branded booking page (logo & colors)": "Branded booking page (logo at kulay)",
-    "Priority support": "Priority support",
   },
   fa: {
     "Online booking": "رزرو آنلاین",
@@ -208,7 +198,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "انبار سبک محصولات",
     Languages: "زبان ها",
     "Branded booking page (logo & colors)": "صفحه رزرو برندشده (لوگو و رنگ ها)",
-    "Priority support": "پشتیبانی اولویت دار",
   },
   dar: {
     "Online booking": "رزرو آنلاین",
@@ -227,7 +216,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "انبار سبک محصولات",
     Languages: "زبان ها",
     "Branded booking page (logo & colors)": "صفحه رزرو برندشده (لوگو و رنگ ها)",
-    "Priority support": "پشتیبانی اولویت دار",
   },
   ur: {
     "Online booking": "آن لائن بکنگ",
@@ -246,7 +234,6 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "ہلکا پروڈکٹ انوینٹری",
     Languages: "زبانیں",
     "Branded booking page (logo & colors)": "برانڈڈ بکنگ پیج (لوگو اور رنگ)",
-    "Priority support": "ترجیحی سپورٹ",
   },
   hi: {
     "Online booking": "ऑनलाइन बुकिंग",
@@ -265,6 +252,5 @@ export const featureMapsByLocale: Partial<Record<AppLocale, Record<string, strin
     "Lightweight product inventory": "हल्का प्रोडक्ट इन्वेंटरी",
     Languages: "भाषाएं",
     "Branded booking page (logo & colors)": "ब्रांडेड बुकिंग पेज (लोगो और रंग)",
-    "Priority support": "प्राथमिकता सपोर्ट",
   },
 };
