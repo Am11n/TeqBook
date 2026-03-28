@@ -69,7 +69,7 @@ Alle tilgjengelige features:
 - `MULTILINGUAL` - Support for multiple languages
 - `SMS_NOTIFICATIONS` - Send SMS reminders and notifications
 - `EMAIL_NOTIFICATIONS` - Send email reminders and notifications
-- `WHATSAPP` - WhatsApp support and notifications
+- `WHATSAPP` - WhatsApp communication between salon and customer (booking page contact when the salon adds a number; not platform support or automated WhatsApp notifications)
 - `INVENTORY` - Lightweight inventory for products
 - `BRANDING` - Customize booking page with branding
 - `ROLES_ACCESS` - Advanced role-based access control

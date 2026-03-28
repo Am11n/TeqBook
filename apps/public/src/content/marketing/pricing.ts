@@ -86,7 +86,13 @@ export const PRICING = {
     // Notifications
     { id: "sms", category: "notifications", label: "SMS reminders", order: 1, values: { starter: "At cost", pro: true, business: true } },
     { id: "email", category: "notifications", label: "Email notifications", order: 2, values: { starter: false, pro: true, business: true } },
-    { id: "whatsapp", category: "notifications", label: "WhatsApp support", order: 3, values: { starter: true, pro: true, business: true } },
+    {
+      id: "whatsapp",
+      category: "notifications",
+      label: "WhatsApp communication (salon & customer)",
+      order: 3,
+      values: { starter: true, pro: true, business: true },
+    },
 
     // Reporting & Data
     { id: "reports", category: "reporting", label: "Advanced reports (revenue & capacity)", order: 1, values: { starter: false, pro: true, business: true } },

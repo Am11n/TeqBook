@@ -42,7 +42,7 @@ export function getPlans(translations: {
         "Online booking and calendar",
         "Customer list and service management",
         "Pay-in-salon flow",
-        "WhatsApp support",
+        "WhatsApp communication (salon & customer)",
         "One additional language pack",
         "SMS reminders at cost price",
       ],

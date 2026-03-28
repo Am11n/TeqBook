@@ -24,7 +24,7 @@ export const hiCopy: { hi: LandingCopyEntry } = {
           "ऑनलाइन बुकिंग और सरल कैलेंडर",
           "कस्टमर लिस्ट और सर्विस मैनेजमेंट",
           "बिना किसी complex payment integration के हमेशा सैलून में पेमेंट",
-          "WhatsApp सपोर्ट, ऐसी टीम से जो international सैलून को समझती है",
+          "बुकिंग पेज पर सैलून और ग्राहक के बीच WhatsApp संवाद",
           "English + एक extra language pack",
           "SMS रिमाइंडर, लगभग cost‑price पर",
         ],
