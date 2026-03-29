@@ -192,6 +192,10 @@ export const ur: TranslationNamespaces = {
     reports: "رپورٹس",
     collapseSidebar: "سائیڈبار سکیڑیں",
     expandSidebar: "سائیڈبار پھیلائیں",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {

@@ -181,6 +181,10 @@ export const zh: TranslationNamespaces = {
     reports: "报告",
     collapseSidebar: "收起侧边栏",
     expandSidebar: "展开侧边栏",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   home: {
     title: "总览",

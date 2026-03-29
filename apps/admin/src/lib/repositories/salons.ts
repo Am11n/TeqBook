@@ -36,7 +36,7 @@ export type Salon = {
   payment_failure_count?: number | null;
   payment_failed_at?: string | null;
   last_payment_retry_at?: string | null;
-  payment_status?: "active" | "failed" | "grace_period" | "restricted" | null;
+  payment_status?: "active" | "failed" | "grace_period" | "restricted" | "requires_action" | "incomplete" | null;
 };
 
 /**

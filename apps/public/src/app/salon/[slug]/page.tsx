@@ -77,6 +77,7 @@ export default async function SalonPublicProfilePage({ params }: { params: Promi
       reviewsSummary={result.data.reviewsSummary}
       tokens={result.data.tokens}
       locale={result.data.locale}
+      publicBooking={result.data.publicBooking}
     />
   );
 }

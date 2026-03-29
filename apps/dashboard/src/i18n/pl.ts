@@ -254,6 +254,10 @@ export const pl: TranslationNamespaces = {
     reports: "Raporty",
     collapseSidebar: "Zwiń panel",
     expandSidebar: "Rozwiń panel",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {

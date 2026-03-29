@@ -7,7 +7,7 @@ import { XIcon } from "lucide-react";
 import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, Tabs, TabsContent, TabsList, TabsTrigger } from "@teqbook/ui";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { fallbackAvatar, formatPrice } from "../profile-helpers";
-import type { PublicTeamMember } from "../profile-types";
+import type { PublicProfileClientProps, PublicTeamMember } from "../profile-types";
 import type { AppLocale } from "@/i18n/translations";
 import { formatProfileLanguageLabel, getProfilePageMessages, PROFILE_TEAM_DIALOG_MESSAGES } from "../profile-i18n";
 
@@ -15,6 +15,7 @@ type Props = {
   salonId: string;
   slug: string;
   bookUrl: string;
+  publicBooking: PublicProfileClientProps["publicBooking"];
   borderColor: string;
   selectedMember: PublicTeamMember | null;
   locale: AppLocale;
@@ -164,7 +165,8 @@ export function ProfileTeamDialog(props: Props) {
 
                 <TabsContent value="services" className="space-y-2.5">
                   {selectedMember.services.length > 0 ? (
-                    selectedMember.services.map((service) => (
+                    selectedMember.services.map((service) =>
+                      props.publicBooking.available ? (
                       <Link
                         key={service.id}
                         href={`${props.bookUrl}?employeeId=${encodeURIComponent(selectedMember.id)}&serviceId=${encodeURIComponent(service.id)}`}
@@ -195,7 +197,27 @@ export function ProfileTeamDialog(props: Props) {
                           </p>
                         </div>
                       </Link>
-                    ))
+                      ) : (
+                      <div
+                        key={service.id}
+                        className="rounded-xl border border-[var(--pb-border-soft)] bg-[var(--pb-bg-surface)] px-4 py-3.5 opacity-90"
+                        style={{ borderColor: props.borderColor }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">{service.name}</p>
+                            <p className="text-xs text-[var(--pb-muted)]">
+                              {service.durationMinutes ? `${service.durationMinutes} ${pageMessages.minuteShort}` : pageMessages.durationOnRequest}
+                              {formatPrice(service.priceCents, props.locale) ? ` · ${formatPrice(service.priceCents, props.locale)}` : ""}
+                            </p>
+                          </div>
+                          <p className="inline-flex items-center gap-1 rounded-full border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-2 py-1 text-xs font-medium text-[var(--pb-muted)]">
+                            {pageMessages.bookingPreviewUnavailable}
+                          </p>
+                        </div>
+                      </div>
+                      )
+                    )
                   ) : (
                     <p className="text-sm text-[var(--pb-muted)]">{m.servicesEmpty}</p>
                   )}
@@ -204,25 +226,29 @@ export function ProfileTeamDialog(props: Props) {
             </div>
 
             <div className="sticky bottom-0 border-t border-[var(--pb-divider)] bg-[var(--pb-surface)]/95 px-6 py-3 backdrop-blur-sm sm:static sm:bg-[color-mix(in_srgb,var(--pb-bg-surface)_80%,var(--pb-surface)_20%)] sm:px-8">
-              <Button
-                asChild
-                className="h-11 w-full text-sm font-semibold transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] active:translate-y-px motion-reduce:transform-none"
-                style={{ backgroundColor: "var(--pb-primary)", color: "var(--pb-primary-text)" }}
-              >
-                <Link
-                  href={`${props.bookUrl}?employeeId=${encodeURIComponent(selectedMember.id)}`}
-                  onClick={() =>
-                    trackPublicEvent("click_book_from_team_modal", {
-                      salon_id: props.salonId,
-                      slug: props.slug,
-                      cta_location: "team_modal",
-                      employee_id: selectedMember.id,
-                    })
-                  }
+              {props.publicBooking.available ? (
+                <Button
+                  asChild
+                  className="h-11 w-full text-sm font-semibold transition-transform duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] active:translate-y-px motion-reduce:transform-none"
+                  style={{ backgroundColor: "var(--pb-primary)", color: "var(--pb-primary-text)" }}
                 >
-                  {m.bookWith} {selectedMember.name}
-                </Link>
-              </Button>
+                  <Link
+                    href={`${props.bookUrl}?employeeId=${encodeURIComponent(selectedMember.id)}`}
+                    onClick={() =>
+                      trackPublicEvent("click_book_from_team_modal", {
+                        salon_id: props.salonId,
+                        slug: props.slug,
+                        cta_location: "team_modal",
+                        employee_id: selectedMember.id,
+                      })
+                    }
+                  >
+                    {m.bookWith} {selectedMember.name}
+                  </Link>
+                </Button>
+              ) : (
+                <p className="text-center text-sm leading-relaxed text-[var(--pb-text-secondary)]">{m.teamModalBookingClosed}</p>
+              )}
             </div>
           </div>
         </DialogContent>

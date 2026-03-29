@@ -276,6 +276,10 @@ export const en: TranslationNamespaces = {
     feedbackUploadFailed: "Failed to upload",
     collapseSidebar: "Collapse sidebar",
     expandSidebar: "Expand sidebar",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   home: {
     title: "Overview",

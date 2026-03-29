@@ -190,6 +190,10 @@ export const hi: TranslationNamespaces = {
     reports: "रिपोर्ट",
     collapseSidebar: "साइडबार छोटा करें",
     expandSidebar: "साइडबार बड़ा करें",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   home: {
     title: "ओवरव्यू",

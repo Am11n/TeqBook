@@ -117,6 +117,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           slug={props.slug}
           hero={props.hero}
           bookUrl={props.bookUrl}
+          publicBooking={props.publicBooking}
           tokens={props.tokens}
           heroTagline={heroTagline}
           openCloseMeta={openCloseMeta}
@@ -131,6 +132,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           salonId={props.salonId}
           slug={props.slug}
           bookUrl={props.bookUrl}
+          publicBooking={props.publicBooking}
           services={props.servicesPreview}
           cardStyle={cardStyle}
           locale={props.locale}
@@ -186,28 +188,31 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         />
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--pb-border-soft)] bg-[var(--pb-surface)] p-3 lg:hidden">
-        <Link href={props.bookUrl}>
-          <Button
-            className="w-full"
-            style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
-            onClick={() =>
-              trackPublicEvent("click_book_from_profile", {
-                salon_id: props.salonId,
-                slug: props.slug,
-                cta_location: "sticky_mobile",
-              })
-            }
-          >
-            {m.bookAppointment}
-          </Button>
-        </Link>
-      </div>
+      {props.publicBooking.available ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--pb-border-soft)] bg-[var(--pb-surface)] p-3 lg:hidden">
+          <Link href={props.bookUrl}>
+            <Button
+              className="w-full"
+              style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
+              onClick={() =>
+                trackPublicEvent("click_book_from_profile", {
+                  salon_id: props.salonId,
+                  slug: props.slug,
+                  cta_location: "sticky_mobile",
+                })
+              }
+            >
+              {m.bookAppointment}
+            </Button>
+          </Link>
+        </div>
+      ) : null}
 
       <ProfileTeamDialog
         salonId={props.salonId}
         slug={props.slug}
         bookUrl={props.bookUrl}
+        publicBooking={props.publicBooking}
         borderColor={props.tokens.colors.border}
         selectedMember={selectedMember}
         locale={props.locale}

@@ -194,6 +194,10 @@ export const tl: TranslationNamespaces = {
     reports: "Mga ulat",
     collapseSidebar: "I-collapse ang sidebar",
     expandSidebar: "Palawakin ang sidebar",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {

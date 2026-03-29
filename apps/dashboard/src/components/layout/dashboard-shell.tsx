@@ -16,6 +16,8 @@ import { DashboardHeader } from "./dashboard/DashboardHeader";
 import { DashboardSidebar } from "./dashboard/DashboardSidebar";
 import { MobileNavigation } from "./dashboard/MobileNavigation";
 import { SessionTimeoutDialog } from "./dashboard/SessionTimeoutDialog";
+import { supabase } from "@/lib/supabase-client";
+import { ProductLockDialog } from "@/components/billing/ProductLockDialog";
 
 type DashboardShellProps = {
   children: ReactNode;
@@ -46,6 +48,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   const [mounted, setMounted] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [productAccessGranted, setProductAccessGranted] = useState<boolean | null>(null);
 
   const appLocale = normalizeLocale(locale);
   const texts = translations[appLocale].dashboard;
@@ -62,6 +65,45 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   useEffect(() => {
     setMobileNavOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isReady || !salon?.id || isSuperAdmin) {
+      setProductAccessGranted(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const { data, error } = await supabase.rpc("salon_product_access_granted", {
+        p_salon_id: salon.id,
+      });
+      if (cancelled) return;
+      if (error) {
+        setProductAccessGranted(true);
+        return;
+      }
+      setProductAccessGranted(data === true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isReady,
+    isSuperAdmin,
+    salon?.id,
+    salon?.trial_end,
+    salon?.billing_subscription_id,
+    salon?.payment_status,
+    pathname,
+  ]);
+
+  const isBillingRoute = pathname.includes("/settings/billing");
+  const showProductLock =
+    isReady &&
+    !loading &&
+    Boolean(salon?.id) &&
+    !isSuperAdmin &&
+    productAccessGranted === false &&
+    !isBillingRoute;
 
   // Load sidebar collapse state from Supabase (only once per page session)
   useEffect(() => {
@@ -190,6 +232,13 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
         timeRemaining={timeRemaining}
         onExtendSession={extendSession}
         onLogout={handleSessionLogout}
+      />
+
+      <ProductLockDialog
+        open={showProductLock}
+        title={texts.productLockTitle}
+        description={texts.productLockDescription}
+        ctaLabel={texts.productLockCta}
       />
 
       {/* Mobile nav overlay */}

@@ -4,15 +4,31 @@ import { logError, logInfo } from "@/lib/services/logger";
 const GRACE_PERIOD_DAYS = 7;
 
 /**
- * Check if salon has access based on payment status and grace period
+ * Check if salon has product access (trial, grandfather, or paid subscription).
+ * Source of truth: Postgres RPC `salon_product_access_granted` (must match migration logic).
  */
 export async function checkSalonPaymentAccess(
   salonId: string
 ): Promise<{ data: { hasAccess: boolean; reason: string | null; gracePeriodEndsAt: string | null } | null; error: string | null }> {
   try {
+    const { data: granted, error: rpcError } = await supabase.rpc("salon_product_access_granted", {
+      p_salon_id: salonId,
+    });
+
+    if (rpcError) {
+      return { data: null, error: rpcError.message };
+    }
+
+    if (granted === true) {
+      return {
+        data: { hasAccess: true, reason: null, gracePeriodEndsAt: null },
+        error: null,
+      };
+    }
+
     const { data: salon, error: salonError } = await supabase
       .from("salons")
-      .select("id, payment_status, payment_failed_at, payment_failure_count, billing_subscription_id")
+      .select("payment_failed_at")
       .eq("id", salonId)
       .single();
 
@@ -20,43 +36,18 @@ export async function checkSalonPaymentAccess(
       return { data: null, error: salonError?.message || "Salon not found" };
     }
 
-    if (!salon.billing_subscription_id) {
-      return {
-        data: { hasAccess: true, reason: null, gracePeriodEndsAt: null },
-        error: null,
-      };
-    }
-
-    if (salon.payment_status === "active" || !salon.payment_status) {
-      return {
-        data: { hasAccess: true, reason: null, gracePeriodEndsAt: null },
-        error: null,
-      };
-    }
-
-    if (salon.payment_failed_at) {
-      const daysSinceFailure = Math.floor(
-        (Date.now() - new Date(salon.payment_failed_at).getTime()) / (24 * 60 * 60 * 1000)
-      );
-      const gracePeriodEndsAt = new Date(
-        new Date(salon.payment_failed_at).getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000
-      ).toISOString();
-
-      if (daysSinceFailure < GRACE_PERIOD_DAYS) {
-        return {
-          data: { hasAccess: true, reason: "grace_period", gracePeriodEndsAt },
-          error: null,
-        };
-      } else {
-        return {
-          data: { hasAccess: false, reason: "payment_failed_grace_period_expired", gracePeriodEndsAt },
-          error: null,
-        };
-      }
-    }
+    const gracePeriodEndsAt = salon.payment_failed_at
+      ? new Date(
+          new Date(salon.payment_failed_at).getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000
+        ).toISOString()
+      : null;
 
     return {
-      data: { hasAccess: true, reason: null, gracePeriodEndsAt: null },
+      data: {
+        hasAccess: false,
+        reason: "no_product_access",
+        gracePeriodEndsAt,
+      },
       error: null,
     };
   } catch (error) {

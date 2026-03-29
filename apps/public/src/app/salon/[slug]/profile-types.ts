@@ -2,6 +2,13 @@ import type { CSSProperties } from "react";
 import type { PublicBookingTokens } from "@/components/public-booking/types";
 import type { AppLocale } from "@/i18n/translations";
 
+export type PublicBookingBlockReason = "online_booking_disabled" | "billing_locked" | "salon_not_found";
+
+export type PublicBookingStatus = {
+  available: boolean;
+  reason: PublicBookingBlockReason | "ok";
+};
+
 export type PublicService = {
   id: string;
   name: string;
@@ -76,6 +83,7 @@ export type PublicProfileClientProps = {
   } | null;
   tokens: PublicBookingTokens;
   locale: AppLocale;
+  publicBooking: PublicBookingStatus;
 };
 
 export type CardStyle = CSSProperties;

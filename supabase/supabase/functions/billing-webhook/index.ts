@@ -106,6 +106,10 @@ async function syncSubscriptionProjection(
     current_period_end: currentPeriodEndIso,
   };
   if (plan) updatePayload.plan = plan;
+  if (subscription.status === "active" || subscription.status === "trialing") {
+    updatePayload.trial_end = null;
+    updatePayload.payment_status = "active";
+  }
 
   const { error: updateError } = await supabase
     .from("salons")
@@ -255,6 +259,7 @@ serve(async (req) => {
             .from("salons")
             .update({
               billing_subscription_id: subscription.id,
+              payment_status: "incomplete",
             })
             .eq("id", salonId);
 
@@ -295,6 +300,7 @@ serve(async (req) => {
                 payment_failed_at: null,
                 last_payment_retry_at: null,
                 payment_status: "active",
+                trial_end: null,
               })
               .eq("id", salonId);
 

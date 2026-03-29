@@ -29,6 +29,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: string;
     servicesEmpty: string;
     bookWith: string;
+    teamModalBookingClosed: string;
     closeDialog: string;
     bioFallback: string;
   }
@@ -41,6 +42,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Languages",
     servicesEmpty: "Services will be shown here.",
     bookWith: "Book with",
+    teamModalBookingClosed: "Online booking is not available for this salon right now.",
     closeDialog: "Close dialog",
     bioFallback: "helps customers with modern cuts and grooming.",
   },
@@ -52,6 +54,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Sprak",
     servicesEmpty: "Tjenester vises her.",
     bookWith: "Book med",
+    teamModalBookingClosed: "Nettbestilling er ikke tilgjengelig for denne salongen akkurat nå.",
     closeDialog: "Lukk dialog",
     bioFallback: "hjelper kunder med moderne klipp og grooming.",
   },
@@ -63,6 +66,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "اللغات",
     servicesEmpty: "ستظهر الخدمات هنا.",
     bookWith: "احجز مع",
+    teamModalBookingClosed: "الحجز عبر الإنترنت غير متاح لهذا الصالون حالياً.",
     closeDialog: "إغلاق النافذة",
     bioFallback: "يساعد العملاء في القصات الحديثة والعناية.",
   },
@@ -74,6 +78,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Luuqadaha",
     servicesEmpty: "Adeegyada halkan ayay kasoo muuqan doonaan.",
     bookWith: "La ballan",
+    teamModalBookingClosed: "Ballanshaha internetka saloonkan hadda lama heli karo.",
     closeDialog: "Xir daaqadda",
     bioFallback: "wuxuu ka caawiyaa macaamiisha timo-jaris casri ah iyo qurxin.",
   },
@@ -85,6 +90,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "ቋንቋታት",
     servicesEmpty: "ኣገልግሎታት ኣብዚ ይርከቡ።",
     bookWith: "ምስ ዝነበረ ምዝገባ",
+    teamModalBookingClosed: "ናይ ኢንተርነት ምዝገባ ኣብዚ እዋን ንዚ ሳሎን ኣይክኣልን።",
     closeDialog: "መስኮት ዕጸው",
     bioFallback: "ንደንበኛታት ዘመናዊ ቁረጽን ምርባሕን ይሕግዝ።",
   },
@@ -96,6 +102,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "ቋንቋዎች",
     servicesEmpty: "አገልግሎቶች እዚህ ይታያሉ።",
     bookWith: "ከ",
+    teamModalBookingClosed: "ለዚህ ሳሎን የመስመር ላይ ቀጠሮ በአሁኑ ጊዜ አይገኝም።",
     closeDialog: "መስኮቱን ዝጋ",
     bioFallback: "ደንበኞችን በዘመናዊ ቁርጠት እና እንክብካቤ ያግዛል።",
   },
@@ -107,6 +114,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Diller",
     servicesEmpty: "Hizmetler burada gosterilecek.",
     bookWith: "Sununla randevu al",
+    teamModalBookingClosed: "Bu salon icin cevrimici randevu su anda kullanilamiyor.",
     closeDialog: "Pencereyi kapat",
     bioFallback: "musterilere modern kesim ve bakimda yardimci olur.",
   },
@@ -118,6 +126,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Jezyki",
     servicesEmpty: "Uslugi beda pokazane tutaj.",
     bookWith: "Rezerwuj z",
+    teamModalBookingClosed: "Rezerwacja online dla tego salonu jest obecnie niedostepna.",
     closeDialog: "Zamknij okno",
     bioFallback: "pomaga klientom w nowoczesnych strzyzeniach i pielegnacji.",
   },
@@ -129,6 +138,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Ngon ngu",
     servicesEmpty: "Dich vu se hien thi o day.",
     bookWith: "Dat voi",
+    teamModalBookingClosed: "Dat lich truc tuyen cho salon nay hien khong kha dung.",
     closeDialog: "Dong hop thoai",
     bioFallback: "ho tro khach hang voi kieu cat hien dai va cham soc.",
   },
@@ -140,6 +150,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "语言",
     servicesEmpty: "服务将显示在这里。",
     bookWith: "与其预约",
+    teamModalBookingClosed: "该门店目前无法在线预约。",
     closeDialog: "关闭对话框",
     bioFallback: "帮助客户完成现代剪发与护理。",
   },
@@ -151,6 +162,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "Mga wika",
     servicesEmpty: "Ipapakita dito ang mga serbisyo.",
     bookWith: "Mag-book kay",
+    teamModalBookingClosed: "Ang online booking para sa salon na ito ay hindi available sa ngayon.",
     closeDialog: "Isara ang dialog",
     bioFallback: "tumutulong sa mga customer sa modernong gupit at grooming.",
   },
@@ -162,6 +174,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "زبان‌ها",
     servicesEmpty: "خدمات اینجا نمایش داده می‌شوند.",
     bookWith: "رزرو با",
+    teamModalBookingClosed: "رزرو آنلاین برای این سالن در حال حاضر در دسترس نیست.",
     closeDialog: "بستن پنجره",
     bioFallback: "به مشتریان در اصلاح مدرن و آراستگی کمک می‌کند.",
   },
@@ -173,6 +186,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "زبان‌ها",
     servicesEmpty: "خدمات اینجا نشان داده می‌شود.",
     bookWith: "رزرو با",
+    teamModalBookingClosed: "رزرو آنلاین برای این سالن فعلاً در دسترس نیست.",
     closeDialog: "بستن پنجره",
     bioFallback: "به مشتریان در اصلاح مدرن و آراستگی کمک می‌کند.",
   },
@@ -184,6 +198,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "زبانیں",
     servicesEmpty: "خدمات یہاں دکھائی جائیں گی۔",
     bookWith: "کے ساتھ بک کریں",
+    teamModalBookingClosed: "اس سیلون کے لیے آن لائن بکنگ فی الحال دستیاب نہیں۔",
     closeDialog: "ڈائیلاگ بند کریں",
     bioFallback: "صارفین کو جدید ہیئر کٹ اور گرومنگ میں مدد کرتا ہے۔",
   },
@@ -195,6 +210,7 @@ export const PROFILE_TEAM_DIALOG_MESSAGES: Record<
     languages: "भाषाएं",
     servicesEmpty: "सेवाएं यहां दिखाई जाएंगी।",
     bookWith: "के साथ बुक करें",
+    teamModalBookingClosed: "इस सैलून के लिए ऑनलाइन बुकिंग अभी उपलब्ध नहीं है।",
     closeDialog: "डायलॉग बंद करें",
     bioFallback: "ग्राहकों को आधुनिक हेयरकट और ग्रूमिंग में मदद करता है।",
   },
@@ -217,6 +233,7 @@ export function formatProfileLanguageLabel(codeOrName: string, locale: AppLocale
 
 export type ProfilePageMessages = {
   bookAppointment: string;
+  bookingPreviewUnavailable: string;
   shareProfileAria: string;
   payInSalon: string;
   reviewsWord: string;
@@ -255,6 +272,7 @@ export type ProfilePageMessages = {
 
 const EN_PROFILE_PAGE_MESSAGES: ProfilePageMessages = {
   bookAppointment: "Book appointment",
+  bookingPreviewUnavailable: "Booking unavailable",
   shareProfileAria: "Share profile",
   payInSalon: "Pay in salon",
   reviewsWord: "reviews",
@@ -295,6 +313,7 @@ const PROFILE_PAGE_MESSAGES: Record<AppLocale, ProfilePageMessages> = {
   en: EN_PROFILE_PAGE_MESSAGES,
   nb: {
     bookAppointment: "Bestill time",
+    bookingPreviewUnavailable: "Bestilling ikke tilgjengelig",
     shareProfileAria: "Del profil",
     payInSalon: "Betal i salong",
     reviewsWord: "anmeldelser",
@@ -332,6 +351,7 @@ const PROFILE_PAGE_MESSAGES: Record<AppLocale, ProfilePageMessages> = {
   },
   ar: {
     bookAppointment: "احجز موعد",
+    bookingPreviewUnavailable: "الحجز غير متاح",
     shareProfileAria: "مشاركة الملف",
     payInSalon: "الدفع في الصالون",
     reviewsWord: "تقييمات",
@@ -367,18 +387,18 @@ const PROFILE_PAGE_MESSAGES: Record<AppLocale, ProfilePageMessages> = {
     portfolioAlt: "الأعمال",
     reviewsHeading: "التقييمات",
   },
-  so: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Qabso waqti", shareProfileAria: "La wadaag profile", servicesHeading: "Adeegyada", teamHeading: "Kooxda", aboutHeading: "Ku saabsan", visitHeading: "Booqo", openingHoursHeading: "Saacadaha furitaanka", reviewsHeading: "Faallooyin" },
-  ti: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "ቆጸራ ሓዝ", servicesHeading: "ኣገልግሎታት", teamHeading: "ጉጅለ", aboutHeading: "ብዛዕባ", visitHeading: "ብጻሕ", openingHoursHeading: "ሰዓታት ስራሕ", reviewsHeading: "ግምገማት" },
-  am: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "ቀጠሮ ያዝ", servicesHeading: "አገልግሎቶች", teamHeading: "ቡድን", aboutHeading: "ስለ", visitHeading: "ጉብኝት", openingHoursHeading: "የስራ ሰዓት", reviewsHeading: "ግምገማዎች" },
-  tr: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Randevu al", shareProfileAria: "Profili paylas", payInSalon: "Salonda odeme", reviewsWord: "yorum", servicesHeading: "Hizmetler", teamHeading: "Ekip", aboutHeading: "Hakkinda", visitHeading: "Konum", openingHoursHeading: "Calisma saatleri", reviewsHeading: "Yorumlar" },
-  pl: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Umow wizyte", shareProfileAria: "Udostepnij profil", payInSalon: "Platnosc w salonie", reviewsWord: "opinie", servicesHeading: "Uslugi", teamHeading: "Zespol", aboutHeading: "O nas", visitHeading: "Wizyta", openingHoursHeading: "Godziny otwarcia", reviewsHeading: "Opinie" },
-  vi: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Dat lich", shareProfileAria: "Chia se ho so", payInSalon: "Thanh toan tai salon", reviewsWord: "danh gia", servicesHeading: "Dich vu", teamHeading: "Doi ngu", aboutHeading: "Gioi thieu", visitHeading: "Dia diem", openingHoursHeading: "Gio mo cua", reviewsHeading: "Danh gia" },
-  zh: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "预约", shareProfileAria: "分享主页", payInSalon: "到店支付", reviewsWord: "评价", servicesHeading: "服务", teamHeading: "团队", aboutHeading: "关于", visitHeading: "到店信息", openingHoursHeading: "营业时间", reviewsHeading: "评价" },
-  tl: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Mag-book", shareProfileAria: "I-share ang profile", payInSalon: "Bayad sa salon", reviewsWord: "reviews", servicesHeading: "Mga serbisyo", teamHeading: "Team", aboutHeading: "Tungkol", visitHeading: "Bisitahin", openingHoursHeading: "Oras ng bukas", reviewsHeading: "Mga review" },
-  fa: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "رزرو نوبت", shareProfileAria: "اشتراک پروفایل", payInSalon: "پرداخت در سالن", reviewsWord: "نظرات", servicesHeading: "خدمات", teamHeading: "تیم", aboutHeading: "درباره", visitHeading: "مراجعه", openingHoursHeading: "ساعات کاری", reviewsHeading: "نظرات" },
-  dar: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "رزرو نوبت", shareProfileAria: "اشتراک پروفایل", payInSalon: "پرداخت در سالن", reviewsWord: "نظرات", servicesHeading: "خدمات", teamHeading: "تیم", aboutHeading: "درباره", visitHeading: "مراجعه", openingHoursHeading: "ساعات کاری", reviewsHeading: "نظرات" },
-  ur: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "وقت بک کریں", shareProfileAria: "پروفائل شئیر کریں", payInSalon: "ادائیگی سیلون میں", reviewsWord: "ریویوز", servicesHeading: "سروسز", teamHeading: "ٹیم", aboutHeading: "تعارف", visitHeading: "وزٹ", openingHoursHeading: "اوقات کار", reviewsHeading: "ریویوز" },
-  hi: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "अपॉइंटमेंट बुक करें", shareProfileAria: "प्रोफाइल शेयर करें", payInSalon: "सैलून में भुगतान", reviewsWord: "रिव्यू", servicesHeading: "सेवाएं", teamHeading: "टीम", aboutHeading: "परिचय", visitHeading: "विजिट", openingHoursHeading: "खुलने का समय", reviewsHeading: "रिव्यू" },
+  so: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Qabso waqti", bookingPreviewUnavailable: "Ballanshaha lama heli karo", shareProfileAria: "La wadaag profile", servicesHeading: "Adeegyada", teamHeading: "Kooxda", aboutHeading: "Ku saabsan", visitHeading: "Booqo", openingHoursHeading: "Saacadaha furitaanka", reviewsHeading: "Faallooyin" },
+  ti: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "ቆጸራ ሓዝ", bookingPreviewUnavailable: "ምዝገባ ኣይክኣልን", servicesHeading: "ኣገልግሎታት", teamHeading: "ጉጅለ", aboutHeading: "ብዛዕባ", visitHeading: "ብጻሕ", openingHoursHeading: "ሰዓታት ስራሕ", reviewsHeading: "ግምገማት" },
+  am: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "ቀጠሮ ያዝ", bookingPreviewUnavailable: "ቀጠሮ አይገኝም", servicesHeading: "አገልግሎቶች", teamHeading: "ቡድን", aboutHeading: "ስለ", visitHeading: "ጉብኝት", openingHoursHeading: "የስራ ሰዓት", reviewsHeading: "ግምገማዎች" },
+  tr: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Randevu al", bookingPreviewUnavailable: "Randevu yok", shareProfileAria: "Profili paylas", payInSalon: "Salonda odeme", reviewsWord: "yorum", servicesHeading: "Hizmetler", teamHeading: "Ekip", aboutHeading: "Hakkinda", visitHeading: "Konum", openingHoursHeading: "Calisma saatleri", reviewsHeading: "Yorumlar" },
+  pl: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Umow wizyte", bookingPreviewUnavailable: "Rezerwacja niedostepna", shareProfileAria: "Udostepnij profil", payInSalon: "Platnosc w salonie", reviewsWord: "opinie", servicesHeading: "Uslugi", teamHeading: "Zespol", aboutHeading: "O nas", visitHeading: "Wizyta", openingHoursHeading: "Godziny otwarcia", reviewsHeading: "Opinie" },
+  vi: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Dat lich", bookingPreviewUnavailable: "Khong dat duoc", shareProfileAria: "Chia se ho so", payInSalon: "Thanh toan tai salon", reviewsWord: "danh gia", servicesHeading: "Dich vu", teamHeading: "Doi ngu", aboutHeading: "Gioi thieu", visitHeading: "Dia diem", openingHoursHeading: "Gio mo cua", reviewsHeading: "Danh gia" },
+  zh: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "预约", bookingPreviewUnavailable: "暂不可预约", shareProfileAria: "分享主页", payInSalon: "到店支付", reviewsWord: "评价", servicesHeading: "服务", teamHeading: "团队", aboutHeading: "关于", visitHeading: "到店信息", openingHoursHeading: "营业时间", reviewsHeading: "评价" },
+  tl: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "Mag-book", bookingPreviewUnavailable: "Hindi available ang booking", shareProfileAria: "I-share ang profile", payInSalon: "Bayad sa salon", reviewsWord: "reviews", servicesHeading: "Mga serbisyo", teamHeading: "Team", aboutHeading: "Tungkol", visitHeading: "Bisitahin", openingHoursHeading: "Oras ng bukas", reviewsHeading: "Mga review" },
+  fa: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "رزرو نوبت", bookingPreviewUnavailable: "رزرو در دسترس نیست", shareProfileAria: "اشتراک پروفایل", payInSalon: "پرداخت در سالن", reviewsWord: "نظرات", servicesHeading: "خدمات", teamHeading: "تیم", aboutHeading: "درباره", visitHeading: "مراجعه", openingHoursHeading: "ساعات کاری", reviewsHeading: "نظرات" },
+  dar: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "رزرو نوبت", bookingPreviewUnavailable: "رزرو در دسترس نیست", shareProfileAria: "اشتراک پروفایل", payInSalon: "پرداخت در سالن", reviewsWord: "نظرات", servicesHeading: "خدمات", teamHeading: "تیم", aboutHeading: "درباره", visitHeading: "مراجعه", openingHoursHeading: "ساعات کاری", reviewsHeading: "نظرات" },
+  ur: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "وقت بک کریں", bookingPreviewUnavailable: "بکنگ دستیاب نہیں", shareProfileAria: "پروفائل شئیر کریں", payInSalon: "ادائیگی سیلون میں", reviewsWord: "ریویوز", servicesHeading: "سروسز", teamHeading: "ٹیم", aboutHeading: "تعارف", visitHeading: "وزٹ", openingHoursHeading: "اوقات کار", reviewsHeading: "ریویوز" },
+  hi: { ...EN_PROFILE_PAGE_MESSAGES, bookAppointment: "अपॉइंटमेंट बुक करें", bookingPreviewUnavailable: "बुकिंग उपलब्ध नहीं", shareProfileAria: "प्रोफाइल शेयर करें", payInSalon: "सैलून में भुगतान", reviewsWord: "रिव्यू", servicesHeading: "सेवाएं", teamHeading: "टीम", aboutHeading: "परिचय", visitHeading: "विजिट", openingHoursHeading: "खुलने का समय", reviewsHeading: "रिव्यू" },
 };
 
 const LOCALE_TAGS: Record<AppLocale, string> = {

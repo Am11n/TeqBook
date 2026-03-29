@@ -5,13 +5,15 @@ import { Button } from "@teqbook/ui";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import type { AppLocale } from "@/i18n/translations";
 import { getProfilePageMessages } from "../profile-i18n";
-import type { CardStyle, PublicProfileClientProps } from "../profile-types";
+import { getPublicBookingUnavailableCopy } from "../booking-unavailable-i18n";
+import type { CardStyle, PublicBookingBlockReason, PublicProfileClientProps } from "../profile-types";
 
 type Props = {
   salonId: string;
   slug: string;
   hero: PublicProfileClientProps["hero"];
   bookUrl: string;
+  publicBooking: PublicProfileClientProps["publicBooking"];
   tokens: PublicProfileClientProps["tokens"];
   heroTagline: string;
   openCloseMeta: string | null;
@@ -22,8 +24,23 @@ type Props = {
   locale: AppLocale;
 };
 
+function blockReasonForCopy(publicBooking: PublicProfileClientProps["publicBooking"]): PublicBookingBlockReason {
+  if (publicBooking.available) return "billing_locked";
+  if (
+    publicBooking.reason === "online_booking_disabled" ||
+    publicBooking.reason === "billing_locked" ||
+    publicBooking.reason === "salon_not_found"
+  ) {
+    return publicBooking.reason;
+  }
+  return "billing_locked";
+}
+
 export function ProfileHeroSection(props: Props) {
   const m = getProfilePageMessages(props.locale);
+  const unavailableCopy = props.publicBooking.available
+    ? null
+    : getPublicBookingUnavailableCopy(props.locale, blockReasonForCopy(props.publicBooking));
   return (
     <section
       className="group overflow-hidden rounded-3xl border border-[var(--pb-border-soft)] shadow-[var(--pb-shadow-1)] transition-[box-shadow,border-color] duration-[var(--pb-motion-standard)] ease-[var(--pb-ease-out)] hover:border-[var(--pb-border-strong)] hover:shadow-[var(--pb-shadow-2)]"
@@ -111,21 +128,31 @@ export function ProfileHeroSection(props: Props) {
 
           <div className="relative mt-auto border-t border-[var(--pb-divider)] pt-4">
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-              <Link href={props.bookUrl} className="w-full sm:flex-1">
-                <Button
-                  className="h-[2.875rem] w-full rounded-xl border border-transparent px-5 text-[0.95rem] font-semibold shadow-[var(--pb-shadow-1)] transition-[transform,box-shadow,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
-                  onClick={() =>
-                    trackPublicEvent("click_book_from_profile", {
-                      salon_id: props.salonId,
-                      slug: props.slug,
-                      cta_location: "hero",
-                    })
-                  }
-                  style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
+              {props.publicBooking.available ? (
+                <Link href={props.bookUrl} className="w-full sm:flex-1">
+                  <Button
+                    className="h-[2.875rem] w-full rounded-xl border border-transparent px-5 text-[0.95rem] font-semibold shadow-[var(--pb-shadow-1)] transition-[transform,box-shadow,background-color,border-color] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:translate-y-[var(--pb-button-hover-lift)] hover:shadow-[var(--pb-shadow-2)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
+                    onClick={() =>
+                      trackPublicEvent("click_book_from_profile", {
+                        salon_id: props.salonId,
+                        slug: props.slug,
+                        cta_location: "hero",
+                      })
+                    }
+                    style={{ backgroundColor: props.tokens.colors.primary, color: props.tokens.colors.primaryText }}
+                  >
+                    {m.bookAppointment}
+                  </Button>
+                </Link>
+              ) : unavailableCopy ? (
+                <div
+                  className="w-full rounded-xl border border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-4 py-3 sm:flex-1"
+                  role="status"
                 >
-                  {m.bookAppointment}
-                </Button>
-              </Link>
+                  <p className="text-[0.95rem] font-semibold text-[var(--pb-text-primary)]">{unavailableCopy.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--pb-text-secondary)]">{unavailableCopy.description}</p>
+                </div>
+              ) : null}
 
               <Button
                 variant="outline"

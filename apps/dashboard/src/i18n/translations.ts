@@ -284,6 +284,9 @@ export type DashboardMessages = {
   // Sidebar tooltips
   collapseSidebar: string;
   expandSidebar: string;
+  productLockTitle: string;
+  productLockDescription: string;
+  productLockCta: string;
 };
 
 export type HomeMessages = {

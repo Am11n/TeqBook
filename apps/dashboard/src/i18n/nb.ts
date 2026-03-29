@@ -276,6 +276,10 @@ export const nb: TranslationNamespaces = {
     feedbackUploadFailed: "Kunne ikke laste opp",
     collapseSidebar: "Skjul sidemeny",
     expandSidebar: "Vis sidemeny",
+    productLockTitle: "Prøveperioden er over",
+    productLockDescription:
+      "Abonner for å fortsette å bruke dashbordet. Gå til fakturering for å velge plan og fullføre betaling.",
+    productLockCta: "Gå til fakturering",
   },
   home: {
     title: "Oversikt",

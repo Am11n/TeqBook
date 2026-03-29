@@ -193,6 +193,10 @@ export const tr: TranslationNamespaces = {
     reports: "Raporlar",
     collapseSidebar: "Kenar çubuğunu daralt",
     expandSidebar: "Kenar çubuğunu genişlet",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {

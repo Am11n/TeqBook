@@ -194,6 +194,10 @@ export const so: TranslationNamespaces = {
     reports: "Warbixinaha",
     collapseSidebar: "Yaree sidebar-ka",
     expandSidebar: "Weynee sidebar-ka",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {

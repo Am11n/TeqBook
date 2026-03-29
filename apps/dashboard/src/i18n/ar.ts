@@ -189,6 +189,10 @@ export const ar: TranslationNamespaces = {
     reports: "التقارير",
     collapseSidebar: "طي القائمة",
     expandSidebar: "توسيع القائمة",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   home: {
     title: "نظرة عامة",

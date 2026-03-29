@@ -244,6 +244,10 @@ export const fa: TranslationNamespaces = {
     reports: "گزارش‌ها",
     collapseSidebar: "جمع کردن منو",
     expandSidebar: "باز کردن منو",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   calendar: {
     title: "تقویم",

@@ -4,6 +4,7 @@ import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components
 import type { PublicBookingTokens, Salon as BookingSalon } from "@/components/public-booking/types";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { AppLocale } from "@/i18n/translations";
+import type { PublicBookingBlockReason, PublicBookingStatus } from "../../app/salon/[slug]/profile-types";
 
 type PublicService = {
   id: string;
@@ -83,6 +84,7 @@ export type PublicSalonProfileViewModel = {
   locale: AppLocale;
   salonId: string;
   slug: string;
+  publicBooking: PublicBookingStatus;
 };
 
 const FALLBACK_TIMEZONE = "Europe/Oslo";
@@ -200,6 +202,28 @@ type ProfileFetchResult =
   | { kind: "not_found" }
   | { kind: "ok"; data: PublicSalonProfileViewModel };
 
+function parsePublicBookingStatus(
+  rows: unknown,
+  error: { message?: string } | null
+): PublicBookingStatus {
+  if (error) {
+    return { available: false, reason: "billing_locked" };
+  }
+  const list = Array.isArray(rows) ? rows : rows ? [rows] : [];
+  const row = list[0] as { available?: boolean; reason?: string } | undefined;
+  if (!row || typeof row.available !== "boolean" || typeof row.reason !== "string") {
+    return { available: false, reason: "billing_locked" };
+  }
+  const r = row.reason;
+  const reason: PublicBookingBlockReason | "ok" =
+    r === "online_booking_disabled" || r === "billing_locked" || r === "salon_not_found"
+      ? r
+      : row.available
+        ? "ok"
+        : "billing_locked";
+  return { available: row.available, reason };
+}
+
 export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<ProfileFetchResult> => {
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) return { kind: "not_found" };
@@ -217,6 +241,11 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
   if (salonError || !salon) return { kind: "not_found" };
 
   const timezone = salon.timezone || FALLBACK_TIMEZONE;
+
+  const { data: bookingStatusRows, error: bookingStatusError } = await supabase.rpc("salon_public_booking_status", {
+    p_salon_id: salon.id,
+  });
+  const publicBooking = parsePublicBookingStatus(bookingStatusRows, bookingStatusError);
 
   const [
     { data: servicesData },
@@ -416,6 +445,7 @@ export const getPublicSalonProfileBySlug = cache(async (slug: string): Promise<P
       locale,
       salonId: salon.id,
       slug: salon.slug,
+      publicBooking,
     },
   };
 });

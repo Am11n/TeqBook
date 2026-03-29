@@ -194,6 +194,10 @@ export const vi: TranslationNamespaces = {
     reports: "Báo cáo",
     collapseSidebar: "Thu gọn thanh bên",
     expandSidebar: "Mở rộng thanh bên",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
   },
   
   home: {
