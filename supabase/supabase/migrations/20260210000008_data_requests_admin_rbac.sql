@@ -22,12 +22,14 @@ CREATE TABLE IF NOT EXISTS public.data_requests (
 
 ALTER TABLE public.data_requests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "superadmins_data_requests" ON public.data_requests;
+
 CREATE POLICY "superadmins_data_requests" ON public.data_requests
   FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_superadmin = true));
 
-CREATE INDEX idx_data_requests_status ON public.data_requests(status);
-CREATE INDEX idx_data_requests_entity ON public.data_requests(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_data_requests_status ON public.data_requests(status);
+CREATE INDEX IF NOT EXISTS idx_data_requests_entity ON public.data_requests(entity_type, entity_id);
 
 -- Admin roles for RBAC
 ALTER TABLE public.profiles

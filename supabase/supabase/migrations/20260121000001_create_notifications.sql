@@ -45,6 +45,11 @@ CREATE INDEX IF NOT EXISTS idx_notifications_salon_id
 -- Enable RLS
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can delete own notifications" ON notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON notifications;
+
 -- Users can only view their own notifications
 CREATE POLICY "Users can view own notifications"
   ON notifications

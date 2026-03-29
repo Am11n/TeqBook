@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS commission_rules (
 
 ALTER TABLE commission_rules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view commission rules for their salon" ON commission_rules;
+DROP POLICY IF EXISTS "Users can insert commission rules for their salon" ON commission_rules;
+DROP POLICY IF EXISTS "Users can update commission rules for their salon" ON commission_rules;
+DROP POLICY IF EXISTS "Users can delete commission rules for their salon" ON commission_rules;
+
 CREATE POLICY "Users can view commission rules for their salon"
   ON commission_rules FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));

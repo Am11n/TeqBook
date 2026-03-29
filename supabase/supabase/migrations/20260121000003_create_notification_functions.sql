@@ -212,8 +212,8 @@ $$;
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION get_booking_customer_email(UUID) TO authenticated;
 
--- Comments
-COMMENT ON FUNCTION create_notification_for_user IS 'Create an in-app notification for any user (bypasses RLS)';
-COMMENT ON FUNCTION notify_salon_staff_new_booking IS 'Notify all salon owners/managers about a new booking. p_timezone is the IANA timezone identifier (e.g., Europe/Oslo) for formatting the booking time.';
-COMMENT ON FUNCTION notify_salon_staff_booking_cancelled IS 'Notify all salon owners/managers about a cancelled booking';
-COMMENT ON FUNCTION get_booking_customer_email IS 'Get customer email for a booking (bypasses RLS)';
+-- Comments (argument lists required when function names are overloaded)
+COMMENT ON FUNCTION create_notification_for_user(UUID, UUID, TEXT, TEXT, TEXT, JSONB, TEXT) IS 'Create an in-app notification for any user (bypasses RLS)';
+COMMENT ON FUNCTION notify_salon_staff_new_booking(UUID, TEXT, TEXT, TIMESTAMPTZ, UUID, TEXT) IS 'Notify all salon owners/managers about a new booking. p_timezone is the IANA timezone identifier (e.g., Europe/Oslo) for formatting the booking time.';
+COMMENT ON FUNCTION notify_salon_staff_booking_cancelled(UUID, TEXT, TEXT, TIMESTAMPTZ, UUID) IS 'Notify all salon owners/managers about a cancelled booking';
+COMMENT ON FUNCTION get_booking_customer_email(UUID) IS 'Get customer email for a booking (bypasses RLS)';

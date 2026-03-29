@@ -22,6 +22,11 @@ CREATE INDEX IF NOT EXISTS idx_salon_closures_salon_date
 -- RLS
 ALTER TABLE salon_closures ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Salon owners can read own closures" ON salon_closures;
+DROP POLICY IF EXISTS "Salon owners can insert closures" ON salon_closures;
+DROP POLICY IF EXISTS "Salon owners can update closures" ON salon_closures;
+DROP POLICY IF EXISTS "Salon owners can delete closures" ON salon_closures;
+
 -- Salon owners can read their own closures
 CREATE POLICY "Salon owners can read own closures"
   ON salon_closures

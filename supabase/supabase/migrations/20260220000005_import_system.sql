@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS import_batches (
 
 ALTER TABLE import_batches ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view import batches for their salon" ON import_batches;
+DROP POLICY IF EXISTS "Users can insert import batches for their salon" ON import_batches;
+DROP POLICY IF EXISTS "Users can update import batches for their salon" ON import_batches;
+
 CREATE POLICY "Users can view import batches for their salon"
   ON import_batches FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));

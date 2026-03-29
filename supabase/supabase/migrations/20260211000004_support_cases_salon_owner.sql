@@ -40,6 +40,8 @@ COMMENT ON COLUMN support_cases.category IS 'Topic category: general, booking_is
 -- 4. RLS policies for salon owners on support_cases
 -- =====================================================
 
+DROP POLICY IF EXISTS "Salon owners can read own support cases" ON support_cases;
+
 -- SELECT: salon owner can read cases they created OR cases for their salon if they are the owner
 CREATE POLICY "Salon owners can read own support cases"
   ON support_cases
@@ -80,6 +82,12 @@ CREATE INDEX IF NOT EXISTS idx_scm_created_at ON support_case_messages(case_id, 
 
 -- RLS
 ALTER TABLE support_case_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Superadmins can read all case messages" ON support_case_messages;
+DROP POLICY IF EXISTS "Superadmins can insert case messages" ON support_case_messages;
+DROP POLICY IF EXISTS "Salon owners can read public case messages" ON support_case_messages;
+DROP POLICY IF EXISTS "Salon owners can reply to own cases" ON support_case_messages;
+DROP POLICY IF EXISTS "No deletes on case messages" ON support_case_messages;
 
 -- Superadmins can read all messages (including internal)
 CREATE POLICY "Superadmins can read all case messages"

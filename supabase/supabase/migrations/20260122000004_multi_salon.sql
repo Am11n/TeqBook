@@ -99,6 +99,17 @@ ON CONFLICT (user_id, salon_id) DO NOTHING;
 ALTER TABLE salon_ownerships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE owner_invitations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own salon ownerships" ON salon_ownerships;
+DROP POLICY IF EXISTS "Owners can view salon ownerships for their salons" ON salon_ownerships;
+DROP POLICY IF EXISTS "Owners can insert salon ownerships" ON salon_ownerships;
+DROP POLICY IF EXISTS "Owners can delete salon ownerships" ON salon_ownerships;
+DROP POLICY IF EXISTS "Service role can access all salon ownerships" ON salon_ownerships;
+DROP POLICY IF EXISTS "Users can view invitations for their email" ON owner_invitations;
+DROP POLICY IF EXISTS "Owners can view invitations for their salons" ON owner_invitations;
+DROP POLICY IF EXISTS "Owners can create invitations" ON owner_invitations;
+DROP POLICY IF EXISTS "Users can accept their invitations" ON owner_invitations;
+DROP POLICY IF EXISTS "Service role can access all owner invitations" ON owner_invitations;
+
 -- Salon ownerships: users can see their own ownerships
 CREATE POLICY "Users can view their own salon ownerships"
   ON salon_ownerships FOR SELECT
@@ -201,6 +212,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS salon_ownerships_updated_at ON salon_ownerships;
 CREATE TRIGGER salon_ownerships_updated_at
   BEFORE UPDATE ON salon_ownerships
   FOR EACH ROW

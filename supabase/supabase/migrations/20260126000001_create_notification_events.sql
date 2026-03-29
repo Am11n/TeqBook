@@ -35,6 +35,9 @@ CREATE INDEX IF NOT EXISTS idx_notification_events_created
 -- RLS Policies
 ALTER TABLE notification_events ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Service role can manage notification events" ON notification_events;
+DROP POLICY IF EXISTS "Users can view notification events for their salon bookings" ON notification_events;
+
 -- Service role can manage all notification events (for edge functions/workers)
 CREATE POLICY "Service role can manage notification events"
   ON notification_events FOR ALL
@@ -62,6 +65,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_notification_events_updated_at ON notification_events;
 CREATE TRIGGER update_notification_events_updated_at
   BEFORE UPDATE ON notification_events
   FOR EACH ROW

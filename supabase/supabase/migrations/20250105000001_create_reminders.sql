@@ -20,6 +20,11 @@ CREATE INDEX IF NOT EXISTS idx_reminders_status_scheduled ON reminders (status, 
 -- RLS Policies
 ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view reminders for their salon bookings" ON reminders;
+DROP POLICY IF EXISTS "Service role can manage reminders" ON reminders;
+DROP POLICY IF EXISTS "Authenticated users can insert reminders" ON reminders;
+DROP POLICY IF EXISTS "Users can update reminders for their salon bookings" ON reminders;
+
 -- Policy: Users can view reminders for bookings in their salon
 CREATE POLICY "Users can view reminders for their salon bookings"
   ON reminders FOR SELECT
@@ -64,6 +69,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_reminders_updated_at ON reminders;
 CREATE TRIGGER update_reminders_updated_at
   BEFORE UPDATE ON reminders
   FOR EACH ROW

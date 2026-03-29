@@ -213,9 +213,6 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.generate_availability(UUID, UUID, UUID, DATE) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.generate_availability(UUID, UUID, UUID, DATE) TO anon;
-
 CREATE OR REPLACE FUNCTION public.find_first_available_slots_batch(
   p_salon_id UUID,
   p_service_id UUID,
@@ -280,9 +277,6 @@ BEGIN
   END LOOP;
 END;
 $$;
-
-GRANT EXECUTE ON FUNCTION public.find_first_available_slots_batch(UUID, UUID, UUID[], DATE, DATE, INTEGER) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.find_first_available_slots_batch(UUID, UUID, UUID[], DATE, DATE, INTEGER) TO anon;
 
 CREATE OR REPLACE FUNCTION public.get_schedule_segments(
   p_salon_id UUID,
@@ -544,9 +538,6 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.get_schedule_segments(UUID, DATE, UUID[]) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_schedule_segments(UUID, DATE, UUID[]) TO anon;
-
 CREATE OR REPLACE FUNCTION public.create_booking_atomic(
   p_salon_id UUID,
   p_employee_id UUID,
@@ -685,5 +676,3 @@ BEGIN
   WHERE b.id = v_booking_id;
 END;
 $$;
-
-GRANT EXECUTE ON FUNCTION public.create_booking_atomic(UUID, UUID, UUID, TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, BOOLEAN) TO authenticated;

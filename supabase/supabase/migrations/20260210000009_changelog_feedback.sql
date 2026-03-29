@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS public.changelog_entries (
 
 ALTER TABLE public.changelog_entries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "superadmins_changelog" ON public.changelog_entries;
+
 CREATE POLICY "superadmins_changelog" ON public.changelog_entries
   FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_superadmin = true));
@@ -38,9 +40,11 @@ CREATE TABLE IF NOT EXISTS public.feedback_entries (
 
 ALTER TABLE public.feedback_entries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "superadmins_feedback" ON public.feedback_entries;
+
 CREATE POLICY "superadmins_feedback" ON public.feedback_entries
   FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_superadmin = true));
 
-CREATE INDEX idx_feedback_status ON public.feedback_entries(status);
-CREATE INDEX idx_feedback_votes ON public.feedback_entries(votes DESC);
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON public.feedback_entries(status);
+CREATE INDEX IF NOT EXISTS idx_feedback_votes ON public.feedback_entries(votes DESC);

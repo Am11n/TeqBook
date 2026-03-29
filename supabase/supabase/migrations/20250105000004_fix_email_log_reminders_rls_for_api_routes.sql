@@ -5,6 +5,8 @@
 -- Drop existing INSERT policies
 DROP POLICY IF EXISTS "Authenticated users can insert email logs" ON email_log;
 DROP POLICY IF EXISTS "Authenticated users can insert reminders" ON reminders;
+DROP POLICY IF EXISTS "Allow inserts for valid salon_id" ON email_log;
+DROP POLICY IF EXISTS "Allow inserts for reminders with valid booking" ON reminders;
 
 -- New policy: Allow inserts if salon_id is provided and belongs to a valid salon
 -- This allows server-side API routes to insert email logs

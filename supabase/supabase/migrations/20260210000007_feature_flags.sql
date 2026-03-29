@@ -16,13 +16,15 @@ CREATE TABLE IF NOT EXISTS public.feature_flags (
 
 ALTER TABLE public.feature_flags ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "superadmins_feature_flags" ON public.feature_flags;
+
 CREATE POLICY "superadmins_feature_flags" ON public.feature_flags
   FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_superadmin = true));
 
 -- Global feature flags (salon_id = NULL) for platform-wide toggles
-CREATE INDEX idx_feature_flags_salon ON public.feature_flags(salon_id);
-CREATE INDEX idx_feature_flags_key ON public.feature_flags(flag_key);
+CREATE INDEX IF NOT EXISTS idx_feature_flags_salon ON public.feature_flags(salon_id);
+CREATE INDEX IF NOT EXISTS idx_feature_flags_key ON public.feature_flags(flag_key);
 
 -- Seeded default flags
 INSERT INTO public.feature_flags (salon_id, flag_key, enabled, description)

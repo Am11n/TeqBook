@@ -50,6 +50,15 @@ CREATE TABLE IF NOT EXISTS notification_preferences (
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own push subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Users can insert their own push subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Users can update their own push subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Users can delete their own push subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Service role can access all push subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Users can view their own notification preferences" ON notification_preferences;
+DROP POLICY IF EXISTS "Users can insert their own notification preferences" ON notification_preferences;
+DROP POLICY IF EXISTS "Users can update their own notification preferences" ON notification_preferences;
+
 -- Push subscriptions: users can only manage their own
 CREATE POLICY "Users can view their own push subscriptions"
   ON push_subscriptions FOR SELECT
@@ -97,6 +106,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS notification_preferences_updated_at ON notification_preferences;
 CREATE TRIGGER notification_preferences_updated_at
   BEFORE UPDATE ON notification_preferences
   FOR EACH ROW

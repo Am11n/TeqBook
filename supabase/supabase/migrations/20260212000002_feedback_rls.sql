@@ -11,6 +11,9 @@
 -- =====================================================
 -- Note: superadmins already have full access via "superadmins_feedback" policy
 
+DROP POLICY IF EXISTS "Salon owners can read own feedback" ON feedback_entries;
+DROP POLICY IF EXISTS "Salon owners can update own feedback when new" ON feedback_entries;
+
 -- Salon owners can read their own feedback entries
 CREATE POLICY "Salon owners can read own feedback"
   ON feedback_entries
@@ -45,6 +48,12 @@ CREATE POLICY "Salon owners can update own feedback when new"
 -- =====================================================
 -- 2. RLS policies for feedback_comments
 -- =====================================================
+
+DROP POLICY IF EXISTS "Superadmins can read all feedback comments" ON feedback_comments;
+DROP POLICY IF EXISTS "Superadmins can insert feedback comments" ON feedback_comments;
+DROP POLICY IF EXISTS "Salon owners can read public feedback comments" ON feedback_comments;
+DROP POLICY IF EXISTS "Salon owners can reply to own feedback" ON feedback_comments;
+DROP POLICY IF EXISTS "No deletes on feedback comments" ON feedback_comments;
 
 -- Superadmins can read all comments (including internal notes)
 CREATE POLICY "Superadmins can read all feedback comments"

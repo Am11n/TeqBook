@@ -37,6 +37,11 @@ CREATE INDEX IF NOT EXISTS idx_admin_notes_tags
 -- =====================================================
 ALTER TABLE admin_notes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Superadmins can read admin notes" ON admin_notes;
+DROP POLICY IF EXISTS "Superadmins can insert admin notes" ON admin_notes;
+DROP POLICY IF EXISTS "No updates to admin notes" ON admin_notes;
+DROP POLICY IF EXISTS "No deletes on admin notes" ON admin_notes;
+
 -- Only superadmins can read notes
 CREATE POLICY "Superadmins can read admin notes"
   ON admin_notes

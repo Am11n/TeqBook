@@ -55,6 +55,11 @@ CREATE TRIGGER update_support_cases_updated_at
 -- =====================================================
 ALTER TABLE support_cases ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Superadmins can read support cases" ON support_cases;
+DROP POLICY IF EXISTS "Superadmins can insert support cases" ON support_cases;
+DROP POLICY IF EXISTS "Superadmins can update support cases" ON support_cases;
+DROP POLICY IF EXISTS "No deletes on support cases" ON support_cases;
+
 -- Only superadmins can read support cases
 CREATE POLICY "Superadmins can read support cases"
   ON support_cases

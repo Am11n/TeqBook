@@ -37,6 +37,12 @@ CREATE INDEX IF NOT EXISTS idx_security_audit_log_user_action ON security_audit_
 -- Only superadmins can read audit logs
 ALTER TABLE security_audit_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Superadmins can read audit logs" ON security_audit_log;
+DROP POLICY IF EXISTS "Service role can insert audit logs" ON security_audit_log;
+DROP POLICY IF EXISTS "Users can insert audit logs" ON security_audit_log;
+DROP POLICY IF EXISTS "No updates to audit logs" ON security_audit_log;
+DROP POLICY IF EXISTS "No deletes to audit logs" ON security_audit_log;
+
 -- Policy: Only superadmins can read audit logs
 CREATE POLICY "Superadmins can read audit logs"
   ON security_audit_log

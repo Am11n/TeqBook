@@ -5,6 +5,8 @@
 -- Also adds sorting support for last_active.
 -- =====================================================
 
+DROP FUNCTION IF EXISTS get_salons_paginated(JSONB, TEXT, TEXT, INTEGER, INTEGER);
+
 CREATE OR REPLACE FUNCTION get_salons_paginated(
   filters JSONB DEFAULT '{}',
   sort_col TEXT DEFAULT 'created_at',

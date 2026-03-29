@@ -226,6 +226,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply trigger to all tenant tables with salon_id
+DROP TRIGGER IF EXISTS prevent_salon_id_change_bookings ON bookings;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_customers ON customers;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_employees ON employees;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_services ON services;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_products ON products;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_opening_hours ON opening_hours;
+DROP TRIGGER IF EXISTS prevent_salon_id_change_addons ON addons;
+
 CREATE TRIGGER prevent_salon_id_change_bookings
   BEFORE UPDATE ON bookings
   FOR EACH ROW

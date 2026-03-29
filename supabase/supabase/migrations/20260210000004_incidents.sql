@@ -19,9 +19,11 @@ CREATE TABLE IF NOT EXISTS public.incidents (
 
 ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "superadmins_incidents" ON public.incidents;
+
 CREATE POLICY "superadmins_incidents" ON public.incidents
   FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_superadmin = true));
 
-CREATE INDEX idx_incidents_status ON public.incidents(status);
-CREATE INDEX idx_incidents_started ON public.incidents(started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_incidents_status ON public.incidents(status);
+CREATE INDEX IF NOT EXISTS idx_incidents_started ON public.incidents(started_at DESC);

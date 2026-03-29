@@ -29,6 +29,11 @@ CREATE INDEX IF NOT EXISTS idx_shift_overrides_employee
 -- Enable RLS
 ALTER TABLE shift_overrides ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view shift_overrides for their salon" ON shift_overrides;
+DROP POLICY IF EXISTS "Users can insert shift_overrides for their salon" ON shift_overrides;
+DROP POLICY IF EXISTS "Users can update shift_overrides for their salon" ON shift_overrides;
+DROP POLICY IF EXISTS "Users can delete shift_overrides for their salon" ON shift_overrides;
+
 -- RLS policies (mirror shifts table pattern)
 CREATE POLICY "Users can view shift_overrides for their salon"
   ON shift_overrides FOR SELECT

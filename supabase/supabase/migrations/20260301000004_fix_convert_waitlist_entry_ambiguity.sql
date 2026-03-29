@@ -1,14 +1,5 @@
--- Waitlist dashboard conversion + manual priority override support.
-
-ALTER TABLE waitlist_entries
-  ADD COLUMN IF NOT EXISTS priority_override_score INTEGER,
-  ADD COLUMN IF NOT EXISTS priority_override_reason TEXT,
-  ADD COLUMN IF NOT EXISTS priority_overridden_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS priority_overridden_at TIMESTAMPTZ;
-
-CREATE INDEX IF NOT EXISTS idx_waitlist_entries_priority_override
-  ON waitlist_entries (salon_id, service_id, preferred_date, status, priority_override_score)
-  WHERE priority_override_score IS NOT NULL;
+-- Fix ambiguous reference in convert_waitlist_entry_to_booking_atomic.
+-- Root cause: RETURNS TABLE output param names are visible as variables in plpgsql.
 
 CREATE OR REPLACE FUNCTION convert_waitlist_entry_to_booking_atomic(
   p_salon_id UUID,
@@ -50,12 +41,12 @@ BEGIN
     RETURN;
   END IF;
 
-  SELECT *
+  SELECT w.*
   INTO selected_offer
-  FROM waitlist_offers
-  WHERE waitlist_entry_id = selected_entry.id
-    AND status = 'pending'
-  ORDER BY created_at DESC
+  FROM waitlist_offers w
+  WHERE w.waitlist_entry_id = selected_entry.id
+    AND w.status = 'pending'
+  ORDER BY w.created_at DESC
   LIMIT 1
   FOR UPDATE;
 
@@ -130,5 +121,3 @@ BEGIN
   RETURN QUERY SELECT true, 'Booking created from waitlist entry', selected_entry.id, created_booking.id, selected_offer.id;
 END;
 $$;
-
-GRANT EXECUTE ON FUNCTION convert_waitlist_entry_to_booking_atomic(UUID, UUID, UUID) TO authenticated, service_role;

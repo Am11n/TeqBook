@@ -25,6 +25,10 @@ CREATE INDEX IF NOT EXISTS idx_email_log_created_at ON email_log (created_at DES
 -- RLS Policies
 ALTER TABLE email_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view email logs for their salon" ON email_log;
+DROP POLICY IF EXISTS "Service role can manage email logs" ON email_log;
+DROP POLICY IF EXISTS "Authenticated users can insert email logs" ON email_log;
+
 -- Policy: Users can view email logs for their salon
 CREATE POLICY "Users can view email logs for their salon"
   ON email_log
@@ -57,6 +61,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_email_log_updated_at ON email_log;
 CREATE TRIGGER update_email_log_updated_at
   BEFORE UPDATE ON email_log
   FOR EACH ROW

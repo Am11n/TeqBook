@@ -1,5 +1,4 @@
--- Fix ambiguous reference in convert_waitlist_entry_to_booking_atomic.
--- Root cause: RETURNS TABLE output param names are visible as variables in plpgsql.
+-- Single-statement migration (function body + GRANT cannot share one CLI prepared statement).
 
 CREATE OR REPLACE FUNCTION convert_waitlist_entry_to_booking_atomic(
   p_salon_id UUID,
@@ -121,5 +120,3 @@ BEGIN
   RETURN QUERY SELECT true, 'Booking created from waitlist entry', selected_entry.id, created_booking.id, selected_offer.id;
 END;
 $$;
-
-GRANT EXECUTE ON FUNCTION convert_waitlist_entry_to_booking_atomic(UUID, UUID, UUID) TO authenticated, service_role;

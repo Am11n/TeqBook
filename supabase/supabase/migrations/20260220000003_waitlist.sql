@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS waitlist_entries (
 
 ALTER TABLE waitlist_entries ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view waitlist for their salon" ON waitlist_entries;
+DROP POLICY IF EXISTS "Users can insert waitlist entries for their salon" ON waitlist_entries;
+DROP POLICY IF EXISTS "Users can update waitlist entries for their salon" ON waitlist_entries;
+DROP POLICY IF EXISTS "Users can delete waitlist entries for their salon" ON waitlist_entries;
+
 CREATE POLICY "Users can view waitlist for their salon"
   ON waitlist_entries FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));

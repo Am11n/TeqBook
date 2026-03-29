@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS stripe_webhook_events (
 );
 
 ALTER TABLE stripe_webhook_events
+  DROP CONSTRAINT IF EXISTS stripe_webhook_events_processing_status_check;
+
+ALTER TABLE stripe_webhook_events
   ADD CONSTRAINT stripe_webhook_events_processing_status_check
   CHECK (processing_status IN ('processing', 'processed', 'failed'));
 

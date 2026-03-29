@@ -8,6 +8,7 @@
 
 -- Drop the existing insert policy
 DROP POLICY IF EXISTS "Users can insert audit logs" ON security_audit_log;
+DROP POLICY IF EXISTS "Anonymous audit logs allowed" ON security_audit_log;
 
 -- Create a more permissive insert policy
 -- Allow authenticated users who are salon staff to insert audit logs

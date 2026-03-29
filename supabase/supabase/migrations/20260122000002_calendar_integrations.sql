@@ -4,11 +4,19 @@
 -- Task Group 28: Google Calendar Sync
 -- Stores OAuth tokens and sync settings for calendar providers
 
--- Calendar provider enum
-CREATE TYPE calendar_provider AS ENUM ('google', 'outlook', 'apple');
+-- Calendar provider enum (idempotent for replays / partially initialized DBs)
+DO $$ BEGIN
+  CREATE TYPE calendar_provider AS ENUM ('google', 'outlook', 'apple');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Calendar sync direction enum
-CREATE TYPE sync_direction AS ENUM ('push', 'pull', 'bidirectional');
+DO $$ BEGIN
+  CREATE TYPE sync_direction AS ENUM ('push', 'pull', 'bidirectional');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =====================================================
 -- Calendar Connections Table
@@ -77,14 +85,14 @@ CREATE TABLE IF NOT EXISTS calendar_event_mappings (
 -- Indexes
 -- =====================================================
 
-CREATE INDEX idx_calendar_connections_user ON calendar_connections(user_id);
-CREATE INDEX idx_calendar_connections_salon ON calendar_connections(salon_id);
-CREATE INDEX idx_calendar_connections_provider ON calendar_connections(provider);
-CREATE INDEX idx_calendar_connections_enabled ON calendar_connections(sync_enabled) WHERE sync_enabled = true;
+CREATE INDEX IF NOT EXISTS idx_calendar_connections_user ON calendar_connections(user_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_connections_salon ON calendar_connections(salon_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_connections_provider ON calendar_connections(provider);
+CREATE INDEX IF NOT EXISTS idx_calendar_connections_enabled ON calendar_connections(sync_enabled) WHERE sync_enabled = true;
 
-CREATE INDEX idx_calendar_event_mappings_booking ON calendar_event_mappings(booking_id);
-CREATE INDEX idx_calendar_event_mappings_connection ON calendar_event_mappings(connection_id);
-CREATE INDEX idx_calendar_event_mappings_external ON calendar_event_mappings(external_event_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_event_mappings_booking ON calendar_event_mappings(booking_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_event_mappings_connection ON calendar_event_mappings(connection_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_event_mappings_external ON calendar_event_mappings(external_event_id);
 
 -- =====================================================
 -- RLS Policies
@@ -92,6 +100,15 @@ CREATE INDEX idx_calendar_event_mappings_external ON calendar_event_mappings(ext
 
 ALTER TABLE calendar_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_event_mappings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own calendar connections" ON calendar_connections;
+DROP POLICY IF EXISTS "Users can insert own calendar connections" ON calendar_connections;
+DROP POLICY IF EXISTS "Users can update own calendar connections" ON calendar_connections;
+DROP POLICY IF EXISTS "Users can delete own calendar connections" ON calendar_connections;
+DROP POLICY IF EXISTS "Users can view own event mappings" ON calendar_event_mappings;
+DROP POLICY IF EXISTS "Users can insert own event mappings" ON calendar_event_mappings;
+DROP POLICY IF EXISTS "Users can update own event mappings" ON calendar_event_mappings;
+DROP POLICY IF EXISTS "Users can delete own event mappings" ON calendar_event_mappings;
 
 -- Calendar connections: Users can only see their own connections
 CREATE POLICY "Users can view own calendar connections"
@@ -155,6 +172,7 @@ CREATE POLICY "Users can delete own event mappings"
 -- Updated_at Trigger
 -- =====================================================
 
+DROP TRIGGER IF EXISTS set_calendar_connections_updated_at ON calendar_connections;
 CREATE TRIGGER set_calendar_connections_updated_at
   BEFORE UPDATE ON calendar_connections
   FOR EACH ROW

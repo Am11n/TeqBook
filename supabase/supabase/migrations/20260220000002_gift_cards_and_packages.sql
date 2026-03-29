@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS gift_cards (
 
 ALTER TABLE gift_cards ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view gift cards for their salon" ON gift_cards;
+DROP POLICY IF EXISTS "Users can insert gift cards for their salon" ON gift_cards;
+DROP POLICY IF EXISTS "Users can update gift cards for their salon" ON gift_cards;
+
 CREATE POLICY "Users can view gift cards for their salon"
   ON gift_cards FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));
@@ -47,6 +51,10 @@ CREATE TABLE IF NOT EXISTS packages (
 
 ALTER TABLE packages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view packages for their salon" ON packages;
+DROP POLICY IF EXISTS "Users can insert packages for their salon" ON packages;
+DROP POLICY IF EXISTS "Users can update packages for their salon" ON packages;
+
 CREATE POLICY "Users can view packages for their salon"
   ON packages FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));
@@ -71,6 +79,10 @@ CREATE TABLE IF NOT EXISTS customer_packages (
 );
 
 ALTER TABLE customer_packages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view customer packages for their salon" ON customer_packages;
+DROP POLICY IF EXISTS "Users can insert customer packages for their salon" ON customer_packages;
+DROP POLICY IF EXISTS "Users can update customer packages for their salon" ON customer_packages;
 
 CREATE POLICY "Users can view customer packages for their salon"
   ON customer_packages FOR SELECT

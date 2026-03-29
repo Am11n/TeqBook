@@ -175,6 +175,8 @@ GRANT EXECUTE ON FUNCTION get_admin_kpi_trend(TEXT, INTEGER) TO authenticated;
 -- =====================================================
 -- Server-side filtered, sorted, paginated salon list.
 
+DROP FUNCTION IF EXISTS get_salons_paginated(JSONB, TEXT, TEXT, INTEGER, INTEGER);
+
 CREATE OR REPLACE FUNCTION get_salons_paginated(
   filters JSONB DEFAULT '{}',
   sort_col TEXT DEFAULT 'created_at',
@@ -408,6 +410,8 @@ GRANT EXECUTE ON FUNCTION get_needs_attention_items(INTEGER) TO authenticated;
 -- 6. get_support_cases_list
 -- =====================================================
 -- Paginated support cases list for the Support Inbox.
+
+DROP FUNCTION IF EXISTS get_support_cases_list(JSONB, INTEGER, INTEGER);
 
 CREATE OR REPLACE FUNCTION get_support_cases_list(
   filters JSONB DEFAULT '{}',

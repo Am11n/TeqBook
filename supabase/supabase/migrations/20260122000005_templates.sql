@@ -70,6 +70,18 @@ CREATE INDEX IF NOT EXISTS idx_template_shares_shared_with ON template_shares(sh
 ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE template_shares ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their salon templates" ON templates;
+DROP POLICY IF EXISTS "Users can view public templates" ON templates;
+DROP POLICY IF EXISTS "Users can view shared templates" ON templates;
+DROP POLICY IF EXISTS "Users can create templates" ON templates;
+DROP POLICY IF EXISTS "Users can update their templates" ON templates;
+DROP POLICY IF EXISTS "Users can delete their templates" ON templates;
+DROP POLICY IF EXISTS "Users can view shares for their templates" ON template_shares;
+DROP POLICY IF EXISTS "Users can create shares" ON template_shares;
+DROP POLICY IF EXISTS "Users can delete shares they created" ON template_shares;
+DROP POLICY IF EXISTS "Service role can access all templates" ON templates;
+DROP POLICY IF EXISTS "Service role can access all template shares" ON template_shares;
+
 -- Templates: users can see their own salon's templates
 CREATE POLICY "Users can view their salon templates"
   ON templates FOR SELECT
@@ -176,6 +188,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS templates_updated_at ON templates;
 CREATE TRIGGER templates_updated_at
   BEFORE UPDATE ON templates
   FOR EACH ROW

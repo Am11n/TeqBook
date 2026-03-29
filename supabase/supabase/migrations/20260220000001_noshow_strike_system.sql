@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS no_show_policies (
 
 ALTER TABLE no_show_policies ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view no-show policy for their salon" ON no_show_policies;
+DROP POLICY IF EXISTS "Users can insert no-show policy for their salon" ON no_show_policies;
+DROP POLICY IF EXISTS "Users can update no-show policy for their salon" ON no_show_policies;
+
 CREATE POLICY "Users can view no-show policy for their salon"
   ON no_show_policies FOR SELECT
   USING (salon_id IN (SELECT salon_id FROM profiles WHERE user_id = auth.uid()));

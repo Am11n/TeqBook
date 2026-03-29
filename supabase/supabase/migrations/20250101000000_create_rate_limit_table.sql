@@ -35,6 +35,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS rate_limit_entries_updated_at ON rate_limit_entries;
 CREATE TRIGGER rate_limit_entries_updated_at
   BEFORE UPDATE ON rate_limit_entries
   FOR EACH ROW
@@ -46,6 +47,7 @@ CREATE TRIGGER rate_limit_entries_updated_at
 ALTER TABLE rate_limit_entries ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Only service role can access rate limit entries
+DROP POLICY IF EXISTS "Service role can manage rate limit entries" ON rate_limit_entries;
 CREATE POLICY "Service role can manage rate limit entries"
   ON rate_limit_entries
   FOR ALL
