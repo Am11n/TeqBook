@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 export interface DialogSelectOption {
   value: string;
   label: string;
+  /** Country/region flag emoji (e.g. language picker). */
+  flagEmoji?: string;
 }
 
 function useClickOutside(
@@ -22,6 +24,16 @@ function useClickOutside(
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open, ref, onClose]);
+}
+
+function LanguageFlagAvatar({ flagEmoji }: { flagEmoji: string }) {
+  return (
+    <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-input bg-muted">
+      <span className="text-[15px] leading-none" aria-hidden>
+        {flagEmoji}
+      </span>
+    </span>
+  );
 }
 
 /* ─── Single select ────────────────────────────── */
@@ -63,7 +75,14 @@ export function DialogSelect({
           disabled && "cursor-not-allowed opacity-50",
         )}
       >
-        <span className="truncate">{selected?.label ?? placeholder}</span>
+        {selected?.flagEmoji ? (
+          <span className="flex min-w-0 items-center gap-2">
+            <LanguageFlagAvatar flagEmoji={selected.flagEmoji} />
+            <span className="block min-w-0 truncate text-left">{selected.label}</span>
+          </span>
+        ) : (
+          <span className="truncate">{selected?.label ?? placeholder}</span>
+        )}
         <ChevronDown className={cn("ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
 
@@ -104,7 +123,10 @@ export function DialogSelect({
                     opt.value === value ? "opacity-100" : "opacity-0",
                   )}
                 />
-                <span className="truncate">{opt.label}</span>
+                {opt.flagEmoji ? (
+                  <LanguageFlagAvatar flagEmoji={opt.flagEmoji} />
+                ) : null}
+                <span className="min-w-0 flex-1 truncate text-left">{opt.label}</span>
               </button>
             ))
           )}

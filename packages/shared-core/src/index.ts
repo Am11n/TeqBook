@@ -47,3 +47,10 @@ export {
   type SupportTicketCategory,
   type ProductFunnelKpi,
 } from "./analytics/event-taxonomy";
+
+export {
+  APP_LOCALE_PICKER_ROWS,
+  LOCALE_FLAG_EMOJI,
+  type AppLocalePickerValue,
+  type LocaleFlagEmojiKey,
+} from "./i18n/locale-flag-emoji";

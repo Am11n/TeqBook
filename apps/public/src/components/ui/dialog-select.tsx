@@ -9,6 +9,8 @@ export interface DialogSelectOption {
   label: string;
   description?: string;
   avatarUrl?: string | null;
+  /** Country/region flag emoji for language-style options (shown instead of initials when no image). */
+  flagEmoji?: string;
   badge?: string;
   badgeTone?: "success" | "danger" | "neutral";
   isSpecial?: boolean;
@@ -53,9 +55,11 @@ function buildInitials(label: string): string {
 function OptionAvatar({
   label,
   avatarUrl,
+  flagEmoji,
 }: {
   label: string;
   avatarUrl?: string | null;
+  flagEmoji?: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(avatarUrl) && !imageFailed;
@@ -69,6 +73,10 @@ function OptionAvatar({
           className="h-full w-full object-cover"
           onError={() => setImageFailed(true)}
         />
+      ) : flagEmoji ? (
+        <span className="text-[15px] leading-none" aria-hidden>
+          {flagEmoji}
+        </span>
       ) : (
         <span>{buildInitials(label)}</span>
       )}
@@ -115,7 +123,11 @@ export function DialogSelect({
         {selected ? (
           <span className="flex min-w-0 items-center gap-2">
             {!selected.isSpecial ? (
-              <OptionAvatar label={selected.label} avatarUrl={selected.avatarUrl} />
+              <OptionAvatar
+                label={selected.label}
+                avatarUrl={selected.avatarUrl}
+                flagEmoji={selected.flagEmoji}
+              />
             ) : null}
             <span className="block min-w-0 truncate text-left">{selected.label}</span>
           </span>
@@ -163,7 +175,11 @@ export function DialogSelect({
                   )}
                 />
                 {!opt.isSpecial ? (
-                  <OptionAvatar label={opt.label} avatarUrl={opt.avatarUrl} />
+                  <OptionAvatar
+                    label={opt.label}
+                    avatarUrl={opt.avatarUrl}
+                    flagEmoji={opt.flagEmoji}
+                  />
                 ) : null}
                 <span className="min-w-0 flex-1 text-left">
                   <span className="block truncate">{opt.label}</span>

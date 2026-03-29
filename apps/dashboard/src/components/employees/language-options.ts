@@ -1,17 +1,4 @@
-export const LANGUAGE_OPTIONS = [
-  { value: "nb", label: "Norsk" },
-  { value: "en", label: "English" },
-  { value: "ar", label: "العربية" },
-  { value: "so", label: "Soomaali" },
-  { value: "ti", label: "ትግርኛ" },
-  { value: "am", label: "አማርኛ" },
-  { value: "tr", label: "Turkce" },
-  { value: "pl", label: "Polski" },
-  { value: "vi", label: "Tieng Viet" },
-  { value: "tl", label: "Tagalog" },
-  { value: "zh", label: "中文" },
-  { value: "fa", label: "فارسی" },
-  { value: "dar", label: "دری" },
-  { value: "ur", label: "اردو" },
-  { value: "hi", label: "हिन्दी" },
-] as const;
+import { APP_LOCALE_PICKER_ROWS } from "@teqbook/shared";
+
+/** DialogSelect options for staff preferred language (labels + flag emoji). */
+export const LANGUAGE_OPTIONS = [...APP_LOCALE_PICKER_ROWS];

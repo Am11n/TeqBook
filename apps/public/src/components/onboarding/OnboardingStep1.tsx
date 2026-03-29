@@ -5,6 +5,7 @@ import { Field } from "@/components/form/Field";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import type { SalonType } from "@/lib/utils/onboarding/onboarding-utils";
 import type { AppLocale } from "@/i18n/translations";
+import { APP_LOCALE_PICKER_ROWS } from "@teqbook/shared";
 
 interface OnboardingStep1Props {
   name: string;
@@ -96,23 +97,7 @@ export function OnboardingStep1({
             setPreferredLanguage(newLang);
             onLocaleChange(newLang);
           }}
-          options={[
-            { value: "nb", label: "Norsk" },
-            { value: "en", label: "English" },
-            { value: "ar", label: "العربية" },
-            { value: "so", label: "Soomaali" },
-            { value: "ti", label: "ትግርኛ" },
-            { value: "am", label: "አማርኛ" },
-            { value: "tr", label: "Türkçe" },
-            { value: "pl", label: "Polski" },
-            { value: "vi", label: "Tiếng Việt" },
-            { value: "tl", label: "Tagalog" },
-            { value: "zh", label: "中文" },
-            { value: "fa", label: "فارسی" },
-            { value: "dar", label: "دری (Dari)" },
-            { value: "ur", label: "اردو" },
-            { value: "hi", label: "हिन्दी" },
-          ]}
+          options={[...APP_LOCALE_PICKER_ROWS]}
         />
       </Field>
 

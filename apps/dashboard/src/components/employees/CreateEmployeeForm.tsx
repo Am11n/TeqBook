@@ -2,6 +2,7 @@
 
 import { Field } from "@/components/form/Field";
 import { DialogSelect, DialogMultiSelect } from "@/components/ui/dialog-select";
+import { LANGUAGE_OPTIONS } from "@/components/employees/language-options";
 import { useCreateEmployee } from "@/lib/hooks/employees/useCreateEmployee";
 import type { Service } from "@/lib/types";
 
@@ -118,23 +119,7 @@ export function CreateEmployeeForm({
           <DialogSelect
             value={preferredLanguage}
             onChange={setPreferredLanguage}
-            options={[
-              { value: "nb", label: "Norsk" },
-              { value: "en", label: "English" },
-              { value: "ar", label: "العربية" },
-              { value: "so", label: "Soomaali" },
-              { value: "ti", label: "ትግርኛ" },
-              { value: "am", label: "አማርኛ" },
-              { value: "tr", label: "Türkçe" },
-              { value: "pl", label: "Polski" },
-              { value: "vi", label: "Tiếng Việt" },
-              { value: "tl", label: "Tagalog" },
-              { value: "zh", label: "中文" },
-              { value: "fa", label: "فارسی" },
-              { value: "dar", label: "دری" },
-              { value: "ur", label: "اردو" },
-              { value: "hi", label: "हिन्दी" },
-            ]}
+            options={LANGUAGE_OPTIONS}
           />
         </Field>
       </div>

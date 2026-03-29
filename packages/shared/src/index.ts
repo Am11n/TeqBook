@@ -48,6 +48,13 @@ export {
 } from "@teqbook/shared-core";
 
 export {
+  APP_LOCALE_PICKER_ROWS,
+  LOCALE_FLAG_EMOJI,
+  type AppLocalePickerValue,
+  type LocaleFlagEmojiKey,
+} from "@teqbook/shared-core";
+
+export {
   createBrowserSupabaseClient,
   getBrowserSupabaseClient,
 } from "@teqbook/shared-data";

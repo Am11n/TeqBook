@@ -8,6 +8,7 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
 import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import { Search } from "lucide-react";
+import { LOCALE_FLAG_EMOJI, type AppLocalePickerValue } from "@teqbook/shared";
 import { ALL_LANGUAGES, RECOMMENDED_CODES, langLabelFn } from "./types";
 
 interface LanguageSectionProps {
@@ -137,7 +138,17 @@ export function LanguageSection({
             options={(supportedLanguages.length > 0
               ? supportedLanguages
               : ["en"]
-            ).map((code) => ({ value: code, label: langLabelFn(code) }))}
+            ).map((code) => {
+              const flagEmoji =
+                code in LOCALE_FLAG_EMOJI
+                  ? LOCALE_FLAG_EMOJI[code as AppLocalePickerValue]
+                  : undefined;
+              return {
+                value: code,
+                label: langLabelFn(code),
+                ...(flagEmoji ? { flagEmoji } : {}),
+              };
+            })}
           />
         </FormRow>
       </div>
