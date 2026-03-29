@@ -260,9 +260,29 @@ export default function BillingSettingsPage() {
         onShowPlanDialog={() => setShowPlanDialog(true)}
         onUpdatePaymentMethod={handleUpdatePayment}
         onShowCancelDialog={() => setShowCancelDialog(true)}
+        dateLocale={appLocale === "nb" ? "nb-NO" : "en-US"}
         translations={{
           billingTitle: t.billingTitle,
           billingDescription: t.billingDescription,
+          billingTrialBadge: t.billingTrialBadge,
+          billingTrialTitle: t.billingTrialTitle,
+          billingTrialDaysLeft: t.billingTrialDaysLeft,
+          billingTrialDaysLeftOne: t.billingTrialDaysLeftOne,
+          billingTrialEndsOn: t.billingTrialEndsOn,
+          billingTrialBody: t.billingTrialBody,
+          billingNoSubscriptionTitle: t.billingNoSubscriptionTitle,
+          billingNoSubscriptionBody: t.billingNoSubscriptionBody,
+          billingTrialEndedTitle: t.billingTrialEndedTitle,
+          billingTrialEndedBody: t.billingTrialEndedBody,
+          billingSubscriptionEndedTitle: t.billingSubscriptionEndedTitle,
+          billingSubscriptionEndedBody: t.billingSubscriptionEndedBody,
+          billingSubscriptionEndedHint: t.billingSubscriptionEndedHint,
+          billingStateActive: t.billingStateActive,
+          billingStateInactive: t.billingStateInactive,
+          billingStateCancelling: t.billingStateCancelling,
+          billingStatePastDue: t.billingStatePastDue,
+          billingSubscribeNow: t.billingSubscribeNow,
+          billingRenewSubscription: t.billingRenewSubscription,
         }}
       />
 

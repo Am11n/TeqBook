@@ -955,6 +955,27 @@ export type SettingsMessages = {
   // Billing settings
   billingTitle: string;
   billingDescription: string;
+  /** Free trial / subscription status copy on the billing plan card */
+  billingTrialBadge?: string;
+  billingTrialTitle?: string;
+  /** Use {days} placeholder for the number */
+  billingTrialDaysLeft?: string;
+  billingTrialDaysLeftOne?: string;
+  billingTrialEndsOn?: string;
+  billingTrialBody?: string;
+  billingNoSubscriptionTitle?: string;
+  billingNoSubscriptionBody?: string;
+  billingTrialEndedTitle?: string;
+  billingTrialEndedBody?: string;
+  billingSubscriptionEndedTitle?: string;
+  billingSubscriptionEndedBody?: string;
+  billingSubscriptionEndedHint?: string;
+  billingStateActive?: string;
+  billingStateInactive?: string;
+  billingStateCancelling?: string;
+  billingStatePastDue?: string;
+  billingSubscribeNow?: string;
+  billingRenewSubscription?: string;
   currentPlan: string;
   planStarter: string;
   planPro: string;
