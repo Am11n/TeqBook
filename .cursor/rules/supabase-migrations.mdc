@@ -18,3 +18,5 @@ When you add or change files under `supabase/supabase/migrations/` (or otherwise
 3. If push fails for auth/link reasons, report the exact error and the one-line fix (e.g. `supabase link --project-ref …`), then stop—do not pretend the DB is updated.
 
 4. Never commit secrets; `.env` and keys stay local.
+
+5. After meaningful migration or `db push` / `migration repair` work, append a short dated line to `docs/operations/CHANGELOG-ops.md` (see `daily-ops-documentation` rule). Link to `docs/operations/pilot-supabase-migrasjon-retrospektiv.md` only when adding a new class of failure or fix pattern.

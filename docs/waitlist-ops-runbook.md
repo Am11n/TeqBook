@@ -19,10 +19,10 @@ Database hardening and lifecycle defaults:
 
 - Status constraint and lifecycle trigger: `supabase/supabase/migrations/20260228000002_waitlist_lifecycle_hardening.sql`
 - Expiry processor function and event log: `supabase/supabase/migrations/20260228000003_waitlist_expiry_processor.sql`
-- Offers/cooldown/policy + atomic claim RPC:
-  - `supabase/supabase/migrations/20260301000001_waitlist_offers_and_cooldown.sql`
+- Offers/cooldown/policy + resolve/trigger (claim RPC i `202603010000020_*`, grant `021`, legacy noop `022`):
+  - `supabase/supabase/migrations/202603010000019_waitlist_offers_and_cooldown.sql`
 - Dashboard convert-to-booking + priority override columns:
-  - `supabase/supabase/migrations/20260301000002_waitlist_convert_and_priority_override.sql`
+  - `supabase/supabase/migrations/202603010000030_waitlist_convert_and_priority_override.sql`
 
 ## Public Flow
 

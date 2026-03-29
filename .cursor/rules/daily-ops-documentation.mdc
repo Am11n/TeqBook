@@ -1,0 +1,14 @@
+---
+description: Etter database-/migrasjonsarbeid, logg kort i docs/operations/CHANGELOG-ops.md
+alwaysApply: false
+---
+
+# Daglig operasjonsdokumentasjon
+
+Når du i en økt har gjort **vesentlig** arbeid mot Supabase / Postgres som andre bør kunne spore (nye eller endrede filer under `supabase/supabase/migrations/`, `supabase db push`, `migration repair`, `migration list`-avvik, RLS/RPC-endringer, pilot/staging-tiltak):
+
+1. **Append** en kort oppføring under dagens dato i `docs/operations/CHANGELOG-ops.md` (bruk formatet øverst i filen). Én til fem kulepunkter er nok.
+2. Hvis læringspunktet er **stort** (ny feilkategori, nytt mønster for CLI), vurder også å utvide avsnitt i `docs/operations/pilot-supabase-migrasjon-retrospektiv.md` eller lenke dit fra changelog-linjen.
+3. **Ikke** logg hemmeligheter, nøkler eller fulle connection strings.
+
+Dette er ment som **lav friksjon** høy verdi: fremtidige deg/agenter slipper å gjette hva som skjedde i pilot forrige uke.

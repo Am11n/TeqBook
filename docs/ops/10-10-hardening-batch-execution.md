@@ -41,7 +41,7 @@ This document records runtime implementation work for the hardening batches with
 
 ### Change
 - Added migration:
-  - `supabase/supabase/migrations/20260313000001_booking_overlap_guard.sql`
+  - `supabase/supabase/migrations/202603130000010_booking_overlap_guard.sql` (split: `015`/`016`/`017` for `update_booking_atomic`)
 - Implemented:
   - `bookings_no_overlapping_active_slots` exclusion constraint
   - `update_booking_atomic(...)` RPC with conflict checks and row lock
