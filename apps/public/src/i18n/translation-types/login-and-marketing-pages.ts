@@ -1,0 +1,81 @@
+export type Login2FAMessages = {
+  title: string;
+  description: string;
+  authCodeLabel: string;
+  placeholder: string;
+  verify: string;
+  verifying: string;
+  backToLogin: string;
+  missingFactorId: string;
+  failedChallenge: string;
+  enterCode: string;
+  invalidCode: string;
+  failedUser: string;
+  failedProfile: string;
+};
+
+export type AdminLoginMessages = {
+  title: string;
+  heading: string;
+  subtitle: string;
+  bulletSalons: string;
+  bulletUsers: string;
+  bulletReports: string;
+  secureLine: string;
+  cardTitle: string;
+  cardSubtitle: string;
+  emailLabel: string;
+  passwordLabel: string;
+  show: string;
+  hide: string;
+  submit: string;
+  submitting: string;
+  secureFooter: string;
+  missingCredentials: string;
+  invalidCredentials: string;
+  confirmEmail: string;
+  loginFailed: string;
+  profileLoadFailed: string;
+  profileMissing: string;
+  notSuperAdmin: string;
+  unknownError: string;
+};
+
+export type BookingConfirmationMessages = {
+  loading: string;
+  errorTitle: string;
+  bookingNotFound: string;
+  backToBooking: string;
+  confirmedTitle: string;
+  cancelledTitle: string;
+  confirmedDescription: string;
+  cancelledDescription: string;
+  reservationReceived: string;
+  reference: string;
+  service: string;
+  servicePending: string;
+  employee: string;
+  bestAvailable: string;
+  status: string;
+  cancelBooking: string;
+  bookAnother: string;
+  cancelReasonLabel: string;
+  cancelReasonPlaceholder: string;
+  keepBooking: string;
+  confirmCancellation: string;
+  cancelling: string;
+  changesViaWhatsapp: string;
+  chatOnWhatsapp: string;
+  loadBookingDetailsError: string;
+  bookingFromAnotherSalonError: string;
+  cancelFailed: string;
+};
+
+export type NotFoundMessages = {
+  description: string;
+  navAria: string;
+  home: string;
+  productOverview: string;
+  signup: string;
+  login: string;
+};

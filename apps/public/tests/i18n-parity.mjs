@@ -4,7 +4,14 @@ import ts from "typescript";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const I18N_DIR = path.join(ROOT, "src", "i18n");
-const PROFILE_I18N = path.join(ROOT, "src", "app", "salon", "[slug]", "profile-i18n", "messages.ts");
+const PROFILE_I18N_DIR = path.join(ROOT, "src", "app", "salon", "[slug]", "profile-i18n");
+const PROFILE_PAGE_BATCHES = [
+  ["profile-locales-a.ts", "PROFILE_PAGE_LOCALES_A"],
+  ["profile-locales-b.ts", "PROFILE_PAGE_LOCALES_B"],
+  ["profile-locales-c.ts", "PROFILE_PAGE_LOCALES_C"],
+  ["profile-locales-d.ts", "PROFILE_PAGE_LOCALES_D"],
+  ["profile-locales-e.ts", "PROFILE_PAGE_LOCALES_E"],
+];
 const LOGIN_PAGE = path.join(ROOT, "src", "app", "login", "page.tsx");
 
 const APP_LOCALES = ["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"];
@@ -120,48 +127,54 @@ function checkPublicBooking(issues) {
   }
 }
 
-function checkProfileI18n(issues) {
-  const source = readSource(PROFILE_I18N);
-  const pageRefObj = getConstObjectLiteral(source, "EN_PROFILE_PAGE_MESSAGES");
-  if (!pageRefObj) throw new Error("Could not locate EN_PROFILE_PAGE_MESSAGES.");
-  const refPageShape = collectObjectShape(pageRefObj, source);
+function findProfilePageLocaleExpr(locale) {
+  for (const [fileName, constName] of PROFILE_PAGE_BATCHES) {
+    const source = readSource(path.join(PROFILE_I18N_DIR, fileName));
+    const batchObj = getConstObjectLiteral(source, constName);
+    if (!batchObj) {
+      throw new Error(`Could not locate ${constName} in ${fileName}.`);
+    }
+    const expr = findObjectProperty(batchObj, locale);
+    if (expr && ts.isObjectLiteralExpression(expr)) return { expr, source };
+  }
+  return null;
+}
 
-  const profileByLocale = getConstObjectLiteral(source, "PROFILE_PAGE_MESSAGES");
-  if (!profileByLocale) throw new Error("Could not locate PROFILE_PAGE_MESSAGES.");
+function checkProfileI18n(issues) {
+  const enPageSource = readSource(path.join(PROFILE_I18N_DIR, "profile-en.ts"));
+  const pageRefObj = getConstObjectLiteral(enPageSource, "EN_PROFILE_PAGE_MESSAGES");
+  if (!pageRefObj) throw new Error("Could not locate EN_PROFILE_PAGE_MESSAGES.");
+  const refPageShape = collectObjectShape(pageRefObj, enPageSource);
+
   for (const locale of APP_LOCALES) {
-    const expr = findObjectProperty(profileByLocale, locale);
-    if (!expr) {
-      issues.push(`profilePage(${locale}): object not found`);
+    if (locale === "en") continue;
+    const found = findProfilePageLocaleExpr(locale);
+    if (!found) {
+      issues.push(`profilePage(${locale}): object not found in locale batches`);
       continue;
     }
-    if (locale === "en" && ts.isIdentifier(expr) && expr.text === "EN_PROFILE_PAGE_MESSAGES") {
-      continue;
-    }
-    if (!ts.isObjectLiteralExpression(expr)) {
-      issues.push(`profilePage(${locale}): object not found`);
-      continue;
-    }
-    const localeShape = collectObjectShape(expr, source);
-    if (locale !== "en" && localeShape.hasSpread) {
+    const localeShape = collectObjectShape(found.expr, found.source);
+    if (localeShape.hasSpread) {
       issues.push(`profilePage(${locale}): spread usage is not allowed (no ...EN fallback).`);
     }
     compareShape("profilePage", locale, refPageShape, localeShape, issues);
   }
 
-  const teamDialogByLocale = getConstObjectLiteral(source, "PROFILE_TEAM_DIALOG_MESSAGES");
+  const teamSource = readSource(path.join(PROFILE_I18N_DIR, "team-dialog-messages.ts"));
+  const teamDialogByLocale = getConstObjectLiteral(teamSource, "PROFILE_TEAM_DIALOG_MESSAGES");
   if (!teamDialogByLocale) throw new Error("Could not locate PROFILE_TEAM_DIALOG_MESSAGES.");
   const enTeamExpr = findObjectProperty(teamDialogByLocale, "en");
   if (!enTeamExpr || !ts.isObjectLiteralExpression(enTeamExpr)) {
     throw new Error("Could not locate PROFILE_TEAM_DIALOG_MESSAGES.en.");
   }
-  const refTeamShape = collectObjectShape(enTeamExpr, source);
+  const refTeamShape = collectObjectShape(enTeamExpr, teamSource);
   for (const locale of APP_LOCALES) {
     const expr = findObjectProperty(teamDialogByLocale, locale);
     if (!expr || !ts.isObjectLiteralExpression(expr)) {
       issues.push(`profileTeamDialog(${locale}): object not found`);
       continue;
     }
-    const localeShape = collectObjectShape(expr, source);
+    const localeShape = collectObjectShape(expr, teamSource);
     compareShape("profileTeamDialog", locale, refTeamShape, localeShape, issues);
   }
 }

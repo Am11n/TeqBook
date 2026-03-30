@@ -1,0 +1,18 @@
+export const LANGUAGE_LABELS: Record<string, string> = {
+  nb: "Norwegian",
+  no: "Norwegian",
+  en: "English",
+  ar: "Arabic",
+  so: "Somali",
+  tr: "Turkish",
+  ti: "Tigrinya",
+  am: "Amharic",
+  pl: "Polish",
+  vi: "Vietnamese",
+  zh: "Chinese",
+  tl: "Tagalog",
+  fa: "Persian",
+  dar: "Dari",
+  ur: "Urdu",
+  hi: "Hindi",
+};
