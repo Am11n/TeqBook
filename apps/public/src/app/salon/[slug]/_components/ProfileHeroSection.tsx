@@ -85,9 +85,47 @@ export function ProfileHeroSection(props: Props) {
             className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[color-mix(in_srgb,var(--pb-accent-primary)_8%,transparent)] to-transparent"
           />
           <div className="relative space-y-2.5">
-            <h1 className="text-[clamp(1.84rem,3.15vw,2.6rem)] font-semibold tracking-[-0.027em] text-[var(--pb-text-primary)]">
-              {props.hero.name}
-            </h1>
+            <div className="flex items-start justify-between gap-3 md:gap-4">
+              <h1 className="min-w-0 flex-1 text-[clamp(1.84rem,3.15vw,2.6rem)] font-semibold leading-tight tracking-[-0.027em] text-[var(--pb-text-primary)]">
+                {props.hero.name}
+              </h1>
+              {props.supportedLanguages.length > 0 ? (
+                <div className="shrink-0 pt-1 md:pt-1.5">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] sm:px-3"
+                        style={{
+                          borderColor: props.tokens.colors.border,
+                          backgroundColor: props.tokens.colors.surface,
+                          color: props.tokens.colors.mutedText,
+                        }}
+                        aria-label={m.languageMenuAria}
+                        title={m.languageMenuAria}
+                      >
+                        <span className="text-base leading-none">{BOOKING_LANG_FLAGS[currentLocale] || "🌐"}</span>
+                        <span className="hidden sm:inline">
+                          {BOOKING_LANG_LABELS[currentLocale] || currentLocale.toUpperCase()}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-44">
+                      {props.supportedLanguages.map((lang) => (
+                        <DropdownMenuItem
+                          key={lang}
+                          className="cursor-pointer"
+                          onClick={() => props.onLocaleChange(lang)}
+                        >
+                          <span className="mr-2">{BOOKING_LANG_FLAGS[lang] || "🌐"}</span>
+                          <span>{BOOKING_LANG_LABELS[lang] || lang}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : null}
+            </div>
 
             {props.openCloseMeta ? (
               props.statusKind === "closed" ? (
@@ -169,42 +207,7 @@ export function ProfileHeroSection(props: Props) {
                 </div>
               ) : null}
 
-              <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:flex-none">
-                {props.supportedLanguages.length > 0 ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-[2.875rem] min-h-[2.875rem] w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] sm:w-auto"
-                        style={{
-                          borderColor: props.tokens.colors.border,
-                          backgroundColor: props.tokens.colors.surface,
-                          color: props.tokens.colors.mutedText,
-                        }}
-                        aria-label={m.languageMenuAria}
-                        title={m.languageMenuAria}
-                      >
-                        <span className="text-sm leading-none">{BOOKING_LANG_FLAGS[currentLocale] || "🌐"}</span>
-                        <span className="hidden sm:inline">
-                          {BOOKING_LANG_LABELS[currentLocale] || currentLocale.toUpperCase()}
-                        </span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-44">
-                      {props.supportedLanguages.map((lang) => (
-                        <DropdownMenuItem
-                          key={lang}
-                          className="cursor-pointer"
-                          onClick={() => props.onLocaleChange(lang)}
-                        >
-                          <span className="mr-2">{BOOKING_LANG_FLAGS[lang] || "🌐"}</span>
-                          <span>{BOOKING_LANG_LABELS[lang] || lang}</span>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : null}
-
+              <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-none sm:flex-row sm:items-center">
                 <Button
                   variant="outline"
                   onClick={props.onShare}
