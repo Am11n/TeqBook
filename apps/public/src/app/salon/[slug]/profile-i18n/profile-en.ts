@@ -42,4 +42,5 @@ export const EN_PROFILE_PAGE_MESSAGES: ProfilePageMessages = {
   socialTwitter: "X (Twitter)",
   socialTiktok: "TikTok",
   socialWebsite: "Website",
+  languageMenuAria: "Language",
 };

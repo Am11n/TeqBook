@@ -12,7 +12,7 @@ const PROFILE_PAGE_BATCHES = [
   ["profile-locales-d.ts", "PROFILE_PAGE_LOCALES_D"],
   ["profile-locales-e.ts", "PROFILE_PAGE_LOCALES_E"],
 ];
-const LOGIN_PAGE = path.join(ROOT, "src", "app", "login", "page.tsx");
+const LOGIN_UI = path.join(I18N_DIR, "login-ui.ts");
 
 const APP_LOCALES = ["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi"];
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\}/g;
@@ -22,14 +22,20 @@ function readSource(filePath) {
   return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 
+function unwrapObjectLiteral(expr) {
+  if (!expr) return null;
+  if (ts.isObjectLiteralExpression(expr)) return expr;
+  if (ts.isSatisfiesExpression(expr)) return unwrapObjectLiteral(expr.expression);
+  return null;
+}
+
 function getConstObjectLiteral(source, constName) {
   for (const stmt of source.statements) {
     if (!ts.isVariableStatement(stmt)) continue;
     for (const decl of stmt.declarationList.declarations) {
       if (!ts.isIdentifier(decl.name) || decl.name.text !== constName) continue;
-      if (decl.initializer && ts.isObjectLiteralExpression(decl.initializer)) {
-        return decl.initializer;
-      }
+      const inner = unwrapObjectLiteral(decl.initializer);
+      if (inner) return inner;
     }
   }
   return null;
@@ -98,31 +104,31 @@ function compareShape(namespaceName, locale, refShape, localeShape, issues) {
   }
 }
 
+function getPublicBookingPartSource(locale) {
+  const partA = path.join(I18N_DIR, "locale-parts", locale, "a.ts");
+  if (!fs.existsSync(partA)) return null;
+  const source = readSource(partA);
+  const partName = `${locale}PartA`;
+  const partObj = getConstObjectLiteral(source, partName);
+  if (!partObj) return null;
+  const pb = findObjectProperty(partObj, "publicBooking");
+  if (!pb || !ts.isObjectLiteralExpression(pb)) return null;
+  return { source, expr: pb };
+}
+
 function checkPublicBooking(issues) {
-  const enSource = readSource(path.join(I18N_DIR, "en.ts"));
-  const enObj = getConstObjectLiteral(enSource, "en");
-  if (!enObj) throw new Error("Could not locate export const en in src/i18n/en.ts");
-  const enPublicBookingExpr = findObjectProperty(enObj, "publicBooking");
-  if (!enPublicBookingExpr || !ts.isObjectLiteralExpression(enPublicBookingExpr)) {
-    throw new Error("Could not locate en.publicBooking object.");
-  }
-  const refShape = collectObjectShape(enPublicBookingExpr, enSource);
+  const enPb = getPublicBookingPartSource("en");
+  if (!enPb) throw new Error("Could not locate en publicBooking in locale-parts/en/a.ts");
+  const refShape = collectObjectShape(enPb.expr, enPb.source);
 
   for (const locale of APP_LOCALES) {
     if (locale === "en") continue;
-    const filePath = path.join(I18N_DIR, `${locale}.ts`);
-    const source = readSource(filePath);
-    const localeObj = getConstObjectLiteral(source, locale);
-    if (!localeObj) {
-      issues.push(`publicBooking(${locale}): locale export not found`);
+    const found = getPublicBookingPartSource(locale);
+    if (!found) {
+      issues.push(`publicBooking(${locale}): locale part a not found`);
       continue;
     }
-    const expr = findObjectProperty(localeObj, "publicBooking");
-    if (!expr || !ts.isObjectLiteralExpression(expr)) {
-      issues.push(`publicBooking(${locale}): object not found`);
-      continue;
-    }
-    const localeShape = collectObjectShape(expr, source);
+    const localeShape = collectObjectShape(found.expr, found.source);
     compareShape("publicBooking", locale, refShape, localeShape, issues);
   }
 }
@@ -179,14 +185,34 @@ function checkProfileI18n(issues) {
   }
 }
 
-function checkLoginMap(issues) {
-  const content = fs.readFileSync(LOGIN_PAGE, "utf8");
-  const mapMatch = content.match(/const\s+loginUiByLocale\s*:\s*Record<string,\s*LoginUiMessages>\s*=\s*\{([\s\S]*?)\n\};/);
-  if (!mapMatch) return;
-  const body = mapMatch[1];
-  const localeKeys = new Set(Array.from(body.matchAll(/^\s*([a-z]{2,3})\s*:/gm)).map((m) => m[1]));
+function checkLoginUiLocales(issues) {
+  const source = readSource(LOGIN_UI);
+  const mapObj = (function getLoginMap() {
+    for (const stmt of source.statements) {
+      if (!ts.isVariableStatement(stmt)) continue;
+      for (const decl of stmt.declarationList.declarations) {
+        if (!ts.isIdentifier(decl.name) || decl.name.text !== "loginUiByLocale") continue;
+        let init = decl.initializer;
+        while (init && ts.isSatisfiesExpression(init)) init = init.expression;
+        if (init && ts.isObjectLiteralExpression(init)) return init;
+      }
+    }
+    return null;
+  })();
+  if (!mapObj) {
+    issues.push("loginUiByLocale: object literal not found in login-ui.ts");
+    return;
+  }
+  const keys = new Set();
+  for (const prop of mapObj.properties) {
+    if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+      keys.add(prop.name.text);
+    } else if (ts.isShorthandPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+      keys.add(prop.name.text);
+    }
+  }
   for (const locale of APP_LOCALES) {
-    if (!localeKeys.has(locale)) {
+    if (!keys.has(locale)) {
       issues.push(`loginUiByLocale: missing locale key "${locale}"`);
     }
   }
@@ -196,7 +222,7 @@ function main() {
   const issues = [];
   checkPublicBooking(issues);
   checkProfileI18n(issues);
-  checkLoginMap(issues);
+  checkLoginUiLocales(issues);
 
   if (issues.length) {
     console.error("i18n parity check failed:");

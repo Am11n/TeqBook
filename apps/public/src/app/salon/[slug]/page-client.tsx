@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@teqbook/ui";
+import { useLocale } from "@/components/locale-provider";
 import { buildPublicBookingCssVars } from "@/components/public-booking/publicBookingTokens";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
+import type { AppLocale } from "@/i18n/translations";
 import { ProfileHeroSection } from "./_components/ProfileHeroSection";
 import { ProfileServicesSection } from "./_components/ProfileServicesSection";
 import { ProfileTeamSection } from "./_components/ProfileTeamSection";
@@ -23,29 +25,65 @@ import { getProfilePageMessages } from "./profile-i18n";
 import type { PublicProfileClientProps } from "./profile-types";
 
 export default function PublicSalonProfilePageClient(props: PublicProfileClientProps) {
+  const { setLocale: setAppLocale } = useLocale();
+  const [locale, setLocaleState] = useState<AppLocale>(props.locale);
   const [selectedMember, setSelectedMember] = useState<PublicProfileClientProps["teamPreview"][number] | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [teamModalTab, setTeamModalTab] = useState<"about" | "services">("about");
   const [mapImageUnavailable, setMapImageUnavailable] = useState(false);
   const lastTeamTriggerRef = useRef<HTMLButtonElement | null>(null);
 
-  const heroTagline = useMemo(
-    () => buildTagline(props.about.description, props.hero.addressLine, props.locale),
-    [props.about.description, props.hero.addressLine, props.locale]
+  useEffect(() => {
+    const supported = props.supportedLanguages;
+    if (supported.length === 0) {
+      setLocaleState(props.locale);
+      setAppLocale(props.locale);
+      return;
+    }
+    try {
+      const stored = localStorage.getItem(`booking-locale-${props.salonId}`);
+      const fallback = props.locale;
+      const preferred =
+        stored && supported.includes(stored as AppLocale) ? (stored as AppLocale) : fallback;
+      const next = supported.includes(preferred) ? preferred : supported[0] ?? fallback;
+      setLocaleState(next);
+      setAppLocale(next);
+    } catch {
+      setLocaleState(props.locale);
+      setAppLocale(props.locale);
+    }
+  }, [props.salonId, props.locale, props.supportedLanguages, setAppLocale]);
+
+  const handleProfileLocaleChange = useCallback(
+    (next: AppLocale) => {
+      setLocaleState(next);
+      setAppLocale(next);
+      try {
+        localStorage.setItem(`booking-locale-${props.salonId}`, next);
+      } catch {
+        /* ignore storage failures */
+      }
+    },
+    [props.salonId, setAppLocale],
   );
-  const m = useMemo(() => getProfilePageMessages(props.locale), [props.locale]);
+
+  const heroTagline = useMemo(
+    () => buildTagline(props.about.description, props.hero.addressLine, locale),
+    [props.about.description, props.hero.addressLine, locale]
+  );
+  const m = useMemo(() => getProfilePageMessages(locale), [locale]);
   const socialItems = useMemo(
-    () => buildSocialItems(props.socialLinks, props.locale),
-    [props.socialLinks, props.locale],
+    () => buildSocialItems(props.socialLinks, locale),
+    [props.socialLinks, locale],
   );
   const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
   const openCloseMeta = useMemo(
-    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),
-    [props.hero.isOpenNow, props.locale, todayHours?.closeTime, todayHours?.isClosed]
+    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, locale),
+    [props.hero.isOpenNow, locale, todayHours?.closeTime, todayHours?.isClosed]
   );
   const hoursStatusLine = useMemo(
-    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),
-    [props.hero.isOpenNow, todayHours, props.locale]
+    () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, locale),
+    [props.hero.isOpenNow, todayHours, locale]
   );
   const profileStatusKind = useMemo<"open" | "closed" | "neutral">(() => {
     if (todayHours?.isClosed) return "closed";
@@ -128,7 +166,9 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           shareMessage={shareMessage}
           onShare={handleShare}
           cardStyle={cardStyle}
-          locale={props.locale}
+          locale={locale}
+          supportedLanguages={props.supportedLanguages}
+          onLocaleChange={handleProfileLocaleChange}
         />
 
         <ProfileServicesSection
@@ -138,7 +178,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           publicBooking={props.publicBooking}
           services={props.servicesPreview}
           cardStyle={cardStyle}
-          locale={props.locale}
+          locale={locale}
         />
 
         <ProfileTeamSection
@@ -149,7 +189,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           primaryColor={props.tokens.colors.primary}
           primaryTextColor={props.tokens.colors.primaryText}
           openMemberId={selectedMember?.id || null}
-          locale={props.locale}
+          locale={locale}
           onOpenMember={(member, trigger) => {
             lastTeamTriggerRef.current = trigger;
             setSelectedMember(member);
@@ -160,14 +200,14 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         <ProfilePortfolioSection
           items={props.portfolioPreview}
           borderColor={props.tokens.colors.border}
-          locale={props.locale}
+          locale={locale}
         />
 
         <ProfileReviewsSection
           reviewsSummary={props.reviewsSummary}
           borderColor={props.tokens.colors.border}
           cardBackground={props.tokens.colors.cardBackground}
-          locale={props.locale}
+          locale={locale}
         />
 
         <ProfileAboutVisitSection
@@ -187,7 +227,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
           mapImageUnavailable={mapImageUnavailable}
           onMapImageError={() => setMapImageUnavailable(true)}
           cardStyle={cardStyle}
-          locale={props.locale}
+          locale={locale}
         />
       </main>
 
@@ -218,7 +258,7 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
         publicBooking={props.publicBooking}
         borderColor={props.tokens.colors.border}
         selectedMember={selectedMember}
-        locale={props.locale}
+        locale={locale}
         tab={teamModalTab}
         onTabChange={setTeamModalTab}
         themeStyle={dialogThemeStyle}

@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@teqbook/ui";
 import { EmptyState } from "@/components/empty-state";
 import { LoadingScreen } from "@/components/loading-screen";
 import type { AppLocale } from "@/i18n/translations";
+import { filterSupportedBookingLocales } from "@/i18n/booking-locale-ui";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { PublicBookingHeader } from "./PublicBookingHeader";
 import { BookingCustomerSection } from "./BookingCustomerSection";
 import { MobileBookingSummary } from "./MobileBookingSummary";
@@ -16,7 +18,6 @@ import { usePublicBooking } from "./usePublicBooking";
 import type { PublicBookingPageProps } from "./types";
 
 const DETAILS_FORM_ID = "public-booking-details-form";
-const APP_LOCALES: AppLocale[] = ["nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "tl", "zh", "fa", "dar", "ur", "hi"];
 
 function parseSlotLabel(label: string): { timeRange: string; employeeName: string | null } {
   const parts = label.split("·").map((part) => part.trim());
@@ -151,9 +152,10 @@ export default function PublicBookingPage({ slug }: PublicBookingPageProps) {
     return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
   }, [date, locale]);
   const supportedLocales = useMemo(
-    () => (salon?.supported_languages ?? []).filter(
-      (lang): lang is AppLocale => APP_LOCALES.includes(lang as AppLocale),
-    ),
+    () =>
+      filterSupportedBookingLocales(
+        (salon?.supported_languages ?? []).map((code) => normalizeLocale(String(code))),
+      ),
     [salon?.supported_languages],
   );
 

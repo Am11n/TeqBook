@@ -42,6 +42,7 @@ export type ProfilePageMessages = {
   socialTwitter: string;
   socialTiktok: string;
   socialWebsite: string;
+  languageMenuAria: string;
 };
 
 const LOCALE_TAGS: Record<AppLocale, string> = {

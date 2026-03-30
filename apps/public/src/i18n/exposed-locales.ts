@@ -1,6 +1,7 @@
 import type { AppLocale } from "./translations";
 
-// Release policy: only locales that passed parity + basic QA are exposed.
+// All AppLocale values are exposed; CI gates (parity, max-lines, english-leak, etc.) block regressions.
+// Temporarily hide a locale here only with an explicit product decision and PR note.
 export const EXPOSED_PUBLIC_LOCALES: readonly AppLocale[] = [
   "en",
   "nb",

@@ -7,44 +7,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@teqbook/ui";
+import {
+  BOOKING_LANG_FLAGS as LANG_FLAGS,
+  BOOKING_LANG_LABELS as LANG_LABELS,
+} from "@/i18n/booking-locale-ui";
 import type { AppLocale } from "@/i18n/translations";
 import type { BookingMode, PublicBookingTokens } from "./types";
-
-const LANG_LABELS: Record<AppLocale, string> = {
-  nb: "Norsk",
-  en: "English",
-  ar: "العربية",
-  so: "Soomaali",
-  ti: "ትግርኛ",
-  am: "አማርኛ",
-  tr: "Türkçe",
-  pl: "Polski",
-  vi: "Tiếng Việt",
-  tl: "Tagalog",
-  zh: "中文",
-  fa: "فارسی",
-  dar: "دری (Dari)",
-  ur: "اردو",
-  hi: "हिन्दी",
-};
-
-const LANG_FLAGS: Record<AppLocale, string> = {
-  nb: "🇳🇴",
-  en: "🇬🇧",
-  ar: "🇸🇦",
-  so: "🇸🇴",
-  ti: "🇪🇷",
-  am: "🇪🇹",
-  tr: "🇹🇷",
-  pl: "🇵🇱",
-  vi: "🇻🇳",
-  tl: "🇵🇭",
-  zh: "🇨🇳",
-  fa: "🇮🇷",
-  dar: "🇦🇫",
-  ur: "🇵🇰",
-  hi: "🇮🇳",
-};
 
 type HeaderStyle = "compact" | "standard" | "branded";
 
@@ -183,9 +151,9 @@ export function PublicBookingHeader({
                 rel="noopener noreferrer"
                 className="hidden min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-medium transition hover:opacity-90 sm:inline-flex"
                 style={{
-                  border: "1px solid #1fa855",
-                  backgroundColor: "#25D366",
-                  color: "#ffffff",
+                  border: "1px solid rgb(31 168 85)",
+                  backgroundColor: "rgb(37 211 102)",
+                  color: "rgb(255 255 255)",
                 }}
               >
                 WhatsApp

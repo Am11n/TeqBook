@@ -1,0 +1,24 @@
+export type ContactPageCopy = {
+  supportBadge: string;
+  title: string;
+  description: string;
+  intro: string;
+  fullName: string;
+  fullNamePlaceholder: string;
+  email: string;
+  emailPlaceholder: string;
+  message: string;
+  messagePlaceholder: string;
+  consent: string;
+  sending: string;
+  send: string;
+  supportInfoTitle: string;
+  supportInfoBody: string;
+  supportEmailLabel: string;
+  phone: string;
+  office: string;
+  officeLocation: string;
+  success: string;
+  error: string;
+  networkError: string;
+};

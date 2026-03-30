@@ -1,8 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@teqbook/ui";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@teqbook/ui";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
+import {
+  BOOKING_LANG_FLAGS,
+  BOOKING_LANG_LABELS,
+} from "@/i18n/booking-locale-ui";
 import type { AppLocale } from "@/i18n/translations";
 import { getProfilePageMessages } from "../profile-i18n";
 import { getPublicBookingUnavailableCopy } from "../booking-unavailable-i18n";
@@ -22,6 +32,8 @@ type Props = {
   onShare: () => void;
   cardStyle: CardStyle;
   locale: AppLocale;
+  supportedLanguages: AppLocale[];
+  onLocaleChange: (locale: AppLocale) => void;
 };
 
 function blockReasonForCopy(publicBooking: PublicProfileClientProps["publicBooking"]): PublicBookingBlockReason {
@@ -38,6 +50,9 @@ function blockReasonForCopy(publicBooking: PublicProfileClientProps["publicBooki
 
 export function ProfileHeroSection(props: Props) {
   const m = getProfilePageMessages(props.locale);
+  const currentLocale = props.supportedLanguages.includes(props.locale)
+    ? props.locale
+    : (props.supportedLanguages[0] ?? props.locale);
   const unavailableCopy = props.publicBooking.available
     ? null
     : getPublicBookingUnavailableCopy(props.locale, blockReasonForCopy(props.publicBooking));
@@ -154,21 +169,58 @@ export function ProfileHeroSection(props: Props) {
                 </div>
               ) : null}
 
-              <Button
-                variant="outline"
-                onClick={props.onShare}
-                aria-label={m.shareProfileAria}
-                className="h-[2.875rem] min-w-11 rounded-xl border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-px hover:border-[var(--pb-border-strong)] hover:bg-[var(--pb-bg-surface)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none"
-              >
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <path d="M8.6 13.5l6.8 4" />
-                  <path d="M15.4 6.5l-6.8 4" />
-                </svg>
-                <span className="hidden pl-2 text-sm font-medium tracking-[0.01em] sm:inline">{m.shareProfileAria}</span>
-              </Button>
+              <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:flex-none">
+                {props.supportedLanguages.length > 0 ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-[2.875rem] min-h-[2.875rem] w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-medium outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] sm:w-auto"
+                        style={{
+                          borderColor: props.tokens.colors.border,
+                          backgroundColor: props.tokens.colors.surface,
+                          color: props.tokens.colors.mutedText,
+                        }}
+                        aria-label={m.languageMenuAria}
+                        title={m.languageMenuAria}
+                      >
+                        <span className="text-sm leading-none">{BOOKING_LANG_FLAGS[currentLocale] || "🌐"}</span>
+                        <span className="hidden sm:inline">
+                          {BOOKING_LANG_LABELS[currentLocale] || currentLocale.toUpperCase()}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-44">
+                      {props.supportedLanguages.map((lang) => (
+                        <DropdownMenuItem
+                          key={lang}
+                          className="cursor-pointer"
+                          onClick={() => props.onLocaleChange(lang)}
+                        >
+                          <span className="mr-2">{BOOKING_LANG_FLAGS[lang] || "🌐"}</span>
+                          <span>{BOOKING_LANG_LABELS[lang] || lang}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+
+                <Button
+                  variant="outline"
+                  onClick={props.onShare}
+                  aria-label={m.shareProfileAria}
+                  className="h-[2.875rem] min-w-11 rounded-xl border-[var(--pb-secondary-border)] bg-[var(--pb-secondary-bg)] px-3 text-[var(--pb-secondary-text)] transition-[transform,background-color,border-color,box-shadow] duration-[var(--pb-motion-fast)] ease-[var(--pb-ease-out)] hover:-translate-y-px hover:border-[var(--pb-border-strong)] hover:bg-[var(--pb-bg-surface)] hover:shadow-[var(--pb-shadow-1)] active:translate-y-px focus-visible:outline-none focus-visible:ring-[var(--pb-focus-width)] focus-visible:ring-[var(--pb-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pb-bg)] motion-reduce:transform-none sm:w-auto"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <path d="M8.6 13.5l6.8 4" />
+                    <path d="M15.4 6.5l-6.8 4" />
+                  </svg>
+                  <span className="hidden pl-2 text-sm font-medium tracking-[0.01em] sm:inline">{m.shareProfileAria}</span>
+                </Button>
+              </div>
             </div>
             {props.shareMessage ? <p className="mt-2 text-xs text-[var(--pb-muted)]">{props.shareMessage}</p> : null}
           </div>

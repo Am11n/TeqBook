@@ -83,6 +83,8 @@ export type PublicProfileClientProps = {
   } | null;
   tokens: PublicBookingTokens;
   locale: AppLocale;
+  /** Languages enabled for this salon (public booking + profile picker); may be empty. */
+  supportedLanguages: AppLocale[];
   publicBooking: PublicBookingStatus;
 };
 
