@@ -18,6 +18,8 @@ export const viOverrides: Partial<PublicPageNamespaces> = {
     contact: "Liên hệ",
     privacy: "Chính sách riêng tư",
     terms: "Điều khoản dịch vụ",
+    tagline:
+      "Giúp các salon trên toàn cầu luôn ngăn nắp, tự tin và được đặt lịch đầy đủ.",
   },
   marketingLayout: { startFree: "Bắt đầu miễn phí", contact: "Liên hệ" },
   marketingPages: {
@@ -117,6 +119,7 @@ export const zhOverrides: Partial<PublicPageNamespaces> = {
     contact: "联系我们",
     privacy: "隐私政策",
     terms: "服务条款",
+    tagline: "在全球范围内帮助沙龙保持有序、自信并预约满档。",
   },
   marketingLayout: { startFree: "免费开始", contact: "联系我们" },
   marketingPages: {

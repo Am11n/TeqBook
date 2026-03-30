@@ -18,6 +18,8 @@ export const trOverrides: Partial<PublicPageNamespaces> = {
     contact: "İletişim",
     privacy: "Gizlilik politikası",
     terms: "Hizmet şartları",
+    tagline:
+      "Salonların dünya çapında düzenli, kendinden emin ve tam dolu kalmasına yardımcı oluyoruz.",
   },
   marketingLayout: { startFree: "Ücretsiz başla", contact: "İletişim" },
   marketingPages: {
@@ -116,6 +118,8 @@ export const plOverrides: Partial<PublicPageNamespaces> = {
     contact: "Kontakt",
     privacy: "Polityka prywatności",
     terms: "Warunki korzystania",
+    tagline:
+      "Pomagamy salonom na całym świecie pozostać zorganizowanymi, pewnymi siebie i w pełni zarezerwowanymi.",
   },
   marketingLayout: { startFree: "Zacznij za darmo", contact: "Kontakt" },
   marketingPages: {

@@ -20,6 +20,8 @@ export const faOverrides: Partial<PublicPageNamespaces> = {
     contact: "تماس",
     privacy: "حریم خصوصی",
     terms: "شرایط استفاده",
+    tagline:
+      "کمک به سالن‌ها برای ماندن منظم، مطمئن و پر از رزرو در سراسر جهان.",
   },
   marketingLayout: {
     startFree: "شروع رایگان",
@@ -125,6 +127,8 @@ export const urOverrides: Partial<PublicPageNamespaces> = {
     contact: "رابطہ",
     privacy: "پرائیویسی پالیسی",
     terms: "سروس کی شرائط",
+    tagline:
+      "دنیا بھر میں سیلونز کو منظم، پراعتماد اور مکمل طور پر بُک رکھنے میں مدد۔",
   },
   marketingLayout: {
     startFree: "مفت شروع کریں",

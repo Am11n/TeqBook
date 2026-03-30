@@ -18,6 +18,8 @@ export const tlOverrides: Partial<PublicPageNamespaces> = {
     contact: "Kontak",
     privacy: "Patakaran sa privacy",
     terms: "Mga tuntunin ng serbisyo",
+    tagline:
+      "Tinutulungan ang mga salon na manatiling organisado, kumpiyansa at ganap na naka-book sa buong mundo.",
   },
   marketingLayout: { startFree: "Magsimula nang libre", contact: "Kontak" },
   marketingPages: {
@@ -110,6 +112,10 @@ export const darOverrides: Partial<PublicPageNamespaces> = {
     signup: "ایجاد حساب",
     login: "ورود",
     language: "زبان",
+    openMenu: "باز کردن منو",
+    closeMenu: "بستن منو",
+    primaryNavAria: "ناوبری اصلی",
+    mobileNavAria: "منوی ناوبری موبایل",
   },
   marketingFooter: {
     ...enBase.marketingFooter,
@@ -118,6 +124,9 @@ export const darOverrides: Partial<PublicPageNamespaces> = {
     contact: "تماس",
     privacy: "حریم خصوصی",
     terms: "شرایط خدمات",
+    navAria: "ناوبری پاورقی",
+    tagline:
+      "کمک به سالن‌ها برای ماندن منظم، مطمئن و پُر از وقت در سراسر جهان.",
   },
   marketingLayout: { startFree: "شروع رایگان", contact: "تماس" },
   marketingPages: {
@@ -215,6 +224,8 @@ export const hiOverrides: Partial<PublicPageNamespaces> = {
     contact: "संपर्क",
     privacy: "गोपनीयता नीति",
     terms: "सेवा की शर्तें",
+    tagline:
+      "दुनिया भर में सैलून को व्यवस्थित, आत्मविश्वासी और पूरी तरह बुक रहने में मदद करना।",
   },
   marketingLayout: { startFree: "मुफ्त शुरू करें", contact: "संपर्क" },
   marketingPages: {

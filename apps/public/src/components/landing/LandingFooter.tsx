@@ -35,6 +35,8 @@ function getFooterText(locale: Locale): string {
     case "dar":
     case "ur":
       return "کمک به سالن‌ها برای منظم، مطمئن و کاملاً رزرو شده ماندن — در سطح جهانی.";
+    case "hi":
+      return "दुनिया भर में सैलून को व्यवस्थित, आत्मविश्वासी और पूरी तरह बुक रहने में मदद।";
     default:
       return "Helping salons stay organized, confident and fully booked — globally.";
   }

@@ -18,6 +18,8 @@ export const soOverrides: Partial<PublicPageNamespaces> = {
     contact: "La xiriir",
     privacy: "Asturnaanta",
     terms: "Shuruudaha adeegga",
+    tagline:
+      "Waxaan ka caawineysaa saloonnada inay ku sii ahaadaan kuwo habaysan, kalsooni leh oo si buuxda loo ballan qaaday — adduunka oo dhan.",
   },
   marketingLayout: { startFree: "Bilow bilaash", contact: "La xiriir" },
   marketingPages: {
@@ -116,6 +118,8 @@ export const tiOverrides: Partial<PublicPageNamespaces> = {
     contact: "ኣግኙና",
     privacy: "ፖሊሲ ምስጢር",
     terms: "መስፈርቲ ኣገልግሎት",
+    tagline:
+      "ኣብ ዓለምናዊ ደረጃ ናይ ሳሎናት ንምስርዑ፣ ንምርግጋጽ ከምኡውን ንምምላእ ኣብ ምሕጋዝ።",
   },
   marketingLayout: { startFree: "ብነጻ ጀምር", contact: "ኣግኙና" },
   login2fa: {
@@ -165,6 +169,8 @@ export const amOverrides: Partial<PublicPageNamespaces> = {
     contact: "ያግኙን",
     privacy: "የግላዊነት ፖሊሲ",
     terms: "የአገልግሎት መመሪያ",
+    tagline:
+      "ሳሎኖች በዓለም አቀፍ ደረጃ የተደራጁ፣ በራስ የሚታመኑ እና ሙሉ በሙሉ የተዘጋጁ እንዲሆኑ ማገዝ።",
   },
   marketingLayout: { startFree: "በነጻ ጀምር", contact: "ያግኙን" },
   login2fa: {

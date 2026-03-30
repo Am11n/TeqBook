@@ -129,6 +129,8 @@ export const arOverrides: Partial<PublicPageNamespaces> = {
     contact: "اتصل بنا",
     privacy: "سياسة الخصوصية",
     terms: "شروط الخدمة",
+    tagline:
+      "نساعد الصالونات على البقاء منظمة وواثقة ومحجوزة بالكامل في جميع أنحاء العالم.",
   },
   marketingLayout: {
     startFree: "ابدأ مجانًا",
