@@ -6,31 +6,14 @@ import { useState } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
+import { loginUiByLocale } from "@/i18n/login-ui";
 import dynamic from "next/dynamic";
 const MotionDiv = dynamic(
   () => import("framer-motion").then((mod) => mod.motion.div),
   { ssr: false }
 );
 import { useLoginForm } from "./_components/useLoginForm";
-
-type LoginUiMessages = {
-  confirmedBanner: string;
-  passwordResetBanner: string;
-};
-
-const loginUiEn: LoginUiMessages = {
-  confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
-  passwordResetBanner: "Your password has been reset successfully. You can log in now.",
-};
-
-const loginUiByLocale: Record<string, LoginUiMessages> = {
-  en: loginUiEn,
-  nb: {
-    confirmedBanner: "Du har bekreftet sign up. Velkommen til TeqBook - du kan logge inn nå.",
-    passwordResetBanner: "Passordet ditt er oppdatert. Du kan logge inn nå.",
-  },
-};
 
 export default function LoginPage() {
   const { locale } = useLocale();
@@ -45,7 +28,7 @@ export default function LoginPage() {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).get("reset") === "1";
   });
-  const ui = loginUiByLocale[appLocale] ?? loginUiEn;
+  const ui = loginUiByLocale[appLocale];
 
   const {
     email, setEmail, password, setPassword,

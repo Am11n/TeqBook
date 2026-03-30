@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 export function MarketingFooter() {
   const { locale } = useLocale();

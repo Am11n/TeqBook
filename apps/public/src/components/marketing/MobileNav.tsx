@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);

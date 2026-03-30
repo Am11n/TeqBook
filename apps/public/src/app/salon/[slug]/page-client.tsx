@@ -34,7 +34,10 @@ export default function PublicSalonProfilePageClient(props: PublicProfileClientP
     [props.about.description, props.hero.addressLine, props.locale]
   );
   const m = useMemo(() => getProfilePageMessages(props.locale), [props.locale]);
-  const socialItems = useMemo(() => buildSocialItems(props.socialLinks), [props.socialLinks]);
+  const socialItems = useMemo(
+    () => buildSocialItems(props.socialLinks, props.locale),
+    [props.socialLinks, props.locale],
+  );
   const todayHours = useMemo(() => getTodayOpeningHours(props.openingHours), [props.openingHours]);
   const openCloseMeta = useMemo(
     () => buildHoursStatusLine(props.hero.isOpenNow, Boolean(todayHours?.isClosed), todayHours?.closeTime || null, props.locale),

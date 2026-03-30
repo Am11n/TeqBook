@@ -14,7 +14,7 @@ import {
 import { CTASection } from "@/components/marketing/CTASection";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 import { copy as landingCopy } from "@/components/landing/landing-copy";
 import { categoryMapsByLocale } from "@/i18n/pricing-locale-categories";
 import { featureMapsByLocale } from "@/i18n/pricing-locale-features";

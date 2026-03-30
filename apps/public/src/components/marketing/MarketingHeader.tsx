@@ -6,7 +6,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNavClient } from "./MobileNavClient";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 export function MarketingHeader() {
   const { locale } = useLocale();

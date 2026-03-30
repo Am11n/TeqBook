@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/form/Field";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 export default function Login2FAPageClient() {
   const router = useRouter();

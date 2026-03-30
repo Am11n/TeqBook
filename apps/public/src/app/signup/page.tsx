@@ -6,7 +6,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useSignup } from "@/lib/hooks/signup/useSignup";
 import { SignupBranding } from "@/components/signup/SignupBranding";
 import { SignupForm } from "@/components/signup/SignupForm";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 type SignupUiMessages = {
   stepLabel: string;

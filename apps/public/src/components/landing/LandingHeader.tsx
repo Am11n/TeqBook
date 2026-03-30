@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "./landing-copy";
 import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "./language-constants";
+import { EXPOSED_PUBLIC_LOCALES } from "@/i18n/exposed-locales";
 
 interface LandingHeaderProps {
   locale: Locale;
@@ -59,7 +60,7 @@ function LanguageDropdown({
 
       {open && (
         <ul className="absolute right-0 top-full z-30 mt-1 min-w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-          {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+          {(EXPOSED_PUBLIC_LOCALES as LanguageCode[]).map((lang) => (
             <li key={lang}>
               <button
                 type="button"

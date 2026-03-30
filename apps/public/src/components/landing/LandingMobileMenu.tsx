@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "./landing-copy";
 import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "./language-constants";
+import { EXPOSED_PUBLIC_LOCALES } from "@/i18n/exposed-locales";
 
 interface LandingMobileMenuProps {
   open: boolean;
@@ -83,7 +84,7 @@ export function LandingMobileMenu({
               {locale === "nb" ? "Språk" : "Language"}
             </label>
             <div className="grid grid-cols-5 gap-1.5">
-              {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+              {(EXPOSED_PUBLIC_LOCALES as LanguageCode[]).map((lang) => (
                 <button
                   key={lang}
                   type="button"

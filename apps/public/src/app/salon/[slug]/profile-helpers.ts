@@ -101,12 +101,13 @@ export function buildSocialItems(socialLinks: {
   twitterUrl: string | null;
   tiktokUrl: string | null;
   websiteUrl: string | null;
-}): SocialItem[] {
+}, locale: AppLocale): SocialItem[] {
+  const m = getProfilePageMessages(locale);
   return [
-    { platform: "instagram", url: socialLinks.instagramUrl, label: "Instagram" },
-    { platform: "facebook", url: socialLinks.facebookUrl, label: "Facebook" },
-    { platform: "twitter", url: socialLinks.twitterUrl, label: "X (Twitter)" },
-    { platform: "tiktok", url: socialLinks.tiktokUrl, label: "TikTok" },
-    { platform: "website", url: socialLinks.websiteUrl, label: "Website" },
+    { platform: "instagram", url: socialLinks.instagramUrl, label: m.socialInstagram },
+    { platform: "facebook", url: socialLinks.facebookUrl, label: m.socialFacebook },
+    { platform: "twitter", url: socialLinks.twitterUrl, label: m.socialTwitter },
+    { platform: "tiktok", url: socialLinks.tiktokUrl, label: m.socialTiktok },
+    { platform: "website", url: socialLinks.websiteUrl, label: m.socialWebsite },
   ].filter((item): item is SocialItem => Boolean(item.url));
 }

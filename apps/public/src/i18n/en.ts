@@ -107,6 +107,8 @@ export const en: TranslationNamespaces = {
     emailLabelPlain: "Email",
     phoneLabelPlain: "Phone",
     phoneFormatHint: "Use international format, for example +47 99 99 99 99",
+    nameRequiredHint: "Please enter your name.",
+    contactRequiredHint: "Please provide at least email or phone.",
   },
   login: {
     title: "Log in",

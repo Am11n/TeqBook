@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { LANGUAGE_FLAGS, LANGUAGE_LABELS, type LanguageCode } from "@/components/landing/language-constants";
+import { EXPOSED_PUBLIC_LOCALES, isExposedPublicLocale } from "@/i18n/exposed-locales";
 
 const LANDING_LOCALE_KEY = "teqbook_landing_locale";
 
@@ -30,7 +31,7 @@ export function LanguageSwitcher({ dropUp = false, ariaLabel = "Language" }: Lan
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LANDING_LOCALE_KEY);
-      if (stored && stored in LANGUAGE_FLAGS) {
+      if (stored && isExposedPublicLocale(stored)) {
         setLocale(stored as LanguageCode);
       }
     } catch { /* ignore */ }
@@ -61,7 +62,7 @@ export function LanguageSwitcher({ dropUp = false, ariaLabel = "Language" }: Lan
             dropUp ? "bottom-full mb-1" : "top-full mt-1"
           }`}
         >
-          {(Object.keys(LANGUAGE_FLAGS) as LanguageCode[]).map((lang) => (
+          {(EXPOSED_PUBLIC_LOCALES as LanguageCode[]).map((lang) => (
             <li key={lang}>
               <button
                 type="button"

@@ -14,7 +14,7 @@ import { type Salon, createDateFormatter, createTimeFormatter } from "./confirma
 import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components/public-booking/publicBookingUtils";
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import { getPublicPageTranslations } from "@/i18n/public-pages";
+import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 
 export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug: string }) {
   const { locale } = useLocale();
