@@ -1,0 +1,42 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const services: TranslationNamespaces['services'] = {
+    title: "Mga serbisyo",
+    description:
+      "I-define ang mga serbisyo kasama ang tagal at presyo. Ginagamit sa booking engine.",
+    mustBeLoggedIn: "Kailangan mong mag-log in para makita ang mga serbisyo.",
+    noSalon:
+      "Wala pang salon na naka-link sa account mo. Kumpletuhin muna ang onboarding.",
+    addError: "Hindi madagdag ang serbisyo.",
+    updateError: "Hindi ma-update ang serbisyo.",
+    newService: "Bagong serbisyo",
+    nameLabel: "Pangalan",
+    namePlaceholder: "Halimbawa: Gupit (babae)",
+    categoryLabel: "Kategorya",
+    categoryCut: "Gupit",
+    categoryBeard: "Balbas",
+    categoryColor: "Kulay",
+    categoryNails: "Kuko",
+    categoryMassage: "Massage",
+    categoryOther: "Iba pa",
+    durationLabel: "Tagal (minuto)",
+    priceLabel: "Presyo",
+    sortOrderLabel: "Pagkakasunod-sunod",
+    loading: "Ikinakarga ang mga serbisyo…",
+    emptyTitle: "Wala pang nadadagdag na serbisyo",
+    emptyDescription:
+      "Magdagdag ng mga serbisyo sa form sa kaliwa. Gagamitin ang mga ito para kalkulahin ang oras at presyo sa booking engine.",
+    tableTitle: "Mga serbisyo mo",
+    colName: "Name",
+    colCategory: "Category",
+    colDuration: "Tagal",
+    colPrice: "Presyo",
+    colStatus: "Katayuan",
+    colActions: "Mga aksyon",
+    active: "Aktibo",
+    inactive: "Hindi aktibo",
+    delete: "Tanggalin",
+    dialogTitle: "Bagong serbisyo",
+    dialogDescription: "Punan ang detalye ng serbisyo.",
+    cancel: "Kanselahin",
+  };

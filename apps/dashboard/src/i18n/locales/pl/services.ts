@@ -1,0 +1,41 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const services: TranslationNamespaces['services'] = {
+    title: "Usługi",
+    description:
+      "Zdefiniuj usługi wraz z czasem trwania i ceną. Będą używane w silniku rezerwacji.",
+    mustBeLoggedIn: "Musisz być zalogowany, aby zobaczyć usługi.",
+    noSalon:
+      "Z Twoim kontem nie jest powiązany żaden salon. Najpierw ukończ onboarding.",
+    addError: "Nie udało się dodać usługi.",
+    updateError: "Nie udało się zaktualizować usługi.",
+    newService: "Nowa usługa",
+    nameLabel: "Nazwa",
+    namePlaceholder: "np. Strzyżenie damskie",
+    categoryLabel: "Kategoria",
+    categoryCut: "Strzyżenie",
+    categoryBeard: "Broda",
+    categoryColor: "Koloryzacja",
+    categoryNails: "Paznokcie",
+    categoryMassage: "Masaż",
+    categoryOther: "Inne",
+    durationLabel: "Czas trwania (minuty)",
+    priceLabel: "Cena",
+    sortOrderLabel: "Kolejność sortowania",    loading: "Ładowanie usług…",
+    emptyTitle: "Nie dodano jeszcze żadnych usług",
+    emptyDescription:
+      "Dodaj usługi w formularzu po lewej. Służą do wyliczania czasu i ceny w silniku rezerwacji.",
+    tableTitle: "Twoje usługi",
+    colName: "Name",
+    colCategory: "Category",
+    colDuration: "Czas",
+    colPrice: "Cena",
+    colStatus: "Status",
+    colActions: "Akcje",
+    active: "Aktywna",
+    inactive: "Nieaktywna",
+    delete: "Usuń",
+    dialogTitle: "Nowa usługa",
+    dialogDescription: "Wypełnij szczegóły usługi.",
+    cancel: "Anuluj",
+  };

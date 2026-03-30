@@ -1,0 +1,27 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const login: TranslationNamespaces['login'] = {
+    title: "تسجيل الدخول",
+    description:
+      "للاستخدام في التطوير المحلي: أنشئ مستخدمًا ببريد إلكتروني وكلمة مرور في لوحة تحكم Supabase، ثم سجّل الدخول هنا بدون تأكيد بريد.",
+    emailLabel: "البريد الإلكتروني",
+    emailPlaceholder: "you@salon.com",
+    passwordLabel: "كلمة المرور",
+    passwordPlaceholder: "على الأقل ٦ أحرف",
+    loginError: "تعذر تسجيل الدخول.",
+    loggingIn: "جارٍ تسجيل الدخول…",
+    loginButton: "تسجيل الدخول",
+    tip: "ملاحظة: في Supabase يمكنك مؤقتًا إيقاف خاصية تأكيد البريد من خلال Auth > Authentication > Email حتى يتمكن المستخدمون الجدد من تسجيل الدخول مباشرة.",
+    welcomeBackTitle: "مرحبًا بعودتك إلى TeqBook",
+    welcomeBackDescription: "برنامج صالون بسيط يحافظ على تزامن التقويم والعملاء والموظفين.",
+    bullet1: "حجز سريع وإعادة حجز للعملاء المنتظمين",
+    bullet2: "يعمل للصالونات الفردية ومتعددة المواقع",
+    bullet3: "مبني لشركات الدفع داخل الصالون",
+    trustLine: "موثوق به من قبل الصالونات المزدحمة التي تحتاج يومها أن يعمل ببساطة.",
+    formSubtitle: "استخدم حساب TeqBook الخاص بك للوصول إلى لوحة تحكم الصالون.",
+    forgotPassword: "نسيت كلمة المرور؟",
+    keepMeLoggedIn: "إبقني مسجلاً الدخول",
+    dontHaveAccount: "ليس لديك حساب؟",
+    createOne: "إنشاء حساب",
+    secureLoginLine: "تسجيل دخول آمن. كلمة المرور الخاصة بك لا يتم تخزينها أبدًا كنص عادي.",
+  };

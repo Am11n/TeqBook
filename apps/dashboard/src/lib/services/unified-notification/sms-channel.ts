@@ -2,6 +2,8 @@ import { sendSms } from "@/lib/services/sms";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getBillingWindow } from "@/lib/services/sms/billing-window";
 import { logSmsBillingWindowResolved } from "@/lib/services/sms/sms-billing-observability";
+import { renderNotificationTemplate } from "@/lib/templates/in-app/notification-templates";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type {
   BookingNotificationData,
   ReminderNotificationData,
@@ -37,23 +39,25 @@ export async function sendSmsNotification(
   if (!smsType) return { channel: "sms", sent: false, error: `Unsupported sms event: ${eventType}` };
 
   const bookingData = data as BookingNotificationData;
-  const salonName = bookingData.booking?.salon?.name || "salon";
-  const serviceName = bookingData.booking?.service?.name || "appointment";
-  const startDate = bookingData.booking?.start_time ? new Date(bookingData.booking.start_time) : null;
-  const formattedDate = startDate
-    ? new Intl.DateTimeFormat("nb-NO", { day: "numeric", month: "long", year: "numeric" }).format(startDate)
-    : "Ikke angitt";
-  const formattedTime = startDate
-    ? new Intl.DateTimeFormat("nb-NO", { hour: "2-digit", minute: "2-digit", hour12: false }).format(startDate)
-    : "Ikke angitt";
-  const employeeName = bookingData.booking?.employee?.name || "Ikke angitt";
+  const language = normalizeLocale(
+    (bookingData as BookingNotificationData).language ??
+      (data as ReminderNotificationData).language ??
+      "en",
+  );
 
-  const message =
-    smsType === "booking_cancellation"
-      ? `Hei! Tiden din hos ${salonName} ble avbestilt. Kontakt salongen om du vil booke ny tid.`
-      : smsType === "booking_reminder"
-        ? `Påminnelse: Du har ${serviceName} hos ${salonName} ${formattedDate} kl. ${formattedTime}.`
-        : `Bekreftet:\nDin time for ${serviceName} hos ${salonName} er bekreftet.\nDato: ${formattedDate}\nTid: ${formattedTime}\nBehandler: ${employeeName}\nVennligst kom 10 minutter før for å sikre at du får best mulig opplevelse.\nVi ser frem til å se deg!`;
+  const { body } = renderNotificationTemplate(
+    eventType,
+    {
+      customerName: bookingData.booking?.customer_full_name ?? undefined,
+      serviceName: bookingData.booking?.service?.name ?? undefined,
+      employeeName: bookingData.booking?.employee?.name ?? undefined,
+      salonName: bookingData.booking?.salon?.name ?? undefined,
+      startTime: bookingData.booking?.start_time ?? undefined,
+      endTime: bookingData.booking?.end_time ?? undefined,
+      timezone: bookingData.booking?.salon?.timezone ?? "UTC",
+    },
+    language,
+  );
 
   const { data: salonRow } = await getSalonById(data.salonId);
   const { periodStart, periodEnd } = getBillingWindow(salonRow?.current_period_end ?? null);
@@ -65,7 +69,7 @@ export async function sendSmsNotification(
     salonId: data.salonId,
     recipient: phone,
     type: smsType,
-    body: message,
+    body,
     billingPeriodStart: periodStart,
     billingPeriodEnd: periodEnd,
     idempotencyKey: correlationId,

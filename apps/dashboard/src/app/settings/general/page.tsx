@@ -8,6 +8,10 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations, type AppLocale } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import {
+  PROD_LOCALE_ALLOWLIST,
+  clampToEnabledLocale,
+} from "@/i18n/locale-policy";
 import { updateSalon } from "@/lib/services/salons-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
@@ -66,9 +70,16 @@ export default function GeneralSettingsPage() {
     currency: salon?.currency || "NOK",
     timezone: salon?.timezone || "UTC",
     timeFormat: salon?.time_format || "24h",
-    supportedLanguages: salon?.supported_languages || ["en", "nb"],
-    defaultLanguage: salon?.default_language || salon?.preferred_language || "en",
-    userPreferredLanguage: profile?.preferred_language || salon?.preferred_language || "en",
+    supportedLanguages:
+      (salon?.supported_languages ?? PROD_LOCALE_ALLOWLIST)
+        .map((code) => clampToEnabledLocale(code))
+        .filter((code, index, arr) => arr.indexOf(code) === index),
+    defaultLanguage: clampToEnabledLocale(
+      salon?.default_language || salon?.preferred_language || "en",
+    ),
+    userPreferredLanguage: clampToEnabledLocale(
+      profile?.preferred_language || salon?.preferred_language || "en",
+    ),
     businessAddress: salon?.business_address || "",
     orgNumber: salon?.org_number || "",
     cancellationHours: salon?.cancellation_hours ?? 24,
@@ -97,8 +108,11 @@ export default function GeneralSettingsPage() {
       name: v.salonName,
       salon_type: v.salonType || null,
       whatsapp_number: v.whatsappNumber || null,
-      supported_languages: v.supportedLanguages.length > 0 ? v.supportedLanguages : null,
-      default_language: v.defaultLanguage || null,
+      supported_languages:
+        v.supportedLanguages.length > 0
+          ? v.supportedLanguages.map((code) => clampToEnabledLocale(code))
+          : null,
+      default_language: clampToEnabledLocale(v.defaultLanguage),
       timezone: v.timezone || "UTC",
       currency: v.currency || "NOK",
       time_format: v.timeFormat || "24h",
@@ -131,7 +145,7 @@ export default function GeneralSettingsPage() {
     }
 
     if (v.userPreferredLanguage && v.userPreferredLanguage !== locale) {
-      setLocale(v.userPreferredLanguage as AppLocale);
+      setLocale(clampToEnabledLocale(v.userPreferredLanguage) as AppLocale);
     }
   }, [salon, user, profile, locale, setLocale, refreshSalon]);
 
@@ -152,22 +166,28 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     const supported = form.values.supportedLanguages;
     if (supported.length > 0 && !supported.includes(form.values.defaultLanguage)) {
-      form.setValue("defaultLanguage", supported[0] || "en");
+      form.setValue("defaultLanguage", clampToEnabledLocale(supported[0] || "en"));
     }
     if (supported.length > 0 && !supported.includes(form.values.userPreferredLanguage)) {
-      form.setValue("userPreferredLanguage", form.values.defaultLanguage || supported[0] || "en");
+      form.setValue(
+        "userPreferredLanguage",
+        clampToEnabledLocale(form.values.defaultLanguage || supported[0] || "en"),
+      );
     }
   }, [form.values.supportedLanguages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleLanguage = (code: string, checked: boolean) => {
     const current = form.values.supportedLanguages;
     if (checked) {
-      form.setValue("supportedLanguages", [...current, code]);
+      const next = [...current, clampToEnabledLocale(code)].filter(
+        (value, index, arr) => arr.indexOf(value) === index,
+      );
+      form.setValue("supportedLanguages", next);
     } else {
       const next = current.filter((c) => c !== code);
       form.setValue("supportedLanguages", next);
       if (form.values.defaultLanguage === code) {
-        form.setValue("defaultLanguage", next[0] || "en");
+        form.setValue("defaultLanguage", clampToEnabledLocale(next[0] || "en"));
       }
     }
   };

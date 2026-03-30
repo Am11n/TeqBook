@@ -16,6 +16,7 @@ import { updateSalonSettings } from "@/lib/services/salons-service";
 import { UserMenu } from "./UserMenu";
 import type { Salon, Profile } from "@/lib/types";
 import type { AppLocale } from "@/i18n/translations";
+import { PROD_LOCALE_ALLOWLIST, clampToEnabledLocale } from "@/i18n/locale-policy";
 
 interface DashboardHeaderProps {
   salon: Salon | null;
@@ -26,6 +27,8 @@ interface DashboardHeaderProps {
   onCommandPaletteOpen: () => void;
   texts: {
     openNav: string;
+    searchPlaceholder: string;
+    languageLabel: string;
   };
 }
 
@@ -101,7 +104,7 @@ export function DashboardHeader({
         >
           <Search className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
           <span className="flex-1 text-sm text-muted-foreground group-hover:text-foreground">
-            Search bookings, customers, services...
+            {texts.searchPlaceholder}
           </span>
           <kbd className="hidden rounded-md bg-card/90 border border-border/60 px-2 py-0.5 font-mono text-[10px] font-medium text-muted-foreground shadow-sm lg:block">
             ⌘K
@@ -115,7 +118,7 @@ export function DashboardHeader({
         <NotificationCenter />
 
         {/* Language selector (Desktop) */}
-        <LanguageSelector locale={locale} salon={salon} />
+        <LanguageSelector locale={locale} salon={salon} languageLabel={texts.languageLabel} />
 
         {/* User menu - Desktop */}
         <UserMenu profile={profile} salon={salon} userRole={userRole} isMobile={false} />
@@ -131,9 +134,11 @@ export function DashboardHeader({
 function LanguageSelector({
   locale,
   salon,
+  languageLabel,
 }: {
   locale: string;
   salon: Salon | null;
+  languageLabel: string;
 }) {
   const { setLocale } = useLocale();
 
@@ -155,17 +160,21 @@ function LanguageSelector({
     hi: "🇮🇳",
   };
 
-  const supportedLanguages =
+  const supportedLanguagesRaw =
     salon?.supported_languages && salon.supported_languages.length > 0
       ? salon.supported_languages
-      : ["en", "nb"];
+      : PROD_LOCALE_ALLOWLIST;
 
-  const currentLocale = supportedLanguages.includes(locale as AppLocale)
-    ? (locale as AppLocale)
+  const supportedLanguages = supportedLanguagesRaw
+    .map((code) => clampToEnabledLocale(code))
+    .filter((code, index, arr) => arr.indexOf(code) === index);
+
+  const currentLocale = supportedLanguages.includes(clampToEnabledLocale(locale))
+    ? clampToEnabledLocale(locale)
     : ((supportedLanguages[0] || "en") as AppLocale);
 
   async function handleChange(newLocaleRaw: string) {
-    const newLocale = newLocaleRaw as AppLocale;
+    const newLocale = clampToEnabledLocale(newLocaleRaw) as AppLocale;
     setLocale(newLocale);
 
     if (salon?.id) {
@@ -184,8 +193,8 @@ function LanguageSelector({
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg outline-none transition-all hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/20"
-              aria-label="Language"
-              title="Language"
+              aria-label={languageLabel}
+              title={languageLabel}
             >
               <span className="text-base leading-none">
                 {languageMap[currentLocale] || "🌐"}

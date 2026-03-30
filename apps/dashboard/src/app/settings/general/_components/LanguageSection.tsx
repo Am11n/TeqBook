@@ -10,6 +10,11 @@ import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import { Search } from "lucide-react";
 import { LOCALE_FLAG_EMOJI, type AppLocalePickerValue } from "@teqbook/shared";
 import { ALL_LANGUAGES, RECOMMENDED_CODES, langLabelFn } from "./types";
+import {
+  PROD_LOCALE_ALLOWLIST,
+  clampToEnabledLocale,
+} from "@/i18n/locale-policy";
+import { translations } from "@/i18n/translations";
 
 interface LanguageSectionProps {
   supportedLanguages: string[];
@@ -33,8 +38,15 @@ export function LanguageSection({
   const [langSearch, setLangSearch] = useState("");
   const [showMore, setShowMore] = useState(false);
 
-  const recommended = ALL_LANGUAGES.filter((l) => RECOMMENDED_CODES.includes(l.code));
-  const others = ALL_LANGUAGES.filter((l) => !RECOMMENDED_CODES.includes(l.code));
+  const enabledLanguageCodes = new Set(PROD_LOCALE_ALLOWLIST);
+  const visibleLanguages = ALL_LANGUAGES.filter((l) => enabledLanguageCodes.has(clampToEnabledLocale(l.code)));
+  const fallback = translations.en.settings;
+  const recommended = visibleLanguages.filter((l) => RECOMMENDED_CODES.includes(l.code));
+  const others = visibleLanguages.filter((l) => !RECOMMENDED_CODES.includes(l.code));
+  const effectiveSupported = supportedLanguages
+    .map((code) => clampToEnabledLocale(code))
+    .filter((code, index, arr) => arr.indexOf(code) === index);
+  const effectiveDefaultLanguage = clampToEnabledLocale(defaultLanguage);
 
   const filter = (langs: readonly { code: string; label: string; flag: string }[]) => {
     if (!langSearch.trim()) return langs;
@@ -47,13 +59,13 @@ export function LanguageSection({
 
   return (
     <SettingsSection
-      title={t.bookingLanguagesTitle ?? "Booking Languages"}
-      description={t.bookingLanguagesDescription ?? "Languages customers can use when booking."}
+      title={t.bookingLanguagesTitle ?? fallback.bookingLanguagesTitle ?? ""}
+      description={t.bookingLanguagesDescription ?? fallback.bookingLanguagesDescription ?? ""}
       size="lg"
       titleRight={
         languageLimit !== null ? (
           <Badge variant="outline" className="text-xs tabular-nums">
-            {supportedLanguages.length}/{languageLimit}
+            {effectiveSupported.length}/{languageLimit}
           </Badge>
         ) : null
       }
@@ -61,7 +73,7 @@ export function LanguageSection({
       <div className="relative mb-3">
         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder={t.searchLanguages ?? "Search languages..."}
+          placeholder={t.searchLanguages ?? fallback.searchLanguages ?? ""}
           value={langSearch}
           onChange={(e) => setLangSearch(e.target.value)}
           className="pl-8 h-8 text-xs"
@@ -70,25 +82,25 @@ export function LanguageSection({
 
       {languageLimit !== null && (
         <SettingsLimitBar
-          label={t.languagesUsed ?? "Languages used"}
-          current={supportedLanguages.length}
+          label={t.languagesUsed ?? fallback.languagesUsed ?? ""}
+          current={effectiveSupported.length}
           limit={languageLimit}
           onAction={onUpgrade}
-          actionLabel={t.upgradePlan ?? "Upgrade to add more"}
+          actionLabel={t.upgradePlan ?? fallback.upgradePlan ?? ""}
         />
       )}
 
       {filteredRecommended.length > 0 && (
         <div className="mt-3">
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t.recommendedLanguages ?? "Recommended"}
+            {t.recommendedLanguages ?? fallback.recommendedLanguages ?? ""}
           </p>
           <div className="space-y-1">
             {filteredRecommended.map((lang) => (
               <label key={lang.code} className="flex items-center gap-2 py-0.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={supportedLanguages.includes(lang.code)}
+                  checked={effectiveSupported.includes(clampToEnabledLocale(lang.code))}
                   onChange={(e) => onToggleLanguage(lang.code, e.target.checked)}
                   className="h-3.5 w-3.5 rounded border-input"
                 />
@@ -102,14 +114,14 @@ export function LanguageSection({
       {(showMore || langSearch.trim()) && filteredOthers.length > 0 && (
         <div className="mt-3">
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t.moreLanguages ?? "More languages"}
+            {t.moreLanguages ?? fallback.moreLanguages ?? ""}
           </p>
           <div className="space-y-1">
             {filteredOthers.map((lang) => (
               <label key={lang.code} className="flex items-center gap-2 py-0.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={supportedLanguages.includes(lang.code)}
+                  checked={effectiveSupported.includes(clampToEnabledLocale(lang.code))}
                   onChange={(e) => onToggleLanguage(lang.code, e.target.checked)}
                   className="h-3.5 w-3.5 rounded border-input"
                 />
@@ -126,17 +138,17 @@ export function LanguageSection({
           onClick={() => setShowMore(true)}
           className="mt-2 text-xs text-primary hover:underline"
         >
-          {t.showMoreLanguages ?? `Show more (${others.length})`}
+          {t.showMoreLanguages ?? fallback.showMoreLanguages ?? `(${others.length})`}
         </button>
       )}
 
       <div className="mt-4 pt-3 border-t">
-        <FormRow label={t.defaultLanguageLabel ?? "Default language"} htmlFor="defaultLanguage">
+        <FormRow label={t.defaultLanguageLabel ?? fallback.defaultLanguageLabel ?? ""} htmlFor="defaultLanguage">
           <DialogSelect
-            value={defaultLanguage}
+            value={effectiveDefaultLanguage}
             onChange={onChangeDefault}
-            options={(supportedLanguages.length > 0
-              ? supportedLanguages
+            options={(effectiveSupported.length > 0
+              ? effectiveSupported
               : ["en"]
             ).map((code) => {
               const flagEmoji =

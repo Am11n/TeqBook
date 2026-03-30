@@ -191,6 +191,14 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
         onCommandPaletteOpen={() => setCommandPaletteOpen(true)}
         texts={{
           openNav: texts.openNav,
+          searchPlaceholder:
+            texts.globalSearchPlaceholder ??
+            translations.en.dashboard.globalSearchPlaceholder ??
+            "",
+          languageLabel:
+            texts.languageMenuLabel ??
+            translations.en.dashboard.languageMenuLabel ??
+            texts.langLabel,
         }}
       />
 

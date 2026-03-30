@@ -4,6 +4,7 @@ import type {
   ReminderNotificationData,
   NotificationEventType,
 } from "@/lib/types/notifications";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 type EmailResult = { channel: "email"; sent: boolean; id?: string; error?: string; icsAttached?: boolean };
 
@@ -16,6 +17,12 @@ export async function sendEmailNotification(
   if (!email) return { channel: "email", sent: false, error: "No email address provided" };
 
   try {
+    const bookingLocale = normalizeLocale(
+      (data as BookingNotificationData).language ??
+        (data as ReminderNotificationData).language ??
+        "en",
+    );
+
     if (eventType === "booking_confirmed") {
       const bookingData = data as BookingNotificationData;
       const icsContent = generateICS({
@@ -31,7 +38,7 @@ export async function sendEmailNotification(
       const { sendBookingConfirmation } = await import("@/lib/services/email-service");
       const result = await sendBookingConfirmation({
         booking: bookingData.booking, recipientEmail: email,
-        language: bookingData.language, salonId: bookingData.salonId,
+        language: bookingLocale, salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
         timezone: bookingData.booking.salon?.timezone || "UTC",
       });
@@ -44,7 +51,7 @@ export async function sendEmailNotification(
       const { sendBookingReminder } = await import("@/lib/services/email-service");
       const result = await sendBookingReminder({
         booking: reminderData.booking, recipientEmail: email,
-        reminderType: reminderData.reminderType, language: reminderData.language,
+        reminderType: reminderData.reminderType, language: bookingLocale,
         salonId: reminderData.salonId, userId: reminderData.recipientUserId || null,
         timezone: reminderData.booking.salon?.timezone || "UTC",
       });
@@ -58,7 +65,7 @@ export async function sendEmailNotification(
       const timezone = bookingData.booking.salon?.timezone || "UTC";
       const result = await sendBookingCancellation({
         booking: bookingData.booking, recipientEmail: email,
-        language: bookingData.language, salonId: bookingData.salonId,
+        language: bookingLocale, salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null, timezone,
         cancellationReason: bookingData.cancellationReason ?? undefined,
       });
@@ -71,7 +78,7 @@ export async function sendEmailNotification(
       const { sendBookingConfirmation } = await import("@/lib/services/email-service");
       const result = await sendBookingConfirmation({
         booking: bookingData.booking, recipientEmail: email,
-        language: bookingData.language, salonId: bookingData.salonId,
+        language: bookingLocale, salonId: bookingData.salonId,
         userId: bookingData.recipientUserId || null,
         timezone: bookingData.booking.salon?.timezone || "UTC",
       });

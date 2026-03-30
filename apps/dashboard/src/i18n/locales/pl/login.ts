@@ -1,0 +1,27 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const login: TranslationNamespaces['login'] = {
+    title: "Zaloguj się do TeqBook",
+    description:
+      "Do lokalnego developmentu: utwórz użytkownika z e‑mailem i hasłem w panelu Supabase, a następnie zaloguj się tutaj bez weryfikacji e‑mail.",
+    emailLabel: "E‑mail",
+    emailPlaceholder: "you@salon.com",
+    passwordLabel: "Hasło",
+    passwordPlaceholder: "Co najmniej 6 znaków",
+    loginError: "Nie udało się zalogować.",
+    loggingIn: "Logowanie...",
+    loginButton: "Zaloguj się",
+    tip: "Wskazówka: W Supabase możesz tymczasowo wyłączyć wymóg potwierdzenia e‑mail w Auth > Authentication > Email, aby nowi użytkownicy mogli logować się od razu.",
+    welcomeBackTitle: "Witamy ponownie w TeqBook",
+    welcomeBackDescription: "Proste oprogramowanie salonowe, które synchronizuje kalendarz, klientów i personel.",
+    bullet1: "Szybka rezerwacja i ponowne rezerwacje dla stałych klientów",
+    bullet2: "Działa dla salonów jedno- i wielolokalizacyjnych",
+    bullet3: "Zbudowane dla firm płacących w salonie",
+    trustLine: "Zaufane przez zapracowane salony, które potrzebują, aby ich dzień po prostu działał.",
+    formSubtitle: "Użyj swojego konta TeqBook, aby uzyskać dostęp do pulpitu salonu.",
+    forgotPassword: "Zapomniałeś hasła?",
+    keepMeLoggedIn: "Pozostań zalogowany",
+    dontHaveAccount: "Nie masz konta?",
+    createOne: "Utwórz jedno",
+    secureLoginLine: "Bezpieczne logowanie. Twoje hasło nigdy nie jest przechowywane w postaci zwykłego tekstu.",
+  };

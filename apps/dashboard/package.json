@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "test": "vitest",
     "test:run": "vitest --run",
+    "test:i18n": "vitest --run src/i18n/__tests__/parity.test.ts",
     "test:coverage": "vitest --coverage --run",
     "test:integration": "vitest --run --config vitest.integration.config.ts"
   },

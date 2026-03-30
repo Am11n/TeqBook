@@ -1,0 +1,42 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const services: TranslationNamespaces['services'] = {
+    title: "सेवाएँ",
+    description:
+      "अवधि और कीमत के साथ सेवाएँ परिभाषित करें। बुकिंग इंजन में उपयोग होता है।",
+    mustBeLoggedIn: "सेवाएँ देखने के लिए आपको लॉग इन होना ज़रूरी है।",
+    noSalon:
+      "आपके यूज़र से कोई सैलून जुड़ा नहीं मिला। पहले ऑनबोर्डिंग पूरा करें।",
+    addError: "सेवा जोड़ी नहीं जा सकी।",
+    updateError: "सेवा अपडेट नहीं हो सकी।",
+    newService: "नई सेवा",
+    nameLabel: "नाम",
+    namePlaceholder: "उदाहरण: महिलाओं की कटिंग",
+    categoryLabel: "श्रेणी",
+    categoryCut: "कटिंग",
+    categoryBeard: "दाढ़ी",
+    categoryColor: "रंग",
+    categoryNails: "नेल",
+    categoryMassage: "मालिश",
+    categoryOther: "अन्य",
+    durationLabel: "अवधि (मिनट)",
+    priceLabel: "कीमत",
+    sortOrderLabel: "क्रमबद्धता",
+    loading: "सेवाएँ लोड हो रही हैं…",
+    emptyTitle: "अभी तक कोई सेवा रजिस्टर नहीं",
+    emptyDescription:
+      "बाएँ फॉर्म में ट्रीटमेंट्स जोड़ें। इन्हीं के आधार पर बुकिंग इंजन अवधि और कीमत तय करेगा।",
+    tableTitle: "आपकी सेवाएँ",
+    colName: "Name",
+    colCategory: "Category",
+    colDuration: "अवधि",
+    colPrice: "कीमत",
+    colStatus: "स्थिति",
+    colActions: "कार्रवाई",
+    active: "सक्रिय",
+    inactive: "निष्क्रिय",
+    delete: "हटाएँ",
+    dialogTitle: "नई सेवा",
+    dialogDescription: "सेवा की जानकारी भरें।",
+    cancel: "रद्द करें",
+  };

@@ -11,6 +11,7 @@ import type {
 import { shouldSendToChannel } from "./unified-notification-service";
 import { sendEmailNotification } from "./email-channel";
 import { sendSmsNotification } from "./sms-channel";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 /**
  * Send a notification to all specified channels
@@ -132,7 +133,7 @@ async function sendInAppNotificationForEvent(
 
   try {
     const bookingData = data as BookingNotificationData;
-    const language = bookingData.language || "en";
+    const language = normalizeLocale(bookingData.language || "en");
 
     // Render template for this event type
     // Use salon timezone if available, otherwise default to UTC

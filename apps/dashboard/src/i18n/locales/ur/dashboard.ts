@@ -1,0 +1,42 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const dashboard: TranslationNamespaces['dashboard'] = {
+    brandSubtitle: "سیلون ڈیش بورڈ",
+    overview: "جائزہ",
+    calendar: "کیلنڈر",
+    employees: "ملازمین",
+    services: "سروسز",
+    shifts: "شفٹس",
+    customers: "کسٹمرز",
+    bookings: "بُکنگز",
+    personalliste: "اسٹاف رجسٹر",
+    feedback: "رائے",
+    support: "Support",
+    onboarding: "سیٹ اَپ",
+    settings: "Settings",
+    tagline:
+      "ایک ہی جگہ سے سیلون، ملازمین، سروسز اور اوقاتِ کار کو مینج کریں۔",
+    builtFor: "نارڈک سیلونز کے لیے بنایا گیا — ادائیگی ہمیشہ سیلون پر ہوتی ہے۔",
+    openNav: "نیویگیشن کھولیں",
+    menu: "مینو",
+    closeNav: "نیویگیشن بند کریں",
+    dashboardTitle: "TeqBook ڈیش بورڈ",
+    login: "لاگ اِن",
+    logout: "لاگ آؤٹ",
+    langLabel: "زبان",
+
+    globalSearchPlaceholder: "Search bookings, customers, services...",
+    languageMenuLabel: "Language",    sectionOverview: "جائزہ",
+    sectionOperations: "آپریشنز",
+    sectionManagement: "انتظام",
+    sectionCompliance: "تعمیل",
+    sectionSystem: "سسٹم",
+    products: "مصنوعات",
+    reports: "رپورٹس",
+    collapseSidebar: "سائیڈبار سکیڑیں",
+    expandSidebar: "سائیڈبار پھیلائیں",
+    productLockTitle: "Your trial has ended",
+    productLockDescription:
+      "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
+    productLockCta: "Go to billing",
+  };

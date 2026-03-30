@@ -1,0 +1,25 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const signup: TranslationNamespaces['signup'] = {
+    title: "创建账户",
+    description: "创建账户以开始使用 TeqBook。",
+    confirmPasswordLabel: "确认密码",
+    confirmPasswordPlaceholder: "重新输入密码",
+    signupButton: "创建账户",
+    signingUp: "正在创建账户...",
+    signupError: "无法创建账户",
+    alreadyHaveAccount: "已有账户？",
+    loginLink: "登录",
+    passwordMismatch: "密码不匹配",
+    createAccountTitle: "创建您的 TeqBook 账户",
+    createAccountDescription: "开始免费试用。无需信用卡。您可以稍后添加员工和沙龙。",
+    bullet1: "在几分钟内开始在线预订",
+    bullet2: "随着沙龙的发展，稍后升级",
+    bullet3: "提供多语言预订页面",
+    formSubtitle: "开始免费试用 TeqBook – 无需信用卡。",
+    trustLine: "受到想要简单、清晰调度的沙龙的信任 – 而不是臃肿的软件。",
+    passwordPlaceholder: "创建密码",
+    passwordHint: "至少使用 8 个字符。您可以稍后更改此设置。",
+    termsAgreement: "我同意条款和隐私政策。",
+    secureLoginLine: "安全登录。您的密码永远不会以明文形式存储。",
+   };

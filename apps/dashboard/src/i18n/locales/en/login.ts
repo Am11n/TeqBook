@@ -1,0 +1,27 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const login: TranslationNamespaces['login'] = {
+    title: "Log in",
+    description:
+      "For local development: create a user with email and password in the Supabase dashboard, and log in here without email verification.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@salon.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "••••••••",
+    loginError: "Could not log in.",
+    loggingIn: "Logging in...",
+    loginButton: "Log in",
+    tip: "Tip: In Supabase you can temporarily disable email confirmation under Auth > Authentication > Email so new users can log in directly.",
+    welcomeBackTitle: "Welcome back to TeqBook",
+    welcomeBackDescription: "Simple salon software that keeps your calendar, clients, and staff in sync.",
+    bullet1: "Fast booking and rebooking for regular clients",
+    bullet2: "Works for single and multi-location salons",
+    bullet3: "Built for pay-in-salon businesses",
+    trustLine: "Trusted by busy salons that need their day to just work.",
+    formSubtitle: "Use your TeqBook account to access your salon dashboard.",
+    forgotPassword: "Forgot password?",
+    keepMeLoggedIn: "Keep me logged in",
+    dontHaveAccount: "Don't have an account?",
+    createOne: "Create one",
+    secureLoginLine: "Secure login. Your password is never stored in plain text.",
+  };

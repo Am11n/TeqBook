@@ -6,9 +6,14 @@ import {
   useState,
   useMemo,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
 import type { AppLocale } from "@/i18n/translations";
+import {
+  clampToEnabledLocale,
+  getDocumentDirection,
+} from "@/i18n/locale-policy";
 
 // Re-export AppLocale as Locale for backward compatibility
 export type Locale = AppLocale;
@@ -26,12 +31,17 @@ type LocaleProviderProps = {
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
   // Default to "en", will be set by SalonProvider when salon data loads
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>(clampToEnabledLocale("en"));
 
   // Memoize setLocale to prevent infinite loops in useEffect dependencies
   const setLocale = useCallback((value: Locale) => {
-    setLocaleState(value);
+    setLocaleState(clampToEnabledLocale(value));
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = getDocumentDirection(locale);
+  }, [locale]);
 
   const value = useMemo(
     () => ({

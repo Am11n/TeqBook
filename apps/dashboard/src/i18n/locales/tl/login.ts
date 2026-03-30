@@ -1,0 +1,27 @@
+import type { TranslationNamespaces } from '../../types';
+
+export const login: TranslationNamespaces['login'] = {
+    title: "Mag-log in sa TeqBook",
+    description:
+      "Para sa local development: gumawa ng user na may email at password sa Supabase, tapos mag-log in dito nang hindi kailangan ng email verification.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@salon.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Hindi bababa sa 6 na karakter",
+    loginError: "Hindi makapag-log in.",
+    loggingIn: "Nagla-log in…",
+    loginButton: "Mag-log in",
+    tip: "Tip: Sa Supabase, puwede mong pansamantalang i-off ang email confirmation sa Auth > Authentication > Email para makalog in agad ang bagong user.",
+    welcomeBackTitle: "Maligayang pagbabalik sa TeqBook",
+    welcomeBackDescription: "Simpleng salon software na nagpapanatili ng sync ng calendar, clients, at staff.",
+    bullet1: "Mabilis na booking at rebooking para sa regular na clients",
+    bullet2: "Gumagana para sa single at multi-location salons",
+    bullet3: "Ginawa para sa pay-in-salon businesses",
+    trustLine: "Pinagkakatiwalaan ng mga abalang salon na kailangan lang na gumana ang araw nila.",
+    formSubtitle: "Gamitin ang TeqBook account mo para ma-access ang salon dashboard.",
+    forgotPassword: "Nakalimutan ang password?",
+    keepMeLoggedIn: "Panatilihin akong naka-log in",
+    dontHaveAccount: "Wala kang account?",
+    createOne: "Gumawa ng isa",
+    secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
+  };
