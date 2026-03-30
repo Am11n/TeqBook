@@ -16,7 +16,22 @@ This file documents the localization guardrails for the public app.
 
 - `npm run lint` includes i18n gates:
   - `lint:i18n-fallback-gate` (blocks inline fallback text in targeted public UI files)
-  - `lint:i18n-locale-gate` (ensures all supported locales exist in `public-pages.ts`)
+  - `lint:i18n-locale-gate` (ensures all supported locales exist in `public-pages/translations.ts`)
+  - `lint:i18n-parity` (fails on missing keys, extra keys, and placeholder mismatch)
+
+## Production-ready locale checklist
+
+A locale is production-ready only when:
+- `lint:i18n-parity` is green for affected namespaces
+- placeholder checks are green (`{employee}`, `{count}`, etc. preserved)
+- critical-route smoke QA is complete (`/book`, `/salon`, `/login`, `/signup`, `/onboarding`, `/book/[salon_slug]/confirmation`)
+- no mixed-language defects remain in exposed public flows
+
+## Release exposure policy
+
+- Locale selector exposure is controlled in `src/i18n/exposed-locales.ts`.
+- Only production-ready locales may be exposed.
+- Any locale with unresolved parity or QA issues must be hidden until fixed.
 
 ## Key rename/removal policy
 

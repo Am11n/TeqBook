@@ -16,17 +16,56 @@ export const loginUiByLocale: Record<AppLocale, LoginUiMessages> = {
     confirmedBanner: "Du har bekreftet sign up. Velkommen til TeqBook - du kan logge inn nå.",
     passwordResetBanner: "Passordet ditt er oppdatert. Du kan logge inn nå.",
   },
-  ar: en,
-  so: en,
-  ti: en,
-  am: en,
-  tr: en,
-  pl: en,
-  vi: en,
-  zh: en,
-  tl: en,
-  fa: en,
-  dar: en,
-  ur: en,
-  hi: en,
+  ar: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  so: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  ti: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  am: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  tr: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  pl: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  vi: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  zh: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  tl: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  fa: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  dar: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  ur: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
+  hi: {
+    confirmedBanner: "Your signup is confirmed. Welcome to TeqBook - you can log in now.",
+    passwordResetBanner: "Your password has been reset successfully. You can log in now.",
+  },
 };
