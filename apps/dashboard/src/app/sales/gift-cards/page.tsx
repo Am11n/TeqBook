@@ -21,6 +21,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import {
   listGiftCards,
@@ -33,7 +34,10 @@ export default function GiftCardsPage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const td = translations[appLocale].dashboard;
+  const td = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
@@ -65,10 +69,10 @@ export default function GiftCardsPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)}>
-        {td.salesNewGiftCard ?? "New Gift Card"}
+        {td.salesNewGiftCard}
       </Button>
     ),
-    []
+    [td.salesNewGiftCard],
   );
 
   useTabActions(tabAction);
@@ -227,11 +231,11 @@ export default function GiftCardsPage() {
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         {!loading && cards.length === 0 ? (
           <EmptyState
-            title={td.salesNoGiftCardsTitle ?? "No gift cards yet"}
-            description={td.salesNoGiftCardsDescription ?? "Create your first gift card to get started."}
+            title={td.salesNoGiftCardsTitle}
+            description={td.salesNoGiftCardsDescription}
             primaryAction={
               <Button size="sm" onClick={() => setShowCreate(true)}>
-                {td.salesNewGiftCard ?? "New Gift Card"}
+                {td.salesNewGiftCard}
               </Button>
             }
           />

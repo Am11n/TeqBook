@@ -22,10 +22,10 @@ interface ShiftsListViewProps {
     addShiftCta: string;
     overlap: string;
     invalidTime: string;
-    setupShiftsTitle?: string;
-    setupShiftsDescription?: string;
-    collapseAll?: string;
-    expandAll?: string;
+    setupShiftsTitle: string;
+    setupShiftsDescription: string;
+    collapseAll: string;
+    expandAll: string;
   };
   onEditShift: (shift: Shift) => void;
   onDeleteShift: (shiftId: string) => void;
@@ -72,7 +72,7 @@ export function ShiftsListView({ shifts, employees, locale, translations: t, onE
       {employees.length > 1 && (
         <div className="flex justify-end">
           <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={allCollapsed ? expandAll : collapseAll}>
-            {allCollapsed ? (<><ChevronsUpDown className="h-3.5 w-3.5" />{t.expandAll ?? "Expand all"}</>) : (<><ChevronsDownUp className="h-3.5 w-3.5" />{t.collapseAll ?? "Collapse all"}</>)}
+            {allCollapsed ? (<><ChevronsUpDown className="h-3.5 w-3.5" />{t.expandAll}</>) : (<><ChevronsDownUp className="h-3.5 w-3.5" />{t.collapseAll}</>)}
           </Button>
         </div>
       )}

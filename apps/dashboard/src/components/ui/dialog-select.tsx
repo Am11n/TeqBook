@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
 
 export interface DialogSelectOption {
   value: string;
@@ -52,11 +57,18 @@ export function DialogSelect({
   value,
   onChange,
   options,
-  placeholder = "Select...",
+  placeholder,
   required,
   disabled,
   className,
 }: DialogSelectProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const d = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
+  const resolvedPlaceholder = placeholder ?? d.dialogSelectPlaceholderDefault;
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   useClickOutside(containerRef, open, () => setOpen(false));
@@ -81,7 +93,7 @@ export function DialogSelect({
             <span className="block min-w-0 truncate text-left">{selected.label}</span>
           </span>
         ) : (
-          <span className="truncate">{selected?.label ?? placeholder}</span>
+          <span className="truncate">{selected?.label ?? resolvedPlaceholder}</span>
         )}
         <ChevronDown className={cn("ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
@@ -100,7 +112,7 @@ export function DialogSelect({
       {open && (
         <div className="absolute inset-x-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-md border bg-popover shadow-md">
           {options.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-muted-foreground">No options</p>
+            <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
           ) : (
             options.map((opt) => (
               <button
@@ -151,10 +163,17 @@ export function DialogMultiSelect({
   value,
   onChange,
   options,
-  placeholder = "Select...",
+  placeholder,
   disabled,
   className,
 }: DialogMultiSelectProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const d = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
+  const resolvedPlaceholder = placeholder ?? d.dialogSelectPlaceholderDefault;
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   useClickOutside(containerRef, open, () => setOpen(false));
@@ -185,8 +204,8 @@ export function DialogMultiSelect({
       >
         <span className="truncate">
           {selectedLabels.length === 0
-            ? placeholder
-            : `${selectedLabels.length} selected`}
+            ? resolvedPlaceholder
+            : applyTemplate(d.dialogMultiSelectSelected, { count: selectedLabels.length })}
         </span>
         <ChevronDown className={cn("ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
@@ -194,7 +213,7 @@ export function DialogMultiSelect({
       {open && (
         <div className="absolute inset-x-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-md border bg-popover shadow-md">
           {options.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-muted-foreground">No options</p>
+            <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
           ) : (
             options.map((opt) => {
               const checked = value.includes(opt.value);

@@ -18,6 +18,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import {
   listPackages,
@@ -32,7 +33,10 @@ export default function PackagesPage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const td = translations[appLocale].dashboard;
+  const td = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
@@ -125,7 +129,7 @@ export default function PackagesPage() {
   const tabAction = useMemo(
     () => (
       <Button size="sm" onClick={() => setShowCreate(true)} disabled={services.length === 0}>
-        {td.salesNewPackage ?? "New Package"}
+        {td.salesNewPackage}
       </Button>
     ),
     [services.length]
@@ -142,8 +146,8 @@ export default function PackagesPage() {
           <p className="text-sm text-muted-foreground py-4">Loading packages...</p>
         ) : packages.length === 0 ? (
           <EmptyState
-            title={td.salesNoPackagesTitle ?? "No packages yet"}
-            description={td.salesNoPackagesDescription ?? "Create your first service package to get started."}
+            title={td.salesNoPackagesTitle}
+            description={td.salesNoPackagesDescription}
           />
         ) : (
           <div className="divide-y">
@@ -265,7 +269,7 @@ export default function PackagesPage() {
                           onChange={(e) => handleQuantityChange(ss.service_id, parseInt(e.target.value, 10))}
                           className="h-7 w-14 rounded border bg-background px-1 text-center text-xs"
                         />
-                        <span className="flex-1">{svc?.name ?? "Unknown"}</span>
+                        <span className="flex-1">{svc?.name ?? td.packagesUnknownService}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveService(ss.service_id)}

@@ -262,4 +262,6 @@ export const settings: TranslationNamespaces['settings'] = {
     billingInvoicePdf: "PDF",
     billingHistoryEmpty:
       "No invoices yet. They will appear here after your first successful billing cycle.",
+    billingSubscriptionEndingAlert: "Subscription ending",
+    openingHoursBreakDefault: "Break",
   };

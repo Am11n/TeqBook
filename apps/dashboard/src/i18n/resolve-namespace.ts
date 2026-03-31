@@ -12,5 +12,5 @@ export function resolveNamespace<K extends keyof TranslationNamespaces>(
   return {
     ...translations.en[key],
     ...partial,
-  } as ResolvedNamespace<K>;
+  } as unknown as ResolvedNamespace<K>;
 }

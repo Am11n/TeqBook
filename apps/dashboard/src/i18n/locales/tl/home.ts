@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "Mga bagong wika na available: Turkish, Arabic",
     announcementDashboardUpdate: "Bagong dashboard update na inilabas.",
     viewAllUpdates: "Tingnan ang lahat ng updates",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Susunod na hakbang",
     nextStepDescription: "Tech setup",

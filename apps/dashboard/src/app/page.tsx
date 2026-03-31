@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFeatures } from "@/lib/hooks/use-features";
 import { useDashboardData } from "@/lib/hooks/dashboard/useDashboardData";
@@ -24,7 +25,10 @@ type TimeRange = "daily" | "weekly" | "monthly";
 export default function DashboardHomePage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].home;
+  const t = useMemo(
+    () => resolveNamespace("home", translations[appLocale].home),
+    [appLocale],
+  );
   const { hasFeature } = useFeatures();
   const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
   const [announcements, setAnnouncements] = useState<DashboardAnnouncement[]>([]);
@@ -125,7 +129,7 @@ export default function DashboardHomePage() {
             translations={{
               totalBookingsThisWeek: t.totalBookingsThisWeek,
               returningCustomers: t.returningCustomers,
-              newCustomers: t.newCustomers || "Nye kunder",
+              newCustomers: t.newCustomers,
               noInsightsYet: t.noInsightsYet,
             }}
           />
@@ -136,7 +140,8 @@ export default function DashboardHomePage() {
           loading={announcementsLoading}
           translations={{
             announcements: t.announcements,
-            noAnnouncementsYet: t.noInsightsYet ?? "No announcements yet.",
+            announcementsLoading: t.announcementsLoading,
+            noAnnouncementsYet: t.noAnnouncementsYet,
             viewAllUpdates: t.viewAllUpdates,
           }}
         />

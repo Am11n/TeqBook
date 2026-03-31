@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ListPage, type PageState } from "@teqbook/page";
 import { ErrorBoundary } from "@teqbook/feedback";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { useCustomers } from "@/lib/hooks/customers/useCustomers";
 import { useEntityDialogState } from "@/lib/hooks/useEntityDialogState";
 import { CreateCustomerDialog } from "@/components/customers/CreateCustomerDialog";
@@ -20,7 +21,10 @@ import { buildStatsItems, buildDetailDialogTranslations } from "./_helpers/trans
 export default function CustomersPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].customers;
+  const t = useMemo(
+    () => resolveNamespace("customers", translations[appLocale].customers),
+    [appLocale],
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
@@ -45,10 +49,10 @@ export default function CustomersPage() {
   });
 
   const filterChips = [
-    { id: "with_consent", label: t.filterWithConsent ?? "With consent", count: stats.withConsent },
-    { id: "without_consent", label: t.filterWithoutConsent ?? "Without consent", count: stats.withoutConsent },
-    { id: "with_contact", label: t.filterWithContact ?? "With contact" },
-    { id: "without_contact", label: t.filterWithoutContact ?? "Without contact", count: stats.withoutContact },
+    { id: "with_consent", label: t.filterWithConsent, count: stats.withConsent },
+    { id: "without_consent", label: t.filterWithoutConsent, count: stats.withoutConsent },
+    { id: "with_contact", label: t.filterWithContact },
+    { id: "without_contact", label: t.filterWithoutContact, count: stats.withoutContact },
   ];
 
   const pageState: PageState = loading
@@ -76,7 +80,7 @@ export default function CustomersPage() {
         description={t.description}
         actions={[
           {
-            label: t.importCustomers ?? "Import",
+            label: t.importActionLabel,
             onClick: () => setIsImportOpen(true),
             variant: "outline",
             priority: "secondary",
@@ -108,11 +112,11 @@ export default function CustomersPage() {
                 </div>
                 {customer.gdpr_consent ? (
                   <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                    {t.consentOk ?? "Consent: OK"}
+                    {t.consentOk}
                   </span>
                 ) : (
                   <span className="rounded-full bg-yellow-50 px-2 py-0.5 text-[10px] font-medium text-yellow-700">
-                    {t.consentMissing ?? "Missing"}
+                    {t.consentMissing}
                   </span>
                 )}
               </div>
@@ -129,7 +133,7 @@ export default function CustomersPage() {
           onEditClick={(c) => detailDialog.openEdit(c.id)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder={t.searchPlaceholder ?? "Search customers..."}
+          searchPlaceholder={t.searchPlaceholder}
           translations={{
             colName: t.colName,
             colContact: t.colContact,
@@ -137,11 +141,11 @@ export default function CustomersPage() {
             colGdpr: t.colGdpr,
             colActions: t.colActions,
             delete: t.delete,
-            edit: t.edit ?? "Edit",
-            consentOk: t.consentOk ?? "Consent: OK",
-            consentMissing: t.consentMissing ?? "Consent: Missing",
-            requestConsent: t.requestConsent ?? "Request consent",
-            comingSoon: t.comingSoon ?? "Feature coming soon",
+            edit: t.edit,
+            consentOk: t.consentOk,
+            consentMissing: t.consentMissing,
+            requestConsent: t.requestConsent,
+            comingSoon: t.comingSoon,
           }}
         />
       </ListPage>
@@ -165,6 +169,7 @@ export default function CustomersPage() {
           cancel: t.cancel,
           addButton: t.addButton,
           saving: t.saving,
+          addError: t.addError,
         }}
       />
 

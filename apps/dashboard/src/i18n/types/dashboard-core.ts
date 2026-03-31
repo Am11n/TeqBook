@@ -121,6 +121,14 @@ export type DashboardMessages = {
   productLockTitle: string;
   productLockDescription: string;
   productLockCta: string;
+  /** DialogSelect / DialogMultiSelect empty list */
+  dialogSelectNoOptions?: string;
+  dialogSelectPlaceholderDefault?: string;
+  /** "{count} selected" for multi-select summary */
+  dialogMultiSelectSelected?: string;
+  supportCaseNoDescription?: string;
+  commissionsSalonDefault?: string;
+  packagesUnknownService?: string;
 };
 
 export type HomeMessages = {
@@ -165,6 +173,8 @@ export type HomeMessages = {
   announcementLanguages: string;
   announcementDashboardUpdate: string;
   viewAllUpdates: string;
+  announcementsLoading?: string;
+  noAnnouncementsYet: string;
   // Legacy (deprecated, kept for backward compatibility)
   nextStepTitle: string;
   nextStepDescription: string;

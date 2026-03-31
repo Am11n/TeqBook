@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ListPage, type PageState } from "@teqbook/page";
 import { ErrorBoundary } from "@teqbook/feedback";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -9,6 +9,7 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { useServices } from "@/lib/hooks/services/useServices";
 import { useEntityDialogState } from "@/lib/hooks/useEntityDialogState";
 import { CreateServiceDialog } from "@/components/services/CreateServiceDialog";
@@ -31,7 +32,10 @@ export default function ServicesPage() {
   const { salon } = useCurrentSalon();
   const appLocale = normalizeLocale(locale);
   const salonCurrency = salon?.currency ?? "NOK";
-  const t = translations[appLocale].services;
+  const t = useMemo(
+    () => resolveNamespace("services", translations[appLocale].services),
+    [appLocale],
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [isBulkPriceOpen, setIsBulkPriceOpen] = useState(false);
@@ -66,8 +70,8 @@ export default function ServicesPage() {
   }));
 
   const filterChips = [
-    { id: "active", label: t.filterActive ?? "Active", count: stats.active },
-    { id: "inactive", label: t.filterInactive ?? "Inactive", count: stats.total - stats.active },
+    { id: "active", label: t.filterActive, count: stats.active },
+    { id: "inactive", label: t.filterInactive, count: stats.total - stats.active },
     ...categoryChips,
   ];
 
@@ -96,14 +100,14 @@ export default function ServicesPage() {
         description={t.description}
         actions={[
           {
-            label: t.addFromTemplate ?? "From template",
+            label: t.addFromTemplate,
             onClick: () => setIsTemplateOpen(true),
             variant: "outline",
             priority: "secondary",
           },
           ...(services.length > 0
             ? [{
-                label: t.bulkAdjustPrice ?? "Adjust prices",
+                label: t.bulkAdjustPrice,
                 onClick: () => { setBulkSelectedIds([]); setIsBulkPriceOpen(true); },
                 variant: "outline" as const,
                 priority: "secondary" as const,
@@ -116,10 +120,10 @@ export default function ServicesPage() {
           },
         ]}
         stats={[
-          { label: t.statsTotal ?? "Total", value: stats.total, icon: <Package className="h-4 w-4" /> },
-          { label: t.statsActive ?? "Active", value: stats.active, variant: "success", icon: <PackageCheck className="h-4 w-4" /> },
-          { label: t.statsCategories ?? "Categories", value: stats.categories, icon: <Layers className="h-4 w-4" /> },
-          { label: t.statsWithoutEmployees ?? "Without staff", value: stats.withoutEmployees, variant: stats.withoutEmployees > 0 ? "warning" : "default", icon: <UserX className="h-4 w-4" /> },
+          { label: t.statsTotal, value: stats.total, icon: <Package className="h-4 w-4" /> },
+          { label: t.statsActive, value: stats.active, variant: "success", icon: <PackageCheck className="h-4 w-4" /> },
+          { label: t.statsCategories, value: stats.categories, icon: <Layers className="h-4 w-4" /> },
+          { label: t.statsWithoutEmployees, value: stats.withoutEmployees, variant: stats.withoutEmployees > 0 ? "warning" : "default", icon: <UserX className="h-4 w-4" /> },
         ]}
         filterChips={filterChips}
         activeFilters={activeFilters}
@@ -147,7 +151,7 @@ export default function ServicesPage() {
           translations={buildTableTranslations(t, appLocale)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder={t.searchPlaceholder ?? "Search services..."}
+          searchPlaceholder={t.searchPlaceholder}
         />
       </ListPage>
 

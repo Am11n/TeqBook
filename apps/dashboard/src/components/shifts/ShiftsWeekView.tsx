@@ -44,6 +44,7 @@ interface ShiftsWeekViewProps {
     daysWorking: string;
     lowCapacity: string;
     today: string;
+    breakDefaultLabel: string;
   };
 }
 
@@ -200,6 +201,7 @@ export function ShiftsWeekView({
                           outsideHours: t.outsideHours,
                           override: t.override,
                           saved: t.saved,
+                          breakDefaultLabel: t.breakDefaultLabel,
                         }}
                       />
                     </div>

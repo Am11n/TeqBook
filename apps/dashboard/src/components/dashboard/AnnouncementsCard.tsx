@@ -10,7 +10,8 @@ interface AnnouncementsCardProps {
   loading?: boolean;
   translations: {
     announcements: string;
-    noAnnouncementsYet?: string;
+    announcementsLoading: string;
+    noAnnouncementsYet: string;
     viewAllUpdates: string;
   };
 }
@@ -26,10 +27,10 @@ export function AnnouncementsCard({ announcements, loading = false, translations
       </div>
 
       {loading ? (
-        <p className="mb-6 text-sm text-muted-foreground">Loading announcements...</p>
+        <p className="mb-6 text-sm text-muted-foreground">{translations.announcementsLoading}</p>
       ) : announcements.length === 0 ? (
         <p className="mb-6 text-sm text-muted-foreground">
-          {translations.noAnnouncementsYet ?? "No announcements yet."}
+          {translations.noAnnouncementsYet}
         </p>
       ) : (
         <div className="space-y-3 mb-6">

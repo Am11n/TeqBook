@@ -10,6 +10,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useFeatures } from "@/lib/hooks/use-features";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import {
   getOpeningHoursForSalon,
   upsertOpeningHours,
@@ -70,6 +71,7 @@ export default function OpeningHoursPage() {
 
   const loadData = useCallback(async () => {
     if (!salon?.id) return;
+    const settingsResolved = resolveNamespace("settings", translations[appLocale].settings);
     setLoading(true);
     const [hoursResult, breaksResult] = await Promise.all([
       getOpeningHoursForSalon(salon.id),
@@ -98,14 +100,14 @@ export default function OpeningHoursPage() {
           hasBreak: true,
           breakStart: brk.start_time?.substring(0, 5) ?? "",
           breakEnd: brk.end_time?.substring(0, 5) ?? "",
-          breakLabel: brk.label ?? "Lunch",
+          breakLabel: brk.label ?? settingsResolved.openingHoursBreakDefault,
         };
       });
     }
     setFormState(days);
     setServerState(days);
     setLoading(false);
-  }, [salon?.id]);
+  }, [salon?.id, appLocale]);
 
   useEffect(() => {
     loadData();

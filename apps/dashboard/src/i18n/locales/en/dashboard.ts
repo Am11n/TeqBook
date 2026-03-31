@@ -123,4 +123,10 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
     productLockCta: "Go to billing",
+    dialogSelectNoOptions: "No options",
+    dialogSelectPlaceholderDefault: "Select…",
+    dialogMultiSelectSelected: "{count} selected",
+    supportCaseNoDescription: "No description",
+    commissionsSalonDefault: "Salon default",
+    packagesUnknownService: "Unknown",
   };

@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "نئی زبانیں دستیاب: ترکی، عربی",
     announcementDashboardUpdate: "نیا ڈیش بورڈ اپ ڈیٹ جاری کیا گیا۔",
     viewAllUpdates: "تمام اپ ڈیٹس دیکھیں",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "اگلا قدم",
     nextStepDescription: "ٹیکنیکل سیٹ اَپ",

@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Check, AlertTriangle } from "lucide-react";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 
 // =====================================================
 // StickySaveBar -- sticky bottom bar for unsaved changes
@@ -17,16 +21,6 @@ interface StickySaveBarProps {
   onSave: () => void;
   onDiscard: () => void;
   onRetry?: () => void;
-  translations?: {
-    unsavedChanges?: string;
-    discard?: string;
-    save?: string;
-    saving?: string;
-    saved?: string;
-    lastSaved?: string;
-    saveError?: string;
-    retry?: string;
-  };
 }
 
 export function StickySaveBar({
@@ -38,8 +32,13 @@ export function StickySaveBar({
   onSave,
   onDiscard,
   onRetry,
-  translations: t,
 }: StickySaveBarProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const s = useMemo(
+    () => resolveNamespace("settings", translations[appLocale].settings),
+    [appLocale],
+  );
   const [showSaved, setShowSaved] = useState(false);
 
   // Brief "Saved" flash after successful save
@@ -80,14 +79,14 @@ export function StickySaveBar({
   }, [isDirty]);
 
   const labels = {
-    unsavedChanges: t?.unsavedChanges ?? "Unsaved changes",
-    discard: t?.discard ?? "Discard",
-    save: t?.save ?? "Save Changes",
-    saving: t?.saving ?? "Saving...",
-    saved: t?.saved ?? "Saved",
-    lastSaved: t?.lastSaved ?? "Last saved",
-    saveError: t?.saveError ?? "Could not save. Try again.",
-    retry: t?.retry ?? "Retry",
+    unsavedChanges: s.unsavedChanges,
+    discard: s.discard,
+    save: s.saveButton,
+    saving: s.savingLabel,
+    saved: s.savedLabel,
+    lastSaved: s.lastSaved,
+    saveError: s.couldNotSave,
+    retry: s.retry,
   };
 
   // Nothing to show

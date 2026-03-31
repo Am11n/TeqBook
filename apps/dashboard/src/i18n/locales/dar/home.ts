@@ -41,6 +41,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "زبان‌های جدید در دسترس: ترکی، عربی",
     announcementDashboardUpdate: "به‌روزرسانی جدید داشبورد منتشر شد.",
     viewAllUpdates: "مشاهده همه به‌روزرسانی‌ها",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "مرحله بعدی",
     nextStepDescription: "برای شروع کار با TeqBook، این مراحل را دنبال کنید.",

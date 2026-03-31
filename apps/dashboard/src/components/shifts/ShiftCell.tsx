@@ -37,6 +37,7 @@ interface ShiftCellProps {
     outsideHours: string;
     override: string;
     saved: string;
+    breakDefaultLabel: string;
   };
 }
 
@@ -239,7 +240,7 @@ export function ShiftCell({
                   <div
                     key={b.id}
                     className="h-1 flex-1 rounded-full bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(0,0,0,0.08)_2px,rgba(0,0,0,0.08)_4px)]"
-                    title={`${b.label ?? "Pause"}: ${b.start_time.slice(0, 5)}–${b.end_time.slice(0, 5)}`}
+                    title={`${b.label ?? t.breakDefaultLabel}: ${b.start_time.slice(0, 5)}–${b.end_time.slice(0, 5)}`}
                   />
                 ))}
               </div>

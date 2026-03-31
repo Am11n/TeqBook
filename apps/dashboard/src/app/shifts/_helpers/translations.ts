@@ -1,4 +1,8 @@
-export function buildCopyTranslations(t: Record<string, string>) {
+import type { ResolvedNamespace } from "@/i18n/resolve-namespace";
+
+type ShiftsT = ResolvedNamespace<"shifts">;
+
+export function buildCopyTranslations(t: ShiftsT) {
   return {
     copyShifts: t.copyShifts,
     copyStepSource: t.copyStepSource,
@@ -35,7 +39,7 @@ export function buildCopyTranslations(t: Record<string, string>) {
   };
 }
 
-export function buildCreateFormTranslations(t: Record<string, string>) {
+export function buildCreateFormTranslations(t: ShiftsT) {
   return {
     newShift: t.newShift,
     employeeLabel: t.employeeLabel,
@@ -50,7 +54,7 @@ export function buildCreateFormTranslations(t: Record<string, string>) {
   };
 }
 
-export function buildEditDialogTranslations(t: Record<string, string>) {
+export function buildEditDialogTranslations(t: ShiftsT) {
   return {
     employeeLabel: t.employeeLabel,
     employeePlaceholder: t.employeePlaceholder,
@@ -60,35 +64,36 @@ export function buildEditDialogTranslations(t: Record<string, string>) {
   };
 }
 
-export function buildListViewTranslations(t: Record<string, string>) {
+export function buildListViewTranslations(t: ShiftsT) {
   return {
     emptyTitle: t.emptyTitle,
     emptyDescription: t.emptyDescription,
     mobileUnknownEmployee: t.mobileUnknownEmployee,
-    daysWorking: t.daysWorking ?? "days",
-    noShiftsForEmployee: t.noShiftsForEmployee ?? "No shifts configured",
-    addShiftCta: t.addShiftCta ?? "Add shift",
-    overlap: t.overlap ?? "Overlap",
-    invalidTime: t.invalidTime ?? "Invalid time",
-    setupShiftsTitle: t.setupShiftsTitle ?? "Set up working hours",
-    setupShiftsDescription: t.setupShiftsDescription ?? "Define working hours for your employees so the system can calculate available booking slots.",
-    collapseAll: t.collapseAll ?? "Collapse all",
-    expandAll: t.expandAll ?? "Expand all",
+    daysWorking: t.daysWorking,
+    noShiftsForEmployee: t.noShiftsForEmployee,
+    addShiftCta: t.addShiftCta,
+    overlap: t.overlap,
+    invalidTime: t.invalidTime,
+    setupShiftsTitle: t.setupShiftsTitle,
+    setupShiftsDescription: t.setupShiftsDescription,
+    collapseAll: t.collapseAll,
+    expandAll: t.expandAll,
   };
 }
 
-export function buildWeekViewTranslations(t: Record<string, string>) {
+export function buildWeekViewTranslations(t: ShiftsT) {
   return {
     emptyTitle: t.emptyTitle,
     emptyDescription: t.emptyDescription,
-    addShiftCta: t.addShiftCta ?? "Legg til",
-    overlap: t.overlap ?? "Overlapp",
-    outsideHours: t.outsideHours ?? "Utenfor åpningstid",
-    override: t.override ?? "Overstyrt",
-    saved: t.saved ?? "Lagret",
-    hoursThisWeek: t.hoursThisWeek ?? "timer denne uken",
-    daysWorking: t.daysWorking ?? "dager",
-    lowCapacity: t.lowCapacity ?? "Lav kapasitet",
-    today: t.today ?? "I dag",
+    addShiftCta: t.addShiftCta,
+    overlap: t.overlap,
+    outsideHours: t.outsideHours,
+    override: t.override,
+    saved: t.saved,
+    hoursThisWeek: t.hoursThisWeek,
+    daysWorking: t.daysWorking,
+    lowCapacity: t.lowCapacity,
+    today: t.today,
+    breakDefaultLabel: t.breakDefaultLabel,
   };
 }

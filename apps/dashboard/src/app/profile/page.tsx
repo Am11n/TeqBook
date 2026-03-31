@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -11,12 +12,16 @@ import { WorkspaceCard } from "@/components/profile/WorkspaceCard";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 
 export default function ProfilePage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = useMemo(
+    () => resolveNamespace("settings", translations[appLocale].settings),
+    [appLocale],
+  );
   const {
     loading,
     saving,
@@ -53,17 +58,17 @@ export default function ProfilePage() {
   return (
     <ErrorBoundary>
       <PageLayout
-        title={t.profileTitle ?? "My Profile"}
-        description={t.profileDescription ?? "Update your personal information"}
+        title={t.profileTitle}
+        description={t.profileDescription}
         actions={
           <div className="flex items-center gap-2">
             {isDirty && (
               <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
-                {t.profileCancel ?? "Cancel"}
+                {t.profileCancel}
               </Button>
             )}
             <Button size="sm" onClick={handleSave} disabled={!isDirty || saving}>
-              {saving ? t.profileSaving ?? "Saving..." : t.profileSaveChanges ?? "Save changes"}
+              {saving ? t.profileSaving : t.profileSaveChanges}
             </Button>
           </div>
         }

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { FeatureGate } from "@/components/feature-gate";
@@ -41,7 +42,10 @@ import {
 export default function ShiftsPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].shifts;
+  const t = useMemo(
+    () => resolveNamespace("shifts", translations[appLocale].shifts),
+    [appLocale],
+  );
   const { salon } = useCurrentSalon();
   const [viewMode, setViewMode] = useState<"list" | "week">("week");
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeekStart());
@@ -169,9 +173,9 @@ export default function ShiftsPage() {
             employeeCount={employees.length}
             locale={appLocale}
             translations={{
-              weekNumber: t.weekNumber ?? "Uke",
-              totalHours: t.totalHours ?? "arbeidstimer",
-              activeEmployees: t.activeEmployees ?? "ansatte",
+              weekNumber: t.weekNumber,
+              totalHours: t.totalHours,
+              activeEmployees: t.activeEmployees,
             }}
           />
         )}

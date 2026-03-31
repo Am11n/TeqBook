@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Download } from "lucide-react";
 import { useTabActions } from "@teqbook/page";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -21,11 +21,17 @@ import {
 } from "@/lib/services/commission-service";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { CommissionRuleDialog } from "./_components/CommissionRuleDialog";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 
 export default function CommissionsPage() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const d = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
@@ -214,7 +220,7 @@ export default function CommissionsPage() {
             <div className="divide-y">
               {rules.map((rule) => (
                 <div key={rule.id} className="flex items-center justify-between py-2 text-xs">
-                  <span>{rule.employee?.full_name ?? "Salon default"}</span>
+                  <span>{rule.employee?.full_name ?? d.commissionsSalonDefault}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-muted-foreground">
                       {rule.commission_type === "percentage"

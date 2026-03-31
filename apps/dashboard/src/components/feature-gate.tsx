@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useFeatures } from "@/lib/hooks/use-features";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace, type ResolvedNamespace } from "@/i18n/resolve-namespace";
 import type { FeatureKey } from "@/lib/types/domain";
 
 // =====================================================
@@ -45,7 +46,10 @@ export function FeatureGate({ feature, children, wrapInShell = true }: FeatureGa
   const router = useRouter();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].featureGate;
+  const t = useMemo(
+    () => resolveNamespace("featureGate", translations[appLocale].featureGate),
+    [appLocale],
+  );
 
   // ─── Loading state ─────────────────────────────────
   if (loading) {
@@ -68,7 +72,7 @@ export function FeatureGate({ feature, children, wrapInShell = true }: FeatureGa
   }
 
   // ─── Feature missing → upgrade card ────────────────
-  const description = getFeatureDescription(feature, appLocale, t);
+  const description = getFeatureDescription(feature, t);
 
   const upgradeCard = (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -80,7 +84,7 @@ export function FeatureGate({ feature, children, wrapInShell = true }: FeatureGa
 
           <div className="space-y-2">
             <h2 className="text-lg font-semibold">
-              {t?.upgradeRequired ?? "This feature requires an upgrade"}
+              {t.upgradeRequired}
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {description}
@@ -92,14 +96,14 @@ export function FeatureGate({ feature, children, wrapInShell = true }: FeatureGa
               onClick={() => router.push("/settings/billing")}
               className="w-full bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-shadow"
             >
-              {t?.viewPlans ?? "View Plans"}
+              {t.viewPlans}
             </Button>
             <Button
               variant="ghost"
               onClick={() => router.back()}
               className="w-full"
             >
-              {t?.goBack ?? "Go back"}
+              {t.goBack}
             </Button>
           </div>
         </CardContent>
@@ -114,13 +118,12 @@ export function FeatureGate({ feature, children, wrapInShell = true }: FeatureGa
 
 function getFeatureDescription(
   feature: FeatureKey,
-  _locale: string,
-  t: Record<string, string | undefined> | undefined,
+  t: ResolvedNamespace<"featureGate">,
 ): string {
-  const key = `${feature.toLowerCase()}Description`;
-  if (t && key in t && t[key]) {
-    return t[key] as string;
+  const key = `${feature.toLowerCase()}Description` as keyof typeof t;
+  const specific = t[key];
+  if (typeof specific === "string" && specific.length > 0) {
+    return specific;
   }
-  // Fallback
-  return t?.upgradeDescription ?? "Your current plan does not include this feature. Upgrade to get access.";
+  return t.upgradeDescription;
 }

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { EmptyState } from "@/components/empty-state";
@@ -28,8 +29,14 @@ import { filterBookings } from "./_helpers/filter-bookings";
 function BookingsContent() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].bookings;
-  const calT = translations[appLocale].calendar;
+  const t = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+  const calT = useMemo(
+    () => resolveNamespace("calendar", translations[appLocale].calendar),
+    [appLocale],
+  );
   const { salon } = useCurrentSalon();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -249,7 +256,7 @@ function BookingsContent() {
                 getRowClassName={getBookingRowColor}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
-                searchPlaceholder={t.bookingsSearchPlaceholder ?? "Search bookings..."}
+                searchPlaceholder={t.bookingsSearchPlaceholder}
               />
             </div>
           )}

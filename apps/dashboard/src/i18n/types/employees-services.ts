@@ -111,6 +111,7 @@ export type EmployeesMessages = {
   confirmDelete?: string;
   /** Shown when staff list or related data fails to load */
   listLoadError?: string;
+  profileImageUploadFailed?: string;
   /** Label for shifts column / section in staff detail */
   shiftsLabel?: string;
   // Setup shifts link

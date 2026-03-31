@@ -91,6 +91,8 @@ export const customers: TranslationNamespaces['customers'] = {
     noBookings: "No bookings yet",
     sendMessageCopyPhone: "Send message (copy phone)",
     confirmDelete: "Are you sure you want to delete this customer?",
+    editTitle: "Edit customer",
+    importActionLabel: "Import",
     customerHistoryTitle: "Customer History",
     customerHistoryDescription: "Booking history and statistics",
     customerHistoryFeatureTitle: "Business Plan Feature",
@@ -117,6 +119,7 @@ export const customers: TranslationNamespaces['customers'] = {
     customerHistoryStatusLabel: "Status",
     customerHistoryPrice: "Price",
     customerHistoryShowing: "Showing",
+    customerHistoryOf: "of",
     customerHistoryPrevious: "Previous",
     customerHistoryNext: "Next",
   };

@@ -41,6 +41,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "Luuqado cusub waa la heli karaa: Turkiga, Carabiga",
     announcementDashboardUpdate: "Cusbooneysiinta dashboard cusub ayaa la sii daayay.",
     viewAllUpdates: "Eeg dhammaan cusbooneysiinta",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Tallaabada xigta",
     nextStepDescription: "Dejinta farsamada",

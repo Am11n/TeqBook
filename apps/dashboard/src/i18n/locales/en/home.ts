@@ -42,6 +42,8 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "New languages available: Turkish, Arabic",
     announcementDashboardUpdate: "New dashboard update released.",
     viewAllUpdates: "View all updates",
+    announcementsLoading: "Loading announcements…",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Next step",
     nextStepDescription: "Technical setup",

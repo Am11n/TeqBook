@@ -45,8 +45,9 @@ export interface EmployeeDetailDialogTranslations {
   publicProfileVisibleLabel: string; selectedServicesCount: string;
   validationNameRequired: string; validationNameMin: string;
   validationEmailInvalid: string; validationSortOrderInvalid: string;
-  validationTagTooLong: string; validationImageInvalidType: string;
+  validationTagTooLong: string;   validationImageInvalidType: string;
   validationImageTooLarge: string;
+  profileImageUploadFailed: string;
 }
 
 interface EmployeeDetailDialogProps {
@@ -159,7 +160,7 @@ export function EmployeeDetailDialog({
       );
 
       if (uploadError || !uploadData?.url) {
-        setError(uploadError ?? "Failed to upload profile image");
+        setError(uploadError ?? t.profileImageUploadFailed);
         setSaving(false);
         return;
       }

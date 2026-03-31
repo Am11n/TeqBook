@@ -171,5 +171,6 @@ export function buildDetailDialogTranslations(t: EmployeesT) {
     validationTagTooLong: m.validationTagTooLong,
     validationImageInvalidType: m.validationImageInvalidType,
     validationImageTooLarge: m.validationImageTooLarge,
+    profileImageUploadFailed: m.profileImageUploadFailed,
   };
 }

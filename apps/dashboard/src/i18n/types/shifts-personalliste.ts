@@ -78,6 +78,8 @@ export type ShiftsMessages = {
   setupShiftsDescription: string;
   collapseAll: string;
   expandAll: string;
+  /** Calendar break block when API label missing */
+  breakDefaultLabel?: string;
 };
 
 export type PersonallisteMessages = {

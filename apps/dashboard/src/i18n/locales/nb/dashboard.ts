@@ -123,4 +123,10 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Abonner for å fortsette å bruke dashbordet. Gå til fakturering for å velge plan og fullføre betaling.",
     productLockCta: "Gå til fakturering",
+    dialogSelectNoOptions: "Ingen alternativer",
+    dialogSelectPlaceholderDefault: "Velg…",
+    dialogMultiSelectSelected: "{count} valgt",
+    supportCaseNoDescription: "Ingen beskrivelse",
+    commissionsSalonDefault: "Salongstandard",
+    packagesUnknownService: "Ukjent",
   };

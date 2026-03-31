@@ -97,6 +97,8 @@ export const customers: TranslationNamespaces['customers'] = {
     noBookings: "Ingen bookinger ennå",
     sendMessageCopyPhone: "Send melding (kopier telefon)",
     confirmDelete: "Er du sikker på at du vil slette denne kunden?",
+    editTitle: "Rediger kunde",
+    importActionLabel: "Import",
     customerHistoryTitle: "Kundehistorikk",
     customerHistoryDescription: "Bookinghistorikk og statistikk",
     customerHistoryFeatureTitle: "Business-plan funksjon",
@@ -123,6 +125,7 @@ export const customers: TranslationNamespaces['customers'] = {
     customerHistoryStatusLabel: "Status",
     customerHistoryPrice: "Pris",
     customerHistoryShowing: "Viser",
+    customerHistoryOf: "av",
     customerHistoryPrevious: "Forrige",
     customerHistoryNext: "Neste",
   };

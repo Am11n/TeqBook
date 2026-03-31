@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "Yeni diller mevcut: Türkçe, Arapça",
     announcementDashboardUpdate: "Yeni dashboard güncellemesi yayınlandı.",
     viewAllUpdates: "Tüm güncellemeleri görüntüle",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Sonraki adım",
     nextStepDescription: "Teknik kurulum",

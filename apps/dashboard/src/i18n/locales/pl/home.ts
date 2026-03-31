@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "Nowe języki dostępne: Turecki, Arabski",
     announcementDashboardUpdate: "Wydano nową aktualizację pulpitu.",
     viewAllUpdates: "Zobacz wszystkie aktualizacje",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Następny krok",
     nextStepDescription: "Konfiguracja techniczna",

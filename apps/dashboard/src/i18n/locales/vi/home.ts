@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "Ngôn ngữ mới có sẵn: Tiếng Thổ Nhĩ Kỳ, Tiếng Ả Rập",
     announcementDashboardUpdate: "Bản cập nhật dashboard mới đã được phát hành.",
     viewAllUpdates: "Xem tất cả cập nhật",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "Bước tiếp theo",
     nextStepDescription: "Thiết lập kỹ thuật",

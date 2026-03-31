@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "新语言可用：土耳其语、阿拉伯语",
     announcementDashboardUpdate: "新的仪表板更新已发布。",
     viewAllUpdates: "查看所有更新",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "下一步",
     nextStepDescription: "技术配置",

@@ -258,4 +258,6 @@ export const settings: TranslationNamespaces['settings'] = {
     billingInvoicePdf: "PDF",
     billingHistoryEmpty:
       "Ingen fakturaer ennå. De vises her etter første vellykkede faktureringssyklus.",
+    billingSubscriptionEndingAlert: "Abonnementet avsluttes",
+    openingHoursBreakDefault: "Pause",
   };

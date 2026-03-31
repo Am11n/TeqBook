@@ -1,4 +1,11 @@
+"use client";
+
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { format } from "date-fns";
 import {
   STATUS_COLORS,
@@ -14,6 +21,12 @@ export function CaseRow({
   supportCase: SupportCase;
   onClick: () => void;
 }) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const d = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   return (
     <button
       onClick={onClick}
@@ -29,7 +42,7 @@ export function CaseRow({
           )}
         </div>
         <p className="text-xs text-muted-foreground truncate">
-          {supportCase.description ?? "No description"}
+          {supportCase.description ?? d.supportCaseNoDescription}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">

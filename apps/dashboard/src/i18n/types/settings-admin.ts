@@ -266,6 +266,8 @@ export type SettingsMessages = {
   billingInvoiceOpen?: string;
   billingInvoicePdf?: string;
   billingHistoryEmpty?: string;
+  billingSubscriptionEndingAlert?: string;
+  openingHoursBreakDefault?: string;
 };
 
 export type AdminMessages = {

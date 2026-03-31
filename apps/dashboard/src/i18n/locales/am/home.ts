@@ -42,6 +42,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "አዲስ ቋንቋዎች ይገኛሉ፡ ቱርክኛ፣ አረብኛ",
     announcementDashboardUpdate: "አዲስ ዳሽቦርድ ማሻሻያ ተለቅቋል።",
     viewAllUpdates: "ሁሉንም ማሻሻያዎች ይመልከቱ",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "ቀጣይ እርምጃ",
     nextStepDescription: "ቴክኒካዊ ምዘጋጀት",

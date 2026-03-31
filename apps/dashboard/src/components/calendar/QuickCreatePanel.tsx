@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import type { Service } from "@/lib/types";
 import type { QuickCreatePanelProps, CustomerSuggestion } from "./quick-create-types";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 
 export function QuickCreatePanel({
   open,
@@ -32,6 +34,10 @@ export function QuickCreatePanel({
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const bk = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
   const salonCurrency = salon?.currency ?? "NOK";
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
@@ -163,7 +169,7 @@ export function QuickCreatePanel({
     });
 
     if (createError || !data) {
-      setError(createError ?? "Failed to create booking");
+      setError(createError ?? bk.quickCreateBookingFailed);
       setSaving(false);
       return;
     }

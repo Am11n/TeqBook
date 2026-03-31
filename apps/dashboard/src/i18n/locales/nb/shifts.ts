@@ -84,4 +84,5 @@ export const shifts: TranslationNamespaces['shifts'] = {
     setupShiftsDescription: "Definer arbeidstider for ansatte slik at systemet kan beregne ledige bookingtider.",
     collapseAll: "Skjul alle",
     expandAll: "Vis alle",
+    breakDefaultLabel: "Pause",
   };

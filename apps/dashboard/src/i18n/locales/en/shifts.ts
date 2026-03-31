@@ -84,4 +84,5 @@ export const shifts: TranslationNamespaces['shifts'] = {
     setupShiftsDescription: "Define working hours for your employees so the system can calculate available booking slots.",
     collapseAll: "Collapse all",
     expandAll: "Expand all",
+    breakDefaultLabel: "Break",
   };

@@ -41,6 +41,7 @@ export const home: TranslationNamespaces['home'] = {
     announcementLanguages: "لغات جديدة متاحة: التركية، العربية",
     announcementDashboardUpdate: "تم إصدار تحديث جديد للوحة التحكم.",
     viewAllUpdates: "عرض جميع التحديثات",
+    noAnnouncementsYet: "No announcements yet.",
     // Legacy (deprecated)
     nextStepTitle: "الخطوة التالية",
     nextStepDescription: "الإعداد التقني",

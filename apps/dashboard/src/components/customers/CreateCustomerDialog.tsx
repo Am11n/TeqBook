@@ -35,6 +35,7 @@ interface CreateCustomerDialogProps {
     cancel: string;
     addButton: string;
     saving: string;
+    addError: string;
   };
 }
 
@@ -80,7 +81,7 @@ export function CreateCustomerDialog({
     });
 
     if (insertError || !data) {
-      setError(insertError ?? "Could not add customer.");
+      setError(insertError ?? translations.addError);
       setSaving(false);
       return;
     }
