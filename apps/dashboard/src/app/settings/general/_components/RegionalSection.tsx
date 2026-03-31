@@ -1,25 +1,22 @@
 "use client";
 
+import { useMemo } from "react";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
 import { getCommonTimezones } from "@/lib/utils/timezone";
 import { CURRENCIES } from "@/lib/utils/currencies";
 import { formatPrice } from "@/lib/utils/services/services-utils";
+import type { ResolvedSettingsMessages } from "../../_helpers/resolve-settings";
 
 interface RegionalSectionProps {
   currency: string;
   timezone: string;
   timeFormat: string;
   appLocale: string;
-  t: Record<string, string | undefined>;
+  t: ResolvedSettingsMessages;
   onChangeField: (field: string, value: string) => void;
 }
-
-const TIME_FORMAT_OPTIONS = [
-  { value: "24h", label: "24-timer (14:30)" },
-  { value: "12h", label: "12-timer AM/PM (2:30 PM)" },
-];
 
 export function RegionalSection({
   currency,
@@ -29,13 +26,21 @@ export function RegionalSection({
   t,
   onChangeField,
 }: RegionalSectionProps) {
+  const timeFormatOptions = useMemo(
+    () => [
+      { value: "24h", label: t.timeFormat24OptionLabel },
+      { value: "12h", label: t.timeFormat12OptionLabel },
+    ],
+    [t.timeFormat24OptionLabel, t.timeFormat12OptionLabel],
+  );
+
   return (
     <SettingsSection
-      title={t.localizationTitle ?? "Localization"}
-      description={t.localizationDescription ?? "Used across bookings, invoices and reports."}
+      title={t.localizationTitle}
+      description={t.localizationDescription}
       layout="rows"
     >
-      <FormRow label={t.currencyLabel ?? "Currency"} htmlFor="currency">
+      <FormRow label={t.currencyLabel} htmlFor="currency">
         <DialogSelect
           value={currency}
           onChange={(v) => onChangeField("currency", v)}
@@ -46,7 +51,7 @@ export function RegionalSection({
         </p>
       </FormRow>
 
-      <FormRow label={t.timezoneLabel ?? "Timezone"} htmlFor="timezone">
+      <FormRow label={t.timezoneLabel} htmlFor="timezone">
         <DialogSelect
           value={timezone}
           onChange={(v) => onChangeField("timezone", v)}
@@ -54,11 +59,11 @@ export function RegionalSection({
         />
       </FormRow>
 
-      <FormRow label={t.timeFormatLabel ?? "Time format"} htmlFor="timeFormat">
+      <FormRow label={t.timeFormatLabel} htmlFor="timeFormat">
         <DialogSelect
           value={timeFormat}
           onChange={(v) => onChangeField("timeFormat", v)}
-          options={TIME_FORMAT_OPTIONS}
+          options={timeFormatOptions}
         />
       </FormRow>
     </SettingsSection>

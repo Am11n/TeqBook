@@ -74,6 +74,7 @@ export const employees: TranslationNamespaces['employees'] = {
     detailServices: "Tjenester",
     detailRole: "Rolle",
     detailContact: "Kontakt",
+    detailNoContact: "Ingen kontaktinformasjon",
     detailStatus: "Status",
     // Roles
     roleOwner: "Eier",
@@ -82,8 +83,15 @@ export const employees: TranslationNamespaces['employees'] = {
     // Capacity
     capacityTitle: "Kapasitet for ansatte",
     capacityMessage: "Du har nådd grensen for antall ansatte.",
+    capacityNearTitle: "Kapasitet for {entity}",
+    capacityNearMessage: "Du bruker {current} av {limit} {entity}.",
+    capacityBlockedTitle: "Inkluderte {entity} i bruk",
+    capacityBlockedMessage:
+      "Du bruker {current} av {limit} inkluderte {entity}. Du kan legge til flere; ekstra plasser faktureres som tillegg (se Fakturering).",
     deactivateToFree: "Fjern en ansatt for å frigjøre plass",
     upgradePlan: "Oppgrader plan",
+    limitGaugeStaffLabel: "Ansatte",
+    limitGaugeUnlimitedStaff: "Ubegrenset antall ansatte",
     // Quick fix
     bookingBlocked: "Booking virker ikke",
     fixNow: "Fiks nå",
@@ -98,6 +106,8 @@ export const employees: TranslationNamespaces['employees'] = {
     preferredLang: "Foretrukket språk",
     emptyActionDescription: "Legg til din første ansatt for å begynne å ta imot bookinger. Ansatte dukker opp i kalenderen og kan tildeles tjenester.",
     confirmDelete: "Er du sikker på at du vil fjerne denne ansatte? De vil bli arkivert og skjult fra lister, men bookinghistorikken bevares.",
+    listLoadError: "Kunne ikke laste data.",
+    shiftsLabel: "Vakter",
     setupShifts: "Sett opp arbeidstider",
     staffCount: "ansatte",
     editDescriptionRich:

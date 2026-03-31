@@ -69,6 +69,8 @@ export type EmployeesMessages = {
   detailServices?: string;
   detailRole?: string;
   detailContact?: string;
+  /** Shown when employee has no email or phone in detail view */
+  detailNoContact?: string;
   detailStatus?: string;
   // New: Roles in Norwegian
   roleOwner?: string;
@@ -77,8 +79,20 @@ export type EmployeesMessages = {
   // New: Capacity
   capacityTitle?: string;
   capacityMessage?: string;
+  /** Near limit banner title; use {entity} */
+  capacityNearTitle?: string;
+  /** Near limit banner body; use {current}, {limit}, {entity} */
+  capacityNearMessage?: string;
+  /** At-limit banner title; use {entity} */
+  capacityBlockedTitle?: string;
+  /** At-limit banner body; use {current}, {limit}, {entity} */
+  capacityBlockedMessage?: string;
   deactivateToFree?: string;
   upgradePlan?: string;
+  /** Progress row label when limit is set (e.g. Staff) */
+  limitGaugeStaffLabel?: string;
+  /** Shown when there is no numeric cap */
+  limitGaugeUnlimitedStaff?: string;
   // New: Quick fix
   bookingBlocked?: string;
   fixNow?: string;
@@ -95,6 +109,10 @@ export type EmployeesMessages = {
   emptyActionDescription?: string;
   // Confirm delete
   confirmDelete?: string;
+  /** Shown when staff list or related data fails to load */
+  listLoadError?: string;
+  /** Label for shifts column / section in staff detail */
+  shiftsLabel?: string;
   // Setup shifts link
   setupShifts?: string;
   // Staff count

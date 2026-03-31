@@ -8,6 +8,7 @@ import { DialogSelect } from "@/components/ui/dialog-select";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
 import { Copy, Check, ExternalLink } from "lucide-react";
+import type { ResolvedSettingsMessages } from "../../_helpers/resolve-settings";
 
 interface SalonInfoSectionProps {
   salonName: string;
@@ -26,7 +27,7 @@ interface SalonInfoSectionProps {
   publicProfileUrl: string | null;
   directBookingUrl: string | null;
   errors: Record<string, string>;
-  t: Record<string, string | undefined>;
+  t: ResolvedSettingsMessages;
   onChangeField: (field: string, value: string) => void;
   onCoverImageUpload: (file: File) => void;
 }
@@ -72,11 +73,11 @@ export function SalonInfoSection({
 
   return (
     <SettingsSection
-      title={t.salonSectionTitle ?? "Salon Info"}
+      title={t.salonSectionTitle}
       size="lg"
       layout="rows"
     >
-      <FormRow label={t.salonNameLabel ?? "Salon name"} htmlFor="salonName" required>
+      <FormRow label={t.salonNameLabel} htmlFor="salonName" required>
         <Input
           id="salonName"
           value={salonName}
@@ -88,7 +89,7 @@ export function SalonInfoSection({
         )}
       </FormRow>
 
-      <FormRow label={t.salonTypeLabel ?? "Salon type"} htmlFor="salonType">
+      <FormRow label={t.salonTypeLabel} htmlFor="salonType">
         <DialogSelect
           value={salonType}
           onChange={(v) => onChangeField("salonType", v)}
@@ -102,23 +103,23 @@ export function SalonInfoSection({
         />
       </FormRow>
 
-      <FormRow label={t.businessAddressLabel ?? "Business address"} htmlFor="businessAddress">
+      <FormRow label={t.businessAddressLabel} htmlFor="businessAddress">
         <textarea
           id="businessAddress"
           value={businessAddress}
           onChange={(e) => onChangeField("businessAddress", e.target.value)}
           rows={2}
-          placeholder={t.businessAddressPlaceholder ?? "Street, City, Postal code"}
+          placeholder={t.businessAddressPlaceholder}
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
         />
       </FormRow>
 
-      <FormRow label={t.orgNumberLabel ?? "Org number"} htmlFor="orgNumber">
+      <FormRow label={t.orgNumberLabel} htmlFor="orgNumber">
         <Input
           id="orgNumber"
           value={orgNumber}
           onChange={(e) => onChangeField("orgNumber", e.target.value)}
-          placeholder={t.orgNumberPlaceholder ?? "e.g. 123 456 789"}
+          placeholder={t.orgNumberPlaceholder}
         />
       </FormRow>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { actionLabels, resourceTypeLabels } from "./constants";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { resolveSettings } from "../../_helpers/resolve-settings";
 
 interface AuditFiltersProps {
   searchQuery: string;
@@ -36,7 +37,10 @@ export function AuditFilters({
 }: AuditFiltersProps) {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = useMemo(
+    () => resolveSettings(translations[appLocale].settings),
+    [appLocale],
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -44,7 +48,7 @@ export function AuditFilters({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Filter className="h-4 w-4" /> {t.auditFiltersTitle ?? "Filters"}
+            <Filter className="h-4 w-4" /> {t.auditFiltersTitle}
           </CardTitle>
           <Button
             variant="outline"
@@ -52,7 +56,7 @@ export function AuditFilters({
             onClick={() => setIsOpen((prev) => !prev)}
             className="gap-1.5"
           >
-            {isOpen ? (t.auditFiltersHide ?? "Hide filters") : (t.auditFiltersShow ?? "Show filters")}
+            {isOpen ? t.auditFiltersHide : t.auditFiltersShow}
             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </div>
@@ -62,11 +66,11 @@ export function AuditFilters({
         <div className={`grid gap-4 md:grid-cols-2 ${showSearch ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
           {showSearch && (
             <div>
-              <label className="text-sm font-medium mb-2 block">{t.auditSearch ?? "Search"}</label>
+              <label className="text-sm font-medium mb-2 block">{t.auditSearch}</label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t.auditSearchPlaceholder ?? "Search activity..."}
+                  placeholder={t.auditSearchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
@@ -75,11 +79,11 @@ export function AuditFilters({
             </div>
           )}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t.auditAction ?? "Action"}</label>
+            <label className="text-sm font-medium mb-2 block">{t.auditAction}</label>
             <Select value={actionFilter} onValueChange={setActionFilter}>
-              <SelectTrigger><SelectValue placeholder={t.auditAllActions ?? "All actions"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t.auditAllActions} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t.auditAllActions ?? "All actions"}</SelectItem>
+                <SelectItem value="all">{t.auditAllActions}</SelectItem>
                 {availableActions.map((action) => (
                   <SelectItem key={action} value={action}>{actionLabels[action] || action}</SelectItem>
                 ))}
@@ -87,11 +91,11 @@ export function AuditFilters({
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t.auditResourceType ?? "Resource Type"}</label>
+            <label className="text-sm font-medium mb-2 block">{t.auditResourceType}</label>
             <Select value={resourceTypeFilter} onValueChange={setResourceTypeFilter}>
-              <SelectTrigger><SelectValue placeholder={t.auditAllTypes ?? "All types"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t.auditAllTypes} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t.auditAllTypes ?? "All types"}</SelectItem>
+                <SelectItem value="all">{t.auditAllTypes}</SelectItem>
                 {availableResourceTypes.map((type) => (
                   <SelectItem key={type} value={type}>{resourceTypeLabels[type] || type}</SelectItem>
                 ))}
@@ -99,16 +103,16 @@ export function AuditFilters({
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t.auditStartDate ?? "Start Date"}</label>
+            <label className="text-sm font-medium mb-2 block">{t.auditStartDate}</label>
             <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t.auditEndDate ?? "End Date"}</label>
+            <label className="text-sm font-medium mb-2 block">{t.auditEndDate}</label>
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
         </div>
         <div className="flex justify-end mt-4">
-          <Button variant="outline" size="sm" onClick={onReset}>{t.auditResetFilters ?? "Reset Filters"}</Button>
+          <Button variant="outline" size="sm" onClick={onReset}>{t.auditResetFilters}</Button>
         </div>
       </CardContent>
       )}

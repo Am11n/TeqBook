@@ -29,12 +29,13 @@ import {
   buildCardViewTranslations,
   buildCreateDialogTranslations,
   buildDetailDialogTranslations,
+  resolveEmployees,
 } from "./_helpers/translations";
 
 export default function EmployeesPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].employees;
+  const t = resolveEmployees(translations[appLocale].employees);
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -61,7 +62,11 @@ export default function EmployeesPage() {
     activeFilters,
     setActiveFilters,
   } = useEmployees({
-    translations: { noSalon: t.noSalon, confirmDelete: t.confirmDelete },
+    translations: {
+      noSalon: t.noSalon,
+      listLoadError: t.listLoadError,
+      confirmDelete: t.confirmDelete,
+    },
     hasShiftsFeature,
   });
 
@@ -87,7 +92,7 @@ export default function EmployeesPage() {
         ? {
             status: "empty",
             title: t.emptyTitle,
-            description: t.emptyActionDescription ?? t.emptyDescription,
+            description: t.emptyActionDescription,
             action: (
               <Button size="sm" onClick={() => setIsDialogOpen(true)}>
                 {t.addButton}
@@ -104,7 +109,7 @@ export default function EmployeesPage() {
         description={t.description}
         actions={[
           {
-            label: t.assignServices ?? "Assign services",
+            label: t.assignServices,
             onClick: () => setIsAssignDialogOpen(true),
             variant: "outline",
             priority: "secondary",
@@ -124,11 +129,19 @@ export default function EmployeesPage() {
           <>
             <CapacityBanner
               limitInfo={planLimits.employees}
-              entityLabel={t.staffCount ?? "staff"}
+              entityLabel={t.staffCount}
               onUpgrade={handleUpgrade}
               onDeactivate={() => {
                 const emp = employees[0];
                 if (emp) detailDialog.onRowClick(emp);
+              }}
+              copy={{
+                capacityNearTitle: t.capacityNearTitle,
+                capacityNearMessage: t.capacityNearMessage,
+                upgradeButton: t.upgradePlan,
+                deactivateButton: t.deactivateToFree,
+                blockedTitle: t.capacityBlockedTitle,
+                blockedMessage: t.capacityBlockedMessage,
               }}
             />
             {planLimits.employees && planLimits.employees.limit !== null && (
@@ -136,23 +149,24 @@ export default function EmployeesPage() {
                 <LimitIndicator
                   currentCount={planLimits.employees.current}
                   limit={planLimits.employees.limit}
-                  limitType="employees"
+                  rowLabel={t.limitGaugeStaffLabel}
+                  unlimitedText={t.limitGaugeUnlimitedStaff}
                 />
               </div>
             )}
             {!loading && employees.length > 0 && (
               <QuickFixBanner
                 issues={bookingBlockers}
-                title={t.bookingBlocked ?? "Booking is not working"}
+                title={t.bookingBlocked}
                 actions={[
                   {
                     issueKey: "no_employees_with_services",
-                    label: t.assignServices ?? "Assign services",
+                    label: t.assignServices,
                     onClick: () => setIsAssignDialogOpen(true),
                   },
                   {
                     issueKey: "no_employees_with_shifts",
-                    label: t.setupShifts ?? "Set up shifts",
+                    label: t.setupShifts,
                     onClick: () => router.push("/shifts"),
                   },
                 ]}
@@ -183,7 +197,7 @@ export default function EmployeesPage() {
           onEditClick={(emp) => detailDialog.openEdit(emp.id)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder={t.searchPlaceholder ?? "Search staff..."}
+          searchPlaceholder={t.searchPlaceholder}
           translations={{
             colName: t.colName,
             colRole: t.colRole,
@@ -191,14 +205,14 @@ export default function EmployeesPage() {
             colServices: t.colServices,
             colStatus: t.colStatus,
             colActions: t.colActions,
-            colSetup: t.colSetup ?? "Setup",
+            colSetup: t.colSetup,
             active: t.active,
             inactive: t.inactive,
             delete: t.delete,
             edit: t.edit,
-            addContact: t.addContact ?? "Add",
-            canBeBooked: t.canBeBooked ?? "Can be booked",
-            notBookable: t.notBookable ?? "Not bookable",
+            addContact: t.addContact,
+            canBeBooked: t.canBeBooked,
+            notBookable: t.notBookable,
           }}
         />
       </ListPage>

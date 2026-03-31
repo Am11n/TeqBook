@@ -14,13 +14,13 @@ import {
   PROD_LOCALE_ALLOWLIST,
   clampToEnabledLocale,
 } from "@/i18n/locale-policy";
-import { translations } from "@/i18n/translations";
+import type { ResolvedSettingsMessages } from "../../_helpers/resolve-settings";
 
 interface LanguageSectionProps {
   supportedLanguages: string[];
   defaultLanguage: string;
   languageLimit: number | null;
-  t: Record<string, string | undefined>;
+  t: ResolvedSettingsMessages;
   onToggleLanguage: (code: string, checked: boolean) => void;
   onChangeDefault: (code: string) => void;
   onUpgrade: () => void;
@@ -40,7 +40,6 @@ export function LanguageSection({
 
   const enabledLanguageCodes = new Set(PROD_LOCALE_ALLOWLIST);
   const visibleLanguages = ALL_LANGUAGES.filter((l) => enabledLanguageCodes.has(clampToEnabledLocale(l.code)));
-  const fallback = translations.en.settings;
   const recommended = visibleLanguages.filter((l) => RECOMMENDED_CODES.includes(l.code));
   const others = visibleLanguages.filter((l) => !RECOMMENDED_CODES.includes(l.code));
   const effectiveSupported = supportedLanguages
@@ -59,8 +58,8 @@ export function LanguageSection({
 
   return (
     <SettingsSection
-      title={t.bookingLanguagesTitle ?? fallback.bookingLanguagesTitle ?? ""}
-      description={t.bookingLanguagesDescription ?? fallback.bookingLanguagesDescription ?? ""}
+      title={t.bookingLanguagesTitle}
+      description={t.bookingLanguagesDescription}
       size="lg"
       titleRight={
         languageLimit !== null ? (
@@ -73,7 +72,7 @@ export function LanguageSection({
       <div className="relative mb-3">
         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder={t.searchLanguages ?? fallback.searchLanguages ?? ""}
+          placeholder={t.searchLanguages}
           value={langSearch}
           onChange={(e) => setLangSearch(e.target.value)}
           className="pl-8 h-8 text-xs"
@@ -82,18 +81,18 @@ export function LanguageSection({
 
       {languageLimit !== null && (
         <SettingsLimitBar
-          label={t.languagesUsed ?? fallback.languagesUsed ?? ""}
+          label={t.languagesUsed}
           current={effectiveSupported.length}
           limit={languageLimit}
           onAction={onUpgrade}
-          actionLabel={t.upgradePlan ?? fallback.upgradePlan ?? ""}
+          actionLabel={t.upgradePlan}
         />
       )}
 
       {filteredRecommended.length > 0 && (
         <div className="mt-3">
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t.recommendedLanguages ?? fallback.recommendedLanguages ?? ""}
+            {t.recommendedLanguages}
           </p>
           <div className="space-y-1">
             {filteredRecommended.map((lang) => (
@@ -114,7 +113,7 @@ export function LanguageSection({
       {(showMore || langSearch.trim()) && filteredOthers.length > 0 && (
         <div className="mt-3">
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t.moreLanguages ?? fallback.moreLanguages ?? ""}
+            {t.moreLanguages}
           </p>
           <div className="space-y-1">
             {filteredOthers.map((lang) => (
@@ -138,12 +137,12 @@ export function LanguageSection({
           onClick={() => setShowMore(true)}
           className="mt-2 text-xs text-primary hover:underline"
         >
-          {t.showMoreLanguages ?? fallback.showMoreLanguages ?? `(${others.length})`}
+          {`${t.showMoreLanguages} (${others.length})`}
         </button>
       )}
 
       <div className="mt-4 pt-3 border-t">
-        <FormRow label={t.defaultLanguageLabel ?? fallback.defaultLanguageLabel ?? ""} htmlFor="defaultLanguage">
+        <FormRow label={t.defaultLanguageLabel} htmlFor="defaultLanguage">
           <DialogSelect
             value={effectiveDefaultLanguage}
             onChange={onChangeDefault}

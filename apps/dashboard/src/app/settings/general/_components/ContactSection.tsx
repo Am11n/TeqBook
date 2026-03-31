@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
 import { Smartphone } from "lucide-react";
+import type { ResolvedSettingsMessages } from "../../_helpers/resolve-settings";
 
 interface ContactSectionProps {
   whatsappNumber: string;
-  t: Record<string, string | undefined>;
+  t: ResolvedSettingsMessages;
   onChangeField: (field: string, value: string) => void;
 }
 
@@ -18,12 +19,12 @@ export function ContactSection({
 }: ContactSectionProps) {
   return (
     <SettingsSection
-      title={t.contactSectionTitle ?? "Contact"}
-      description={t.contactSectionDescription ?? "Shown on your booking page."}
+      title={t.contactSectionTitle}
+      description={t.contactSectionDescription}
       layout="rows"
     >
       <FormRow
-        label={t.whatsappNumberLabel ?? "WhatsApp number"}
+        label={t.whatsappNumberLabel}
         htmlFor="whatsappNumber"
       >
         <div className="relative">
@@ -33,7 +34,7 @@ export function ContactSection({
             type="tel"
             value={whatsappNumber}
             onChange={(e) => onChangeField("whatsappNumber", e.target.value)}
-            placeholder={t.whatsappNumberPlaceholder ?? "+47 123 45 678"}
+            placeholder={t.whatsappNumberPlaceholder}
             className="pl-9"
           />
         </div>

@@ -25,6 +25,7 @@ import { FormRow } from "@/components/settings/FormRow";
 import { StickySaveBar } from "@/components/settings/StickySaveBar";
 import { useSettingsForm } from "@/lib/hooks/useSettingsForm";
 import { useTabGuard } from "../layout";
+import { resolveSettings } from "../_helpers/resolve-settings";
 import { type GeneralFormValues, langLabelFn } from "./_components/types";
 import { SalonInfoSection } from "./_components/SalonInfoSection";
 import { LanguageSection } from "./_components/LanguageSection";
@@ -37,7 +38,7 @@ export default function GeneralSettingsPage() {
   const { salon, profile, user, refreshSalon } = useCurrentSalon();
   const router = useRouter();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = resolveSettings(translations[appLocale].settings);
   const { registerDirtyState, reportLastSaved } = useTabGuard();
 
   const [languageLimit, setLanguageLimit] = useState<number | null>(null);
@@ -93,13 +94,24 @@ export default function GeneralSettingsPage() {
     websiteUrl: salonProfile?.website_url || "",
   }), [salon, profile]);
 
-  const validate = useCallback((v: GeneralFormValues) => {
-    const errs: Record<string, string> = {};
-    if (!v.salonName.trim()) errs.salonName = "Salon name is required";
-    if (v.cancellationHours < 0) errs.cancellationHours = "Must be 0 or more";
-    if (v.defaultBufferMinutes < 0) errs.defaultBufferMinutes = "Must be 0 or more";
-    return errs;
-  }, []);
+  const validate = useCallback(
+    (v: GeneralFormValues) => {
+      const errs: Record<string, string> = {};
+      if (!v.salonName.trim()) errs.salonName = t.missingSettingsName;
+      if (v.cancellationHours < 0) {
+        errs.cancellationHours = t.validationCancellationHoursNonNegative;
+      }
+      if (v.defaultBufferMinutes < 0) {
+        errs.defaultBufferMinutes = t.validationBufferMinutesNonNegative;
+      }
+      return errs;
+    },
+    [
+      t.missingSettingsName,
+      t.validationCancellationHoursNonNegative,
+      t.validationBufferMinutesNonNegative,
+    ],
+  );
 
   const handleSave = useCallback(async (v: GeneralFormValues) => {
     if (!salon?.id) throw new Error("No salon");
@@ -214,22 +226,22 @@ export default function GeneralSettingsPage() {
 
     const { data, error } = await uploadCoverImage(file, salon.id);
     if (error || !data?.url) {
-      setCoverImageUploadError(error ?? "Failed to upload cover image");
+      setCoverImageUploadError(error ?? t.coverImageUploadFailed);
       setUploadingCoverImage(false);
       return;
     }
 
     form.setValue("coverImage", data.url);
     setUploadingCoverImage(false);
-  }, [salon?.id, form]);
+  }, [salon?.id, form, t.coverImageUploadFailed]);
   const directBookingUrl = publicAppOrigin && salon?.slug
     ? `${publicAppOrigin}/book/${salon.slug}`
     : null;
 
   const status = (() => {
-    if (!form.values.salonName.trim()) return { ok: false, msg: t.missingSettingsName ?? "Salon name is required" };
-    if (form.values.supportedLanguages.length === 0) return { ok: false, msg: t.missingBookingLanguage ?? "Missing booking language" };
-    return { ok: true, msg: t.allSettingsConfigured ?? "All core settings configured" };
+    if (!form.values.salonName.trim()) return { ok: false, msg: t.missingSettingsName };
+    if (form.values.supportedLanguages.length === 0) return { ok: false, msg: t.missingBookingLanguage };
+    return { ok: true, msg: t.allSettingsConfigured };
   })();
 
   if (!salon) {
@@ -237,7 +249,7 @@ export default function GeneralSettingsPage() {
       <ErrorBoundary>
         <div className="rounded-lg border bg-card p-6">
           <p className="text-sm text-muted-foreground">
-            No salon found. Please complete onboarding first.
+            {t.generalNoSalonMessage}
           </p>
         </div>
       </ErrorBoundary>
@@ -263,7 +275,7 @@ export default function GeneralSettingsPage() {
             supportedLanguages={form.values.supportedLanguages}
             defaultLanguage={form.values.defaultLanguage}
             languageLimit={languageLimit}
-            t={t as Record<string, string | undefined>}
+            t={t}
             onToggleLanguage={toggleLanguage}
             onChangeDefault={(v) => form.setValue("defaultLanguage", v)}
             onUpgrade={() => router.push("/settings/billing")}
@@ -271,12 +283,12 @@ export default function GeneralSettingsPage() {
         }
         footer={
           <SettingsSection
-            title={t.yourProfileTitle ?? "Your Profile"}
+            title={t.yourProfileTitle}
             layout="rows"
             className="bg-muted/20"
           >
             <FormRow
-              label={t.dashboardLanguageLabel ?? "Dashboard language"}
+              label={t.dashboardLanguageLabel}
               htmlFor="userPreferredLanguage"
             >
               <DialogSelect
@@ -289,12 +301,14 @@ export default function GeneralSettingsPage() {
               />
             </FormRow>
 
-            <FormRow label={t.yourRoleLabel ?? "Role"}>
+            <FormRow label={t.yourRoleLabel}>
               <Badge variant="outline" className="capitalize">{userRole}</Badge>
             </FormRow>
 
-            <FormRow label={t.emailLabel ?? "Email"}>
-              <span className="text-sm text-muted-foreground">{user?.email ?? "—"}</span>
+            <FormRow label={t.emailLabel}>
+              <span className="text-sm text-muted-foreground">
+                {user?.email ?? t.emailNotProvided}
+              </span>
             </FormRow>
           </SettingsSection>
         }
@@ -317,7 +331,7 @@ export default function GeneralSettingsPage() {
             publicProfileUrl={publicProfileUrl}
             directBookingUrl={directBookingUrl}
             errors={form.errors}
-            t={t as Record<string, string | undefined>}
+            t={t}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}
             onCoverImageUpload={handleCoverImageUpload}
           />
@@ -327,13 +341,13 @@ export default function GeneralSettingsPage() {
             timezone={form.values.timezone}
             timeFormat={form.values.timeFormat}
             appLocale={appLocale}
-            t={t as Record<string, string | undefined>}
+            t={t}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}
           />
 
           <ContactSection
             whatsappNumber={form.values.whatsappNumber}
-            t={t as Record<string, string | undefined>}
+            t={t}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value)}
           />
 
@@ -341,7 +355,7 @@ export default function GeneralSettingsPage() {
             cancellationHours={form.values.cancellationHours}
             defaultBufferMinutes={form.values.defaultBufferMinutes}
             errors={form.errors}
-            t={t as Record<string, string | undefined>}
+            t={t}
             onChangeField={(field, value) => form.setValue(field as keyof GeneralFormValues, value as unknown as string)}
           />
         </div>

@@ -17,13 +17,17 @@ import { AuditFilters } from "./_components/AuditFilters";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
+import { resolveSettings } from "../_helpers/resolve-settings";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
 
 export default function AuditTrailPage() {
   const { salon, loading: contextLoading } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = useMemo(
+    () => resolveSettings(translations[appLocale].settings),
+    [appLocale],
+  );
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,8 +154,8 @@ export default function AuditTrailPage() {
       resourceTypeLabels[log.resource_type] || log.resource_type,
       log.resource_id || "-",
       !log.user_id
-        ? t.auditTrailSystemActor ?? "System"
-        : actorNames[log.user_id] || `${t.auditTrailUnknownActor ?? "Unknown user"} (${log.user_id.slice(0, 8)})`,
+        ? t.auditTrailSystemActor
+        : actorNames[log.user_id] || `${t.auditTrailUnknownActor} (${log.user_id.slice(0, 8)})`,
     ]);
     const csv = [headers.join(","), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -172,7 +176,7 @@ export default function AuditTrailPage() {
   const columns = useMemo<ColumnDef<AuditLog>[]>(() => [
     {
       id: "created_at",
-      header: t.auditTrailTime ?? "Time",
+      header: t.auditTrailTime,
       cell: (log) => (
         <span className="whitespace-nowrap">{format(new Date(log.created_at), "yyyy-MM-dd HH:mm")}</span>
       ),
@@ -180,7 +184,7 @@ export default function AuditTrailPage() {
     },
     {
       id: "action",
-      header: t.auditTrailAction ?? "Action",
+      header: t.auditTrailAction,
       cell: (log) => (
         <Badge variant={actionBadgeVariants[log.action] || "outline"}>
           {actionLabels[log.action] || log.action}
@@ -190,24 +194,24 @@ export default function AuditTrailPage() {
     },
     {
       id: "resource_type",
-      header: t.auditTrailResourceType ?? "Resource Type",
+      header: t.auditTrailResourceType,
       cell: (log) => resourceTypeLabels[log.resource_type] || log.resource_type,
       getValue: (log) => resourceTypeLabels[log.resource_type] || log.resource_type,
     },
     {
       id: "changed_by",
-      header: t.auditTrailChangedBy ?? "Changed by",
+      header: t.auditTrailChangedBy,
       cell: (log) => {
-        if (!log.user_id) return t.auditTrailSystemActor ?? "System";
+        if (!log.user_id) return t.auditTrailSystemActor;
         return actorNames[log.user_id] || (
           <span className="text-muted-foreground">
-            {t.auditTrailUnknownActor ?? "Unknown user"} ({log.user_id.slice(0, 8)})
+            {t.auditTrailUnknownActor} ({log.user_id.slice(0, 8)})
           </span>
         );
       },
       getValue: (log) => {
-        if (!log.user_id) return t.auditTrailSystemActor ?? "System";
-        return actorNames[log.user_id] || `${t.auditTrailUnknownActor ?? "Unknown user"} (${log.user_id.slice(0, 8)})`;
+        if (!log.user_id) return t.auditTrailSystemActor;
+        return actorNames[log.user_id] || `${t.auditTrailUnknownActor} (${log.user_id.slice(0, 8)})`;
       },
       sortable: false,
     },
@@ -217,7 +221,7 @@ export default function AuditTrailPage() {
     return (
       <ErrorBoundary>
         <div className="flex items-center justify-center p-8">
-          <p>{t.auditTrailLoading ?? "Loading..."}</p>
+          <p>{t.auditTrailLoading}</p>
         </div>
       </ErrorBoundary>
     );
@@ -240,11 +244,11 @@ export default function AuditTrailPage() {
 
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-muted-foreground">
-          {t.auditTrailShowing ?? "Showing"} {logs.length} {t.auditTrailOf ?? "of"} {total} {t.auditTrailEntries ?? "entries"}
+          {t.auditTrailShowing} {logs.length} {t.auditTrailOf} {total} {t.auditTrailEntries}
         </p>
         <Button onClick={handleExport} size="sm">
           <Download className="h-4 w-4 mr-2" />
-          {t.auditTrailExportCsv ?? "Export CSV"}
+          {t.auditTrailExportCsv}
         </Button>
       </div>
 
@@ -258,12 +262,12 @@ export default function AuditTrailPage() {
           pageSize={pageSize}
           onPageChange={setPage}
           loading={loading}
-          emptyMessage={t.auditTrailNoActivity ?? "No activity recorded yet"}
+          emptyMessage={t.auditTrailNoActivity}
           storageKey="settings-audit-trail"
           serverSearch
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
-          searchPlaceholder={t.auditSearchPlaceholder ?? "Search activity..."}
+          searchPlaceholder={t.auditSearchPlaceholder}
         />
       </div>
     </ErrorBoundary>

@@ -8,6 +8,8 @@ import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveSettings } from "../_helpers/resolve-settings";
+import { applyTemplate } from "@/i18n/apply-template";
 import { logError } from "@/lib/services/logger";
 import { supabase } from "@/lib/supabase-client";
 import { SettingsSection } from "@/components/settings/SettingsSection";
@@ -23,7 +25,10 @@ export default function NotificationsPage() {
   const { locale } = useLocale();
   const { salon, profile, user } = useCurrentSalon();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = useMemo(
+    () => resolveSettings(translations[appLocale].settings),
+    [appLocale],
+  );
   const { registerDirtyState } = useTabGuard();
 
   const [previewKey, setPreviewKey] = useState<string | null>(null);
@@ -72,11 +77,14 @@ export default function NotificationsPage() {
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || `Failed (${res.status})`);
-      setTestSentMessage(`Test sent to ${recipientEmail}`);
+      setTestSentMessage(
+        applyTemplate(t.notificationTestSent, { email: recipientEmail }),
+      );
       setShowTestInput(null);
       setTimeout(() => setTestSentMessage(null), 4000);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to send test email";
+      const msg =
+        err instanceof Error ? err.message : t.notificationTestSendFailed;
       logError(msg);
       setTestErrorMessage(msg);
       setTimeout(() => setTestErrorMessage(null), 5000);
@@ -85,8 +93,8 @@ export default function NotificationsPage() {
     }
   };
 
-  const activeLabel = t.activeStatus ?? "Active";
-  const disabledLabel = t.disabledStatus ?? "Disabled";
+  const activeLabel = t.activeStatus;
+  const disabledLabel = t.disabledStatus;
   const previewTemplate = previewKey ? PREVIEW_TEMPLATES[previewKey] : null;
 
   return (
@@ -105,8 +113,8 @@ export default function NotificationsPage() {
       )}
 
       <SettingsSection
-        title={t.customerNotificationsTitle ?? "Customer Notifications"}
-        description={t.customerNotificationsDescription ?? "Emails sent to your customers when bookings are created, changed, or cancelled."}
+        title={t.customerNotificationsTitle}
+        description={t.customerNotificationsDescription}
         titleRight={
           <TestEmailInput
             show={showTestInput === "customer"}
@@ -116,19 +124,19 @@ export default function NotificationsPage() {
             onCancel={() => setShowTestInput(null)}
             onOpen={() => { setTestEmailTarget(user?.email ?? ""); setShowTestInput("customer"); }}
             sending={sendingTest}
-            placeholder={t.testEmailPlaceholder ?? "Enter email address"}
-            buttonLabel={t.sendTestTo ?? "Send test"}
+            placeholder={t.testEmailPlaceholder}
+            buttonLabel={t.sendTestTo}
           />
         }
       >
-        <NotificationItem icon={CalendarCheck} label={t.bookingConfirmationLabel ?? "Booking confirmation"} description={t.bookingConfirmationDescription ?? "Sent immediately when a booking is created."} fieldKey="bookingConfirmation" isChecked={form.values.bookingConfirmation as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
-        <NotificationItem icon={Bell} label={t.bookingReminderLabel ?? "Booking reminder"} description={t.bookingReminderDescription ?? "Sent before the appointment to reduce no-shows."} fieldKey="bookingReminder" showTiming isChecked={form.values.bookingReminder as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
-        <NotificationItem icon={CalendarX} label={t.cancellationNoticeLabel ?? "Cancellation notice"} description={t.cancellationNoticeDescription ?? "Sent when a booking is cancelled."} fieldKey="cancellationNotice" isChecked={form.values.cancellationNotice as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarCheck} label={t.bookingConfirmationLabel} description={t.bookingConfirmationDescription} fieldKey="bookingConfirmation" isChecked={form.values.bookingConfirmation as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={Bell} label={t.bookingReminderLabel} description={t.bookingReminderDescription} fieldKey="bookingReminder" showTiming isChecked={form.values.bookingReminder as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarX} label={t.cancellationNoticeLabel} description={t.cancellationNoticeDescription} fieldKey="cancellationNotice" isChecked={form.values.cancellationNotice as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
       </SettingsSection>
 
       <SettingsSection
-        title={t.internalNotificationsTitle ?? "Your Notifications"}
-        description={t.internalNotificationsDescription ?? "Emails sent to you when bookings are created, changed, or cancelled."}
+        title={t.internalNotificationsTitle}
+        description={t.internalNotificationsDescription}
         titleRight={
           <TestEmailInput
             show={showTestInput === "internal"}
@@ -138,30 +146,33 @@ export default function NotificationsPage() {
             onCancel={() => setShowTestInput(null)}
             onOpen={() => { setTestEmailTarget(user?.email ?? ""); setShowTestInput("internal"); }}
             sending={sendingTest}
-            placeholder={t.testEmailPlaceholder ?? "Enter email address"}
-            buttonLabel={t.sendTestTo ?? "Send test"}
+            placeholder={t.testEmailPlaceholder}
+            buttonLabel={t.sendTestTo}
           />
         }
       >
-        <NotificationItem icon={UserPlus} label={t.newBookingLabel ?? "New booking"} description={t.newBookingDescription ?? "Receive an email when a customer books an appointment."} fieldKey="newBooking" isChecked={form.values.newBooking as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
-        <NotificationItem icon={CalendarCheck} label={t.bookingChangesLabel ?? "Booking changes"} description={t.bookingChangesDescription ?? "Receive an email when a booking is modified."} fieldKey="bookingChanges" isChecked={form.values.bookingChanges as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
-        <NotificationItem icon={CalendarX} label={t.bookingCancellationsLabel ?? "Booking cancellations"} description={t.bookingCancellationsDescription ?? "Receive an email when a customer cancels."} fieldKey="bookingCancellations" isChecked={form.values.bookingCancellations as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={UserPlus} label={t.newBookingLabel} description={t.newBookingDescription} fieldKey="newBooking" isChecked={form.values.newBooking as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarCheck} label={t.bookingChangesLabel} description={t.bookingChangesDescription} fieldKey="bookingChanges" isChecked={form.values.bookingChanges as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
+        <NotificationItem icon={CalendarX} label={t.bookingCancellationsLabel} description={t.bookingCancellationsDescription} fieldKey="bookingCancellations" isChecked={form.values.bookingCancellations as boolean} reminderTiming={form.values.reminderTiming} onToggle={(k, v) => form.setValue(k, v as never)} onTimingChange={(v) => form.setValue("reminderTiming", v)} onPreview={setPreviewKey} activeLabel={activeLabel} disabledLabel={disabledLabel} />
       </SettingsSection>
 
       <Dialog open={!!previewKey} onOpenChange={(open) => !open && setPreviewKey(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />Email Preview</DialogTitle>
-            <DialogDescription>This is a sample email. Variables like {"{customer_name}"} will be replaced with real data.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              {t.notificationPreviewTitle}
+            </DialogTitle>
+            <DialogDescription>{t.notificationPreviewDescription}</DialogDescription>
           </DialogHeader>
           {previewTemplate && (
             <div className="mt-2 space-y-3">
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Subject</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t.notificationPreviewSubjectLabel}</p>
                 <p className="text-sm font-medium border rounded-md px-3 py-2 bg-muted/30">{previewTemplate.subject}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Body</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t.notificationPreviewBodyLabel}</p>
                 <div className="text-sm border rounded-md px-3 py-2 bg-muted/30 whitespace-pre-wrap font-mono text-xs">
                   {previewTemplate.body.replace("{customer_name}", "Jane Doe").replace("{salon_name}", salon?.name || "Your Salon").replace("{date}", "March 15, 2026").replace("{time}", "10:30").replace("{service_name}", "Haircut")}
                 </div>

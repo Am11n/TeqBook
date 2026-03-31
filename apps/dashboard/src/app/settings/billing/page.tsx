@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveSettings } from "../_helpers/resolve-settings";
+import { applyTemplate } from "@/i18n/apply-template";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
@@ -29,7 +31,10 @@ import {
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = useMemo(
+    () => resolveSettings(translations[appLocale].settings),
+    [appLocale],
+  );
 
   const { currentPlan, addons, summary, loading, refetch } = useBilling();
   const {
@@ -204,18 +209,20 @@ export default function BillingSettingsPage() {
 
       const detail =
         result.status === "duplicate_row"
-          ? "Multiple SMS usage records exist for this billing window. Please contact support."
+          ? t.billingSmsDuplicateRows
           : result.usageError
-            ? `Could not load SMS usage: ${result.usageError}`
+            ? applyTemplate(t.billingSmsUsageError, { detail: result.usageError })
             : result.featureError
-              ? `Could not load plan data for SMS quota: ${result.featureError}`
-              : "SMS usage is temporarily unavailable. Please try again.";
+              ? applyTemplate(t.billingSmsPlanDataError, { detail: result.featureError })
+              : t.billingSmsUnavailable;
 
       if (smsLastGoodRef.current?.windowKey === windowKey) {
         setSmsUsage(smsLastGoodRef.current.metrics);
         setSmsUsageUiMode("ready");
         setSmsUsageIsStale(true);
-        setSmsUsageMessage(`${detail} Showing last loaded values for this billing period.`);
+        setSmsUsageMessage(
+          applyTemplate(t.billingSmsStaleLine, { detail }),
+        );
       } else {
         setSmsUsage(null);
         setSmsUsageUiMode("unavailable");
@@ -226,7 +233,16 @@ export default function BillingSettingsPage() {
     };
 
     void loadSmsUsage();
-  }, [salon?.id, salon?.plan, salon?.current_period_end]);
+  }, [
+    salon?.id,
+    salon?.plan,
+    salon?.current_period_end,
+    t.billingSmsDuplicateRows,
+    t.billingSmsUsageError,
+    t.billingSmsPlanDataError,
+    t.billingSmsUnavailable,
+    t.billingSmsStaleLine,
+  ]);
 
   if (loading) {
     return (
@@ -291,23 +307,24 @@ export default function BillingSettingsPage() {
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}
         onManagePlan={() => setShowPlanDialog(true)}
+        t={t}
       />
 
       {smsBillingPackActive ? (
       <Card className="p-6">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold">SMS Usage</h3>
+            <h3 className="text-lg font-semibold">{t.billingSmsUsageTitle}</h3>
             <p className="text-sm text-muted-foreground">
-              Included quota comes from admin plan features. Unlimited means no included cap for this period.
+              {t.billingSmsUsageDescription}
             </p>
           </div>
 
           {smsUsageLoading ? (
-            <div className="text-sm text-muted-foreground">Loading SMS usage...</div>
+            <div className="text-sm text-muted-foreground">{t.billingSmsLoading}</div>
           ) : smsUsageUiMode === "unavailable" ? (
             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-              {smsUsageMessage ?? "SMS usage is temporarily unavailable. Please try again."}
+              {smsUsageMessage ?? t.billingSmsUnavailable}
             </div>
           ) : (
             <>
@@ -318,23 +335,33 @@ export default function BillingSettingsPage() {
               ) : null}
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-md border p-3">
-                  <div className="text-xs text-muted-foreground">Included SMS</div>
+                  <div className="text-xs text-muted-foreground">{t.billingSmsIncludedLabel}</div>
                   <div className="text-xl font-semibold">
-                    {smsUsage == null ? "—" : smsUsage.included === null ? "Unlimited" : smsUsage.included}
+                    {smsUsage == null
+                      ? t.emailNotProvided
+                      : smsUsage.included === null
+                        ? t.billingUnlimited
+                        : smsUsage.included}
                   </div>
                 </div>
                 <div className="rounded-md border p-3">
-                  <div className="text-xs text-muted-foreground">Used</div>
-                  <div className="text-xl font-semibold">{smsUsage?.used ?? "—"}</div>
-                </div>
-                <div className="rounded-md border p-3">
-                  <div className="text-xs text-muted-foreground">Estimated overage</div>
-                  <div className="text-xl font-semibold">{smsUsage?.overage ?? "—"}</div>
-                </div>
-                <div className="rounded-md border p-3">
-                  <div className="text-xs text-muted-foreground">Expected extra cost</div>
+                  <div className="text-xs text-muted-foreground">{t.billingSmsUsedLabel}</div>
                   <div className="text-xl font-semibold">
-                    {smsUsage != null ? `${smsUsage.overageCostEstimate.toFixed(2)} NOK` : "—"}
+                    {smsUsage?.used ?? t.emailNotProvided}
+                  </div>
+                </div>
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">{t.billingSmsOverageLabel}</div>
+                  <div className="text-xl font-semibold">
+                    {smsUsage?.overage ?? t.emailNotProvided}
+                  </div>
+                </div>
+                <div className="rounded-md border p-3">
+                  <div className="text-xs text-muted-foreground">{t.billingSmsExpectedCostLabel}</div>
+                  <div className="text-xl font-semibold">
+                    {smsUsage != null
+                      ? `${smsUsage.overageCostEstimate.toFixed(2)} NOK`
+                      : t.emailNotProvided}
                   </div>
                 </div>
               </div>
@@ -343,13 +370,13 @@ export default function BillingSettingsPage() {
 
           {smsUsageUiMode === "ready" && !smsUsageIsStale && usagePercent >= 95 ? (
             <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-              You have used {usagePercent}% of your included SMS quota. Consider upgrading to avoid overage costs.
+              {applyTemplate(t.billingSmsQuotaWarning, { percent: String(usagePercent) })}
             </div>
           ) : null}
 
           {smsUsageUiMode === "ready" && smsUsage?.hardCapReached ? (
             <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900">
-              Hard cap reached for current period. New transactional SMS may be blocked.
+              {t.billingSmsHardCapWarning}
             </div>
           ) : null}
 
@@ -360,7 +387,7 @@ export default function BillingSettingsPage() {
                 checked={smsDisabled}
                 onCheckedChange={(checked) => setSmsDisabled(Boolean(checked))}
               />
-              <Label htmlFor="sms-disabled">Disable SMS sending</Label>
+              <Label htmlFor="sms-disabled">{t.billingSmsDisableSending}</Label>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -368,10 +395,10 @@ export default function BillingSettingsPage() {
                 checked={emailOnly}
                 onCheckedChange={(checked) => setEmailOnly(Boolean(checked))}
               />
-              <Label htmlFor="email-only">Email-only fallback (no SMS)</Label>
+              <Label htmlFor="email-only">{t.billingSmsEmailOnlyFallback}</Label>
             </div>
             <p className="text-xs text-muted-foreground">
-              Toggles are local preview controls in this phase and will be persisted in a dedicated SMS settings step.
+              {t.billingSmsTogglesHint}
             </p>
           </div>
         </div>
@@ -381,30 +408,30 @@ export default function BillingSettingsPage() {
       <Card className="p-6">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold">Estimated next invoice</h3>
+            <h3 className="text-lg font-semibold">{t.billingEstimatedInvoiceTitle}</h3>
             <p className="text-sm text-muted-foreground">
-              This is an estimate and may change until the invoice is finalized.
+              {t.billingEstimatedInvoiceHint}
             </p>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Base plan</span>
+              <span className="text-muted-foreground">{t.billingEstimatedBasePlan}</span>
               <span>${estimate.basePlanMinor.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Extra staff</span>
+              <span className="text-muted-foreground">{t.billingEstimatedExtraStaff}</span>
               <span>${estimate.extraStaffMinor.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Extra languages</span>
+              <span className="text-muted-foreground">{t.billingEstimatedExtraLanguages}</span>
               <span>${estimate.extraLanguagesMinor.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">SMS overage</span>
+              <span className="text-muted-foreground">{t.billingEstimatedSmsOverage}</span>
               <span>{estimate.smsOverageMinor.toFixed(2)} NOK</span>
             </div>
             <div className="border-t pt-2 mt-2 flex items-center justify-between font-semibold">
-              <span>Estimated total</span>
+              <span>{t.billingEstimatedTotal}</span>
               <span>${estimate.total.toFixed(2)}</span>
             </div>
           </div>
@@ -416,9 +443,9 @@ export default function BillingSettingsPage() {
         <details className="group">
           <summary className="flex items-center justify-between cursor-pointer px-6 py-4 hover:bg-muted/30 transition-colors">
             <div>
-              <h3 className="text-lg font-semibold">Billing History</h3>
+              <h3 className="text-lg font-semibold">{t.billingHistoryTitle}</h3>
               <p className="text-sm text-muted-foreground">
-                Invoice history and receipts
+                {t.billingHistorySubtitle}
               </p>
             </div>
             <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
@@ -446,7 +473,7 @@ export default function BillingSettingsPage() {
                             rel="noreferrer"
                             className="text-xs text-primary hover:underline"
                           >
-                            Open
+                            {t.billingInvoiceOpen}
                           </a>
                         )}
                         {invoice.invoice_pdf && (
@@ -456,7 +483,7 @@ export default function BillingSettingsPage() {
                             rel="noreferrer"
                             className="text-xs text-primary hover:underline"
                           >
-                            PDF
+                            {t.billingInvoicePdf}
                           </a>
                         )}
                       </div>
@@ -468,7 +495,7 @@ export default function BillingSettingsPage() {
               <div className="flex flex-col items-center py-6 text-center">
                 <FileText className="h-8 w-8 text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  No invoices yet. They will appear here after your first successful billing cycle.
+                  {t.billingHistoryEmpty}
                 </p>
               </div>
             )}

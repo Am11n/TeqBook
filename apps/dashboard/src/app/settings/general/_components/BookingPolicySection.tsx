@@ -3,12 +3,13 @@
 import { Input } from "@/components/ui/input";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
+import type { ResolvedSettingsMessages } from "../../_helpers/resolve-settings";
 
 interface BookingPolicySectionProps {
   cancellationHours: number;
   defaultBufferMinutes: number;
   errors: Record<string, string>;
-  t: Record<string, string | undefined>;
+  t: ResolvedSettingsMessages;
   onChangeField: (field: string, value: number) => void;
 }
 
@@ -21,14 +22,14 @@ export function BookingPolicySection({
 }: BookingPolicySectionProps) {
   return (
     <SettingsSection
-      title={t.bookingPolicyTitle ?? "Booking Policy"}
-      description={t.bookingPolicyDescription ?? "Defaults for your booking engine."}
+      title={t.bookingPolicyTitle}
+      description={t.bookingPolicyDescription}
       layout="rows"
     >
       <FormRow
-        label={t.cancellationHoursLabel ?? "Cancellation window"}
+        label={t.cancellationHoursLabel}
         htmlFor="cancellationHours"
-        description={t.cancellationHoursHint ?? "Hours before appointment that customers can cancel."}
+        description={t.cancellationHoursHint}
       >
         <div className="flex items-center gap-2">
           <Input
@@ -39,7 +40,7 @@ export function BookingPolicySection({
             onChange={(e) => onChangeField("cancellationHours", parseInt(e.target.value) || 0)}
             className="w-20 tabular-nums"
           />
-          <span className="text-sm text-muted-foreground">hours</span>
+          <span className="text-sm text-muted-foreground">{t.cancellationHoursUnit}</span>
         </div>
         {errors.cancellationHours && (
           <p className="text-xs text-destructive mt-1">{errors.cancellationHours}</p>
@@ -47,9 +48,9 @@ export function BookingPolicySection({
       </FormRow>
 
       <FormRow
-        label={t.defaultBufferLabel ?? "Buffer time"}
+        label={t.defaultBufferLabel}
         htmlFor="defaultBufferMinutes"
-        description={t.defaultBufferHint ?? "Global prep/cleanup time between appointments."}
+        description={t.defaultBufferHint}
       >
         <div className="flex items-center gap-2">
           <Input
@@ -61,7 +62,7 @@ export function BookingPolicySection({
             onChange={(e) => onChangeField("defaultBufferMinutes", parseInt(e.target.value) || 0)}
             className="w-20 tabular-nums"
           />
-          <span className="text-sm text-muted-foreground">min</span>
+          <span className="text-sm text-muted-foreground">{t.bufferMinutesUnit}</span>
         </div>
         {errors.defaultBufferMinutes && (
           <p className="text-xs text-destructive mt-1">{errors.defaultBufferMinutes}</p>

@@ -88,6 +88,10 @@ export type SettingsMessages = {
   currencyDescription?: string;
   timezoneLabel?: string;
   timezoneDescription?: string;
+  timeFormatLabel?: string;
+  /** Option labels for 12h / 24h selector */
+  timeFormat24OptionLabel?: string;
+  timeFormat12OptionLabel?: string;
   // General tab -- languages
   bookingLanguagesTitle?: string;
   bookingLanguagesDescription?: string;
@@ -136,14 +140,26 @@ export type SettingsMessages = {
   cancellationHoursHint?: string;
   defaultBufferLabel?: string;
   defaultBufferHint?: string;
+  /** Suffix after cancellation hours input, e.g. "hours" */
+  cancellationHoursUnit?: string;
+  /** Suffix after buffer minutes input, e.g. "min" */
+  bufferMinutesUnit?: string;
   shownOnBookingPage?: string;
   contactSectionTitle?: string;
   contactSectionDescription?: string;
   emailLabel?: string;
+  /** Shown when the user has no email on file (e.g. em dash) */
+  emailNotProvided?: string;
+  /** Cover image upload failed and no API message was returned */
+  coverImageUploadFailed?: string;
+  /** Empty state when salon context is missing on general settings */
+  generalNoSalonMessage?: string;
   // Status indicator
   missingSettingsName?: string;
   missingBookingLanguage?: string;
   allSettingsConfigured?: string;
+  validationCancellationHoursNonNegative?: string;
+  validationBufferMinutesNonNegative?: string;
   // Notifications -- status
   activeStatus?: string;
   disabledStatus?: string;
@@ -190,6 +206,62 @@ export type SettingsMessages = {
   profileCancel?: string;
   profileSaving?: string;
   profileSaveChanges?: string;
+  // Notifications — toasts & email preview dialog
+  notificationTestSent?: string;
+  notificationTestSendFailed?: string;
+  notificationPreviewTitle?: string;
+  notificationPreviewDescription?: string;
+  notificationPreviewSubjectLabel?: string;
+  notificationPreviewBodyLabel?: string;
+  // Billing — add-ons card
+  billingAddonsTitle?: string;
+  billingAddonsDescription?: string;
+  billingAddonExtraStaffFallbackName?: string;
+  billingAddonExtraLanguagesFallbackName?: string;
+  billingUnlimited?: string;
+  /** Included: {included} • Active: {active} • Extra billed: {extra} */
+  billingAddonUsageLine?: string;
+  billingAddonStaffPriceFallback?: string;
+  billingAddonLanguagePriceFallback?: string;
+  /** {price} • Estimated monthly impact: {impact} */
+  billingAddonStaffImpactLine?: string;
+  billingAddonLanguageImpactLine?: string;
+  billingAddonManagePlan?: string;
+  billingAddonReviewLanguages?: string;
+  // Billing — SMS usage
+  billingSmsUsageTitle?: string;
+  billingSmsUsageDescription?: string;
+  billingSmsLoading?: string;
+  billingSmsIncludedLabel?: string;
+  billingSmsUsedLabel?: string;
+  billingSmsOverageLabel?: string;
+  billingSmsExpectedCostLabel?: string;
+  /** You have used {percent}% of your included SMS quota. ... */
+  billingSmsQuotaWarning?: string;
+  billingSmsHardCapWarning?: string;
+  billingSmsDisableSending?: string;
+  billingSmsEmailOnlyFallback?: string;
+  billingSmsTogglesHint?: string;
+  billingSmsDuplicateRows?: string;
+  /** Could not load SMS usage: {detail} */
+  billingSmsUsageError?: string;
+  /** Could not load plan data for SMS quota: {detail} */
+  billingSmsPlanDataError?: string;
+  billingSmsUnavailable?: string;
+  /** {detail} Showing last loaded values for this billing period. */
+  billingSmsStaleLine?: string;
+  billingEstimatedInvoiceTitle?: string;
+  billingEstimatedInvoiceHint?: string;
+  billingEstimatedBasePlan?: string;
+  billingEstimatedExtraStaff?: string;
+  billingEstimatedExtraLanguages?: string;
+  billingEstimatedSmsOverage?: string;
+  billingEstimatedTotal?: string;
+  billingHistoryTitle?: string;
+  billingHistorySubtitle?: string;
+  billingInvoiceOpen?: string;
+  billingInvoicePdf?: string;
+  billingHistoryEmpty?: string;
 };
 
 export type AdminMessages = {

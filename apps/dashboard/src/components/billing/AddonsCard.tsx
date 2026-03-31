@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AddonDisplay } from "@/lib/utils/billing/billing-utils";
+import type { ResolvedSettingsMessages } from "@/app/settings/_helpers/resolve-settings";
+import { applyTemplate } from "@/i18n/apply-template";
 
 interface AddonsCardProps {
   addons: AddonDisplay[];
@@ -18,6 +20,7 @@ interface AddonsCardProps {
   } | null;
   actionLoading?: boolean;
   onManagePlan?: () => void;
+  t: ResolvedSettingsMessages;
 }
 
 export function AddonsCard({
@@ -25,6 +28,7 @@ export function AddonsCard({
   usage,
   actionLoading = false,
   onManagePlan,
+  t,
 }: AddonsCardProps) {
   const addonByType = new Map(addons.map((addon) => [addon.type, addon] as const));
   const extraStaffAddon = addonByType.get("extra_staff");
@@ -34,35 +38,62 @@ export function AddonsCard({
   const estimatedLanguageImpact =
     (extraLanguagesAddon?.quantity ?? usage?.languagesExtraBilled ?? 0) * 10;
 
+  const staffIncluded =
+    usage?.employeesIncluded === null
+      ? t.billingUnlimited
+      : String(usage?.employeesIncluded ?? 0);
+  const langIncluded =
+    usage?.languagesIncluded === null
+      ? t.billingUnlimited
+      : String(usage?.languagesIncluded ?? 0);
+
+  const staffUsageLine = applyTemplate(t.billingAddonUsageLine, {
+    included: staffIncluded,
+    active: String(usage?.employeesActive ?? 0),
+    extra: String(usage?.employeesExtraBilled ?? 0),
+  });
+  const langUsageLine = applyTemplate(t.billingAddonUsageLine, {
+    included: langIncluded,
+    active: String(usage?.languagesActive ?? 0),
+    extra: String(usage?.languagesExtraBilled ?? 0),
+  });
+
+  const staffPrice = extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback;
+  const langPrice = extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback;
+
+  const staffImpactLine = applyTemplate(t.billingAddonStaffImpactLine, {
+    price: staffPrice,
+    impact: String(estimatedStaffImpact),
+  });
+  const langImpactLine = applyTemplate(t.billingAddonLanguageImpactLine, {
+    price: langPrice,
+    impact: String(estimatedLanguageImpact),
+  });
+
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-2">Add-on impact</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Extra staff and language charges are derived from active usage and synced to billing automatically.
-      </p>
+      <h3 className="text-lg font-semibold mb-2">{t.billingAddonsTitle}</h3>
+      <p className="text-sm text-muted-foreground mb-4">{t.billingAddonsDescription}</p>
 
       <div className="space-y-3">
         <div className={cn("border rounded-lg p-4", extraStaffAddon?.active && "border-l-4 border-l-green-500")}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-medium">{extraStaffAddon?.name ?? "Extra Staff Members"}</h4>
+                <h4 className="font-medium">
+                  {extraStaffAddon?.name ?? t.billingAddonExtraStaffFallbackName}
+                </h4>
                 {(extraStaffAddon?.quantity ?? 0) > 0 && (
                   <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                    Active
+                    {t.billingStateActive}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mb-1">
-                Included: {usage?.employeesIncluded ?? "Unlimited"} • Active: {usage?.employeesActive ?? 0} • Extra billed:{" "}
-                {usage?.employeesExtraBilled ?? 0}
-              </p>
-              <p className="text-sm font-medium">
-                {extraStaffAddon?.price ?? "$5/month per staff"} • Estimated monthly impact: ${estimatedStaffImpact}
-              </p>
+              <p className="text-sm text-muted-foreground mb-1">{staffUsageLine}</p>
+              <p className="text-sm font-medium">{staffImpactLine}</p>
             </div>
             <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
-              Manage plan
+              {t.billingAddonManagePlan}
             </Button>
           </div>
         </div>
@@ -73,23 +104,20 @@ export function AddonsCard({
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-medium">{extraLanguagesAddon?.name ?? "Extra Languages"}</h4>
+                <h4 className="font-medium">
+                  {extraLanguagesAddon?.name ?? t.billingAddonExtraLanguagesFallbackName}
+                </h4>
                 {(extraLanguagesAddon?.quantity ?? 0) > 0 && (
                   <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                    Active
+                    {t.billingStateActive}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mb-1">
-                Included: {usage?.languagesIncluded ?? "Unlimited"} • Active: {usage?.languagesActive ?? 0} • Extra billed:{" "}
-                {usage?.languagesExtraBilled ?? 0}
-              </p>
-              <p className="text-sm font-medium">
-                {extraLanguagesAddon?.price ?? "$10/month per language"} • Estimated monthly impact: ${estimatedLanguageImpact}
-              </p>
+              <p className="text-sm text-muted-foreground mb-1">{langUsageLine}</p>
+              <p className="text-sm font-medium">{langImpactLine}</p>
             </div>
             <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
-              Review languages
+              {t.billingAddonReviewLanguages}
             </Button>
           </div>
         </div>

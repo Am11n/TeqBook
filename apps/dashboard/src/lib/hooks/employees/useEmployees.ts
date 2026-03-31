@@ -13,7 +13,8 @@ import type { Employee, Service, Shift } from "@/lib/types";
 interface UseEmployeesOptions {
   translations: {
     noSalon: string;
-    confirmDelete?: string;
+    listLoadError: string;
+    confirmDelete: string;
   };
   hasShiftsFeature?: boolean;
 }
@@ -58,14 +59,14 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
 
     if (employeesError || servicesError) {
       setError(
-        employeesError ?? servicesError ?? "Kunne ikke laste data",
+        employeesError ?? servicesError ?? translations.listLoadError,
       );
       setLoading(false);
       return;
     }
 
     if (!employeesData || !servicesData) {
-      setError("Kunne ikke laste data");
+      setError(translations.listLoadError);
       setLoading(false);
       return;
     }
@@ -86,7 +87,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
     setEmployeeServicesMap(employeesData.servicesMap);
     setEmployeeShiftsMap(shiftsMap);
     setLoading(false);
-  }, [salon?.id, translations.noSalon]);
+  }, [salon?.id, translations.noSalon, translations.listLoadError]);
 
   useEffect(() => {
     if (!isReady) {
@@ -200,8 +201,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
   };
 
   const handleDelete = async (employeeId: string) => {
-    const msg = translations.confirmDelete || "Are you sure you want to remove this employee?";
-    if (!confirm(msg)) return;
+    if (!confirm(translations.confirmDelete)) return;
     if (!salon?.id) return;
 
     const { error: deleteError } = await deleteEmployee(salon.id, employeeId);
