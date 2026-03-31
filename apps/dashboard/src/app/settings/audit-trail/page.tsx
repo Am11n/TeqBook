@@ -147,7 +147,13 @@ export default function AuditTrailPage() {
   useEffect(() => { if (!contextLoading && salon?.id) loadLogs(); }, [contextLoading, salon?.id, loadLogs]);
 
   function handleExport() {
-    const headers = ["Timestamp", "Action", "Resource Type", "Resource ID", "Changed By"];
+    const headers = [
+      t.auditCsvTimestamp,
+      t.auditTrailAction,
+      t.auditTrailResourceType,
+      t.auditCsvResourceId,
+      t.auditTrailChangedBy,
+    ];
     const rows = logs.map((log) => [
       format(new Date(log.created_at), "yyyy-MM-dd HH:mm:ss"),
       actionLabels[log.action] || log.action,

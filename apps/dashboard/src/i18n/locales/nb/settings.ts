@@ -169,6 +169,8 @@ export const settings: TranslationNamespaces['settings'] = {
     auditTrailShowing: "Viser",
     auditTrailEntries: "oppføringer",
     auditTrailExportCsv: "Eksporter CSV",
+    auditCsvTimestamp: "Tidsstempel",
+    auditCsvResourceId: "Ressurs-ID",
     auditTrailTime: "Tid",
     auditTrailAction: "Handling",
     auditTrailResourceType: "Ressurstype",

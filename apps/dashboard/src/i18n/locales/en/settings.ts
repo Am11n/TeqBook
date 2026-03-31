@@ -173,6 +173,8 @@ export const settings: TranslationNamespaces['settings'] = {
     auditTrailShowing: "Showing",
     auditTrailEntries: "entries",
     auditTrailExportCsv: "Export CSV",
+    auditCsvTimestamp: "Timestamp",
+    auditCsvResourceId: "Resource ID",
     auditTrailTime: "Time",
     auditTrailAction: "Action",
     auditTrailResourceType: "Resource Type",

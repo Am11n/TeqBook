@@ -176,6 +176,10 @@ export type SettingsMessages = {
   auditTrailShowing?: string;
   auditTrailEntries?: string;
   auditTrailExportCsv?: string;
+  /** CSV column header (full date-time); table column may use shorter label */
+  auditCsvTimestamp?: string;
+  /** CSV column header for resource identifier */
+  auditCsvResourceId?: string;
   auditTrailTime?: string;
   auditTrailAction?: string;
   auditTrailResourceType?: string;
