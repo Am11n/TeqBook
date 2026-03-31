@@ -5,6 +5,7 @@
 // Blocks represent meetings, vacation, training, etc.
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { TimeBlock, CreateTimeBlockInput } from "@/lib/types";
 
 /**
@@ -45,7 +46,7 @@ export async function getTimeBlocksForSalon(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -74,14 +75,14 @@ export async function createTimeBlock(
       .maybeSingle();
 
     if (error || !data) {
-      return { data: null, error: error?.message ?? "Failed to create time block" };
+      return { data: null, error: error?.message ?? tb("TIME_BLOCK_CREATE_FAILED") };
     }
 
     return { data: data as TimeBlock, error: null };
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -104,14 +105,14 @@ export async function updateTimeBlock(
       .maybeSingle();
 
     if (error || !data) {
-      return { data: null, error: error?.message ?? "Failed to update time block" };
+      return { data: null, error: error?.message ?? tb("TIME_BLOCK_UPDATE_FAILED") };
     }
 
     return { data: data as TimeBlock, error: null };
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -137,7 +138,7 @@ export async function deleteTimeBlock(
     return { error: null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

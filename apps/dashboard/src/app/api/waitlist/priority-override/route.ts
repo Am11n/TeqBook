@@ -4,6 +4,7 @@ import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 type Body = {
   salonId?: string;
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
       .eq("salon_id", salonId)
       .maybeSingle();
     if (existingError || !existing) {
-      return NextResponse.json({ error: existingError?.message ?? "Waitlist entry not found" }, { status: 404 });
+      return NextResponse.json({ error: existingError?.message ?? tb("WAITLIST_ENTRY_NOT_FOUND") }, { status: 404 });
     }
 
     const { error: updateError } = await admin

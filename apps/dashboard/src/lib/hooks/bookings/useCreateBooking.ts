@@ -1,5 +1,6 @@
 import { useState, useMemo, FormEvent, useEffect } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError, useRepoErrors } from "@/lib/hooks/useRepoError";
 import { getAvailableSlots } from "@/lib/repositories/bookings";
 import { createBooking } from "@/lib/services/bookings-service";
 import { addProductToBooking, getProductsForBooking } from "@/lib/repositories/products";
@@ -22,6 +23,8 @@ interface UseCreateBookingOptions {
 export function useCreateBooking({
   products, hasInventory, onBookingCreated, translations,
 }: UseCreateBookingOptions) {
+  const m = useRepoError();
+  const trRepo = useRepoErrors();
   const { salon } = useCurrentSalon();
   const [employeeId, setEmployeeId] = useState("");
   const [serviceId, setServiceId] = useState("");
@@ -59,7 +62,11 @@ export function useCreateBooking({
     setSelectedSlot("");
 
     const { data, error: rpcError } = await getAvailableSlots(salon.id, employeeId, serviceId, date);
-    if (rpcError) { setError(rpcError); setLoadingSlots(false); return; }
+    if (rpcError) {
+      setError(m(rpcError));
+      setLoadingSlots(false);
+      return;
+    }
 
     const salonTz = salon?.timezone || "UTC";
     const hour12 = salon?.time_format === "12h";
@@ -101,8 +108,17 @@ export function useCreateBooking({
     });
 
     if (rpcError || !bookingData) {
-      const isConflict = rpcError?.toLowerCase().includes("no longer available") || rpcError?.toLowerCase().includes("already booked") || rpcError?.toLowerCase().includes("time slot");
-      setError(isConflict ? rpcError + " Please refresh available slots and try again." : rpcError ?? translations.createError);
+      const isConflict =
+        rpcError?.toLowerCase().includes("no longer available") ||
+        rpcError?.toLowerCase().includes("already booked") ||
+        rpcError?.toLowerCase().includes("time slot");
+      setError(
+        isConflict && rpcError
+          ? `${m(rpcError)} ${trRepo.bookingConflictRefreshHint}`.trim()
+          : rpcError
+            ? m(rpcError)
+            : translations.createError,
+      );
       setSavingBooking(false);
       return;
     }

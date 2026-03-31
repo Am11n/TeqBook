@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SetupBadge } from "@/components/setup-badge";
 import { getEmployeeSetupIssues, isEmployeeBookable } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updateEmployee } from "@/lib/repositories/employees";
 import { uploadEmployeeProfileImage } from "@/lib/services/storage-service";
 import { Check, X, Edit } from "lucide-react";
@@ -83,6 +84,7 @@ export function EmployeeDetailDialog({
   onEmployeeUpdated,
   translations: t,
 }: EmployeeDetailDialogProps) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
   const employee = employees.find((e) => e.id === employeeId) ?? null;
 
@@ -192,7 +194,7 @@ export function EmployeeDetailDialog({
     );
 
     if (updateError) {
-      setError(updateError);
+      setError(m(updateError));
       setSaving(false);
       return;
     }

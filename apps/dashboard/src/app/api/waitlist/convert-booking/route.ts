@@ -4,6 +4,7 @@ import { enforceSameOrigin } from "@/lib/api-security";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 type Body = {
   salonId?: string;
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     if (!row?.ok) {
       return NextResponse.json(
-        { error: row?.message ?? "Could not convert waitlist entry", bookingId: null },
+        { error: row?.message ?? tb("WAITLIST_COULD_NOT_CONVERT"), bookingId: null },
         { status: 409 }
       );
     }

@@ -115,6 +115,55 @@ export type DashboardMessages = {
   feedbackRateLimitError?: string;
   feedbackUnknownError?: string;
   feedbackUploadFailed?: string;
+  /** Support case category (dialog + badges) */
+  supportCategoryGeneral?: string;
+  supportCategoryBookingIssue?: string;
+  supportCategoryPaymentIssue?: string;
+  supportCategoryAccountIssue?: string;
+  supportCategoryFeatureRequest?: string;
+  supportCategoryOther?: string;
+  supportCaseStatusOpen?: string;
+  supportCaseStatusInProgress?: string;
+  supportCaseStatusWaitingOnYou?: string;
+  supportCaseStatusResolved?: string;
+  supportCaseStatusClosed?: string;
+  supportPriorityCritical?: string;
+  supportPriorityHigh?: string;
+  supportPriorityMedium?: string;
+  supportPriorityLow?: string;
+  feedbackTypeBugReport?: string;
+  feedbackTypeFeatureRequestOption?: string;
+  feedbackTypeImprovement?: string;
+  feedbackTypeOtherOption?: string;
+  feedbackStatusNew?: string;
+  feedbackStatusPlanned?: string;
+  feedbackStatusInProgress?: string;
+  feedbackStatusDelivered?: string;
+  feedbackStatusRejected?: string;
+  feedbackPriorityHigh?: string;
+  feedbackPriorityMedium?: string;
+  feedbackPriorityLow?: string;
+  supportCaseMessagesHeading?: string;
+  supportCaseNoMessagesYet?: string;
+  supportCaseReplyPlaceholder?: string;
+  supportReplyOneFileAttached?: string;
+  /** e.g. "{count} files attached" */
+  supportReplyManyFilesAttached?: string;
+  helpSendButton?: string;
+  helpSaveButton?: string;
+  /** e.g. "Created {when}" */
+  supportCaseCreatedLine?: string;
+  supportCaseClosedBanner?: string;
+  feedbackDetailEditButton?: string;
+  feedbackNoDescriptionBody?: string;
+  /** e.g. "Created {when}" */
+  feedbackDetailCreatedLine?: string;
+  feedbackConversationHeading?: string;
+  feedbackConversationEmpty?: string;
+  feedbackCommentPlaceholder?: string;
+  feedbackDoneDeliveredBanner?: string;
+  feedbackDoneRejectedBanner?: string;
+  feedbackTeamLabel?: string;
   // Sidebar tooltips
   collapseSidebar: string;
   expandSidebar: string;
@@ -129,6 +178,29 @@ export type DashboardMessages = {
   supportCaseNoDescription?: string;
   commissionsSalonDefault?: string;
   packagesUnknownService?: string;
+  /** Gift cards table (sales) */
+  salesGiftCardsColCode?: string;
+  salesGiftCardsColRecipient?: string;
+  salesGiftCardsColValue?: string;
+  salesGiftCardsColStatus?: string;
+  salesGiftCardsColCreated?: string;
+  salesGiftCardsStatusActive?: string;
+  salesGiftCardsStatusInactive?: string;
+  salesGiftCardsRowDeactivate?: string;
+  salesGiftCardsSearchPlaceholder?: string;
+  salesGiftCardsEmptyMessage?: string;
+  salesGiftCardsValueOf?: string;
+  salesGiftCardsInvalidValue?: string;
+  salesGiftCardsCreateDescription?: string;
+  /** e.g. "Value ({currency})" */
+  salesGiftCardsCreateValueLabel?: string;
+  salesGiftCardsCreateValuePlaceholder?: string;
+  salesGiftCardsCreateRecipientNameLabel?: string;
+  salesGiftCardsCreateRecipientNamePlaceholder?: string;
+  salesGiftCardsCreateRecipientEmailLabel?: string;
+  salesGiftCardsCreateRecipientEmailPlaceholder?: string;
+  salesGiftCardsCreateCreating?: string;
+  salesGiftCardsCreateSubmit?: string;
 };
 
 export type HomeMessages = {

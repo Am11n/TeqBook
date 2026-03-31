@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FilterChips } from "@/components/filter-chips";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { supabase } from "@/lib/supabase-client";
 import { Search } from "lucide-react";
 import type { Employee, Service } from "@/lib/types";
@@ -61,6 +62,7 @@ export function AssignServicesDialog({
   onSaved,
   translations,
 }: AssignServicesDialogProps) {
+  const mapRepoErr = useRepoError();
   const t = { ...defaultTranslations, ...translations };
   const { salon } = useCurrentSalon();
 
@@ -187,9 +189,7 @@ export function AssignServicesDialog({
       await onSaved();
       onOpenChange(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t.saveError,
-      );
+      setError(err instanceof Error ? mapRepoErr(err.message) : t.saveError);
     } finally {
       setSaving(false);
     }

@@ -15,6 +15,7 @@ import { Field } from "@/components/form/Field";
 import { SetupBadge } from "@/components/setup-badge";
 import { getCustomerIssues } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updateCustomer } from "@/lib/repositories/customers";
 import { Edit, Copy, CheckCheck } from "lucide-react";
 import type { DialogMode } from "@/lib/hooks/useEntityDialogState";
@@ -53,6 +54,7 @@ export function CustomerDetailDialog({
   onCustomerUpdated,
   translations: t,
 }: CustomerDetailDialogProps) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
   const customer = customers.find((c) => c.id === customerId) ?? null;
 
@@ -106,7 +108,7 @@ export function CustomerDetailDialog({
     );
 
     if (updateError) {
-      setError(updateError);
+      setError(m(updateError));
       setSaving(false);
       return;
     }

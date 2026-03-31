@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +17,17 @@ import {
   Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
+import { STATUS_COLORS, PRIORITY_COLORS, type SupportCase, type CaseMessage } from "./types";
 import {
-  STATUS_COLORS,
-  STATUS_LABELS,
-  PRIORITY_COLORS,
-  type SupportCase,
-  type CaseMessage,
-} from "./types";
+  labelSupportCategory,
+  labelSupportCaseStatus,
+  labelSupportPriority,
+} from "@/app/help/_helpers/help-dashboard-labels";
 
 interface CaseDetailViewProps {
   supportCase: SupportCase;
@@ -38,6 +42,12 @@ export function CaseDetailView({
   salonId,
   onBack,
 }: CaseDetailViewProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const [messages, setMessages] = useState<CaseMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
@@ -94,7 +104,7 @@ export function CaseDetailView({
       setReplyFiles([]);
       loadMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t.supportUnknownError);
     } finally {
       setSending(false);
     }
@@ -126,20 +136,22 @@ export function CaseDetailView({
               className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[supportCase.status] ?? ""}`}
             >
               <StatusIcon className="h-3 w-3" />
-              {STATUS_LABELS[supportCase.status] ?? supportCase.status}
+              {labelSupportCaseStatus(t, supportCase.status)}
             </span>
             <span
               className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[supportCase.priority] ?? ""}`}
             >
-              {supportCase.priority}
+              {labelSupportPriority(t, supportCase.priority)}
             </span>
             {supportCase.category && (
               <Badge variant="outline" className="text-xs">
-                {supportCase.category.replace(/_/g, " ")}
+                {labelSupportCategory(t, supportCase.category)}
               </Badge>
             )}
             <span className="text-xs text-muted-foreground">
-              Created {format(new Date(supportCase.created_at), "dd.MM.yyyy HH:mm")}
+              {applyTemplate(t.supportCaseCreatedLine, {
+                when: format(new Date(supportCase.created_at), "dd.MM.yyyy HH:mm"),
+              })}
             </span>
           </div>
         </div>
@@ -147,7 +159,7 @@ export function CaseDetailView({
 
       {supportCase.description && (
         <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm font-medium mb-1">Description</p>
+          <p className="text-sm font-medium mb-1">{t.supportDescriptionLabel}</p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {supportCase.description}
           </p>
@@ -184,7 +196,7 @@ export function CaseDetailView({
       )}
 
       <div className="space-y-3">
-        <h3 className="text-sm font-medium">Messages</h3>
+        <h3 className="text-sm font-medium">{t.supportCaseMessagesHeading}</h3>
         {loading ? (
           <div className="space-y-2">
             <Skeleton className="h-16 w-full rounded-lg" />
@@ -192,7 +204,7 @@ export function CaseDetailView({
           </div>
         ) : messages.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            No messages yet. Send a reply below.
+            {t.supportCaseNoMessagesYet}
           </p>
         ) : (
           <div className="space-y-3">
@@ -245,7 +257,7 @@ export function CaseDetailView({
           <textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write a reply..."
+            placeholder={t.supportCaseReplyPlaceholder}
             rows={3}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition placeholder:text-muted-foreground focus-visible:ring-2 resize-none"
           />
@@ -263,7 +275,11 @@ export function CaseDetailView({
               </label>
               {replyFiles.length > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  {replyFiles.length} file{replyFiles.length > 1 ? "s" : ""} attached
+                  {replyFiles.length === 1
+                    ? t.supportReplyOneFileAttached
+                    : applyTemplate(t.supportReplyManyFilesAttached, {
+                        count: String(replyFiles.length),
+                      })}
                 </span>
               )}
             </div>
@@ -278,7 +294,7 @@ export function CaseDetailView({
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              Send
+              {t.helpSendButton}
             </Button>
           </div>
         </div>
@@ -286,9 +302,7 @@ export function CaseDetailView({
 
       {isClosed && (
         <div className="rounded-lg border bg-muted/50 p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            This case has been {supportCase.status}. If you need more help, please create a new case.
-          </p>
+          <p className="text-sm text-muted-foreground">{t.supportCaseClosedBanner}</p>
         </div>
       )}
     </div>

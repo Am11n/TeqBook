@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 export type ImportBatch = {
   id: string;
@@ -39,7 +40,7 @@ export async function createImportBatch(input: {
     if (error) return { data: null, error: error.message };
     return { data: data as ImportBatch, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -58,7 +59,7 @@ export async function updateImportBatch(
     if (error) return { error: error.message };
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    return { error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -75,7 +76,7 @@ export async function getImportHistory(
     if (error) return { data: null, error: error.message };
     return { data: data as ImportBatch[], error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -94,6 +95,6 @@ export async function getImportBatch(
     if (error) return { data: null, error: error.message };
     return { data: data as ImportBatch, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }

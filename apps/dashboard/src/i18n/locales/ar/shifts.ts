@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "يجب أولًا إنشاء موظف واحد على الأقل قبل إضافة الورديات.",
     tableTitle: "وردياتك",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "جارٍ تحميل الورديات…",
     emptyTitle: "لا توجد ورديات مسجَّلة بعد",
     emptyDescription:

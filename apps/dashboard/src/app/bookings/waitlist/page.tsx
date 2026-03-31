@@ -17,6 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { useRepoError } from "@/lib/hooks/useRepoError";
+import { applyTemplate } from "@/i18n/apply-template";
 import { supabase } from "@/lib/supabase-client";
 import {
   listWaitlist,
@@ -33,6 +39,39 @@ import {
 
 export default function WaitlistPage() {
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+  const m = useRepoError();
+
+  const filterDefs = useMemo(
+    () =>
+      [
+        { id: "waiting", label: t.waitlistFilterWaiting },
+        { id: "notified", label: t.waitlistFilterNotified },
+        { id: "booked", label: t.waitlistFilterBooked },
+        { id: "cooldown", label: t.waitlistFilterCooldown },
+        { id: "all", label: t.waitlistFilterAll },
+      ] as const,
+    [t],
+  );
+
+  const statusLabels = useMemo(
+    () =>
+      ({
+        waiting: t.waitlistStatusWaiting,
+        notified: t.waitlistStatusNotified,
+        booked: t.waitlistStatusBooked,
+        expired: t.waitlistStatusExpired,
+        cancelled: t.waitlistStatusCancelled,
+        cooldown: t.waitlistStatusCooldown,
+      }) as Record<string, string>,
+    [t],
+  );
+
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [services, setServices] = useState<Array<{ id: string; name: string }>>([]);
   const [employees, setEmployees] = useState<Array<{ id: string; full_name: string }>>([]);
@@ -76,9 +115,9 @@ export default function WaitlistPage() {
     setLoading(true);
     const { data, error } = await listWaitlist(salon.id, filter === "all" ? undefined : filter);
     setEntries(data ?? []);
-    if (error) setError(error);
+    if (error) setError(m(error));
     setLoading(false);
-  }, [salon?.id, filter]);
+  }, [salon?.id, filter, m]);
 
   const loadFormData = useCallback(async () => {
     if (!salon?.id) return;
@@ -200,24 +239,24 @@ export default function WaitlistPage() {
     if (!salon?.id || !notifyEntry) return;
     setNotice(null);
     if (!notifySlotStart) {
-      setError("Slot start is required to send claim-link.");
+      setError(t.waitlistErrSlotStartRequired);
       return;
     }
     if (!notifyEmployeeId) {
-      setError("Employee is required before sending claim-link.");
+      setError(t.waitlistErrEmployeeRequired);
       return;
     }
     setNotifyBusy(true);
     const slotStartDate = new Date(notifySlotStart);
     if (Number.isNaN(slotStartDate.getTime())) {
       setNotifyBusy(false);
-      setError("Slot start is invalid.");
+      setError(t.waitlistErrSlotStartInvalid);
       return;
     }
     const slotEndDate = notifySlotEnd ? new Date(notifySlotEnd) : null;
     if (slotEndDate && Number.isNaN(slotEndDate.getTime())) {
       setNotifyBusy(false);
-      setError("Slot end is invalid.");
+      setError(t.waitlistErrSlotEndInvalid);
       return;
     }
     const slotStartIso = slotStartDate.toISOString();
@@ -228,10 +267,11 @@ export default function WaitlistPage() {
       slotStart: slotStartIso,
       slotEnd: slotEndIso,
       employeeId: notifyEmployeeId,
+      fallbackError: t.waitlistErrNotifyOfferFailed,
     });
     setNotifyBusy(false);
     if (notifyError) {
-      setError(notifyError);
+      setError(m(notifyError));
       return;
     }
     if (warning) {
@@ -243,9 +283,13 @@ export default function WaitlistPage() {
 
   const handleConvertToBooking = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    const { error: convertError } = await convertWaitlistToBooking({ salonId: salon.id, entryId: entry.id });
+    const { error: convertError } = await convertWaitlistToBooking({
+      salonId: salon.id,
+      entryId: entry.id,
+      fallbackError: t.waitlistErrConvertFailed,
+    });
     if (convertError) {
-      setError(convertError);
+      setError(m(convertError));
       return;
     }
     await loadEntries();
@@ -265,11 +309,11 @@ export default function WaitlistPage() {
     if (!salon?.id || !overrideEntry) return;
     const parsed = Number.parseInt(overrideScore, 10);
     if (Number.isNaN(parsed)) {
-      setError("Override score must be a valid integer.");
+      setError(t.waitlistErrOverrideScoreInteger);
       return;
     }
     if (!overrideReason.trim()) {
-      setError("Override reason is required.");
+      setError(t.waitlistErrOverrideReasonRequired);
       return;
     }
     setOverrideBusy(true);
@@ -278,10 +322,11 @@ export default function WaitlistPage() {
       entryId: overrideEntry.id,
       score: parsed,
       reason: overrideReason.trim(),
+      fallbackError: t.waitlistErrPriorityOverrideFailed,
     });
     setOverrideBusy(false);
     if (overrideError) {
-      setError(overrideError);
+      setError(m(overrideError));
       return;
     }
     setOverrideEntry(null);
@@ -295,9 +340,10 @@ export default function WaitlistPage() {
       entryId: entry.id,
       score: null,
       reason: null,
+      fallbackError: t.waitlistErrPriorityOverrideFailed,
     });
     if (overrideError) {
-      setError(overrideError);
+      setError(m(overrideError));
       return;
     }
     await loadEntries();
@@ -362,15 +408,15 @@ export default function WaitlistPage() {
   const handleCreateEntry = async () => {
     if (!salon?.id) return;
     if (!createForm.customerName.trim() || !createForm.serviceId || !createForm.employeeId || !createForm.preferredDate) {
-      setError("Customer name, service, employee and date are required.");
+      setError(t.waitlistErrCreateFields);
       return;
     }
     if (!createForm.customerEmail.trim() && !createForm.customerPhone.trim()) {
-      setError("At least one contact field is required (email or phone).");
+      setError(t.waitlistErrContactRequired);
       return;
     }
     if (createForm.preferenceMode === "specific_time" && !createForm.preferredTimeStart) {
-      setError("Preferred start time is required for specific-time waitlist entries.");
+      setError(t.waitlistErrPreferredStartRequired);
       return;
     }
 
@@ -387,11 +433,16 @@ export default function WaitlistPage() {
       preferredTimeEnd: createForm.preferredTimeEnd || undefined,
       preferenceMode: createForm.preferenceMode,
       flexWindowMinutes: Number.parseInt(createForm.flexWindowMinutes || "0", 10) || 0,
+      validationMessages: {
+        customerNameRequired: t.waitlistErrCustomerNameRequired,
+        serviceRequired: t.waitlistErrServiceRequired,
+        preferredDateRequired: t.waitlistErrPreferredDateRequired,
+      },
     });
 
     setSavingCreate(false);
     if (createError) {
-      setError(createError);
+      setError(m(createError));
       return;
     }
 
@@ -423,31 +474,31 @@ export default function WaitlistPage() {
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            Create waitlist entry
+            {t.waitlistBtnCreateEntry}
           </Button>
-          {["waiting", "notified", "booked", "cooldown", "all"].map((f) => (
+          {filterDefs.map(({ id, label }) => (
             <Button
-              key={f}
+              key={id}
               size="sm"
-              variant={filter === f ? "default" : "outline"}
-              className="h-7 text-xs capitalize"
-              onClick={() => setFilter(f)}
+              variant={filter === id ? "default" : "outline"}
+              className="h-7 text-xs"
+              onClick={() => setFilter(id)}
             >
-              {f}
+              {label}
             </Button>
           ))}
           <Input
             className="ml-auto h-8 w-full max-w-xs text-xs"
-            placeholder="Search customer, service, date, status..."
+            placeholder={t.waitlistSearchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground py-4">Loading waitlist...</p>
+          <p className="text-sm text-muted-foreground py-4">{t.waitlistLoading}</p>
         ) : entries.length === 0 ? (
-          <EmptyState title="No waitlist entries" description="When customers join the waitlist, they'll appear here." />
+          <EmptyState title={t.waitlistEmptyTitle} description={t.waitlistEmptyDescription} />
         ) : (
           <div className="divide-y">
             {pagedEntries.map((entry) => (
@@ -460,17 +511,36 @@ export default function WaitlistPage() {
                     {entry.preferred_time_start && (
                       <span>{entry.preferred_time_start}{entry.preferred_time_end ? `–${entry.preferred_time_end}` : ""}</span>
                     )}
-                    <span>&middot; {entry.preference_mode === "specific_time" ? "Specific time" : "Flexible day"}</span>
-                    {entry.flex_window_minutes > 0 && <span>&middot; ±{entry.flex_window_minutes} min</span>}
+                    <span>
+                      &middot;{" "}
+                      {entry.preference_mode === "specific_time"
+                        ? t.waitlistPreferenceSpecificTime
+                        : t.waitlistPreferenceFlexibleDay}
+                    </span>
+                    {entry.flex_window_minutes > 0 && (
+                      <span>
+                        &middot;{" "}
+                        {applyTemplate(t.waitlistFlexMinutes, {
+                          minutes: String(entry.flex_window_minutes),
+                        })}
+                      </span>
+                    )}
                     {entry.service && <span>&middot; {entry.service.name}</span>}
                     {entry.employee && <span>&middot; {entry.employee.full_name}</span>}
                     {typeof entry.priority_override_score === "number" && (
-                      <span>&middot; Override {entry.priority_override_score}</span>
+                      <span>
+                        &middot;{" "}
+                        {applyTemplate(t.waitlistOverrideScoreLabel, {
+                          score: String(entry.priority_override_score),
+                        })}
+                      </span>
                     )}
                   </div>
                   {entry.status === "cooldown" && entry.cooldown_until && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Cooldown until {new Date(entry.cooldown_until).toLocaleString()}
+                      {applyTemplate(t.waitlistCooldownUntil, {
+                        datetime: new Date(entry.cooldown_until).toLocaleString(appLocale),
+                      })}
                     </p>
                   )}
                   {entry.customer_email && (
@@ -478,46 +548,46 @@ export default function WaitlistPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full capitalize ${statusColors[entry.status] ?? "bg-gray-100 text-gray-500"}`}>
-                    {entry.status}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusColors[entry.status] ?? "bg-gray-100 text-gray-500"}`}>
+                    {statusLabels[entry.status] ?? entry.status}
                   </span>
                   {entry.status === "waiting" && (
                     <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleNotify(entry)}>
-                      <Bell className="h-3 w-3" /> Notify
+                      <Bell className="h-3 w-3" /> {t.waitlistNotify}
                     </Button>
                   )}
                   {entry.status === "notified" && (
                     <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleConvertToBooking(entry)}>
-                      <CheckCircle className="h-3 w-3" /> Convert to booking
+                      <CheckCircle className="h-3 w-3" /> {t.waitlistConvertBooking}
                     </Button>
                   )}
                   {(entry.status === "waiting" || entry.status === "notified" || entry.status === "cooldown") && (
                     <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenPriorityOverride(entry)}>
-                      Override priority
+                      {t.waitlistOverridePriority}
                     </Button>
                   )}
                   {typeof entry.priority_override_score === "number" && (
                     <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleClearPriorityOverride(entry)}>
-                      Clear override
+                      {t.waitlistClearOverride}
                     </Button>
                   )}
                   {(entry.status === "waiting" || entry.status === "notified") && (
                     <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" onClick={() => handleCancel(entry)}>
-                      Cancel
+                      {t.waitlistCancelEntry}
                     </Button>
                   )}
                   {(entry.status === "waiting" || entry.status === "notified") && (
                     <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleSetCooldown(entry)}>
-                      Cooldown
+                      {t.waitlistCooldown}
                     </Button>
                   )}
                   {entry.status === "cooldown" && (
                     <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleReactivate(entry)}>
-                      Reactivate
+                      {t.waitlistReactivate}
                     </Button>
                   )}
                   {(entry.status === "cancelled" || entry.status === "expired" || entry.status === "booked") && (
-                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleRemove(entry)}>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" aria-label={t.waitlistRemove} onClick={() => handleRemove(entry)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   )}
@@ -526,15 +596,24 @@ export default function WaitlistPage() {
             ))}
             <div className="flex items-center justify-between pt-4 text-xs text-muted-foreground">
               <span>
-                Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredEntries.length)} of {filteredEntries.length}
+                {applyTemplate(t.waitlistPagination, {
+                  from: String((page - 1) * pageSize + 1),
+                  to: String(Math.min(page * pageSize, filteredEntries.length)),
+                  total: String(filteredEntries.length),
+                })}
               </span>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                  Previous
+                  {t.waitlistPrevious}
                 </Button>
-                <span>{page} / {totalPages}</span>
+                <span>
+                  {applyTemplate(t.waitlistPageOf, {
+                    current: String(page),
+                    total: String(totalPages),
+                  })}
+                </span>
                 <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                  Next
+                  {t.waitlistNext}
                 </Button>
               </div>
             </div>
@@ -545,12 +624,12 @@ export default function WaitlistPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create waitlist entry</DialogTitle>
-            <DialogDescription>Add a customer manually when no slot is available.</DialogDescription>
+            <DialogTitle>{t.waitlistCreateDialogTitle}</DialogTitle>
+            <DialogDescription>{t.waitlistCreateDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
             <div className="space-y-1">
-              <Label htmlFor="waitlist-name">Customer name</Label>
+              <Label htmlFor="waitlist-name">{t.waitlistLabelCustomerName}</Label>
               <Input
                 id="waitlist-name"
                 value={createForm.customerName}
@@ -558,7 +637,7 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-email">Customer email</Label>
+              <Label htmlFor="waitlist-email">{t.waitlistLabelCustomerEmail}</Label>
               <Input
                 id="waitlist-email"
                 type="email"
@@ -567,7 +646,7 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-phone">Customer phone</Label>
+              <Label htmlFor="waitlist-phone">{t.waitlistLabelCustomerPhone}</Label>
               <Input
                 id="waitlist-phone"
                 value={createForm.customerPhone}
@@ -575,14 +654,14 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-service">Service</Label>
+              <Label htmlFor="waitlist-service">{t.waitlistLabelService}</Label>
               <select
                 id="waitlist-service"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={createForm.serviceId}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, serviceId: e.target.value }))}
               >
-                <option value="">Select service</option>
+                <option value="">{t.waitlistSelectService}</option>
                 {services.map((service) => (
                   <option key={service.id} value={service.id}>
                     {service.name}
@@ -591,14 +670,14 @@ export default function WaitlistPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-employee">Preferred employee</Label>
+              <Label htmlFor="waitlist-employee">{t.waitlistLabelPreferredEmployee}</Label>
               <select
                 id="waitlist-employee"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={createForm.employeeId}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, employeeId: e.target.value }))}
               >
-                <option value="">Select employee</option>
+                <option value="">{t.waitlistSelectEmployee}</option>
                 {employees.map((employee) => (
                   <option key={employee.id} value={employee.id}>
                     {employee.full_name}
@@ -607,7 +686,7 @@ export default function WaitlistPage() {
               </select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="waitlist-date">Preferred date</Label>
+              <Label htmlFor="waitlist-date">{t.waitlistLabelPreferredDate}</Label>
               <Input
                 id="waitlist-date"
                 type="date"
@@ -617,7 +696,7 @@ export default function WaitlistPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="waitlist-mode">Preference mode</Label>
+                <Label htmlFor="waitlist-mode">{t.waitlistLabelPreferenceMode}</Label>
                 <select
                   id="waitlist-mode"
                   className="h-9 w-full rounded-md border bg-background px-3 text-sm"
@@ -629,12 +708,12 @@ export default function WaitlistPage() {
                     }))
                   }
                 >
-                  <option value="specific_time">Specific time</option>
-                  <option value="day_flexible">Flexible day</option>
+                  <option value="specific_time">{t.waitlistModeSpecificTime}</option>
+                  <option value="day_flexible">{t.waitlistModeFlexibleDay}</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="waitlist-flex-window">Flex window (minutes)</Label>
+                <Label htmlFor="waitlist-flex-window">{t.waitlistLabelFlexWindow}</Label>
                 <Input
                   id="waitlist-flex-window"
                   type="number"
@@ -647,7 +726,7 @@ export default function WaitlistPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="waitlist-start">Preferred start</Label>
+                <Label htmlFor="waitlist-start">{t.waitlistLabelPreferredStart}</Label>
                 <Input
                   id="waitlist-start"
                   type="time"
@@ -657,7 +736,7 @@ export default function WaitlistPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="waitlist-end">Preferred end</Label>
+                <Label htmlFor="waitlist-end">{t.waitlistLabelPreferredEnd}</Label>
                 <Input
                   id="waitlist-end"
                   type="time"
@@ -670,10 +749,10 @@ export default function WaitlistPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              Cancel
+              {t.cancelButton}
             </Button>
             <Button onClick={handleCreateEntry} disabled={savingCreate}>
-              {savingCreate ? "Saving..." : "Create entry"}
+              {savingCreate ? t.waitlistCreateSaving : t.waitlistCreateSubmit}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -687,14 +766,12 @@ export default function WaitlistPage() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Send claim-link offer</DialogTitle>
-            <DialogDescription>
-              Velg tilgjengelig slot for kunden. Dette oppretter offer + claim-link (SMS/e-post).
-            </DialogDescription>
+            <DialogTitle>{t.waitlistNotifyDialogTitle}</DialogTitle>
+            <DialogDescription>{t.waitlistNotifyDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="notify-slot-start">Slot start</Label>
+              <Label htmlFor="notify-slot-start">{t.waitlistLabelSlotStart}</Label>
               <Input
                 id="notify-slot-start"
                 type="datetime-local"
@@ -703,7 +780,7 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="notify-slot-end">Slot end (optional)</Label>
+              <Label htmlFor="notify-slot-end">{t.waitlistLabelSlotEndOptional}</Label>
               <Input
                 id="notify-slot-end"
                 type="datetime-local"
@@ -712,14 +789,14 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="notify-employee">Employee</Label>
+              <Label htmlFor="notify-employee">{t.waitlistLabelNotifyEmployee}</Label>
               <select
                 id="notify-employee"
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                 value={notifyEmployeeId}
                 onChange={(e) => setNotifyEmployeeId(e.target.value)}
               >
-                <option value="">Select employee</option>
+                <option value="">{t.waitlistSelectEmployee}</option>
                 {employees.map((employee) => (
                   <option key={employee.id} value={employee.id}>
                     {employee.full_name}
@@ -730,10 +807,10 @@ export default function WaitlistPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotifyEntry(null)}>
-              Cancel
+              {t.cancelButton}
             </Button>
             <Button onClick={submitNotify} disabled={notifyBusy}>
-              {notifyBusy ? "Sending..." : "Send offer"}
+              {notifyBusy ? t.waitlistNotifySending : t.waitlistNotifySendOffer}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -747,14 +824,12 @@ export default function WaitlistPage() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Override waitlist priority</DialogTitle>
-            <DialogDescription>
-              Overstyr score for denne raden. Endringen logges i waitlist lifecycle events.
-            </DialogDescription>
+            <DialogTitle>{t.waitlistOverrideDialogTitle}</DialogTitle>
+            <DialogDescription>{t.waitlistOverrideDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="override-score">Override score</Label>
+              <Label htmlFor="override-score">{t.waitlistLabelOverrideScore}</Label>
               <Input
                 id="override-score"
                 type="number"
@@ -763,7 +838,7 @@ export default function WaitlistPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="override-reason">Reason</Label>
+              <Label htmlFor="override-reason">{t.waitlistLabelOverrideReason}</Label>
               <Input
                 id="override-reason"
                 value={overrideReason}
@@ -773,10 +848,10 @@ export default function WaitlistPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOverrideEntry(null)}>
-              Cancel
+              {t.cancelButton}
             </Button>
             <Button onClick={handleSavePriorityOverride} disabled={overrideBusy}>
-              {overrideBusy ? "Saving..." : "Save override"}
+              {overrideBusy ? t.waitlistOverrideSaving : t.waitlistOverrideSave}
             </Button>
           </DialogFooter>
         </DialogContent>

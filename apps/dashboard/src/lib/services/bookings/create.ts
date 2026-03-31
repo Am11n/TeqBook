@@ -1,6 +1,7 @@
 import {
   createBooking as createBookingRepo,
 } from "@/lib/repositories/bookings";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Booking, CreateBookingInput } from "@/lib/types";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
 import { scheduleReminders } from "@/lib/services/reminder-service";
@@ -28,7 +29,7 @@ export async function createBooking(
   try {
     if (!input.salon_id || !input.employee_id || !input.service_id || !input.start_time || !input.customer_full_name) {
       logWarn("Booking creation failed: missing required fields", logContext);
-      return { data: null, error: "All required fields must be provided" };
+      return { data: null, error: tb("BOOKING_REQUIRED_FIELDS") };
     }
 
     if (!input.is_walk_in) {
@@ -46,7 +47,7 @@ export async function createBooking(
           startTimeLocal: startTime.toLocaleString(),
           nowLocal: now.toLocaleString(),
         });
-        return { data: null, error: "Booking start time must be in the future" };
+        return { data: null, error: tb("BOOKING_START_IN_PAST") };
       }
     }
 
@@ -60,7 +61,7 @@ export async function createBooking(
         });
         return {
           data: null,
-          error: "This time slot is no longer available. Please select another time.",
+          error: tb("BOOKING_SLOT_UNAVAILABLE"),
         };
       }
 
@@ -102,7 +103,7 @@ export async function createBooking(
     logError("Booking creation exception", error, logContext);
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+      error: error instanceof Error ? error.message : tb("UNKNOWN"),
     };
   }
 }

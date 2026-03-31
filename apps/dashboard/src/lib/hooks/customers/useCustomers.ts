@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import {
   getCustomersForCurrentSalon,
   deleteCustomer,
@@ -17,6 +18,7 @@ interface UseCustomersOptions {
 }
 
 export function useCustomers({ translations }: UseCustomersOptions) {
+  const m = useRepoError();
   const { salon, loading: salonLoading, error: salonError, isReady } =
     useCurrentSalon();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -38,14 +40,14 @@ export function useCustomers({ translations }: UseCustomersOptions) {
     );
 
     if (loadError) {
-      setError(loadError);
+      setError(m(loadError));
       setLoading(false);
       return;
     }
 
     setCustomers(data ?? []);
     setLoading(false);
-  }, [salon?.id]);
+  }, [salon?.id, m]);
 
   useEffect(() => {
     if (!isReady) {
@@ -110,7 +112,7 @@ export function useCustomers({ translations }: UseCustomersOptions) {
 
     const { error: deleteError } = await deleteCustomer(salon.id, customerId);
     if (deleteError) {
-      setError(deleteError);
+      setError(m(deleteError));
       return;
     }
     setCustomers((prev) => prev.filter((c) => c.id !== customerId));

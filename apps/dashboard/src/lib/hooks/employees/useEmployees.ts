@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import {
   getEmployeesWithServicesMap,
   deleteEmployee,
@@ -20,6 +21,7 @@ interface UseEmployeesOptions {
 }
 
 export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOptions) {
+  const m = useRepoError();
   const { salon, loading: salonLoading, error: salonError, isReady } =
     useCurrentSalon();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -87,7 +89,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
     setEmployeeServicesMap(employeesData.servicesMap);
     setEmployeeShiftsMap(shiftsMap);
     setLoading(false);
-  }, [salon?.id, translations.noSalon, translations.listLoadError]);
+  }, [salon?.id, translations.noSalon, translations.listLoadError, m]);
 
   useEffect(() => {
     if (!isReady) {
@@ -195,7 +197,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
           e.id === employeeId ? { ...e, is_active: currentStatus } : e,
         ),
       );
-      setError(toggleError);
+      setError(m(toggleError));
       return;
     }
   };
@@ -207,7 +209,7 @@ export function useEmployees({ translations, hasShiftsFeature }: UseEmployeesOpt
     const { error: deleteError } = await deleteEmployee(salon.id, employeeId);
 
     if (deleteError) {
-      setError(deleteError);
+      setError(m(deleteError));
       return;
     }
 

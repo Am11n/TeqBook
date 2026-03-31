@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from "react";
+import { useRepoError, useRepoErrors } from "@/lib/hooks/useRepoError";
 import { findCustomerByEmailOrPhone, createCustomer } from "@/lib/services/customers-service";
 import type { Customer } from "@/lib/types";
 
@@ -12,6 +13,8 @@ export function useCustomerPrefill(
   setCustomerPhone: Dispatch<SetStateAction<string>>,
   setError: (v: string | null) => void,
 ) {
+  const m = useRepoError();
+  const trRepo = useRepoErrors();
   const [existingCustomer, setExistingCustomer] = useState<Customer | null>(null);
   const [checkingCustomer, setCheckingCustomer] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
@@ -65,7 +68,7 @@ export function useCustomerPrefill(
     });
 
     if (error || !data) {
-      setError(error || "Failed to create customer");
+      setError(error ? m(error) : trRepo.customerCreateFailed);
       setCreatingCustomer(false);
       return;
     }
@@ -73,7 +76,7 @@ export function useCustomerPrefill(
     setExistingCustomer(data);
     setShowQuickCreate(false);
     setCreatingCustomer(false);
-  }, [salonId, customerName, customerEmail, customerPhone, setError]);
+  }, [salonId, customerName, customerEmail, customerPhone, setError, m, trRepo.customerCreateFailed]);
 
   const resetCustomerState = useCallback(() => {
     setExistingCustomer(null);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import {
   getServicesForCurrentSalon,
   toggleServiceActive,
@@ -16,6 +17,7 @@ interface UseServicesOptions {
 }
 
 export function useServices({ translations }: UseServicesOptions) {
+  const m = useRepoError();
   const { salon, loading: salonLoading, error: salonError, isReady } =
     useCurrentSalon();
   const [services, setServices] = useState<Service[]>([]);
@@ -48,7 +50,7 @@ export function useServices({ translations }: UseServicesOptions) {
     ]);
 
     if (servicesError) {
-      setError(servicesError);
+      setError(m(servicesError));
       setLoading(false);
       return;
     }
@@ -64,7 +66,7 @@ export function useServices({ translations }: UseServicesOptions) {
     setServices(servicesData || []);
     setServiceEmployeeCountMap(countMap);
     setLoading(false);
-  }, [salon?.id]);
+  }, [salon?.id, m]);
 
   useEffect(() => {
     if (!isReady) {
@@ -159,7 +161,7 @@ export function useServices({ translations }: UseServicesOptions) {
           s.id === serviceId ? { ...s, is_active: currentStatus } : s,
         ),
       );
-      setError(toggleError);
+      setError(m(toggleError));
     }
   };
 
@@ -169,7 +171,7 @@ export function useServices({ translations }: UseServicesOptions) {
 
     const { error: deleteError } = await deleteService(salon.id, serviceId);
     if (deleteError) {
-      setError(deleteError);
+      setError(m(deleteError));
       return;
     }
     setServices((prev) => prev.filter((s) => s.id !== serviceId));

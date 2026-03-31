@@ -4,6 +4,7 @@
 // Data access for staff register (personalliste) - compliance documentation
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { PersonallisteEntry } from "@/lib/types/domain";
 import type {
   CreatePersonallisteEntryInput,
@@ -44,7 +45,7 @@ export async function getPersonallisteEntries(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -95,7 +96,7 @@ export async function insertPersonallisteEntry(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -140,7 +141,7 @@ export async function updatePersonallisteEntry(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to update personalliste entry",
+        error: error?.message ?? tb("PERSONALLISTE_UPDATE_FAILED"),
       };
     }
 
@@ -153,7 +154,7 @@ export async function updatePersonallisteEntry(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

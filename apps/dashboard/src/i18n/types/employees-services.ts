@@ -153,6 +153,8 @@ export type EmployeesMessages = {
   validationTagTooLong?: string;
   validationImageInvalidType?: string;
   validationImageTooLarge?: string;
+  createEmployeeFailed?: string;
+  employeeCreatedImageUploadFailed?: string;
 };
 
 export type ServicesMessages = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,17 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { supabase } from "@/lib/supabase-client";
 import { Paperclip, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, Pencil } from "lucide-react";
 import { format } from "date-fns";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
+import { STATUS_COLORS, TYPE_COLORS, PRIORITY_COLORS, type FeedbackEntry, type FeedbackComment } from "./types";
 import {
-  STATUS_COLORS, STATUS_LABELS, TYPE_COLORS, TYPE_LABELS, PRIORITY_COLORS,
-  type FeedbackEntry, type FeedbackComment,
-} from "./types";
+  labelFeedbackType,
+  labelFeedbackStatus,
+  labelFeedbackPriority,
+} from "@/app/help/_helpers/help-dashboard-labels";
 import { ConversationSection } from "./ConversationSection";
 
 interface FeedbackDetailViewProps {
@@ -27,6 +34,12 @@ export function FeedbackDetailView({
   salonId,
   onBack,
 }: FeedbackDetailViewProps) {
+  const { locale: appLocaleRaw } = useLocale();
+  const appLocale = normalizeLocale(appLocaleRaw);
+  const t = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const [comments, setComments] = useState<FeedbackComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
@@ -85,7 +98,7 @@ export function FeedbackDetailView({
       setReplyText("");
       loadComments();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t.feedbackUnknownError);
     } finally {
       setSending(false);
     }
@@ -116,7 +129,7 @@ export function FeedbackDetailView({
       entry.description = editDescription.trim() || null;
       setEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t.feedbackUnknownError);
     } finally {
       setSaving(false);
     }
@@ -150,12 +163,12 @@ export function FeedbackDetailView({
               className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[entry.status] ?? ""}`}
             >
               <StatusIcon className="h-3 w-3" />
-              {STATUS_LABELS[entry.status] ?? entry.status}
+              {labelFeedbackStatus(t, entry.status)}
             </span>
             <span
               className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_COLORS[entry.type] ?? ""}`}
             >
-              {TYPE_LABELS[entry.type] ?? entry.type}
+              {labelFeedbackType(t, entry.type)}
             </span>
             <span
               className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[entry.priority] ?? ""}`}
@@ -163,7 +176,9 @@ export function FeedbackDetailView({
               {entry.priority}
             </span>
             <span className="text-xs text-muted-foreground">
-              Created {format(new Date(entry.created_at), "dd.MM.yyyy HH:mm")}
+              {applyTemplate(t.feedbackDetailCreatedLine, {
+                when: format(new Date(entry.created_at), "dd.MM.yyyy HH:mm"),
+              })}
             </span>
           </div>
         </div>
@@ -173,7 +188,7 @@ export function FeedbackDetailView({
         {editing ? (
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="edit-title">Title</Label>
+              <Label htmlFor="edit-title">{t.feedbackTitle}</Label>
               <Input
                 id="edit-title"
                 value={editTitle}
@@ -182,7 +197,7 @@ export function FeedbackDetailView({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-desc">Description</Label>
+              <Label htmlFor="edit-desc">{t.feedbackDescriptionLabel}</Label>
               <textarea
                 id="edit-desc"
                 value={editDescription}
@@ -195,7 +210,7 @@ export function FeedbackDetailView({
             <div className="flex gap-2">
               <Button size="sm" onClick={handleSaveEdit} disabled={saving || !editTitle.trim()}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                Save
+                {t.helpSaveButton}
               </Button>
               <Button
                 size="sm"
@@ -207,14 +222,14 @@ export function FeedbackDetailView({
                 }}
                 disabled={saving}
               >
-                Cancel
+                {t.feedbackCancel}
               </Button>
             </div>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium">Description</p>
+              <p className="text-sm font-medium">{t.feedbackDescriptionLabel}</p>
               {canEdit && (
                 <Button
                   variant="ghost"
@@ -223,12 +238,12 @@ export function FeedbackDetailView({
                   onClick={() => setEditing(true)}
                 >
                   <Pencil className="h-3 w-3" />
-                  Edit
+                  {t.feedbackDetailEditButton}
                 </Button>
               )}
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {entry.description || "No description provided."}
+              {entry.description || t.feedbackNoDescriptionBody}
             </p>
             {attachments && (
               <div className="mt-3 flex flex-wrap gap-1">
@@ -264,6 +279,7 @@ export function FeedbackDetailView({
         loading={loading}
         userId={userId}
         isDone={isDone}
+        terminalStatus={entry.status}
         replyText={replyText}
         setReplyText={setReplyText}
         sending={sending}

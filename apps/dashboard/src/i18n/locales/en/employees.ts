@@ -141,4 +141,7 @@ export const employees: TranslationNamespaces['employees'] = {
     validationImageInvalidType:
       "Invalid image format. Use JPG, PNG, or WebP.",
     validationImageTooLarge: "Image is too large. Maximum size is 5 MB.",
+    createEmployeeFailed: "Failed to create employee.",
+    employeeCreatedImageUploadFailed:
+      "Employee was created but the profile image could not be uploaded.",
   };

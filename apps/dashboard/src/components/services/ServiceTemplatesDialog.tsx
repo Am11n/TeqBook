@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { createService } from "@/lib/repositories/services";
 
 // Templates use English names -- the salon owner will rename to their language
@@ -72,6 +73,7 @@ export function ServiceTemplatesDialog({
   onCreated,
   translations,
 }: ServiceTemplatesDialogProps) {
+  const mapRepoErr = useRepoError();
   const t = { ...defaultTranslations, ...translations };
   const { salon } = useCurrentSalon();
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -125,9 +127,7 @@ export function ServiceTemplatesDialog({
       setSelected(new Set());
       setPriceOverrides({});
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t.createError,
-      );
+      setError(err instanceof Error ? mapRepoErr(err.message) : t.createError);
     } finally {
       setSaving(false);
     }

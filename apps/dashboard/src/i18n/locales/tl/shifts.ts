@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Kailangan mo munang magkaroon ng kahit isang empleyado bago magdagdag ng shift.",
     tableTitle: "Mga shift mo",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Ikinakarga ang mga shift…",
     emptyTitle: "Wala pang nadadagdag na shift",
     emptyDescription:

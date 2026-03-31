@@ -148,6 +148,12 @@ export const bookings: TranslationNamespaces['bookings'] = {
     waitlistErrOverrideReasonRequired: "Årsak til overstyring kreves.",
     waitlistErrCreateFields: "Kundenavn, tjeneste, ansatt og dato kreves.",
     waitlistErrContactRequired: "Minst ett kontaktfelt kreves (e-post eller telefon).",
+    waitlistErrCustomerNameRequired: "Kundenavn kreves.",
+    waitlistErrServiceRequired: "Tjeneste kreves.",
+    waitlistErrPreferredDateRequired: "Ønsket dato kreves.",
+    waitlistErrNotifyOfferFailed: "Kunne ikke sende tilbud.",
+    waitlistErrConvertFailed: "Kunne ikke konvertere ventelisteposten til en booking.",
+    waitlistErrPriorityOverrideFailed: "Kunne ikke oppdatere prioritetsoverstyring.",
     waitlistErrPreferredStartRequired:
       "Foretrukket starttid kreves for venteliste med bestemt tid.",
   };

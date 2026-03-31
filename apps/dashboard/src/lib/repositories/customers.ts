@@ -5,6 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Customer, CreateCustomerInput } from "@/lib/types";
 
 /**
@@ -39,7 +40,7 @@ export async function getCustomersForCurrentSalon(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -67,7 +68,7 @@ export async function createCustomer(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to create customer",
+        error: error?.message ?? tb("CUSTOMER_CREATE_FAILED"),
       };
     }
 
@@ -75,7 +76,7 @@ export async function createCustomer(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -98,14 +99,14 @@ export async function getCustomerById(
     }
 
     if (!data) {
-      return { data: null, error: "Customer not found" };
+      return { data: null, error: tb("CUSTOMER_NOT_FOUND") };
     }
 
     return { data: data as Customer, error: null };
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -146,7 +147,7 @@ export async function findCustomerByEmailOrPhone(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -183,7 +184,7 @@ export async function updateCustomer(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to update customer",
+        error: error?.message ?? tb("CUSTOMER_UPDATE_FAILED"),
       };
     }
 
@@ -191,7 +192,7 @@ export async function updateCustomer(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -217,7 +218,7 @@ export async function deleteCustomer(
     return { error: null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

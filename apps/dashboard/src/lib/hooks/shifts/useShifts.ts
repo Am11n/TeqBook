@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { getShiftsForCurrentSalon } from "@/lib/repositories/shifts";
 import type { Shift } from "@/lib/types";
@@ -12,6 +13,7 @@ interface UseShiftsOptions {
 }
 
 export function useShifts({ translations }: UseShiftsOptions) {
+  const m = useRepoError();
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const [employees, setEmployees] = useState<{ id: string; full_name: string }[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -37,7 +39,8 @@ export function useShifts({ translations }: UseShiftsOptions) {
     ]);
 
     if (employeesError || shiftsError) {
-      setError(employeesError ?? shiftsError ?? translations.loadError);
+      const raw = employeesError || shiftsError;
+      setError(raw ? m(raw) : translations.loadError);
       setLoading(false);
       return;
     }
@@ -49,7 +52,7 @@ export function useShifts({ translations }: UseShiftsOptions) {
     );
     setShifts(shiftsData ?? []);
     setLoading(false);
-  }, [salon?.id, translations.noSalon, translations.loadError]);
+  }, [salon?.id, translations.noSalon, translations.loadError, m]);
 
   useEffect(() => {
     if (!isReady) {

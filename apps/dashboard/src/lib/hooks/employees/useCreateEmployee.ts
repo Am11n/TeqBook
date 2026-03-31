@@ -1,5 +1,10 @@
-import { useState, FormEvent } from "react";
+import { useState, useMemo, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { createEmployee, updateEmployee } from "@/lib/services/employees-service";
 import { uploadEmployeeProfileImage } from "@/lib/services/storage-service";
 import type { Service } from "@/lib/types";
@@ -10,7 +15,14 @@ interface UseCreateEmployeeOptions {
 }
 
 export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmployeeOptions) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const te = useMemo(
+    () => resolveNamespace("employees", translations[appLocale].employees),
+    [appLocale],
+  );
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,7 +41,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!salon?.id || !fullName.trim()) {
-      setError("Name is required");
+      setError(te.validationNameRequired);
       return;
     }
 
@@ -57,7 +69,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
     }, salon.plan);
 
     if (createdError || !createdData) {
-      setError(createdError ?? "Failed to create employee");
+      setError(createdError ? m(createdError) : te.createEmployeeFailed);
       setSaving(false);
       return;
     }
@@ -69,7 +81,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
         createdData.id
       );
       if (uploadError || !uploadData?.url) {
-        setError(uploadError ?? "Employee created but profile image upload failed");
+        setError(uploadError ?? te.employeeCreatedImageUploadFailed);
         setSaving(false);
         await onEmployeeCreated();
         return;
@@ -83,7 +95,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
       );
 
       if (imageUpdateError) {
-        setError(`Employee created, but failed to save profile image: ${imageUpdateError}`);
+        setError(m(imageUpdateError));
         setSaving(false);
         await onEmployeeCreated();
         return;

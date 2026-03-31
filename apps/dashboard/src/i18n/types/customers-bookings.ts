@@ -271,4 +271,10 @@ export type BookingsMessages = {
   waitlistErrCreateFields?: string;
   waitlistErrContactRequired?: string;
   waitlistErrPreferredStartRequired?: string;
+  waitlistErrCustomerNameRequired?: string;
+  waitlistErrServiceRequired?: string;
+  waitlistErrPreferredDateRequired?: string;
+  waitlistErrNotifyOfferFailed?: string;
+  waitlistErrConvertFailed?: string;
+  waitlistErrPriorityOverrideFailed?: string;
 };

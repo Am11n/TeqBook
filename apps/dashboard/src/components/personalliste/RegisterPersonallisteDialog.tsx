@@ -14,6 +14,7 @@ import { Field } from "@/components/form/Field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogSelect } from "@/components/ui/dialog-select";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { createPersonallisteEntry } from "@/lib/services/personalliste-service";
 import type { Employee } from "@/lib/types";
 
@@ -58,6 +59,7 @@ export function RegisterPersonallisteDialog({
   onSuccess,
   translations: t,
 }: RegisterPersonallisteDialogProps) {
+  const m = useRepoError();
   const [date, setDate] = useState(defaultDate);
   const [employeeId, setEmployeeId] = useState("");
   const [checkInTime, setCheckInTime] = useState("09:00");
@@ -81,7 +83,7 @@ export function RegisterPersonallisteDialog({
     });
     setSaving(false);
     if (err) {
-      setError(err);
+      setError(m(err));
       return;
     }
     if (data) {

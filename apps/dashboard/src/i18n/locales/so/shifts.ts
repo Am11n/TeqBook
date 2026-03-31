@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Waa inaad ugu yaraan hal shaqaale abuurtaa ka hor inta aadan ku darin shifts.",
     tableTitle: "Shifts-kaaga",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Waxaa socda soo dejinta shifts…",
     emptyTitle: "Shifts weli lama diiwaangelin",
     emptyDescription:

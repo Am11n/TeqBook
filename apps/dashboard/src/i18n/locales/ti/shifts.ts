@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "ክስርሕ ከመይ ዶ ጽቡቕ የለኻን ብፊት ሓንቲ ወይ ካብ ዝያዳ ሰራሕተኛ ክትፍጠር ኣለኻ።",
     tableTitle: "ስርሒታትካ",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "ስርሒታት ኣብ ምጽናዕቲ ኣሎ…",
     emptyTitle: "ስርሒታት ኣይተመዝገቡን እዮም",
     emptyDescription:

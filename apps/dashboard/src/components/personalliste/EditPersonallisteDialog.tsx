@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/form/Field";
 import { Input } from "@/components/ui/input";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updatePersonallisteEntryForSalon } from "@/lib/services/personalliste-service";
 import { supabase } from "@/lib/supabase-client";
 import type { PersonallisteEntry } from "@/lib/types/domain";
@@ -55,6 +56,7 @@ export function EditPersonallisteDialog({
   onSuccess,
   translations: t,
 }: EditPersonallisteDialogProps) {
+  const m = useRepoError();
   const [checkInTime, setCheckInTime] = useState("09:00");
   const [checkOutTime, setCheckOutTime] = useState("");
   const [saving, setSaving] = useState(false);
@@ -87,7 +89,7 @@ export function EditPersonallisteDialog({
     );
     setSaving(false);
     if (err) {
-      setError(err);
+      setError(m(err));
       return;
     }
     if (data) {

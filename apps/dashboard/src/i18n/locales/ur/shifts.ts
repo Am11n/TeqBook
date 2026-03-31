@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "آپ کو کم از کم ایک ملازم بنانا ہو گا، اُس کے بعد شفٹس شامل کی جا سکتی ہیں۔",
     tableTitle: "آپ کی شفٹس",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "شفٹس لوڈ ہو رہی ہیں…",
     emptyTitle: "ابھی تک کوئی شفٹ رجسٹر نہیں",
     emptyDescription:

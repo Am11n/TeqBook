@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Zanim dodasz zmiany, musisz mieć dodanego przynajmniej jednego pracownika.",
     tableTitle: "Twoje zmiany",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Ładowanie zmian…",
     emptyTitle: "Nie dodano jeszcze żadnych zmian",
     emptyDescription:

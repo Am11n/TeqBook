@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "ቢያንስ አንድ ሰራተኛ ከሳሎኑ ጋር ከማሳያ በፊት ሥርሒት መጨመር አይቻልም።",
     tableTitle: "ሥርሒቶችዎ",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "ሥርሒቶችን በመጫን ላይ…",
     emptyTitle: "ገና ምንም ሥርሒት አልተመዘገበም",
     emptyDescription:

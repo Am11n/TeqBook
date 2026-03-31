@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import { createShiftsBulk, deleteShiftsForEmployee } from "@/lib/repositories/shifts";
 import type { Shift, CreateShiftInput } from "@/lib/types";
 import {
@@ -25,7 +26,8 @@ export {
 
 export function useCopyShifts(
   allShifts: Shift[],
-  loadShifts: () => Promise<void>
+  loadShifts: () => Promise<void>,
+  mapRepoError?: (e: string | null | undefined) => string,
 ) {
   const { salon } = useCurrentSalon();
   const [applying, setApplying] = useState(false);
@@ -95,7 +97,10 @@ export function useCopyShifts(
 
   const apply = useCallback(
     async (targetIds: string[], pattern: WeekPattern, strategy: CopyStrategy): Promise<ApplyResult> => {
-      if (!salon?.id) return { created: 0, skipped: 0, errors: ["No salon"], perTarget: [] };
+      if (!salon?.id) {
+        const msg = mapRepoError ? mapRepoError(tb("SALON_ID_REQUIRED")) : "No salon";
+        return { created: 0, skipped: 0, errors: [msg], perTarget: [] };
+      }
 
       setApplying(true);
       const result: ApplyResult = { created: 0, skipped: 0, errors: [], perTarget: [] };
@@ -105,8 +110,9 @@ export function useCopyShifts(
           if (strategy === "replace") {
             const { error: delErr } = await deleteShiftsForEmployee(salon.id, targetId);
             if (delErr) {
-              result.errors.push(`Delete failed for ${targetId}: ${delErr}`);
-              result.perTarget.push({ employeeId: targetId, created: 0, error: delErr });
+              const shown = mapRepoError ? mapRepoError(delErr) : delErr;
+              result.errors.push(`Delete failed for ${targetId}: ${shown}`);
+              result.perTarget.push({ employeeId: targetId, created: 0, error: shown });
               continue;
             }
           }
@@ -135,9 +141,10 @@ export function useCopyShifts(
           }
 
           const { created, error } = await createShiftsBulk(shiftsToCreate);
-          result.perTarget.push({ employeeId: targetId, created, error });
+          const shownErr = error && mapRepoError ? mapRepoError(error) : error;
+          result.perTarget.push({ employeeId: targetId, created, error: shownErr });
           if (error) {
-            result.errors.push(`Insert failed for ${targetId}: ${error}`);
+            result.errors.push(`Insert failed for ${targetId}: ${shownErr}`);
           } else {
             result.created += created;
           }
@@ -151,7 +158,7 @@ export function useCopyShifts(
 
       return result;
     },
-    [salon?.id, analyseTarget, loadShifts]
+    [salon?.id, analyseTarget, loadShifts, mapRepoError]
   );
 
   return { analyseTarget, analyseAll, getSummary, apply, applying };

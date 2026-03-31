@@ -5,6 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Service, CreateServiceInput, UpdateServiceInput } from "@/lib/types";
 
 /**
@@ -36,7 +37,7 @@ export async function getServicesForCurrentSalon(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -71,7 +72,7 @@ export async function getActiveServicesForCurrentSalon(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -103,7 +104,7 @@ export async function getServiceById(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -134,7 +135,7 @@ export async function createService(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to create service",
+        error: error?.message ?? tb("SERVICE_CREATE_FAILED"),
       };
     }
 
@@ -142,7 +143,7 @@ export async function createService(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -178,7 +179,7 @@ export async function updateService(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to update service",
+        error: error?.message ?? tb("SERVICE_UPDATE_FAILED"),
       };
     }
 
@@ -186,7 +187,7 @@ export async function updateService(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -212,7 +213,7 @@ export async function deleteService(
     return { error: null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

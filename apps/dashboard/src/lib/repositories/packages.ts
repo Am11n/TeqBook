@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 export type Package = {
   id: string;
@@ -37,7 +38,7 @@ export async function getPackages(
     if (error) return { data: null, error: error.message };
     return { data: data as Package[], error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -66,7 +67,7 @@ export async function createPackage(input: {
     if (error) return { data: null, error: error.message };
     return { data: data as Package, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -87,7 +88,7 @@ export async function updatePackage(
     if (error) return { data: null, error: error.message };
     return { data: data as Package, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -114,7 +115,7 @@ export async function sellPackageToCustomer(input: {
     if (error) return { data: null, error: error.message };
     return { data: data as CustomerPackage, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -133,7 +134,7 @@ export async function getCustomerPackages(
     if (error) return { data: null, error: error.message };
     return { data: data as unknown as CustomerPackage[], error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -150,7 +151,7 @@ export async function redeemServiceFromPackage(
       .eq("salon_id", salonId)
       .single();
 
-    if (fetchErr || !cp) return { data: null, error: fetchErr?.message ?? "Package not found" };
+    if (fetchErr || !cp) return { data: null, error: fetchErr?.message ?? tb("PACKAGE_NOT_FOUND") };
     if (cp.expires_at && new Date(cp.expires_at) < new Date()) return { data: null, error: "Package has expired" };
 
     const services = cp.remaining_services as Array<{ service_id: string; remaining: number }>;
@@ -170,6 +171,6 @@ export async function redeemServiceFromPackage(
     if (error) return { data: null, error: error.message };
     return { data: data as CustomerPackage, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }

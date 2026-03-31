@@ -189,7 +189,7 @@ export default function ShiftsPage() {
             size="sm"
             onClick={() => setViewMode(viewMode === "list" ? "week" : "list")}
           >
-            {viewMode === "list" ? "Week View" : "List View"}
+            {viewMode === "list" ? t.viewModeSwitchToWeek : t.viewModeSwitchToList}
           </Button>
         </div>
 

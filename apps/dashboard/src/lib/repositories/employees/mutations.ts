@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput } from "@/lib/types";
 
 export async function createEmployee(
@@ -20,18 +21,22 @@ export async function createEmployee(
       })
       .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
       .maybeSingle();
-    if (insertError || !employeeData) return { data: null, error: insertError?.message ?? "Failed to create employee" };
+    if (insertError || !employeeData) return { data: null, error: insertError?.message ?? tb("EMPLOYEE_CREATE_FAILED") };
 
     if (input.service_ids && input.service_ids.length > 0) {
       const employeeServices = input.service_ids.map((serviceId) => ({
         employee_id: employeeData.id, service_id: serviceId, salon_id: input.salon_id,
       }));
       const { error: servicesError } = await supabase.from("employee_services").insert(employeeServices);
-      if (servicesError) return { data: employeeData as Employee, error: `Employee created but failed to link services: ${servicesError.message}` };
+      if (servicesError)
+        return {
+          data: employeeData as Employee,
+          error: servicesError.message || tb("EMPLOYEE_LINK_SERVICES_FAILED"),
+        };
     }
     return { data: employeeData as Employee, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -59,19 +64,23 @@ export async function updateEmployee(
       .from("employees").update(updateData).eq("id", employeeId).eq("salon_id", salonId)
       .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
       .maybeSingle();
-    if (error || !data) return { data: null, error: error?.message ?? "Failed to update employee" };
+    if (error || !data) return { data: null, error: error?.message ?? tb("EMPLOYEE_UPDATE_FAILED") };
 
     if (input.service_ids !== undefined) {
       await supabase.from("employee_services").delete().eq("employee_id", employeeId).eq("salon_id", salonId);
       if (input.service_ids.length > 0) {
         const employeeServices = input.service_ids.map((serviceId) => ({ employee_id: employeeId, service_id: serviceId, salon_id: salonId }));
         const { error: servicesError } = await supabase.from("employee_services").insert(employeeServices);
-        if (servicesError) return { data: data as Employee, error: `Employee updated but failed to update services: ${servicesError.message}` };
+        if (servicesError)
+          return {
+            data: data as Employee,
+            error: servicesError.message || tb("EMPLOYEE_UPDATE_SERVICES_FAILED"),
+          };
       }
     }
     return { data: data as Employee, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -81,7 +90,7 @@ export async function deleteEmployee(salonId: string, employeeId: string): Promi
     if (error) return { error: error.message };
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    return { error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 

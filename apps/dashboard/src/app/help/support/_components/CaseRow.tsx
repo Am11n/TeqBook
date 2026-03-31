@@ -7,12 +7,12 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { format } from "date-fns";
+import { STATUS_COLORS, PRIORITY_COLORS, type SupportCase } from "./types";
 import {
-  STATUS_COLORS,
-  STATUS_LABELS,
-  PRIORITY_COLORS,
-  type SupportCase,
-} from "./types";
+  labelSupportCategory,
+  labelSupportCaseStatus,
+  labelSupportPriority,
+} from "@/app/help/_helpers/help-dashboard-labels";
 
 export function CaseRow({
   supportCase,
@@ -37,7 +37,7 @@ export function CaseRow({
           <span className="font-medium text-sm truncate">{supportCase.title}</span>
           {supportCase.category && (
             <Badge variant="outline" className="text-xs shrink-0">
-              {supportCase.category.replace(/_/g, " ")}
+              {labelSupportCategory(d, supportCase.category)}
             </Badge>
           )}
         </div>
@@ -49,12 +49,12 @@ export function CaseRow({
         <span
           className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[supportCase.status] ?? ""}`}
         >
-          {STATUS_LABELS[supportCase.status] ?? supportCase.status}
+          {labelSupportCaseStatus(d, supportCase.status)}
         </span>
         <span
           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[supportCase.priority] ?? ""}`}
         >
-          {supportCase.priority}
+          {labelSupportPriority(d, supportCase.priority)}
         </span>
       </div>
       <span className="text-xs text-muted-foreground shrink-0">

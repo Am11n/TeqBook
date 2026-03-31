@@ -108,6 +108,9 @@ export const employees: TranslationNamespaces['employees'] = {
     confirmDelete: "Er du sikker på at du vil fjerne denne ansatte? De vil bli arkivert og skjult fra lister, men bookinghistorikken bevares.",
     listLoadError: "Kunne ikke laste data.",
     profileImageUploadFailed: "Kunne ikke laste opp profilbilde.",
+    createEmployeeFailed: "Kunne ikke opprette ansatt.",
+    employeeCreatedImageUploadFailed:
+      "Ansatt ble opprettet, men profilbildet kunne ikke lastes opp.",
     shiftsLabel: "Vakter",
     setupShifts: "Sett opp arbeidstider",
     staffCount: "ansatte",

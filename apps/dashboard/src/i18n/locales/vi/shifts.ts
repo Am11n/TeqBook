@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Bạn cần có ít nhất một nhân viên trước khi thêm ca làm.",
     tableTitle: "Các ca làm của bạn",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Đang tải ca làm…",
     emptyTitle: "Chưa thêm ca làm nào",
     emptyDescription:

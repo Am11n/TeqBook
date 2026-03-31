@@ -15,6 +15,10 @@ export type ShiftsMessages = {
   addButton: string;
   needEmployeeHint: string;
   tableTitle: string;
+  /** Toggle from list mode → open week view */
+  viewModeSwitchToWeek: string;
+  /** Toggle from week mode → open list view */
+  viewModeSwitchToList: string;
   loading: string;
   emptyTitle: string;
   emptyDescription: string;
@@ -80,6 +84,8 @@ export type ShiftsMessages = {
   expandAll: string;
   /** Calendar break block when API label missing */
   breakDefaultLabel?: string;
+  editShiftOverlapError?: string;
+  updateShiftFailed?: string;
 };
 
 export type PersonallisteMessages = {

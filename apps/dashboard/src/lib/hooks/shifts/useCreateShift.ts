@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { createShift } from "@/lib/repositories/shifts";
 import { hasOverlappingShifts } from "@/lib/utils/shifts/shifts-utils";
 import type { Shift } from "@/lib/types";
@@ -9,6 +10,7 @@ interface UseCreateShiftOptions {
   onShiftCreated: (shift: Shift) => void;
   translations: {
     addError: string;
+    overlapError: string;
   };
   /** Pre-select employee when opening from a specific employee section */
   initialEmployeeId?: string;
@@ -27,6 +29,7 @@ export function useCreateShift({
   initialEndTime = "17:00",
 }: UseCreateShiftOptions) {
   const { salon } = useCurrentSalon();
+  const m = useRepoError();
   const [employeeId, setEmployeeId] = useState(initialEmployeeId);
   const [weekday, setWeekday] = useState<number>(1);
   const [startTime, setStartTime] = useState(initialStartTime);
@@ -43,7 +46,7 @@ export function useCreateShift({
 
     // Validate no overlap
     if (hasOverlappingShifts(shifts, employeeId, weekday, startTime, endTime)) {
-      setError("This shift overlaps with another shift for the same employee on the same day");
+      setError(translations.overlapError);
       setSaving(false);
       return;
     }
@@ -57,7 +60,7 @@ export function useCreateShift({
     });
 
     if (insertError || !data) {
-      setError(insertError ?? translations.addError);
+      setError(insertError ? m(insertError) : translations.addError);
       setSaving(false);
       return;
     }

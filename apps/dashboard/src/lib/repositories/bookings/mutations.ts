@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Booking, CreateBookingInput } from "@/lib/types";
 
 export async function createBooking(
@@ -21,7 +22,7 @@ export async function createBooking(
       const isConflictError =
         error?.message?.toLowerCase().includes("already booked") ||
         error?.message?.toLowerCase().includes("time slot");
-      return { data: null, error: error?.message ?? "Failed to create booking", conflictError: isConflictError };
+      return { data: null, error: error?.message ?? tb("BOOKING_CREATE_FAILED"), conflictError: isConflictError };
     }
 
     const booking = Array.isArray(data) ? data[0] : data;
@@ -41,7 +42,7 @@ export async function createBooking(
       conflictError: false,
     };
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const errorMessage = err instanceof Error ? err.message : tb("UNKNOWN");
     const isConflictError =
       errorMessage.toLowerCase().includes("already booked") ||
       errorMessage.toLowerCase().includes("time slot");
@@ -65,10 +66,10 @@ export async function updateBookingStatus(
       )
       .maybeSingle();
 
-    if (error || !data) return { data: null, error: error?.message ?? "Failed to update booking" };
+    if (error || !data) return { data: null, error: error?.message ?? tb("BOOKING_UPDATE_FAILED") };
     return { data: data as unknown as Booking, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -100,7 +101,7 @@ export async function updateBooking(
         p_notes: updates.notes ?? null,
       });
 
-      if (error || !data) return { data: null, error: error?.message ?? "Failed to update booking" };
+      if (error || !data) return { data: null, error: error?.message ?? tb("BOOKING_UPDATE_FAILED") };
       const booking = Array.isArray(data) ? data[0] : data;
       return { data: booking as unknown as Booking, error: null };
     }
@@ -115,10 +116,10 @@ export async function updateBooking(
       )
       .maybeSingle();
 
-    if (error || !data) return { data: null, error: error?.message ?? "Failed to update booking" };
+    if (error || !data) return { data: null, error: error?.message ?? tb("BOOKING_UPDATE_FAILED") };
     return { data: data as unknown as Booking, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -136,6 +137,6 @@ export async function deleteBooking(
     if (error) return { error: error.message };
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    return { error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }

@@ -5,6 +5,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -20,8 +21,10 @@ export default function FeedbackPage() {
   const { salon, user, loading: ctxLoading, isReady } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale];
-  const td = t.dashboard;
+  const td = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
 
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +72,7 @@ export default function FeedbackPage() {
 
   useTabActions(
     <Button size="sm" onClick={() => openCreateDialog("feature_request")}>
-      {td.helpSubmitFeedback ?? "Submit feedback"}
+      {td.helpSubmitFeedback}
     </Button>
   );
 
@@ -101,10 +104,10 @@ export default function FeedbackPage() {
       <div className="flex gap-1 mb-4 border-b">
         {(
           [
-            { key: "all", label: td.tabAll ?? "All" },
-            { key: "new", label: td.tabNew ?? "New", count: newCount },
-            { key: "active", label: td.tabInProgress ?? "In progress", count: activeCount },
-            { key: "done", label: td.tabDone ?? "Done" },
+            { key: "all", label: td.tabAll },
+            { key: "new", label: td.tabNew, count: newCount },
+            { key: "active", label: td.tabInProgress, count: activeCount },
+            { key: "done", label: td.tabDone },
           ] as { key: FilterTab; label: string; count?: number }[]
         ).map((tab) => (
           <button
@@ -136,7 +139,7 @@ export default function FeedbackPage() {
         <FeedbackEmptyState onSelect={openCreateDialog} />
       ) : filteredEntries.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">
-          {td.helpNoFeedbackInCategory ?? "No feedback in this category."}
+          {td.helpNoFeedbackInCategory}
         </p>
       ) : (
         <div className="space-y-2">

@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError, useRepoErrors } from "@/lib/hooks/useRepoError";
 import { createService } from "@/lib/repositories/services";
 
 interface UseCreateServiceOptions {
@@ -7,6 +8,8 @@ interface UseCreateServiceOptions {
 }
 
 export function useCreateService({ onServiceCreated }: UseCreateServiceOptions) {
+  const m = useRepoError();
+  const trRepo = useRepoErrors();
   const { salon } = useCurrentSalon();
   const [name, setName] = useState("");
   const [category, setCategory] = useState<string>("");
@@ -19,7 +22,7 @@ export function useCreateService({ onServiceCreated }: UseCreateServiceOptions) 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!salon?.id || !name.trim()) {
-      setError("Name is required");
+      setError(trRepo.serviceNameRequired);
       return;
     }
 
@@ -36,7 +39,7 @@ export function useCreateService({ onServiceCreated }: UseCreateServiceOptions) 
     });
 
     if (createError) {
-      setError(createError);
+      setError(m(createError));
       setSaving(false);
       return;
     }

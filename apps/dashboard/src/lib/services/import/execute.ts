@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import {
   createImportBatch,
   updateImportBatch,
@@ -20,7 +21,7 @@ export async function executeImport(
   fileName?: string,
   onProgress?: (done: number, total: number) => void
 ): Promise<{ batch: ImportBatch | null; error: string | null }> {
-  if (validRows.length === 0) return { batch: null, error: "No valid rows to import" };
+  if (validRows.length === 0) return { batch: null, error: tb("IMPORT_NO_VALID_ROWS") };
 
   const { data: batch, error: batchErr } = await createImportBatch({
     salon_id: salonId,
@@ -30,7 +31,7 @@ export async function executeImport(
     column_mapping: mapping,
   });
 
-  if (batchErr || !batch) return { batch: null, error: batchErr ?? "Failed to create batch" };
+  if (batchErr || !batch) return { batch: null, error: batchErr ?? tb("IMPORT_CREATE_BATCH_FAILED") };
 
   await updateImportBatch(batch.id, salonId, { status: "processing" });
 
@@ -47,7 +48,7 @@ export async function executeImport(
       failedCount += failures.length;
       errorLog.push(...failures);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Chunk insert failed";
+      const msg = err instanceof Error ? err.message : tb("IMPORT_CHUNK_FAILED");
       failedCount += chunk.length;
       for (const row of chunk) {
         errorLog.push({ row: row.rowIndex + 1, field: "*", error: msg });
@@ -288,7 +289,7 @@ export async function rollbackImport(
     logInfo("Import rolled back", { salonId, batchId, table });
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    return { error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 

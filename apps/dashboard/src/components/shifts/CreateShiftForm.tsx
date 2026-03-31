@@ -33,6 +33,7 @@ interface CreateShiftFormProps {
     saving: string;
     needEmployeeHint: string;
     addError: string;
+    overlapError: string;
   };
   onShiftCreated: (shift: Shift) => void;
   /** Pre-select this employee when dialog opens (from quick-create CTA) */
@@ -77,6 +78,7 @@ export function CreateShiftForm({
     },
     translations: {
       addError: translations.addError,
+      overlapError: translations.overlapError,
     },
     initialStartTime: defaultStartTime,
     initialEndTime: defaultEndTime,

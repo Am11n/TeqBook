@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { useFeatures } from "@/lib/hooks/use-features";
 import {
   getBookingsForCurrentSalon,
@@ -25,6 +26,7 @@ interface UseBookingsOptions {
 }
 
 export function useBookings({ translations }: UseBookingsOptions) {
+  const m = useRepoError();
   const { salon, loading: salonLoading, error: salonError, isReady } = useCurrentSalon();
   const { hasFeature, loading: featuresLoading } = useFeatures();
   const [mounted, setMounted] = useState(false);
@@ -87,14 +89,13 @@ export function useBookings({ translations }: UseBookingsOptions) {
         (hasInventoryFeature && productsError) ||
         shiftsError
       ) {
-        setError(
-          bookingsError ??
-            employeesError ??
-            servicesError ??
-            (hasInventoryFeature ? productsError : null) ??
-            shiftsError ??
-            translations.loadError
-        );
+        const raw =
+          bookingsError ||
+          employeesError ||
+          servicesError ||
+          (hasInventoryFeature ? productsError : null) ||
+          shiftsError;
+        setError(raw ? m(raw) : translations.loadError);
         setLoading(false);
         isLoadingRef.current = false;
         return;
@@ -142,7 +143,7 @@ export function useBookings({ translations }: UseBookingsOptions) {
     } finally {
       isLoadingRef.current = false;
     }
-  }, [salon?.id, hasInventoryFeature, translations.noSalon, translations.loadError]);
+  }, [salon?.id, hasInventoryFeature, translations.noSalon, translations.loadError, m]);
 
   useEffect(() => {
     if (!isReady) {

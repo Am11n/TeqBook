@@ -1,5 +1,10 @@
-import { useState, FormEvent } from "react";
+import { useState, useMemo, FormEvent } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updateShift } from "@/lib/repositories/shifts";
 import { hasOverlappingShifts } from "@/lib/utils/shifts/shifts-utils";
 import type { Shift } from "@/lib/types";
@@ -13,7 +18,14 @@ export function useEditShift({
   shifts,
   onShiftUpdated,
 }: UseEditShiftOptions) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const ts = useMemo(
+    () => resolveNamespace("shifts", translations[appLocale].shifts),
+    [appLocale],
+  );
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const [editEmployeeId, setEditEmployeeId] = useState("");
   const [editWeekday, setEditWeekday] = useState<number>(1);
@@ -57,7 +69,7 @@ export function useEditShift({
         editingShift.id
       )
     ) {
-      setError("This shift overlaps with another shift for the same employee on the same day");
+      setError(ts.editShiftOverlapError);
       setSaving(false);
       return;
     }
@@ -70,7 +82,7 @@ export function useEditShift({
     });
 
     if (updateError || !data) {
-      setError(updateError ?? "Failed to update shift");
+      setError(updateError ? m(updateError) : ts.updateShiftFailed);
       setSaving(false);
       return;
     }

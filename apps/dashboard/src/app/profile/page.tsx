@@ -46,7 +46,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <PageLayout title={t.profileTitle ?? "My Profile"} description={t.profileDescription ?? "Update your personal information"} showCard={false}>
+      <PageLayout title={t.profileTitle} description={t.profileDescription} showCard={false}>
         <div className="max-w-4xl space-y-8">
           <div className="h-64 animate-pulse rounded-xl bg-muted" />
           <div className="h-48 animate-pulse rounded-xl bg-muted" />

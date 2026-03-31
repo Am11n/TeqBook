@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/form/Field";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { createCustomer } from "@/lib/repositories/customers";
 import type { Customer } from "@/lib/types";
 
@@ -45,6 +46,7 @@ export function CreateCustomerDialog({
   onCustomerCreated,
   translations,
 }: CreateCustomerDialogProps) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -81,7 +83,7 @@ export function CreateCustomerDialog({
     });
 
     if (insertError || !data) {
-      setError(insertError ?? translations.addError);
+      setError(insertError ? m(insertError) : translations.addError);
       setSaving(false);
       return;
     }

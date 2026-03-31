@@ -5,6 +5,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -20,8 +21,10 @@ export default function SupportPage() {
   const { salon, profile, user, loading: ctxLoading, isReady } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale];
-  const td = t.dashboard;
+  const td = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
 
   const [cases, setCases] = useState<SupportCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,7 @@ export default function SupportPage() {
 
   useTabActions(
     <Button size="sm" onClick={() => setDialogOpen(true)}>
-      {td.helpNewCase ?? "New case"}
+      {td.helpNewCase}
     </Button>
   );
 
@@ -96,10 +99,10 @@ export default function SupportPage() {
       <div className="flex gap-1 mb-4 border-b">
         {(
           [
-            { key: "all", label: td.tabAll ?? "All" },
-            { key: "open", label: td.tabOpen ?? "Open", count: openCount },
-            { key: "waiting", label: td.tabWaitingOnYou ?? "Waiting on you", count: waitingCount },
-            { key: "closed", label: td.tabClosed ?? "Closed" },
+            { key: "all", label: td.tabAll },
+            { key: "open", label: td.tabOpen, count: openCount },
+            { key: "waiting", label: td.tabWaitingOnYou, count: waitingCount },
+            { key: "closed", label: td.tabClosed },
           ] as { key: FilterTab; label: string; count?: number }[]
         ).map((tab) => (
           <button

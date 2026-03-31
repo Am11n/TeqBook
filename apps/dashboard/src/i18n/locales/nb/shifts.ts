@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Du må først opprette minst én ansatt før du kan legge til arbeidstider.",
     tableTitle: "Dine arbeidstider",
+    viewModeSwitchToWeek: "Ukevisning",
+    viewModeSwitchToList: "Listevisning",
     loading: "Laster arbeidstider…",
     emptyTitle: "Ingen arbeidstider registrert ennå",
     emptyDescription:
@@ -85,4 +87,7 @@ export const shifts: TranslationNamespaces['shifts'] = {
     collapseAll: "Skjul alle",
     expandAll: "Vis alle",
     breakDefaultLabel: "Pause",
+    editShiftOverlapError:
+      "Denne vakten overlapper med en annen vakt for samme ansatt samme dag.",
+    updateShiftFailed: "Kunne ikke oppdatere vakt.",
   };

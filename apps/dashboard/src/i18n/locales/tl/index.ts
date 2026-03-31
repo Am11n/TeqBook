@@ -17,6 +17,7 @@ import { admin } from './admin';
 import { products } from './products';
 import { notifications } from './notifications';
 import { featureGate } from './featureGate';
+import { repoErrors } from '../en/repoErrors';
 
 export const tl: TranslationNamespaces = {
   publicBooking,
@@ -37,4 +38,5 @@ export const tl: TranslationNamespaces = {
   products,
   notifications,
   featureGate,
+  repoErrors,
 };

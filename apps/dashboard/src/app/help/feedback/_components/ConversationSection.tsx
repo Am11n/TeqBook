@@ -1,17 +1,24 @@
 "use client";
 
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Paperclip, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { FeedbackComment } from "./types";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 
 interface ConversationSectionProps {
   comments: FeedbackComment[];
   loading: boolean;
   userId: string;
   isDone: boolean;
+  /** Current entry status (used when isDone for banner copy) */
+  terminalStatus: string;
   replyText: string;
   setReplyText: (text: string) => void;
   sending: boolean;
@@ -19,13 +26,30 @@ interface ConversationSectionProps {
 }
 
 export function ConversationSection({
-  comments, loading, userId, isDone,
-  replyText, setReplyText, sending, onSendReply,
+  comments,
+  loading,
+  userId,
+  isDone,
+  terminalStatus,
+  replyText,
+  setReplyText,
+  sending,
+  onSendReply,
 }: ConversationSectionProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
+
+  const doneBanner =
+    terminalStatus === "rejected" ? t.feedbackDoneRejectedBanner : t.feedbackDoneDeliveredBanner;
+
   return (
     <>
       <div className="space-y-3">
-        <h3 className="text-sm font-medium">Conversation</h3>
+        <h3 className="text-sm font-medium">{t.feedbackConversationHeading}</h3>
         {loading ? (
           <div className="space-y-2">
             <Skeleton className="h-16 w-full rounded-lg" />
@@ -44,7 +68,7 @@ export function ConversationSection({
                   <div className={`max-w-[80%] rounded-lg px-4 py-3 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                     {!isOwn && (
                       <p className={`text-xs font-medium mb-1 ${isOwn ? "text-primary-foreground/70" : "text-foreground/70"}`}>
-                        TeqBook Team
+                        {t.feedbackTeamLabel}
                       </p>
                     )}
                     <p className="whitespace-pre-wrap">{comment.message}</p>
@@ -74,22 +98,20 @@ export function ConversationSection({
           <textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Add a comment..."
+            placeholder={t.feedbackCommentPlaceholder}
             rows={3}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring/0 transition placeholder:text-muted-foreground focus-visible:ring-2 resize-none"
           />
           <div className="flex items-center justify-end">
             <Button size="sm" onClick={onSendReply} disabled={sending || !replyText.trim()} className="gap-1.5">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send
+              {t.helpSendButton}
             </Button>
           </div>
         </div>
       ) : (
         <div className="rounded-lg border bg-muted/50 p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            This feedback has been marked as delivered. Thank you for your input!
-          </p>
+          <p className="text-sm text-muted-foreground">{doneBanner}</p>
         </div>
       )}
     </>

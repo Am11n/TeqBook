@@ -58,8 +58,8 @@ export function ShiftsListView({ shifts, employees, locale, translations: t, onE
     return (
       <div className="mt-4 flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 px-8 py-12 text-center">
         <CalendarClock className="h-12 w-12 text-muted-foreground/40" />
-        <h3 className="mt-4 text-base font-semibold text-foreground">{t.setupShiftsTitle ?? "Set up working hours"}</h3>
-        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{t.setupShiftsDescription ?? "Define working hours for your employees so the system can calculate available booking slots."}</p>
+        <h3 className="mt-4 text-base font-semibold text-foreground">{t.setupShiftsTitle}</h3>
+        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{t.setupShiftsDescription}</p>
         <Button type="button" size="sm" className="mt-5 gap-1.5" onClick={() => onQuickCreate(employees[0]!.id)}>
           <Plus className="h-4 w-4" /> {t.addShiftCta}
         </Button>

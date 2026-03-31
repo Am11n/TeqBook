@@ -22,6 +22,8 @@ import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import {
   listGiftCards,
@@ -31,6 +33,7 @@ import {
 } from "@/lib/services/gift-card-service";
 
 export default function GiftCardsPage() {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
@@ -82,7 +85,7 @@ export default function GiftCardsPage() {
     setCreating(true);
     const valueCents = Math.round(parseFloat(newValue) * 100);
     if (isNaN(valueCents) || valueCents <= 0) {
-      setError("Invalid value");
+      setError(td.salesGiftCardsInvalidValue);
       setCreating(false);
       return;
     }
@@ -96,7 +99,7 @@ export default function GiftCardsPage() {
 
     setCreating(false);
     if (error) {
-      setError(error);
+      setError(m(error));
       return;
     }
     if (data) setCards((prev) => [data, ...prev]);
@@ -121,7 +124,7 @@ export default function GiftCardsPage() {
   const columns: ColumnDef<GiftCard>[] = [
     {
       id: "code",
-      header: "Code",
+      header: td.salesGiftCardsColCode,
       cell: (card) => (
         <div className="flex items-center gap-1.5">
           <code className="text-sm font-mono font-bold tracking-wider">{card.code}</code>
@@ -144,7 +147,7 @@ export default function GiftCardsPage() {
     },
     {
       id: "recipient",
-      header: "Recipient",
+      header: td.salesGiftCardsColRecipient,
       cell: (card) => (
         <div className="text-sm text-muted-foreground">
           {card.recipient_name || card.recipient_email || "-"}
@@ -154,13 +157,13 @@ export default function GiftCardsPage() {
     },
     {
       id: "value",
-      header: "Value",
+      header: td.salesGiftCardsColValue,
       cell: (card) => (
         <div className="text-sm">
           <span className="font-medium">{fmtPrice(card.remaining_value_cents)}</span>
           {card.remaining_value_cents < card.initial_value_cents && (
             <span className="text-muted-foreground text-xs ml-1">
-              of {fmtPrice(card.initial_value_cents)}
+              {td.salesGiftCardsValueOf} {fmtPrice(card.initial_value_cents)}
             </span>
           )}
         </div>
@@ -169,7 +172,7 @@ export default function GiftCardsPage() {
     },
     {
       id: "status",
-      header: "Status",
+      header: td.salesGiftCardsColStatus,
       cell: (card) => (
         <Badge
           variant="outline"
@@ -179,14 +182,14 @@ export default function GiftCardsPage() {
               : "border-zinc-200 bg-zinc-100 text-zinc-600"
           }
         >
-          {card.is_active ? "Active" : "Inactive"}
+          {card.is_active ? td.salesGiftCardsStatusActive : td.salesGiftCardsStatusInactive}
         </Badge>
       ),
       getValue: (card) => (card.is_active ? 1 : 0),
     },
     {
       id: "created",
-      header: "Created",
+      header: td.salesGiftCardsColCreated,
       cell: (card) => (
         <div className="text-sm text-muted-foreground">
           {new Date(card.created_at).toLocaleDateString(appLocale)}
@@ -200,7 +203,7 @@ export default function GiftCardsPage() {
     if (!card.is_active) return [];
     return [
       {
-        label: "Deactivate",
+        label: td.salesGiftCardsRowDeactivate,
         onClick: handleDeactivate,
         variant: "destructive",
       },
@@ -248,9 +251,9 @@ export default function GiftCardsPage() {
             loading={loading}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            searchPlaceholder="Search by code or recipient..."
+            searchPlaceholder={td.salesGiftCardsSearchPlaceholder}
             storageKey="dashboard-gift-cards"
-            emptyMessage="No gift cards found"
+            emptyMessage={td.salesGiftCardsEmptyMessage}
           />
         )}
       </div>
@@ -258,47 +261,51 @@ export default function GiftCardsPage() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>New Gift Card</DialogTitle>
-            <DialogDescription>Generate a new gift card with a unique code.</DialogDescription>
+            <DialogTitle>{td.salesNewGiftCard}</DialogTitle>
+            <DialogDescription>{td.salesGiftCardsCreateDescription}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium">Value ({salonCurrency})</label>
+              <label className="text-xs font-medium">
+                {applyTemplate(td.salesGiftCardsCreateValueLabel, { currency: salonCurrency })}
+              </label>
               <input
                 type="number"
                 min="1"
                 step="0.01"
                 value={newValue}
                 onChange={(e) => setNewValue(e.target.value)}
-                placeholder="500"
+                placeholder={td.salesGiftCardsCreateValuePlaceholder}
                 className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
             </div>
             <div>
-              <label className="text-xs font-medium">Recipient name (optional)</label>
+              <label className="text-xs font-medium">{td.salesGiftCardsCreateRecipientNameLabel}</label>
               <input
                 type="text"
                 value={newRecipientName}
                 onChange={(e) => setNewRecipientName(e.target.value)}
-                placeholder="Jane Doe"
+                placeholder={td.salesGiftCardsCreateRecipientNamePlaceholder}
                 className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
             </div>
             <div>
-              <label className="text-xs font-medium">Recipient email (optional)</label>
+              <label className="text-xs font-medium">{td.salesGiftCardsCreateRecipientEmailLabel}</label>
               <input
                 type="email"
                 value={newRecipientEmail}
                 onChange={(e) => setNewRecipientEmail(e.target.value)}
-                placeholder="jane@example.com"
+                placeholder={td.salesGiftCardsCreateRecipientEmailPlaceholder}
                 className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              {td.supportCancel}
+            </Button>
             <Button onClick={handleCreate} disabled={creating || !newValue.trim()}>
-              {creating ? "Creating..." : "Create"}
+              {creating ? td.salesGiftCardsCreateCreating : td.salesGiftCardsCreateSubmit}
             </Button>
           </DialogFooter>
         </DialogContent>

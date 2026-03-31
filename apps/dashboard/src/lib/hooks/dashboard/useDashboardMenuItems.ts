@@ -17,6 +17,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import {
   canAccessSettings,
   canManageEmployees,
@@ -52,7 +53,10 @@ export function useDashboardMenuItems({
   features,
 }: UseDashboardMenuItemsOptions) {
   const pathname = usePathname();
-  const texts = translations[appLocale].dashboard;
+  const texts = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
 
   const overviewItems = useMemo<MenuItem[]>(
     () => [{ href: "/", label: texts.overview, icon: LayoutDashboard }],
@@ -98,7 +102,7 @@ export function useDashboardMenuItems({
 
     items.push({
       href: "/sales/gift-cards",
-      label: texts.sales ?? "Sales",
+      label: texts.sales,
       icon: ShoppingBag,
     });
 
@@ -128,7 +132,7 @@ export function useDashboardMenuItems({
     if (isReady) {
       items.push({
         href: "/help/feedback",
-        label: texts.help ?? "Help",
+        label: texts.help,
         icon: HelpCircle,
       });
     }

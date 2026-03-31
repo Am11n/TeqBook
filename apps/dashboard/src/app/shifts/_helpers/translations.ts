@@ -51,6 +51,7 @@ export function buildCreateFormTranslations(t: ShiftsT) {
     saving: t.saving,
     needEmployeeHint: t.needEmployeeHint,
     addError: t.addError,
+    overlapError: t.editShiftOverlapError,
   };
 }
 

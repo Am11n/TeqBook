@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "قبل از اضافه کردن شیفت باید حد اقل یک کارمند داشته باشید.",
     tableTitle: "شیفت‌های شما",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "در حال بارگیری شیفت‌ها…",
     emptyTitle: "هنوز هیچ شیفتی اضافه نشده است",
     emptyDescription:

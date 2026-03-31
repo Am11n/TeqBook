@@ -150,4 +150,10 @@ export const bookings: TranslationNamespaces['bookings'] = {
     waitlistErrContactRequired: "At least one contact field is required (email or phone).",
     waitlistErrPreferredStartRequired:
       "Preferred start time is required for specific-time waitlist entries.",
+    waitlistErrCustomerNameRequired: "Customer name is required.",
+    waitlistErrServiceRequired: "Service is required.",
+    waitlistErrPreferredDateRequired: "Preferred date is required.",
+    waitlistErrNotifyOfferFailed: "Could not send offer.",
+    waitlistErrConvertFailed: "Could not convert waitlist entry to a booking.",
+    waitlistErrPriorityOverrideFailed: "Could not update priority override.",
   };

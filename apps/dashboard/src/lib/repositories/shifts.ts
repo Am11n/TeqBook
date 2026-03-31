@@ -5,6 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Shift, CreateShiftInput } from "@/lib/types";
 
 /**
@@ -36,7 +37,7 @@ export async function getShiftsForCurrentSalon(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -63,7 +64,7 @@ export async function createShift(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to create shift",
+        error: error?.message ?? tb("SHIFT_CREATE_FAILED"),
       };
     }
 
@@ -71,7 +72,7 @@ export async function createShift(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -101,7 +102,7 @@ export async function updateShift(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to update shift",
+        error: error?.message ?? tb("SHIFT_UPDATE_FAILED"),
       };
     }
 
@@ -109,7 +110,7 @@ export async function updateShift(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -135,7 +136,7 @@ export async function deleteShift(
     return { error: null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -159,7 +160,7 @@ export async function createShiftsBulk(
   } catch (err) {
     return {
       created: 0,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -181,7 +182,7 @@ export async function deleteShiftsForEmployee(
     return { error: error?.message ?? null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

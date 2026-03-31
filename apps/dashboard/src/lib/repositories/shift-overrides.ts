@@ -5,6 +5,7 @@
 // Overrides take precedence over recurring shifts from the `shifts` table.
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 import type { ShiftOverride } from "@/lib/types";
 
 const SELECT_FIELDS =
@@ -41,7 +42,7 @@ export async function getOverridesForWeek(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -69,7 +70,7 @@ export async function createOverride(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to create override",
+        error: error?.message ?? tb("SHIFT_OVERRIDE_CREATE_FAILED"),
       };
     }
 
@@ -77,7 +78,7 @@ export async function createOverride(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -106,7 +107,7 @@ export async function updateOverride(
     if (error || !data) {
       return {
         data: null,
-        error: error?.message ?? "Failed to update override",
+        error: error?.message ?? tb("SHIFT_OVERRIDE_UPDATE_FAILED"),
       };
     }
 
@@ -114,7 +115,7 @@ export async function updateOverride(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -140,7 +141,7 @@ export async function deleteOverride(
     return { error: null };
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }
@@ -162,7 +163,7 @@ export async function copyWeekOverrides(
     );
 
     if (fetchError || !source) {
-      return { count: 0, error: fetchError ?? "No overrides found" };
+      return { count: 0, error: fetchError ?? tb("SHIFT_OVERRIDES_FETCH_FAILED") };
     }
 
     if (source.length === 0) {
@@ -206,7 +207,7 @@ export async function copyWeekOverrides(
   } catch (err) {
     return {
       count: 0,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : tb("UNKNOWN"),
     };
   }
 }

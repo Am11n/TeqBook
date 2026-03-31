@@ -15,6 +15,7 @@ import { ServiceEditForm } from "./ServiceEditForm";
 import { SetupBadge } from "@/components/setup-badge";
 import { getServiceSetupIssues } from "@/lib/setup/health";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updateService } from "@/lib/repositories/services";
 import { formatPrice as _formatPrice, getCategoryLabel as _getCategoryLabel } from "@/lib/utils/services/services-utils";
 import { Edit } from "lucide-react";
@@ -59,6 +60,7 @@ export function ServiceDetailDialog({
   translations: t,
   currency,
 }: ServiceDetailDialogProps) {
+  const m = useRepoError();
   const { salon } = useCurrentSalon();
   const service = services.find((s) => s.id === serviceId) ?? null;
 
@@ -121,7 +123,7 @@ export function ServiceDetailDialog({
     });
 
     if (updateError) {
-      setError(updateError);
+      setError(m(updateError));
       setSaving(false);
       return;
     }

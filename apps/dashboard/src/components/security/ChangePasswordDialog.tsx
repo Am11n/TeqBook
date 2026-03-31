@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field } from "@/components/form/Field";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updatePassword } from "@/lib/services/auth-service";
 
 interface ChangePasswordDialogProps {
@@ -20,6 +21,7 @@ interface ChangePasswordDialogProps {
 }
 
 export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialogProps) {
+  const m = useRepoError();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -44,7 +46,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
     const { error: updateError } = await updatePassword(currentPassword, newPassword);
 
     if (updateError) {
-      setError(updateError);
+      setError(m(updateError));
       setChangingPassword(false);
       return;
     }

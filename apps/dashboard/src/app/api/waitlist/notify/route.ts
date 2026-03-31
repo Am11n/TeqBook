@@ -6,6 +6,7 @@ import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { createAndSendWaitlistOffer } from "@/lib/services/waitlist-offer-flow";
 import type { WaitlistEntry } from "@/lib/repositories/waitlist";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 type Body = {
   salonId?: string;
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       .eq("salon_id", salonId)
       .maybeSingle();
     if (entryError || !entry) {
-      return NextResponse.json({ error: entryError?.message ?? "Waitlist entry not found" }, { status: 404 });
+      return NextResponse.json({ error: entryError?.message ?? tb("WAITLIST_ENTRY_NOT_FOUND") }, { status: 404 });
     }
 
     const row = entry as WaitlistEntry;

@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "Vardiya eklemeden önce en az bir çalışan oluşturmalısın.",
     tableTitle: "Vardiyaların",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Vardiyalar yükleniyor…",
     emptyTitle: "Henüz vardiya eklenmedi",
     emptyDescription:

@@ -19,6 +19,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     addButton: "添加班次",
     needEmployeeHint: "在添加班次前，你需要至少有一名员工。",
     tableTitle: "你的班次",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "正在加载班次…",
     emptyTitle: "尚未添加任何班次",
     emptyDescription:

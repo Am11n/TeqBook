@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 export type GiftCard = {
   id: string;
@@ -27,7 +28,7 @@ export async function getGiftCards(
     if (error) return { data: null, error: error.message };
     return { data: data as GiftCard[], error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -47,7 +48,7 @@ export async function getGiftCardByCode(
     if (error) return { data: null, error: error.message };
     return { data: data as GiftCard | null, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -79,7 +80,7 @@ export async function createGiftCard(input: {
     if (error) return { data: null, error: error.message };
     return { data: data as GiftCard, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -97,7 +98,7 @@ export async function redeemGiftCard(
       .eq("salon_id", salonId)
       .single();
 
-    if (fetchErr || !card) return { data: null, error: fetchErr?.message ?? "Gift card not found" };
+    if (fetchErr || !card) return { data: null, error: fetchErr?.message ?? tb("GIFT_CARD_NOT_FOUND") };
     if (!card.is_active) return { data: null, error: "Gift card is deactivated" };
     if (card.expires_at && new Date(card.expires_at) < new Date()) return { data: null, error: "Gift card has expired" };
     if (card.remaining_value_cents < amountCents) return { data: null, error: "Insufficient balance" };
@@ -114,7 +115,7 @@ export async function redeemGiftCard(
     if (error) return { data: null, error: error.message };
     return { data: data as GiftCard, error: null };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }
 
@@ -132,6 +133,6 @@ export async function deactivateGiftCard(
     if (error) return { error: error.message };
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Unknown error" };
+    return { error: err instanceof Error ? err.message : tb("UNKNOWN") };
   }
 }

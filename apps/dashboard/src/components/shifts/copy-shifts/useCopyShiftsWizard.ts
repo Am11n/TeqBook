@@ -8,6 +8,7 @@ import {
   type CopyStrategy,
   type ApplyResult,
 } from "@/lib/hooks/shifts/useCopyShifts";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import type { Shift } from "@/lib/types";
 import type { Step, CopyShiftsTranslations } from "./types";
 
@@ -28,6 +29,7 @@ export function useCopyShiftsWizard({
   loadShifts,
   translations: t,
 }: UseCopyShiftsWizardOptions) {
+  const m = useRepoError();
   const [step, setStep] = useState<Step>("source");
   const [sourceEmployeeId, setSourceEmployeeId] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<"employee" | "openingHours">("employee");
@@ -38,7 +40,7 @@ export function useCopyShiftsWizard({
   const [expandedTargets, setExpandedTargets] = useState<Set<string>>(new Set());
   const [applyResult, setApplyResult] = useState<ApplyResult | null>(null);
 
-  const { analyseAll, getSummary, apply, applying } = useCopyShifts(shifts, loadShifts);
+  const { analyseAll, getSummary, apply, applying } = useCopyShifts(shifts, loadShifts, m);
 
   const searchRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);

@@ -20,6 +20,8 @@ export const shifts: TranslationNamespaces['shifts'] = {
     needEmployeeHint:
       "You must create at least one employee before you can add shifts.",
     tableTitle: "Your shifts",
+    viewModeSwitchToWeek: "Week view",
+    viewModeSwitchToList: "List view",
     loading: "Loading shifts…",
     emptyTitle: "No shifts added yet",
     emptyDescription:
@@ -85,4 +87,7 @@ export const shifts: TranslationNamespaces['shifts'] = {
     collapseAll: "Collapse all",
     expandAll: "Expand all",
     breakDefaultLabel: "Break",
+    editShiftOverlapError:
+      "This shift overlaps with another shift for the same employee on the same day.",
+    updateShiftFailed: "Could not update shift.",
   };
