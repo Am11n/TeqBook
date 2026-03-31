@@ -13,6 +13,7 @@
     "test": "vitest",
     "test:run": "vitest --run",
     "test:i18n": "vitest --run src/i18n/__tests__/parity.test.ts",
+    "test:i18n:all": "NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST=en,nb,ar,so,ti,am,tr,pl,vi,zh,tl,fa,dar,ur,hi vitest --run src/i18n/__tests__/parity.test.ts",
     "test:coverage": "vitest --coverage --run",
     "test:integration": "vitest --run --config vitest.integration.config.ts"
   },

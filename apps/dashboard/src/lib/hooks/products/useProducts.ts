@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useRepoError, useRepoErrors } from "@/lib/hooks/useRepoError";
 import { getProductsForSalon } from "@/lib/services/products-service";
 import type { Product } from "@/lib/repositories/products";
 
 export function useProducts() {
+  const m = useRepoError();
+  const trRepo = useRepoErrors();
   const { salon, isReady } = useCurrentSalon();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +17,7 @@ export function useProducts() {
   const loadProducts = useCallback(async () => {
     if (!isReady || !salon?.id) {
       if (!isReady) return;
-      setError("No salon found");
+      setError(trRepo.salonIdRequired);
       setLoading(false);
       return;
     }
@@ -25,13 +28,13 @@ export function useProducts() {
     const { data: productsData, error: productsError } = await getProductsForSalon(salon.id);
 
     if (productsError) {
-      setError(productsError);
+      setError(m(productsError));
     } else {
       setProducts(productsData || []);
     }
 
     setLoading(false);
-  }, [salon?.id, isReady]);
+  }, [salon?.id, isReady, trRepo.salonIdRequired, m]);
 
   useEffect(() => {
     loadProducts();

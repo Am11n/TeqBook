@@ -1,4 +1,6 @@
 import type { TranslationNamespaces } from '../../types';
+import { en } from '../en';
+import { mergeWithEnglishBase } from '../../merge-translations';
 import { publicBooking } from './publicBooking';
 import { login } from './login';
 import { signup } from './signup';
@@ -19,7 +21,7 @@ import { notifications } from './notifications';
 import { featureGate } from './featureGate';
 import { repoErrors } from './repoErrors';
 
-export const nb: TranslationNamespaces = {
+const partial: TranslationNamespaces = {
   publicBooking,
   login,
   signup,
@@ -40,3 +42,5 @@ export const nb: TranslationNamespaces = {
   featureGate,
   repoErrors,
 };
+
+export const nb: TranslationNamespaces = mergeWithEnglishBase(en, partial);

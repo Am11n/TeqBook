@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Har du ikke konto?",
     createOne: "Opprett en",
     secureLoginLine: "Sikker innlogging. Passordet ditt lagres aldri i ren tekst.",
+    dashboardDirectLoginTitle: "Logg inn på dashbordet",
+    dashboardDirectLoginSubtitle: "Bruk TeqBook-kontoen din.",
+    loginGenericFailure: "Innlogging mislyktes. Prøv igjen.",
   };

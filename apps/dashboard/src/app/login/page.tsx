@@ -1,7 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { initSession } from "@/lib/services/session-service";
@@ -12,10 +16,20 @@ import { initSession } from "@/lib/services/session-service";
  */
 export default function DashboardLoginPage() {
   const router = useRouter();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const tl = useMemo(
+    () => resolveNamespace("login", translations[appLocale].login),
+    [appLocale],
+  );
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const title = tl.dashboardDirectLoginTitle ?? tl.title;
+  const subtitle = tl.dashboardDirectLoginSubtitle ?? tl.formSubtitle;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -25,13 +39,13 @@ export default function DashboardLoginPage() {
     const { data: signInData, error: signInError } = await signInWithPassword(email, password);
 
     if (signInError) {
-      setError(signInError);
+      setError(signInError || tl.loginError);
       setStatus("error");
       return;
     }
 
     if (!signInData?.user) {
-      setError("Login failed. Please try again.");
+      setError(tl.loginGenericFailure ?? tl.loginError);
       setStatus("error");
       return;
     }
@@ -56,13 +70,13 @@ export default function DashboardLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-foreground">Sign in to Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Use your TeqBook account.</p>
+        <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label htmlFor="email" className="text-sm font-medium text-foreground">
-              Email
+              {tl.emailLabel}
             </label>
             <input
               id="email"
@@ -77,7 +91,7 @@ export default function DashboardLoginPage() {
           </div>
           <div>
             <label htmlFor="password" className="text-sm font-medium text-foreground">
-              Password
+              {tl.passwordLabel}
             </label>
             <input
               id="password"
@@ -100,7 +114,7 @@ export default function DashboardLoginPage() {
             disabled={status === "loading"}
             className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-70"
           >
-            {status === "loading" ? "Signing in…" : "Sign in"}
+            {status === "loading" ? tl.loggingIn : tl.loginButton}
           </button>
         </form>
       </div>

@@ -1,0 +1,38 @@
+{
+  "generated": "2026-03-29",
+  "mergeStrategy": "All non-English locales use mergeWithEnglishBase(en, partial) in locales/<code>/index.ts so runtime strings match English keys; partial locale files supply translations where present.",
+  "repoErrors": {
+    "en": "locales/en/repoErrors.ts (source)",
+    "nb": "locales/nb/repoErrors.ts (Norwegian)",
+    "ar": "locales/ar/repoErrors.ts re-exports en until translated",
+    "so": "locales/so/repoErrors.ts re-exports en until translated",
+    "ti": "locales/ti/repoErrors.ts re-exports en until translated",
+    "am": "locales/am/repoErrors.ts re-exports en until translated",
+    "tr": "locales/tr/repoErrors.ts re-exports en until translated",
+    "pl": "locales/pl/repoErrors.ts re-exports en until translated",
+    "vi": "locales/vi/repoErrors.ts re-exports en until translated",
+    "zh": "locales/zh/repoErrors.ts re-exports en until translated",
+    "tl": "locales/tl/repoErrors.ts re-exports en until translated",
+    "fa": "locales/fa/repoErrors.ts re-exports en until translated",
+    "dar": "locales/dar/repoErrors.ts re-exports en until translated",
+    "ur": "locales/ur/repoErrors.ts re-exports en until translated",
+    "hi": "locales/hi/repoErrors.ts re-exports en until translated"
+  },
+  "prodAllowlist": "Default en,nb via locale-policy.ts; set NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST to comma-separated AppLocale codes to enforce parity for more languages in test:i18n",
+  "parityAll15": "Run: NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST=en,nb,ar,so,ti,am,tr,pl,vi,zh,tl,fa,dar,ur,hi npm run test:i18n",
+  "filesOver300LinesInDashboardSrc": "Tracked by scripts/check-file-length.ts in CI; split oversized modules incrementally (see CI lint job).",
+  "hardcodedUiFollowUp": [
+    "apps/dashboard/src/components/security/ChangePasswordDialog.tsx — client validation strings",
+    "apps/dashboard/src/lib/hooks/billing/useTestBilling.ts",
+    "apps/dashboard/src/lib/hooks/profile/useProfile.ts — file size limit message",
+    "apps/dashboard/src/lib/hooks/employees/useEditEmployee.ts",
+    "apps/dashboard/src/lib/hooks/branding/useBranding.ts",
+    "apps/dashboard/src/components/security/TwoFactorEnrollment.tsx",
+    "apps/dashboard/src/components/booking-preview/useBookingPreview.ts",
+    "apps/dashboard/src/app/settings/import/_hooks/useImportWizard.ts",
+    "apps/dashboard/src/lib/hooks/billing/useBillingActions.ts",
+    "apps/dashboard/src/app/sales/packages/page.tsx",
+    "apps/dashboard/src/components/billing/PaymentForm.tsx",
+    "apps/dashboard/src/components/personalliste/EditPersonallisteDialog.tsx — Not signed in"
+  ]
+}

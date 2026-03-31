@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { translations, type AppLocale } from "@/i18n/translations";
-import { ALL_APP_LOCALES, PROD_LOCALE_ALLOWLIST } from "@/i18n/locale-policy";
+import {
+  ALL_APP_LOCALES,
+  getDocumentDirection,
+  PROD_LOCALE_ALLOWLIST,
+} from "@/i18n/locale-policy";
 
 type StringMap = Record<string, string>;
 
@@ -64,6 +68,19 @@ describe("dashboard i18n parity gates", () => {
         ).toEqual(extractPlaceholders(englishValue));
       }
     }
+  });
+});
+
+describe("RTL locale policy", () => {
+  it("marks Arabic, Persian, and Urdu as rtl", () => {
+    expect(getDocumentDirection("ar")).toBe("rtl");
+    expect(getDocumentDirection("fa")).toBe("rtl");
+    expect(getDocumentDirection("ur")).toBe("rtl");
+  });
+
+  it("uses ltr for a representative non-RTL locale", () => {
+    expect(getDocumentDirection("nb")).toBe("ltr");
+    expect(getDocumentDirection("en")).toBe("ltr");
   });
 });
 

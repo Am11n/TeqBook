@@ -84,6 +84,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Test
         run: pnpm run test:run
+      - name: Dashboard i18n parity (all 15 locales)
+        run: pnpm run test:i18n:dashboard
 
   integration:
     name: Integration and RLS tests

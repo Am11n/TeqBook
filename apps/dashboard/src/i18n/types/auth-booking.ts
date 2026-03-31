@@ -55,6 +55,11 @@ export type LoginMessages = {
   dontHaveAccount: string;
   createOne: string;
   secureLoginLine: string;
+  /** Minimal /login route in dashboard app (E2E / direct access) */
+  dashboardDirectLoginTitle?: string;
+  dashboardDirectLoginSubtitle?: string;
+  /** When session returns no user after sign-in */
+  loginGenericFailure?: string;
 };
 
 export type SignUpMessages = {

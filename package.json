@@ -27,6 +27,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:run": "pnpm --filter '@teqbook/dashboard' run test:run && pnpm --filter '@teqbook/public' run test:run && pnpm --filter '@teqbook/admin' run test:run",
+    "test:i18n:dashboard": "pnpm --filter '@teqbook/dashboard' run test:i18n:all",
     "test:coverage": "pnpm --filter '@teqbook/dashboard' run test:coverage",
     "test:coverage:public": "pnpm --filter '@teqbook/public' run test:coverage",
     "test:coverage:admin": "pnpm --filter '@teqbook/admin' run test:coverage",
