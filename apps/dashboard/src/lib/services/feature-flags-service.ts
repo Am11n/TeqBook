@@ -198,10 +198,7 @@ export async function hasFeatureForUser(
       return { hasFeature: false, error: profileError || "User profile not found" };
     }
 
-    // Superadmin has access to everything
-    if (profile.is_superadmin) {
-      return { hasFeature: true, error: null };
-    }
+    // Superadmin uses apps/admin only; remaining checks use salon plan + role.
 
     // Check if user has a salon
     if (!profile.salon_id) {

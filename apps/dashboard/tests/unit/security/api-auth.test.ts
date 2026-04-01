@@ -194,12 +194,10 @@ describe("API Authentication", () => {
       expect(result.error).toBeNull();
     });
 
-    it("should return true for superadmin", async () => {
+    it("should deny superadmin cross-salon access on dashboard APIs", async () => {
       const userId = "superadmin-123";
       const salonId = "salon-1";
 
-      // Mock: No ownership, but check profiles
-      // First call: salon_ownerships (no match)
       const ownershipChain = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
@@ -209,12 +207,11 @@ describe("API Authentication", () => {
         }),
       };
 
-      // Second call: profiles (superadmin)
       const profileChain = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({
-          data: { salon_id: "other-salon", is_superadmin: true },
+          data: { salon_id: "other-salon" },
           error: null,
         }),
       };
@@ -229,8 +226,8 @@ describe("API Authentication", () => {
 
       const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
-      expect(result.hasAccess).toBe(true);
-      expect(result.error).toBeNull();
+      expect(result.hasAccess).toBe(false);
+      expect(result.error).toBeTruthy();
     });
 
     it("should return false for user without salon access", async () => {

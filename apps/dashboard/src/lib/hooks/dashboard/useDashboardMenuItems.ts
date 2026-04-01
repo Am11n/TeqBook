@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
@@ -9,7 +8,6 @@ import {
   UserCircle,
   BookOpen,
   Settings,
-  Shield,
   TrendingUp,
   Package,
   FileCheck,
@@ -37,7 +35,6 @@ interface UseDashboardMenuItemsOptions {
   appLocale: AppLocale;
   userRole: string | null;
   isReady: boolean;
-  isSuperAdmin: boolean;
   mounted: boolean;
   featuresLoading: boolean;
   features: string[];
@@ -47,12 +44,10 @@ export function useDashboardMenuItems({
   appLocale,
   userRole,
   isReady,
-  isSuperAdmin,
   mounted,
   featuresLoading,
   features,
 }: UseDashboardMenuItemsOptions) {
-  const pathname = usePathname();
   const texts = useMemo(
     () => resolveNamespace("dashboard", translations[appLocale].dashboard),
     [appLocale],
@@ -122,7 +117,7 @@ export function useDashboardMenuItems({
   ]);
 
   const complianceItems = useMemo<MenuItem[]>(() => {
-    // Personalliste: synlig for alle innloggede (owner, manager, staff, superadmin) – lovpålagt dokumentasjon
+    // Personalliste: synlig for alle innloggede salong-brukere – lovpålagt dokumentasjon
     if (!isReady) return [];
     return [{ href: "/personalliste", label: texts.personalliste, icon: FileCheck }];
   }, [isReady, texts.personalliste]);
@@ -143,16 +138,8 @@ export function useDashboardMenuItems({
         icon: Settings,
       });
     }
-    // Only show admin link if not already on admin pages
-    if (isSuperAdmin && !pathname.startsWith("/admin")) {
-      items.push({
-        href: "/admin",
-        label: translations[appLocale].admin.title,
-        icon: Shield,
-      });
-    }
     return items;
-  }, [userRole, isSuperAdmin, isReady, pathname, appLocale, texts.help]);
+  }, [userRole, isReady, appLocale, texts.help]);
 
   return {
     overviewItems,

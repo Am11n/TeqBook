@@ -39,7 +39,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 // This ensures the sidebar doesn't re-render when navigating between pages
 const DashboardShellContent = memo(function DashboardShellContent({ children }: DashboardShellProps) {
   const { locale } = useLocale();
-  const { salon, isSuperAdmin, userRole, isReady, loading, user, profile } = useCurrentSalon();
+  const { salon, userRole, isReady, loading, user, profile } = useCurrentSalon();
   const { loading: featuresLoading, features } = useFeatures();
   const { showWarning, timeRemaining, extendSession, logout: handleSessionLogout } = useSessionTimeout();
   const router = useRouter();
@@ -67,7 +67,7 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
   }, [pathname]);
 
   useEffect(() => {
-    if (!isReady || !salon?.id || isSuperAdmin) {
+    if (!isReady || !salon?.id) {
       setProductAccessGranted(true);
       return;
     }
@@ -88,7 +88,6 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     };
   }, [
     isReady,
-    isSuperAdmin,
     salon?.id,
     salon?.trial_end,
     salon?.billing_subscription_id,
@@ -101,7 +100,6 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     isReady &&
     !loading &&
     Boolean(salon?.id) &&
-    !isSuperAdmin &&
     productAccessGranted === false &&
     !isBillingRoute;
 
@@ -173,7 +171,6 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     appLocale,
     userRole,
     isReady,
-    isSuperAdmin,
     mounted,
     featuresLoading,
     features,

@@ -58,3 +58,4 @@ Alle admin routes er nå flyttet til `apps/admin/`:
 - Admin app er den minste av de tre appene
 - Admin layout sjekker for superadmin access og redirecter hvis nødvendig
 - AdminShell brukes i stedet for DashboardShell for admin pages
+- **Dashboard vs superadmin:** Se `docs/architecture/dashboard-admin-separation.md` — superadmin kan ikke bruke salon-dashboard; redirect til Admin-app (`NEXT_PUBLIC_ADMIN_APP_URL`).

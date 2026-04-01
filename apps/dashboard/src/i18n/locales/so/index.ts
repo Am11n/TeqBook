@@ -15,7 +15,6 @@ import { bookings } from './bookings';
 import { shifts } from './shifts';
 import { personalliste } from './personalliste';
 import { settings } from './settings';
-import { admin } from './admin';
 import { products } from './products';
 import { notifications } from './notifications';
 import { featureGate } from './featureGate';
@@ -36,7 +35,6 @@ const partial: TranslationNamespaces = {
   shifts,
   personalliste,
   settings,
-  admin,
   products,
   notifications,
   featureGate,

@@ -33,10 +33,10 @@ export type {
   ShiftsMessages,
   PersonallisteMessages,
   SettingsMessages,
-  AdminMessages,
   ProductsMessages,
   NotificationsMessages,
   FeatureGateMessages,
+  RepoErrorsMessages,
 } from './types';
 
 import { nb } from './nb';

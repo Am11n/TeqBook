@@ -21,7 +21,6 @@ interface ProfileCardProps {
   userEmail: string | null;
   profile: {
     role?: string | null;
-    is_superadmin?: boolean;
   } | null;
   uploadingAvatar: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -99,14 +98,7 @@ export function ProfileCard({
           <InfoRow
             label="Role"
             value={
-              profile?.is_superadmin ? (
-                <Badge
-                  variant="secondary"
-                  className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400"
-                >
-                  Super Admin
-                </Badge>
-              ) : profile?.role ? (
+              profile?.role ? (
                 <Badge
                   variant="secondary"
                   className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"

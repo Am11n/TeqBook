@@ -8,7 +8,6 @@ type AvatarBlockProps = {
   email: string | null;
   salonName?: string | null;
   role?: string | null;
-  isSuperAdmin?: boolean;
 };
 
 /**
@@ -20,7 +19,6 @@ export function AvatarBlock({
   email,
   salonName,
   role,
-  isSuperAdmin,
 }: AvatarBlockProps) {
   return (
     <div className="flex items-center gap-4">
@@ -40,19 +38,13 @@ export function AvatarBlock({
             {salonName}
           </div>
         )}
-        {(role || isSuperAdmin) && (
+        {role ? (
           <div className="pt-1">
-            {isSuperAdmin ? (
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
-                Super Admin
-              </Badge>
-            ) : role ? (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                {getRoleDisplayName(role)}
-              </Badge>
-            ) : null}
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+              {getRoleDisplayName(role)}
+            </Badge>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

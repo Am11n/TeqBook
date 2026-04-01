@@ -105,7 +105,7 @@ export async function verifySalonAccess(
     // Fallback: Check profiles table (legacy single-salon support)
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("salon_id, is_superadmin")
+      .select("salon_id")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -123,12 +123,7 @@ export async function verifySalonAccess(
       };
     }
 
-    // Superadmin has access to all salons
-    if (profile.is_superadmin) {
-      return { hasAccess: true, error: null };
-    }
-
-    // Check if user's salon matches
+    // Check if user's salon matches (superadmin uses apps/admin only, not dashboard APIs)
     if (profile.salon_id === salonId) {
       return { hasAccess: true, error: null };
     }

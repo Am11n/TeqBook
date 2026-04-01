@@ -13,7 +13,6 @@ import { bookings } from './bookings';
 import { shifts } from './shifts';
 import { personalliste } from './personalliste';
 import { settings } from './settings';
-import { admin } from './admin';
 import { products } from './products';
 import { notifications } from './notifications';
 import { featureGate } from './featureGate';
@@ -34,7 +33,6 @@ export const en: TranslationNamespaces = {
   shifts,
   personalliste,
   settings,
-  admin,
   products,
   notifications,
   featureGate,
