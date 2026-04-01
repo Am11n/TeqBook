@@ -1,13 +1,13 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "This feature requires an upgrade",
-    upgradeDescription: "Your current plan does not include this feature. Upgrade to get access.",
-    viewPlans: "View Plans",
-    goBack: "Go back",
-    shiftsDescription: "Individual shift planning per employee is available on Pro and above.",
-    inventoryDescription: "Product and inventory management is available on Pro and above.",
-    advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
-    exportsDescription: "Data export to CSV is available on the Business plan.",
-    brandingDescription: "Custom branding for your booking page is available on Pro and above.",
+    upgradeRequired: "این ویژگی به ارتقای پلان ضرورت دارد",
+    upgradeDescription: "پلان فعلی شما این ویژگی را ندارد. برای دسترسی، پلان را ارتقا دهید.",
+    viewPlans: "دیدن پلان‌ها",
+    goBack: "برگشت",
+    shiftsDescription: "برنامه‌ریزی شیفت برای هر کارمند در پلن Pro و بالاتر موجود است.",
+    inventoryDescription: "مدیریت محصول و موجودی در پلن Pro و بالاتر موجود است.",
+    advanced_reportsDescription: "گزارش‌ها و تحلیل‌های پیشرفته در پلن Pro و بالاتر موجود است.",
+    exportsDescription: "صادرات داده به CSV در پلن Business موجود است.",
+    brandingDescription: "برندینگ سفارشی برای صفحه رزرو در پلن Pro و بالاتر موجود است.",
   };

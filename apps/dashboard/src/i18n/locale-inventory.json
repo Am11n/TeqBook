@@ -1,5 +1,6 @@
 {
   "generated": "2026-03-29",
+  "englishLeakReport": "From apps/dashboard: pnpm exec tsx scripts/report-i18n-english-leaks.ts --all (or pass locale code for per-namespace breakdown). After bulk edits run: python3 scripts/gen-products-personalliste.py for products + personalliste.",
   "mergeStrategy": "All non-English locales use mergeWithEnglishBase(en, partial) in locales/<code>/index.ts so runtime strings match English keys; partial locale files supply translations where present.",
   "repoErrors": "Each locale has locales/<code>/repoErrors.ts (~48 lines). en/nb plus ar,so,ti,am,tr,pl,vi,zh,tl,fa,dar,ur,hi have dedicated translations (LQA recommended for am/ti and RTL locales).",
   "prodAllowlist": "Default en,nb via locale-policy.ts; set NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST to comma-separated AppLocale codes to enforce parity for more languages in test:i18n",
