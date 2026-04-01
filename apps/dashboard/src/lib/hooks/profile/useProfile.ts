@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
 import { getCurrentUser, updateUserMetadata } from "@/lib/services/auth-service";
 import { getProfileForUser, updateProfile } from "@/lib/services/profiles-service";
 import { uploadAvatar, deleteAvatar } from "@/lib/services/storage-service";
+import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 
 export function useProfile() {
   const { user, isReady, refreshSalon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const s = translations[appLocale].settings;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
@@ -88,14 +94,14 @@ export function useProfile() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load profile");
+        setError(err instanceof Error ? err.message : (s.profileLoadFailed ?? "Failed to load profile"));
       } finally {
         setLoading(false);
       }
     }
 
     loadProfile();
-  }, [user?.id, isReady]);
+  }, [user?.id, isReady, appLocale]);
 
   // Track dirty state
   useEffect(() => {
@@ -113,7 +119,7 @@ export function useProfile() {
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      setError("File size must be less than 2MB");
+      setError(s.profileAvatarFileTooLarge ?? "File size must be less than 2MB");
       return;
     }
 
@@ -123,7 +129,7 @@ export function useProfile() {
     try {
       const { data: uploadData, error: uploadError } = await uploadAvatar(file, user.id);
       if (uploadError || !uploadData) {
-        setError(uploadError || "Failed to upload avatar");
+        setError(uploadError || (s.profileAvatarUploadFailed ?? "Failed to upload avatar"));
         setUploadingAvatar(false);
         return;
       }
@@ -131,7 +137,7 @@ export function useProfile() {
       setAvatarUrl(uploadData.url);
       setIsDirty(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to upload avatar");
+      setError(err instanceof Error ? err.message : (s.profileAvatarUploadFailed ?? "Failed to upload avatar"));
     } finally {
       setUploadingAvatar(false);
     }
@@ -154,7 +160,7 @@ export function useProfile() {
       setAvatarUrl(null);
       setIsDirty(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove avatar");
+      setError(err instanceof Error ? err.message : (s.profileAvatarRemoveFailed ?? "Failed to remove avatar"));
     } finally {
       setUploadingAvatar(false);
     }
@@ -193,10 +199,10 @@ export function useProfile() {
       }
 
       await refreshSalon();
-      setSuccess("Profile updated successfully");
+      setSuccess(s.profileUpdatedSuccess ?? "Profile updated successfully");
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile");
+      setError(err instanceof Error ? err.message : (s.profileUpdateFailed ?? "Failed to update profile"));
     } finally {
       setSaving(false);
     }

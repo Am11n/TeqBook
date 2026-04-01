@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Chưa có tài khoản?",
     createOne: "Tạo một tài khoản",
     secureLoginLine: "Đăng nhập an toàn. Mật khẩu của bạn không bao giờ được lưu dưới dạng văn bản thuần túy.",
+    dashboardDirectLoginTitle: "Đăng nhập bảng điều khiển",
+    dashboardDirectLoginSubtitle: "Dùng tài khoản TeqBook của bạn.",
+    loginGenericFailure: "Đăng nhập thất bại. Vui lòng thử lại.",
   };

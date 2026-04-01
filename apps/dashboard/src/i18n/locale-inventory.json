@@ -6,9 +6,6 @@
   "parityAll15": "Run: NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST=en,nb,ar,so,ti,am,tr,pl,vi,zh,tl,fa,dar,ur,hi npm run test:i18n",
   "filesOver300LinesInDashboardSrc": "Tracked by scripts/check-file-length.ts in CI; split oversized modules incrementally (see CI lint job).",
   "hardcodedUiFollowUp": [
-    "apps/dashboard/src/components/security/ChangePasswordDialog.tsx — client validation strings",
-    "apps/dashboard/src/lib/hooks/billing/useTestBilling.ts",
-    "apps/dashboard/src/lib/hooks/profile/useProfile.ts — file size limit message",
     "apps/dashboard/src/lib/hooks/employees/useEditEmployee.ts",
     "apps/dashboard/src/lib/hooks/branding/useBranding.ts",
     "apps/dashboard/src/components/security/TwoFactorEnrollment.tsx",
@@ -16,7 +13,6 @@
     "apps/dashboard/src/app/settings/import/_hooks/useImportWizard.ts",
     "apps/dashboard/src/lib/hooks/billing/useBillingActions.ts",
     "apps/dashboard/src/app/sales/packages/page.tsx",
-    "apps/dashboard/src/components/billing/PaymentForm.tsx",
-    "apps/dashboard/src/components/personalliste/EditPersonallisteDialog.tsx — Not signed in"
+    "apps/dashboard/src/components/billing/PaymentForm.tsx"
   ]
 }

@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Nie masz konta?",
     createOne: "Utwórz jedno",
     secureLoginLine: "Bezpieczne logowanie. Twoje hasło nigdy nie jest przechowywane w postaci zwykłego tekstu.",
+    dashboardDirectLoginTitle: "Zaloguj się do panelu",
+    dashboardDirectLoginSubtitle: "Użyj konta TeqBook.",
+    loginGenericFailure: "Logowanie nie powiodło się. Spróbuj ponownie.",
   };

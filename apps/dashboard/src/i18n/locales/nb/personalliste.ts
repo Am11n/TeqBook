@@ -31,4 +31,5 @@ export const personalliste: TranslationNamespaces['personalliste'] = {
     cancel: "Avbryt",
     save: "Lagre",
     saving: "Lagrer…",
+    editNotSignedIn: "Ikke innlogget",
   };

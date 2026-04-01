@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "اکاؤنٹ نہیں ہے؟",
     createOne: "ایک بنائیں",
     secureLoginLine: "محفوظ لاگ ان۔ آپ کا پاس ورڈ کبھی بھی سادہ متن کے طور پر محفوظ نہیں کیا جاتا۔",
+    dashboardDirectLoginTitle: "ڈیش بورڈ میں سائن ان کریں",
+    dashboardDirectLoginSubtitle: "اپنا TeqBook اکاؤنٹ استعمال کریں۔",
+    loginGenericFailure: "سائن ان ناکام رہا۔ براہ کرم دوبارہ کوشش کریں۔",
   };

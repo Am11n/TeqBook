@@ -9,7 +9,7 @@ import { FormRow } from "@/components/settings/FormRow";
 import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import { Search } from "lucide-react";
 import { LOCALE_FLAG_EMOJI, type AppLocalePickerValue } from "@teqbook/shared";
-import { ALL_LANGUAGES, RECOMMENDED_CODES, langLabelFn } from "./types";
+import { ALL_LANGUAGES, RECOMMENDED_CODES, langLabelFn, langLabelPlainFn } from "./types";
 import {
   PROD_LOCALE_ALLOWLIST,
   clampToEnabledLocale,
@@ -156,7 +156,7 @@ export function LanguageSection({
                   : undefined;
               return {
                 value: code,
-                label: langLabelFn(code),
+                label: langLabelPlainFn(code),
                 ...(flagEmoji ? { flagEmoji } : {}),
               };
             })}

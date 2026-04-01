@@ -41,7 +41,14 @@ export const ALL_LANGUAGES = [
 
 export const RECOMMENDED_CODES = ["nb", "en", "ar", "so", "tr"];
 
+/** Label with leading flag emoji (checkbox lists, selects without separate flag avatar). */
 export function langLabelFn(code: string): string {
   const lang = ALL_LANGUAGES.find((l) => l.code === code);
   return lang ? `${lang.flag} ${lang.label}` : code;
+}
+
+/** Plain language name only — use with `DialogSelect` when `flagEmoji` is set to avoid double flags. */
+export function langLabelPlainFn(code: string): string {
+  const lang = ALL_LANGUAGES.find((l) => l.code === code);
+  return lang ? lang.label : code;
 }

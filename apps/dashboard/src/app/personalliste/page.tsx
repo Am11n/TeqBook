@@ -286,6 +286,7 @@ export default function PersonallistePage() {
               cancel: t.cancel,
               save: t.save,
               saving: t.saving,
+              editNotSignedIn: t.editNotSignedIn ?? "Not signed in",
             }}
           />
         </>

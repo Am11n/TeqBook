@@ -210,6 +210,35 @@ export type SettingsMessages = {
   profileCancel?: string;
   profileSaving?: string;
   profileSaveChanges?: string;
+  profileLoadFailed?: string;
+  profileAvatarFileTooLarge?: string;
+  profileAvatarUploadFailed?: string;
+  profileAvatarRemoveFailed?: string;
+  profileUpdateFailed?: string;
+  profileUpdatedSuccess?: string;
+  // Security — password card & change dialog
+  passwordCardTitle?: string;
+  passwordCardDescription?: string;
+  passwordRowLabel?: string;
+  passwordChangeAction?: string;
+  changePasswordDialogTitle?: string;
+  changePasswordDialogDescription?: string;
+  changePasswordMismatchError?: string;
+  changePasswordTooShortError?: string;
+  changePasswordSuccess?: string;
+  changePasswordCurrentLabel?: string;
+  changePasswordCurrentPlaceholder?: string;
+  changePasswordNewLabel?: string;
+  changePasswordNewDescription?: string;
+  changePasswordNewPlaceholder?: string;
+  changePasswordConfirmLabel?: string;
+  changePasswordConfirmPlaceholder?: string;
+  changePasswordCancel?: string;
+  changePasswordSubmitting?: string;
+  changePasswordSubmit?: string;
+  /** Dev / test billing hook (dashboard) */
+  billingDevStripeCustomerRequired?: string;
+  billingDevStripeSubscriptionRequired?: string;
   // Notifications — toasts & email preview dialog
   notificationTestSent?: string;
   notificationTestSendFailed?: string;

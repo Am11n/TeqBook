@@ -45,6 +45,7 @@ interface EditPersonallisteDialogProps {
     cancel: string;
     save: string;
     saving: string;
+    editNotSignedIn: string;
   };
 }
 
@@ -74,7 +75,7 @@ export function EditPersonallisteDialog({
     if (!entry) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setError("Not signed in");
+      setError(t.editNotSignedIn);
       return;
     }
     setSaving(true);

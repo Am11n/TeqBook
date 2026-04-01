@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "حساب ندارید؟",
     createOne: "ایجاد کنید",
     secureLoginLine: "ورود امن. رمز شما هرگز به صورت متن ساده ذخیره نمی‌شود.",
+    dashboardDirectLoginTitle: "ورود به داشبورد",
+    dashboardDirectLoginSubtitle: "از حساب TeqBook خود استفاده کنید.",
+    loginGenericFailure: "ورود ناموفق بود. لطفاً دوباره تلاش کنید.",
   };

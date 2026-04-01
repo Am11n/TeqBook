@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "ኣካውንት የብልኩምን?",
     createOne: "ኣካውንት ፍጠር",
     secureLoginLine: "ኣረጋዊ መግቢ። ፓስዎርድኩም ብጽሑፍ ኣይትከሓን።",
+    dashboardDirectLoginTitle: "ናብ ዳሽቦርድ እተው",
+    dashboardDirectLoginSubtitle: "ናይ TeqBook ሕሳብኩም ተጠቐሙ።",
+    loginGenericFailure: "መግቢ ኣይተሳነነን። ደጊምኩም ፈትኑ።",
   };

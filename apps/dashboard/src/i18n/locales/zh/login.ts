@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "没有账户？",
     createOne: "创建一个",
     secureLoginLine: "安全登录。您的密码永远不会以明文形式存储。",
+    dashboardDirectLoginTitle: "登录控制台",
+    dashboardDirectLoginSubtitle: "请使用您的 TeqBook 账户。",
+    loginGenericFailure: "登录失败，请重试。",
   };

@@ -118,4 +118,6 @@ export type PersonallisteMessages = {
   cancel: string;
   save: string;
   saving: string;
+  /** Shown when saving an edit without an authenticated session */
+  editNotSignedIn?: string;
 };

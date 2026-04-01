@@ -1,6 +1,7 @@
 import type { TranslationNamespaces } from '../../types';
+import { settingsBillingExtended } from './settings-billing-extended';
 
-export const settings: TranslationNamespaces['settings'] = {
+const settingsCore: TranslationNamespaces['settings'] = {
     title: "Settings",
     description: "Manage your salon settings and preferences.",
     generalTab: "General",
@@ -12,6 +13,29 @@ export const settings: TranslationNamespaces['settings'] = {
     importTab: "Import",
     securityTab: "Security",
     auditTrailTab: "Audit Trail",
+    passwordCardTitle: "Password",
+    passwordCardDescription: "Change your account password",
+    passwordRowLabel: "Password",
+    passwordChangeAction: "Change Password",
+    changePasswordDialogTitle: "Change Password",
+    changePasswordDialogDescription:
+      "Enter your current password and choose a new password",
+    changePasswordMismatchError: "New passwords do not match",
+    changePasswordTooShortError: "Password must be at least 8 characters long",
+    changePasswordSuccess: "Password changed successfully",
+    changePasswordCurrentLabel: "Current Password",
+    changePasswordCurrentPlaceholder: "Enter current password",
+    changePasswordNewLabel: "New Password",
+    changePasswordNewDescription:
+      "Minimum 8 characters, at least one uppercase letter, one number, and one special character",
+    changePasswordNewPlaceholder: "Enter new password",
+    changePasswordConfirmLabel: "Confirm New Password",
+    changePasswordConfirmPlaceholder: "Confirm new password",
+    changePasswordCancel: "Cancel",
+    changePasswordSubmitting: "Changing...",
+    changePasswordSubmit: "Change Password",
+    billingDevStripeCustomerRequired: "Create a Stripe customer first.",
+    billingDevStripeSubscriptionRequired: "You need an active subscription first.",
     // General settings
     generalTitle: "General Settings",
     generalDescription: "Manage your salon's basic information and contact details.",
@@ -205,6 +229,12 @@ export const settings: TranslationNamespaces['settings'] = {
     profileCancel: "Cancel",
     profileSaving: "Saving...",
     profileSaveChanges: "Save changes",
+    profileLoadFailed: "Failed to load profile",
+    profileAvatarFileTooLarge: "File size must be less than 2MB",
+    profileAvatarUploadFailed: "Failed to upload avatar",
+    profileAvatarRemoveFailed: "Failed to remove avatar",
+    profileUpdateFailed: "Failed to update profile",
+    profileUpdatedSuccess: "Profile updated successfully",
     notificationTestSent: "Test sent to {email}",
     notificationTestSendFailed: "Failed to send test email",
     notificationPreviewTitle: "Email preview",
@@ -212,56 +242,9 @@ export const settings: TranslationNamespaces['settings'] = {
       "This is a sample email. Variables like {customer_name} will be replaced with real data.",
     notificationPreviewSubjectLabel: "Subject",
     notificationPreviewBodyLabel: "Body",
-    billingAddonsTitle: "Add-on impact",
-    billingAddonsDescription:
-      "Extra staff and language charges are derived from active usage and synced to billing automatically.",
-    billingAddonExtraStaffFallbackName: "Extra staff members",
-    billingAddonExtraLanguagesFallbackName: "Extra languages",
-    billingUnlimited: "Unlimited",
-    billingAddonUsageLine: "Included: {included} • Active: {active} • Extra billed: {extra}",
-    billingAddonStaffPriceFallback: "$5/month per staff",
-    billingAddonLanguagePriceFallback: "$10/month per language",
-    billingAddonStaffImpactLine: "{price} • Estimated monthly impact: {impact}",
-    billingAddonLanguageImpactLine: "{price} • Estimated monthly impact: {impact}",
-    billingAddonManagePlan: "Manage plan",
-    billingAddonReviewLanguages: "Review languages",
-    billingSmsUsageTitle: "SMS usage",
-    billingSmsUsageDescription:
-      "Included quota comes from admin plan features. Unlimited means no included cap for this period.",
-    billingSmsLoading: "Loading SMS usage…",
-    billingSmsIncludedLabel: "Included SMS",
-    billingSmsUsedLabel: "Used",
-    billingSmsOverageLabel: "Estimated overage",
-    billingSmsExpectedCostLabel: "Expected extra cost",
-    billingSmsQuotaWarning:
-      "You have used {percent}% of your included SMS quota. Consider upgrading to avoid overage costs.",
-    billingSmsHardCapWarning:
-      "Hard cap reached for current period. New transactional SMS may be blocked.",
-    billingSmsDisableSending: "Disable SMS sending",
-    billingSmsEmailOnlyFallback: "Email-only fallback (no SMS)",
-    billingSmsTogglesHint:
-      "Toggles are local preview controls in this phase and will be persisted in a dedicated SMS settings step.",
-    billingSmsDuplicateRows:
-      "Multiple SMS usage records exist for this billing window. Please contact support.",
-    billingSmsUsageError: "Could not load SMS usage: {detail}",
-    billingSmsPlanDataError: "Could not load plan data for SMS quota: {detail}",
-    billingSmsUnavailable: "SMS usage is temporarily unavailable. Please try again.",
-    billingSmsStaleLine:
-      "{detail} Showing last loaded values for this billing period.",
-    billingEstimatedInvoiceTitle: "Estimated next invoice",
-    billingEstimatedInvoiceHint:
-      "This is an estimate and may change until the invoice is finalized.",
-    billingEstimatedBasePlan: "Base plan",
-    billingEstimatedExtraStaff: "Extra staff",
-    billingEstimatedExtraLanguages: "Extra languages",
-    billingEstimatedSmsOverage: "SMS overage",
-    billingEstimatedTotal: "Estimated total",
-    billingHistoryTitle: "Billing history",
-    billingHistorySubtitle: "Invoice history and receipts",
-    billingInvoiceOpen: "Open",
-    billingInvoicePdf: "PDF",
-    billingHistoryEmpty:
-      "No invoices yet. They will appear here after your first successful billing cycle.",
-    billingSubscriptionEndingAlert: "Subscription ending",
-    openingHoursBreakDefault: "Break",
   };
+
+export const settings: TranslationNamespaces["settings"] = {
+  ...settingsCore,
+  ...settingsBillingExtended,
+} as TranslationNamespaces["settings"];

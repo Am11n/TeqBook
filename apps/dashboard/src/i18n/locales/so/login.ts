@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Ma haysatid akoon?",
     createOne: "Samee akoon",
     secureLoginLine: "Soo gal amaan ah. Password-kaaga marna ma lagu keydin qoraal cad.",
+    dashboardDirectLoginTitle: "Soo gal dashboard-ka",
+    dashboardDirectLoginSubtitle: "Isticmaal akoonkaaga TeqBook.",
+    loginGenericFailure: "Soo galidu way fashilantay. Fadlan mar kale isku day.",
   };

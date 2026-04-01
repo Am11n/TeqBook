@@ -15,12 +15,31 @@ import { Field } from "@/components/form/Field";
 import { useRepoError } from "@/lib/hooks/useRepoError";
 import { updatePassword } from "@/lib/services/auth-service";
 
+export type ChangePasswordCopy = {
+  dialogTitle: string;
+  dialogDescription: string;
+  mismatchError: string;
+  tooShortError: string;
+  success: string;
+  currentLabel: string;
+  currentPlaceholder: string;
+  newLabel: string;
+  newDescription: string;
+  newPlaceholder: string;
+  confirmLabel: string;
+  confirmPlaceholder: string;
+  cancel: string;
+  submitting: string;
+  submit: string;
+};
+
 interface ChangePasswordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  copy: ChangePasswordCopy;
 }
 
-export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialogProps) {
+export function ChangePasswordDialog({ open, onOpenChange, copy }: ChangePasswordDialogProps) {
   const m = useRepoError();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -31,12 +50,12 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
 
   async function handleChangePassword() {
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(copy.mismatchError);
       return;
     }
 
     if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError(copy.tooShortError);
       return;
     }
 
@@ -51,7 +70,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
       return;
     }
 
-    setSuccess("Password changed successfully");
+    setSuccess(copy.success);
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
@@ -66,8 +85,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>Enter your current password and choose a new password</DialogDescription>
+          <DialogTitle>{copy.dialogTitle}</DialogTitle>
+          <DialogDescription>{copy.dialogDescription}</DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           {error && (
@@ -81,38 +100,38 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             </div>
           )}
 
-          <Field label="Current Password" htmlFor="current_password" required>
+          <Field label={copy.currentLabel} htmlFor="current_password" required>
             <Input
               id="current_password"
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
+              placeholder={copy.currentPlaceholder}
             />
           </Field>
 
           <Field
-            label="New Password"
+            label={copy.newLabel}
             htmlFor="new_password"
             required
-            description="Minimum 8 characters, at least one uppercase letter, one number, and one special character"
+            description={copy.newDescription}
           >
             <Input
               id="new_password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
+              placeholder={copy.newPlaceholder}
             />
           </Field>
 
-          <Field label="Confirm New Password" htmlFor="confirm_password" required>
+          <Field label={copy.confirmLabel} htmlFor="confirm_password" required>
             <Input
               id="confirm_password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
+              placeholder={copy.confirmPlaceholder}
             />
           </Field>
         </div>
@@ -129,10 +148,10 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             }}
             disabled={changingPassword}
           >
-            Cancel
+            {copy.cancel}
           </Button>
           <Button onClick={handleChangePassword} disabled={changingPassword}>
-            {changingPassword ? "Changing..." : "Change Password"}
+            {changingPassword ? copy.submitting : copy.submit}
           </Button>
         </DialogFooter>
       </DialogContent>

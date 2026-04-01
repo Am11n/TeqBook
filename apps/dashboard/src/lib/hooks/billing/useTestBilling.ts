@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useLocale } from "@/components/locale-provider";
+import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
 import {
   createStripeCustomer,
   createStripeSubscription,
@@ -10,6 +13,8 @@ import {
 
 export function useTestBilling() {
   const { salon, user, refreshSalon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const s = translations[normalizeLocale(locale)].settings;
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     subscription_id?: string;
@@ -60,7 +65,7 @@ export function useTestBilling() {
 
   const handleCreateSubscription = async () => {
     if (!salon?.id || !salon?.billing_customer_id) {
-      setError("Du må opprette customer først");
+      setError(s.billingDevStripeCustomerRequired ?? "Create a Stripe customer first.");
       return;
     }
 
@@ -105,7 +110,7 @@ export function useTestBilling() {
 
   const handleUpdatePlan = async () => {
     if (!salon?.id || !salon?.billing_subscription_id) {
-      setError("Du må ha en subscription først");
+      setError(s.billingDevStripeSubscriptionRequired ?? "You need an active subscription first.");
       return;
     }
 

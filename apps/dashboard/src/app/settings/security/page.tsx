@@ -16,6 +16,33 @@ export default function SecurityPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].settings;
+  const passwordCopy = {
+    cardTitle: t.passwordCardTitle ?? "Password",
+    cardDescription: t.passwordCardDescription ?? "Change your account password",
+    rowLabel: t.passwordRowLabel ?? "Password",
+    changeAction: t.passwordChangeAction ?? "Change Password",
+    dialog: {
+      dialogTitle: t.changePasswordDialogTitle ?? "Change Password",
+      dialogDescription:
+        t.changePasswordDialogDescription ??
+        "Enter your current password and choose a new password",
+      mismatchError: t.changePasswordMismatchError ?? "New passwords do not match",
+      tooShortError: t.changePasswordTooShortError ?? "Password must be at least 8 characters long",
+      success: t.changePasswordSuccess ?? "Password changed successfully",
+      currentLabel: t.changePasswordCurrentLabel ?? "Current Password",
+      currentPlaceholder: t.changePasswordCurrentPlaceholder ?? "Enter current password",
+      newLabel: t.changePasswordNewLabel ?? "New Password",
+      newDescription:
+        t.changePasswordNewDescription ??
+        "Minimum 8 characters, at least one uppercase letter, one number, and one special character",
+      newPlaceholder: t.changePasswordNewPlaceholder ?? "Enter new password",
+      confirmLabel: t.changePasswordConfirmLabel ?? "Confirm New Password",
+      confirmPlaceholder: t.changePasswordConfirmPlaceholder ?? "Confirm new password",
+      cancel: t.changePasswordCancel ?? "Cancel",
+      submitting: t.changePasswordSubmitting ?? "Changing...",
+      submit: t.changePasswordSubmit ?? "Change Password",
+    },
+  };
   const { loading, error, factors, emailVerified, sessionsCount, loadSecurityData } =
     useSecurityData();
 
@@ -39,7 +66,7 @@ export default function SecurityPage() {
         }
       >
         <div className="space-y-6">
-          <PasswordCard />
+          <PasswordCard copy={passwordCopy} />
           <TwoFactorCard factors={factors} loading={loading} onReload={loadSecurityData} />
         </div>
       </SettingsGrid>

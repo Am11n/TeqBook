@@ -1,13 +1,13 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "This feature requires an upgrade",
-    upgradeDescription: "Your current plan does not include this feature. Upgrade to get access.",
-    viewPlans: "View Plans",
-    goBack: "Go back",
-    shiftsDescription: "Individual shift planning per employee is available on Pro and above.",
-    inventoryDescription: "Product and inventory management is available on Pro and above.",
-    advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
-    exportsDescription: "Data export to CSV is available on the Business plan.",
-    brandingDescription: "Custom branding for your booking page is available on Pro and above.",
+    upgradeRequired: "እዚ ባህሪ ንምርዳእ ምልካት የድሊ",
+    upgradeDescription: "ኣብ ሕጂ ዘለካ መደብ እዚ ባህሪ የለን። ንምርካብ ምልካት ግበር።",
+    viewPlans: "መደባት ርአ",
+    goBack: "ንድሕሪት ተመለስ",
+    shiftsDescription: "ናይ ሰራሕተኛታት ንግዲ መደብ ኣብ Pro ንላዕሊ ኣሎ።",
+    inventoryDescription: "ናይ መኽዘንን ፈርኦታትን ምምሕዳስ ኣብ Pro ንላዕሊ ኣሎ።",
+    advanced_reportsDescription: "ምቹእ ሪፖርትን ትንታኔን ኣብ Pro ንላዕሊ ኣሎ።",
+    exportsDescription: "CSV ናብ ውሽጢ ምውጻእ ኣብ Business መደብ ኣሎ።",
+    brandingDescription: "ናይ ምውላዕ ገጽ ብራንዲንግ ኣብ Pro ንላዕሊ ኣሎ።",
   };

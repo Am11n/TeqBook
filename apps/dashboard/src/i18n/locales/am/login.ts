@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "መለያ የሎትም?",
     createOne: "መለያ ይፍጠሩ",
     secureLoginLine: "አረጋዊ መግባት። የይለፍ ቃልዎ በግልጽ ጽሑፍ ተቀምጧል።",
+    dashboardDirectLoginTitle: "ወደ ዳሽቦርድ ይግቡ",
+    dashboardDirectLoginSubtitle: "የTeqBook መለያዎን ይጠቀሙ።",
+    loginGenericFailure: "መግባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
   };

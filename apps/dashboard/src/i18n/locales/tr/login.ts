@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Hesabınız yok mu?",
     createOne: "Bir tane oluşturun",
     secureLoginLine: "Güvenli giriş. Şifreniz asla düz metin olarak saklanmaz.",
+    dashboardDirectLoginTitle: "Panele giriş yapın",
+    dashboardDirectLoginSubtitle: "TeqBook hesabınızı kullanın.",
+    loginGenericFailure: "Giriş başarısız. Lütfen tekrar deneyin.",
   };

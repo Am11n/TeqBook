@@ -5,9 +5,17 @@ import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoRow } from "@/components/profile/info-row";
-import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { ChangePasswordDialog, type ChangePasswordCopy } from "./ChangePasswordDialog";
 
-export function PasswordCard() {
+type PasswordCardCopy = {
+  cardTitle: string;
+  cardDescription: string;
+  rowLabel: string;
+  changeAction: string;
+  dialog: ChangePasswordCopy;
+};
+
+export function PasswordCard({ copy }: { copy: PasswordCardCopy }) {
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   return (
@@ -16,25 +24,28 @@ export function PasswordCard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
-            Password
+            {copy.cardTitle}
           </CardTitle>
-          <CardDescription>Change your account password</CardDescription>
+          <CardDescription>{copy.cardDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <InfoRow
-            label="Password"
+            label={copy.rowLabel}
             value="••••••••"
             action={
               <Button variant="outline" size="sm" onClick={() => setShowChangePassword(true)}>
-                Change Password
+                {copy.changeAction}
               </Button>
             }
           />
         </CardContent>
       </Card>
 
-      <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onOpenChange={setShowChangePassword}
+        copy={copy.dialog}
+      />
     </>
   );
 }
-

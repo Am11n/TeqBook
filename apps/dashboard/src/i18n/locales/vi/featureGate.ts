@@ -1,13 +1,13 @@
-import type { TranslationNamespaces } from '../../types';
+import type { TranslationNamespaces } from "../../types";
 
-export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "This feature requires an upgrade",
-    upgradeDescription: "Your current plan does not include this feature. Upgrade to get access.",
-    viewPlans: "View Plans",
-    goBack: "Go back",
-    shiftsDescription: "Individual shift planning per employee is available on Pro and above.",
-    inventoryDescription: "Product and inventory management is available on Pro and above.",
-    advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
-    exportsDescription: "Data export to CSV is available on the Business plan.",
-    brandingDescription: "Custom branding for your booking page is available on Pro and above.",
-  };
+export const featureGate: TranslationNamespaces["featureGate"] = {
+  upgradeRequired: "Tính năng này cần nâng cấp gói",
+  upgradeDescription: "Gói hiện tại của bạn chưa có tính năng này. Nâng cấp để sử dụng.",
+  viewPlans: "Xem gói cước",
+  goBack: "Quay lại",
+  shiftsDescription: "Lập lịch ca theo từng nhân viên có trên gói Pro trở lên.",
+  inventoryDescription: "Quản lý sản phẩm và tồn kho có trên gói Pro trở lên.",
+  advanced_reportsDescription: "Báo cáo và phân tích nâng cao có trên gói Pro trở lên.",
+  exportsDescription: "Xuất dữ liệu CSV có trên gói Business.",
+  brandingDescription: "Thương hiệu tùy chỉnh cho trang đặt lịch có trên gói Pro trở lên.",
+};

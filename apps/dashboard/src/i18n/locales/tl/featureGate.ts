@@ -1,13 +1,13 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "This feature requires an upgrade",
-    upgradeDescription: "Your current plan does not include this feature. Upgrade to get access.",
-    viewPlans: "View Plans",
-    goBack: "Go back",
-    shiftsDescription: "Individual shift planning per employee is available on Pro and above.",
-    inventoryDescription: "Product and inventory management is available on Pro and above.",
-    advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
-    exportsDescription: "Data export to CSV is available on the Business plan.",
-    brandingDescription: "Custom branding for your booking page is available on Pro and above.",
+    upgradeRequired: "Kailangan ng upgrade ang feature na ito",
+    upgradeDescription: "Wala sa kasalukuyan mong plano ang feature na ito. Mag-upgrade para ma-access.",
+    viewPlans: "Tingnan ang mga plano",
+    goBack: "Bumalik",
+    shiftsDescription: "Ang pagpaplano ng shift bawat empleyado ay available sa Pro pataas.",
+    inventoryDescription: "Ang pamamahala ng produkto at imbentaryo ay available sa Pro pataas.",
+    advanced_reportsDescription: "Ang advanced na ulat at analytics ay available sa Pro pataas.",
+    exportsDescription: "Ang pag-export ng data sa CSV ay available sa Business plan.",
+    brandingDescription: "Ang custom branding para sa booking page mo ay available sa Pro pataas.",
   };

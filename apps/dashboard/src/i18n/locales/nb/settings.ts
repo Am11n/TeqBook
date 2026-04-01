@@ -1,6 +1,7 @@
 import type { TranslationNamespaces } from '../../types';
+import { settingsBillingExtendedNb } from './settings-billing-extended';
 
-export const settings: TranslationNamespaces['settings'] = {
+const settingsCore: TranslationNamespaces['settings'] = {
     title: "Innstillinger",
     description: "Administrer salong-innstillinger og preferanser.",
     generalTab: "Generelt",
@@ -201,6 +202,35 @@ export const settings: TranslationNamespaces['settings'] = {
     profileCancel: "Avbryt",
     profileSaving: "Lagrer...",
     profileSaveChanges: "Lagre endringer",
+    profileLoadFailed: "Kunne ikke laste profil",
+    profileAvatarFileTooLarge: "Filstørrelsen må være mindre enn 2 MB",
+    profileAvatarUploadFailed: "Kunne ikke laste opp profilbilde",
+    profileAvatarRemoveFailed: "Kunne ikke fjerne profilbilde",
+    profileUpdateFailed: "Kunne ikke oppdatere profil",
+    profileUpdatedSuccess: "Profilen ble oppdatert",
+    passwordCardTitle: "Passord",
+    passwordCardDescription: "Endre passordet for kontoen din",
+    passwordRowLabel: "Passord",
+    passwordChangeAction: "Endre passord",
+    changePasswordDialogTitle: "Endre passord",
+    changePasswordDialogDescription:
+      "Skriv inn nåværende passord og velg et nytt passord",
+    changePasswordMismatchError: "De nye passordene stemmer ikke overens",
+    changePasswordTooShortError: "Passordet må være minst 8 tegn",
+    changePasswordSuccess: "Passordet ble endret",
+    changePasswordCurrentLabel: "Nåværende passord",
+    changePasswordCurrentPlaceholder: "Skriv inn nåværende passord",
+    changePasswordNewLabel: "Nytt passord",
+    changePasswordNewDescription:
+      "Minst 8 tegn, minst én stor bokstav, ett tall og ett spesialtegn",
+    changePasswordNewPlaceholder: "Skriv inn nytt passord",
+    changePasswordConfirmLabel: "Bekreft nytt passord",
+    changePasswordConfirmPlaceholder: "Bekreft nytt passord",
+    changePasswordCancel: "Avbryt",
+    changePasswordSubmitting: "Endrer…",
+    changePasswordSubmit: "Endre passord",
+    billingDevStripeCustomerRequired: "Opprett Stripe-kunde først.",
+    billingDevStripeSubscriptionRequired: "Du trenger et aktivt abonnement først.",
     notificationTestSent: "Test sendt til {email}",
     notificationTestSendFailed: "Kunne ikke sende test-e-post",
     notificationPreviewTitle: "E-post forhåndsvisning",
@@ -208,56 +238,9 @@ export const settings: TranslationNamespaces['settings'] = {
       "Dette er en eksempel-e-post. Variabler som {customer_name} erstattes med ekte data.",
     notificationPreviewSubjectLabel: "Emne",
     notificationPreviewBodyLabel: "Innhold",
-    billingAddonsTitle: "Tilleggskostnader",
-    billingAddonsDescription:
-      "Ekstra ansatte og språk beregnes ut fra aktiv bruk og synkroniseres automatisk til fakturering.",
-    billingAddonExtraStaffFallbackName: "Ekstra ansatte",
-    billingAddonExtraLanguagesFallbackName: "Ekstra språk",
-    billingUnlimited: "Ubegrenset",
-    billingAddonUsageLine: "Inkludert: {included} • Aktive: {active} • Ekstra fakturert: {extra}",
-    billingAddonStaffPriceFallback: "$5/måned per ansatt",
-    billingAddonLanguagePriceFallback: "$10/måned per språk",
-    billingAddonStaffImpactLine: "{price} • Estimert månedlig påvirkning: {impact}",
-    billingAddonLanguageImpactLine: "{price} • Estimert månedlig påvirkning: {impact}",
-    billingAddonManagePlan: "Administrer plan",
-    billingAddonReviewLanguages: "Se språk",
-    billingSmsUsageTitle: "SMS-bruk",
-    billingSmsUsageDescription:
-      "Inkludert kvote kommer fra admin-planfunksjoner. Ubegrenset betyr ingen inkludert grense for denne perioden.",
-    billingSmsLoading: "Laster SMS-bruk…",
-    billingSmsIncludedLabel: "Inkluderte SMS",
-    billingSmsUsedLabel: "Brukt",
-    billingSmsOverageLabel: "Estimert overforbruk",
-    billingSmsExpectedCostLabel: "Forventet ekstrakostnad",
-    billingSmsQuotaWarning:
-      "Du har brukt {percent}% av den inkluderte SMS-kvoten. Vurder oppgradering for å unngå overforbrukskostnader.",
-    billingSmsHardCapWarning:
-      "Hard tak nådd for inneværende periode. Nye transaksjonelle SMS kan bli blokkert.",
-    billingSmsDisableSending: "Deaktiver SMS-sending",
-    billingSmsEmailOnlyFallback: "Kun e-post (ingen SMS)",
-    billingSmsTogglesHint:
-      "Bryterne er lokale forhåndskontroller i denne fasen og vil lagres i et dedikert SMS-innstillingssteg senere.",
-    billingSmsDuplicateRows:
-      "Flere SMS-forbruksrader finnes for dette faktureringsvinduet. Kontakt support.",
-    billingSmsUsageError: "Kunne ikke laste SMS-bruk: {detail}",
-    billingSmsPlanDataError: "Kunne ikke laste plandata for SMS-kvote: {detail}",
-    billingSmsUnavailable: "SMS-bruk er midlertidig utilgjengelig. Prøv igjen.",
-    billingSmsStaleLine:
-      "{detail} Viser sist innlastede verdier for denne faktureringsperioden.",
-    billingEstimatedInvoiceTitle: "Estimert neste faktura",
-    billingEstimatedInvoiceHint:
-      "Dette er et estimat og kan endre seg før fakturaen er endelig.",
-    billingEstimatedBasePlan: "Grunnplan",
-    billingEstimatedExtraStaff: "Ekstra ansatte",
-    billingEstimatedExtraLanguages: "Ekstra språk",
-    billingEstimatedSmsOverage: "SMS overforbruk",
-    billingEstimatedTotal: "Estimert total",
-    billingHistoryTitle: "Fakturahistorikk",
-    billingHistorySubtitle: "Fakturaer og kvitteringer",
-    billingInvoiceOpen: "Åpne",
-    billingInvoicePdf: "PDF",
-    billingHistoryEmpty:
-      "Ingen fakturaer ennå. De vises her etter første vellykkede faktureringssyklus.",
-    billingSubscriptionEndingAlert: "Abonnementet avsluttes",
-    openingHoursBreakDefault: "Pause",
   };
+
+export const settings: TranslationNamespaces["settings"] = {
+  ...settingsCore,
+  ...settingsBillingExtendedNb,
+} as TranslationNamespaces["settings"];

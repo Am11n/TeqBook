@@ -1,13 +1,13 @@
-import type { TranslationNamespaces } from '../../types';
+import type { TranslationNamespaces } from "../../types";
 
-export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "This feature requires an upgrade",
-    upgradeDescription: "Your current plan does not include this feature. Upgrade to get access.",
-    viewPlans: "View Plans",
-    goBack: "Go back",
-    shiftsDescription: "Individual shift planning per employee is available on Pro and above.",
-    inventoryDescription: "Product and inventory management is available on Pro and above.",
-    advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
-    exportsDescription: "Data export to CSV is available on the Business plan.",
-    brandingDescription: "Custom branding for your booking page is available on Pro and above.",
-  };
+export const featureGate: TranslationNamespaces["featureGate"] = {
+  upgradeRequired: "此功能需要升级套餐",
+  upgradeDescription: "您当前的套餐不包含此功能。请升级以使用。",
+  viewPlans: "查看套餐",
+  goBack: "返回",
+  shiftsDescription: "按员工排班功能适用于 Pro 及以上套餐。",
+  inventoryDescription: "产品与库存管理适用于 Pro 及以上套餐。",
+  advanced_reportsDescription: "高级报表与分析适用于 Pro 及以上套餐。",
+  exportsDescription: "导出 CSV 数据适用于 Business 套餐。",
+  brandingDescription: "预约页自定义品牌适用于 Pro 及以上套餐。",
+};

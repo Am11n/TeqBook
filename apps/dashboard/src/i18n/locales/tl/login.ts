@@ -24,4 +24,7 @@ export const login: TranslationNamespaces['login'] = {
     dontHaveAccount: "Wala kang account?",
     createOne: "Gumawa ng isa",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
+    dashboardDirectLoginTitle: "Mag-sign in sa Dashboard",
+    dashboardDirectLoginSubtitle: "Gamitin ang iyong TeqBook account.",
+    loginGenericFailure: "Hindi nagtagumpay ang pag-sign in. Pakisubukan muli.",
   };
