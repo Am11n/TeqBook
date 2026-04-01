@@ -21,6 +21,10 @@ out/
 .next/
 
 # Environment variables
+# Dashboard i18n machine-translate cache (optional; remove from gitignore to share cache)
+apps/dashboard/scripts/.i18n-machine-cache.json
+apps/dashboard/.venv-i18n/
+
 .env*
 !.env.example
 !.env.staging.example

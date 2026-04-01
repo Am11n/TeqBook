@@ -1,13 +1,13 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const featureGate: TranslationNamespaces['featureGate'] = {
-    upgradeRequired: "\u0647\u0630\u0647 \u0627\u0644\u0645\u064a\u0632\u0629 \u062a\u062a\u0637\u0644\u0628 \u062a\u0631\u0642\u064a\u0629",
-    upgradeDescription: "\u062e\u0637\u062a\u0643 \u0627\u0644\u062d\u0627\u0644\u064a\u0629 \u0644\u0627 \u062a\u062a\u0636\u0645\u0646 \u0647\u0630\u0647 \u0627\u0644\u0645\u064a\u0632\u0629. \u0642\u0645 \u0628\u0627\u0644\u062a\u0631\u0642\u064a\u0629 \u0644\u0644\u062d\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0648\u0635\u0648\u0644.",
-    viewPlans: "\u0639\u0631\u0636 \u0627\u0644\u062e\u0637\u0637",
-    goBack: "\u0631\u062c\u0648\u0639",
-    shiftsDescription: "\u062a\u062e\u0637\u064a\u0637 \u0627\u0644\u0648\u0631\u062f\u064a\u0627\u062a \u0644\u0643\u0644 \u0645\u0648\u0638\u0641 \u0645\u062a\u0627\u062d \u0641\u064a \u0628\u0627\u0642\u0629 Pro \u0648\u0623\u0639\u0644\u0649.",
-    inventoryDescription: "\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a \u0648\u0627\u0644\u0645\u062e\u0632\u0648\u0646 \u0645\u062a\u0627\u062d\u0629 \u0641\u064a \u0628\u0627\u0642\u0629 Pro \u0648\u0623\u0639\u0644\u0649.",
-    advanced_reportsDescription: "\u0627\u0644\u062a\u0642\u0627\u0631\u064a\u0631 \u0648\u0627\u0644\u062a\u062d\u0644\u064a\u0644\u0627\u062a \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629 \u0645\u062a\u0627\u062d\u0629 \u0641\u064a \u0628\u0627\u0642\u0629 Pro \u0648\u0623\u0639\u0644\u0649.",
-    exportsDescription: "\u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0625\u0644\u0649 CSV \u0645\u062a\u0627\u062d \u0641\u064a \u0628\u0627\u0642\u0629 Business.",
-    brandingDescription: "\u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0627\u0644\u062a\u062c\u0627\u0631\u064a\u0629 \u0627\u0644\u0645\u062e\u0635\u0635\u0629 \u0644\u0635\u0641\u062d\u0629 \u0627\u0644\u062d\u062c\u0632 \u0645\u062a\u0627\u062d\u0629 \u0641\u064a \u0628\u0627\u0642\u0629 Pro \u0648\u0623\u0639\u0644\u0649.",
+    advanced_reportsDescription: "التقارير والتحليلات المتقدمة متاحة في باقة Pro وأعلى.",
+    brandingDescription: "العلامة التجارية المخصصة لصفحة الحجز متاحة في باقة Pro وأعلى.",
+    exportsDescription: "تصدير البيانات إلى CSV متاح في باقة Business.",
+    goBack: "رجوع",
+    inventoryDescription: "إدارة المنتجات والمخزون متاحة في باقة Pro وأعلى.",
+    shiftsDescription: "تخطيط الورديات لكل موظف متاح في باقة Pro وأعلى.",
+    upgradeDescription: "خطتك الحالية لا تتضمن هذه الميزة. قم بالترقية للحصول على الوصول.",
+    upgradeRequired: "هذه الميزة تتطلب ترقية",
+    viewPlans: "عرض الخطط",
   };
