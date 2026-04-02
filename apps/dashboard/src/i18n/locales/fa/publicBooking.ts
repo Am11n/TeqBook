@@ -1,7 +1,7 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const publicBooking: TranslationNamespaces['publicBooking'] = {
-    notFound: "این سالن پیدا نشد یا عمومی (public) نشده است.",
+    notFound: "این سالن پیدا نشد یا عمومی نشده است.",
     loadError: "امکان بارگیری خدمات یا کارکنان وجود ندارد.",
     loadingSalon: "در حال بارگیری اطلاعات سالن…",
     headerSubtitle: "وقت خود را رزرو کنید – پرداخت همیشه در خود سالن انجام می‌شود.",
@@ -26,7 +26,7 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
     emailLabel: "ایمیل (اختیاری)",
     emailPlaceholder: "you@example.com",
     phoneLabel: "تلفن (اختیاری)",
-    phonePlaceholder: "+47 400 00 000",
+    phonePlaceholder: "+۹۳ ۷۰ ۱۲۳ ۴۵۶۷",
     submitSaving: "در حال ارسال درخواست…",
     submitLabel: "تأیید نوبت",
     payInfo:

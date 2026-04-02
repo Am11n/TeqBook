@@ -14,6 +14,9 @@
     "test:run": "vitest --run",
     "test:i18n": "vitest --run src/i18n/__tests__/parity.test.ts",
     "test:i18n:all": "NEXT_PUBLIC_DASHBOARD_LOCALE_ALLOWLIST=en,nb,ar,so,ti,am,tr,pl,vi,zh,tl,fa,dar,ur,hi vitest --run src/i18n/__tests__/parity.test.ts",
+    "i18n:machine-translate": "pnpm exec tsx scripts/machine-translate-locales.ts",
+    "i18n:machine-translate:skip-ar": "pnpm exec tsx scripts/machine-translate-locales.ts --skip-locale=ar",
+    "i18n:machine-translate:ollama": "MT_ENGINE=ollama pnpm exec tsx scripts/machine-translate-locales.ts",
     "test:coverage": "vitest --coverage --run",
     "test:integration": "vitest --run --config vitest.integration.config.ts"
   },

@@ -15,8 +15,7 @@ export const employees: TranslationNamespaces['employees'] = {
     bookingBlocked: "الحجز لا يعمل",
     canBeBooked: "يمكن حجزه",
     cancel: "إلغاء",
-    capacityBlockedMessage:
-      "أنت تستخدم {current} من {limit} {entity} المضمنة. يمكنك إضافة المزيد؛ تُحتسب المقاعد الإضافية كإضافات (انظر الفوترة).",
+    capacityBlockedMessage: "أنت تستخدم {current} من {limit} {entity} المضمنة. يمكنك إضافة المزيد؛ تُحتسب المقاعد الإضافية كإضافات (انظر الفوترة).",
     capacityBlockedTitle: "{entity} المضمن قيد الاستخدام",
     capacityMessage: "لقد بلغت الحد الأقصى.",
     capacityNearMessage: "أنت تستخدم {current} من {limit} {entity}.",

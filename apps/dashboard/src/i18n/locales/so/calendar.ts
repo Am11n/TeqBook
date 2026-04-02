@@ -1,28 +1,24 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const calendar: TranslationNamespaces['calendar'] = {
-    title: "Kalandar",
-    description:
-      "Kalandar gudaha ah oo fudud maalin walba iyo shaqaale walba. Waxaa loo isticmaalaa saldhig ahaan drag & drop iyo muuqaalro ballaaran mustaqbalka.",
-    mustBeLoggedIn: "Waa inaad gasho si aad kalandarka u aragto.",
-    noSalon:
-      "Salon lagama helin isticmaalahaaga. Fadlan marka hore dhammaystir onboarding-ka.",
+    description: "Kalandar gudaha ah oo fudud maalin walba iyo shaqaale walba. Waxaa loo isticmaalaa saldhig ahaan drag & drop iyo muuqaalro ballaaran mustaqbalka.",
+    filterEmployeeAll: "Dhammaan shaqaalaha",
+    filterEmployeeLabel: "Filtar shaqaale",
     loadError: "Lama soo dejin karin xogta kalandarka.",
+    loading: "Waxaa socda soo dejinta xogta kalandarka…",
+    mustBeLoggedIn: "Waa inaad gasho si aad kalandarka u aragto.",
+    next: "Maalinta xigta",
+    noBookingsDescription: "Dooro taariikh kale ama samee ballamo cusub.",
+    noBookingsTitle: "Ma jiraan ballamo maalintaan ah",
+    noEmployeesDescription: "Marka hore abuur shaqaale si ay ugu muuqdaan kalandarka.",
+    noEmployeesTitle: "Shaqaale weli ma jiraan",
+    noSalon: "Salon lagama helin isticmaalahaaga. Fadlan marka hore dhammaystir onboarding-ka.",
+    prev: "Maalintii hore",
     selectedDayLabel: "Maalinta la xushay:",
+    title: "Kalandar",
+    today: "Maanta",
+    unknownCustomer: "Walk-in / aan la aqoon",
+    unknownService: "Adeeg aan la aqoon",
     viewDay: "Muuqaal maalin",
     viewWeek: "Muuqaal toddobaad",
-    filterEmployeeLabel: "Filtar shaqaale",
-    filterEmployeeAll: "Dhammaan shaqaalaha",
-    prev: "Maalintii hore",
-    today: "Maanta",
-    next: "Maalinta xigta",
-    loading: "Waxaa socda soo dejinta xogta kalandarka…",
-    noEmployeesTitle: "Shaqaale weli ma jiraan",
-    noEmployeesDescription:
-      "Marka hore abuur shaqaale si ay ugu muuqdaan kalandarka.",
-    noBookingsTitle: "Ma jiraan ballamo maalintaan ah",
-    noBookingsDescription:
-      "Dooro taariikh kale ama samee ballamo cusub.",
-    unknownService: "Adeeg aan la aqoon",
-    unknownCustomer: "Walk-in / aan la aqoon",
   };

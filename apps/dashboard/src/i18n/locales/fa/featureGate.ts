@@ -8,6 +8,6 @@ export const featureGate: TranslationNamespaces['featureGate'] = {
     shiftsDescription: "برنامه‌ریزی شیفت برای هر کارمند در پلن Pro و بالاتر در دسترس است.",
     inventoryDescription: "مدیریت محصول و موجودی در پلن Pro و بالاتر در دسترس است.",
     advanced_reportsDescription: "گزارش‌ها و تحلیل‌های پیشرفته در پلن Pro و بالاتر در دسترس است.",
-    exportsDescription: "خروجی CSV داده‌ها در پلن Business در دسترس است.",
+    exportsDescription: "خروجی داده‌ها به‌صورت CSV در پلن Business در دسترس است.",
     brandingDescription: "برندسازی سفارشی برای صفحه رزرو در پلن Pro و بالاتر در دسترس است.",
   };

@@ -76,8 +76,7 @@ export const settings: TranslationNamespaces['settings'] = {
     billingSmsLoading: "جارٍ تحميل استخدام الرسائل النصية القصيرة...",
     billingSmsOverageLabel: "تقدير التجاوز في السن",
     billingSmsPlanDataError: "تعذر تحميل بيانات الخطة لحصة الرسائل النصية: {detail}",
-    billingSmsQuotaWarning:
-      "لقد استخدمت {percent}% من حصتك المضمنة من الرسائل النصية القصيرة. ضع في اعتبارك الترقية لتجنب تكاليف الاستخدام الزائد.",
+    billingSmsQuotaWarning: "لقد استخدمت {percent}% من حصتك المضمنة من الرسائل النصية القصيرة. ضع في اعتبارك الترقية لتجنب تكاليف الاستخدام الزائد.",
     billingSmsStaleLine: "{detail} عرض آخر القيم المحمّلة لهذه الفترة الفوترية.",
     billingSmsTogglesHint: "المسامير هي عناصر تحكم معاينة محلية في هذه المرحلة وستستمر في خطوة إعدادات SMS مخصصة.",
     billingSmsUnavailable: "استخدام الرسائل النصية القصيرة غير متاح مؤقتًا. يُرجى إعادة المحاولة.",
@@ -194,8 +193,7 @@ export const settings: TranslationNamespaces['settings'] = {
     newBookingLabel: "طلب جديد",
     noShowTab: "عد اللحاق بالطائرة",
     notificationPreviewBodyLabel: "الجسم",
-    notificationPreviewDescription:
-      "هذه رسالة بريد إلكتروني نموذجية. سيتم استبدال المتغيرات مثل {customer_name} ببيانات حقيقية.",
+    notificationPreviewDescription: "هذه رسالة بريد إلكتروني نموذجية. سيتم استبدال المتغيرات مثل {customer_name} ببيانات حقيقية.",
     notificationPreviewSubjectLabel: "الموضوع",
     notificationPreviewTitle: "معاينة البريد الإلكتروني",
     notificationTestSendFailed: "فشل في إرسال البريد الإلكتروني",

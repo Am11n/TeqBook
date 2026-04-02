@@ -63,7 +63,7 @@ export const services: TranslationNamespaces['services'] = {
     noEmployeesAssigned: "لم يتم تعيين موظفين",
     noSalon: "لا يوجد أي صالون مرتبط بحسابك. يرجى إكمال إعداد الصالون أولًا.",
     percentLabel: "النسبة المئوية",
-    prepBadge: "prep",
+    prepBadge: "الاستعداد",
     prepMinutesLabel: "وقت التحضير (دقيقة)",
     previewChanges: "معاينة التغييرات",
     priceLabel: "السعر",
