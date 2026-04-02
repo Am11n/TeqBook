@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HeartPulse, Database, CreditCard, Activity, RefreshCcw, Clock, Mail, Cloud, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 
 type HealthCheck = { status: string; latency_ms: number; error?: string };
 type HealthResponse = { status: string; timestamp: string; checks: Record<string, HealthCheck> };
@@ -37,6 +38,8 @@ const SERVICE_ICONS: Record<string, typeof Database> = {
 };
 
 export default function SystemHealthPage() {
+  const t = useAdminConsoleMessages();
+  const sh = t.pages.systemHealth;
   const router = useRouter();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,9 +63,8 @@ export default function SystemHealthPage() {
     else setRefreshing(true);
     if (!healthRef.current) setPageError(null);
     try {
-      // Promise.race timeout works consistently across browsers.
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Health API timeout")), 8000)
+        setTimeout(() => reject(new Error(sh.errorTimeout)), 8000)
       );
       const healthApiUrl = resolveHealthApiUrl();
       const res = (await Promise.race([fetch(healthApiUrl), timeoutPromise])) as Response;
@@ -72,14 +74,14 @@ export default function SystemHealthPage() {
       }
       setAuthState("authorized");
       if (!res.ok) {
-        throw new Error(`Health API failed (${res.status})`);
+        throw new Error(`${sh.errorApiFailedPrefix} (${res.status})`);
       }
       const data = (await res.json()) as HealthResponse;
       setHealth(data);
       setLastRefresh(new Date());
     } catch (err) {
       if (!healthRef.current) setHealth(null);
-      const message = err instanceof Error ? err.message : "Could not load system health";
+      const message = err instanceof Error ? err.message : sh.errorLoadFailed;
       if (message !== "Unauthorized") {
         setPageError(message);
       }
@@ -88,13 +90,12 @@ export default function SystemHealthPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [sh.errorTimeout, sh.errorLoadFailed, sh.errorApiFailedPrefix]);
 
   useEffect(() => {
     void fetchHealth();
   }, [fetchHealth]);
 
-  // Auto-refresh every 30s
   useEffect(() => {
     if (authState !== "authorized") return;
     const interval = setInterval(fetchHealth, 60000);
@@ -111,13 +112,10 @@ export default function SystemHealthPage() {
     return (
       <ErrorBoundary>
         <AdminShell>
-          <PageLayout
-            title="System Health"
-            description="Loading system access..."
-          >
+          <PageLayout title={sh.titleLoading} description={sh.descLoading}>
             <Card>
               <CardContent className="py-8 text-sm text-muted-foreground">
-                Checking permissions...
+                {sh.checkingPermissions}
               </CardContent>
             </Card>
           </PageLayout>
@@ -131,12 +129,12 @@ export default function SystemHealthPage() {
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="System Health"
-          description="Real-time platform status and service monitoring"
+          title={sh.title}
+          description={sh.description}
           actions={
             <Button variant="outline" size="sm" onClick={fetchHealth} disabled={loading || refreshing} className="gap-1">
               <RefreshCcw className={`h-4 w-4 ${loading || refreshing ? "animate-spin" : ""}`} />
-              Refresh
+              {sh.refresh}
             </Button>
           }
         >
@@ -145,19 +143,17 @@ export default function SystemHealthPage() {
               {pageError}
             </div>
           )}
-          {/* Overall status banner */}
           <div className={`rounded-lg border px-5 py-4 mb-6 flex items-center justify-between ${health?.status === "healthy" ? "bg-emerald-50 border-emerald-200" : health?.status === "degraded" ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}`}>
             <div className="flex items-center gap-3">
               <HeartPulse className={`h-6 w-6 ${health?.status === "healthy" ? "text-emerald-600" : health?.status === "degraded" ? "text-amber-600" : "text-red-600"}`} />
               <div>
-                <p className="font-semibold text-sm">{health?.status === "healthy" ? "All Systems Operational" : health?.status === "degraded" ? "Some Systems Degraded" : "Loading..."}</p>
-                {lastRefresh && <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Last checked: {lastRefresh.toLocaleTimeString()} {refreshing ? "(refreshing...)" : ""}</p>}
+                <p className="font-semibold text-sm">{health?.status === "healthy" ? sh.allSystemsOperational : health?.status === "degraded" ? sh.someSystemsDegraded : sh.loadingBanner}</p>
+                {lastRefresh && <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {sh.lastChecked} {lastRefresh.toLocaleTimeString()} {refreshing ? sh.refreshingSuffix : ""}</p>}
               </div>
             </div>
-            <Badge variant="outline" className={STATUS_ICON[health?.status ?? "unknown"]}>{health?.status ?? "checking"}</Badge>
+            <Badge variant="outline" className={STATUS_ICON[health?.status ?? "unknown"]}>{health?.status ?? sh.statusChecking}</Badge>
           </div>
 
-          {/* Service cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
             {health?.checks && Object.entries(health.checks).map(([name, check]) => {
               const Icon = SERVICE_ICONS[name] ?? Activity;
@@ -171,7 +167,7 @@ export default function SystemHealthPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-sm space-y-1">
-                      <div className="flex justify-between"><span className="text-muted-foreground">Latency</span><span className="font-mono">{check.latency_ms}ms</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{sh.latency}</span><span className="font-mono">{check.latency_ms}ms</span></div>
                       {check.error && <p className="text-xs text-red-600 mt-1">{check.error}</p>}
                     </div>
                   </CardContent>
@@ -180,10 +176,9 @@ export default function SystemHealthPage() {
             })}
           </div>
 
-          {/* Uptime history placeholder */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Uptime History (last 24h)</CardTitle>
+              <CardTitle className="text-sm">{sh.uptimeHistoryTitle}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-0.5 items-end h-8">
@@ -191,7 +186,7 @@ export default function SystemHealthPage() {
                   <div key={i} className="flex-1 bg-emerald-400 rounded-sm" style={{ height: `${60 + Math.random() * 40}%` }} />
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">Each bar = 30 minutes. Green = healthy.</p>
+              <p className="text-xs text-muted-foreground mt-2 text-center">{sh.uptimeHistoryHint}</p>
             </CardContent>
           </Card>
         </PageLayout>

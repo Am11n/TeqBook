@@ -3,6 +3,8 @@
 // =====================================================
 // Template renderer for in-app notifications with i18n support
 
+import type { AppLocale } from "@/i18n/app-locale";
+import { appLocaleToBcp47 } from "@/i18n/locale-bcp47";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import type { NotificationEventType } from "@/lib/types/notifications";
 import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
@@ -37,8 +39,7 @@ type TranslationSet = {
   };
 };
 
-const translations: Record<string, TranslationSet> = {
-  en: {
+const enNotificationTemplates: TranslationSet = {
     booking_confirmed: {
       title: "Booking Confirmed",
       body: "Your appointment for {{serviceName}} on {{date}} at {{time}} has been confirmed.",
@@ -63,7 +64,10 @@ const translations: Record<string, TranslationSet> = {
       title: "New Booking",
       body: "{{customerName}} has booked {{serviceName}} for {{date}} at {{time}}.",
     },
-  },
+};
+
+const notificationTemplatesByLocale: Record<AppLocale, TranslationSet> = {
+  en: enNotificationTemplates,
   nb: {
     booking_confirmed: {
       title: "Time bekreftet",
@@ -194,6 +198,15 @@ const translations: Record<string, TranslationSet> = {
       body: "{{customerName}} ለ {{serviceName}} በ {{date}} ሰዓት {{time}} ቦታ አስመዝግበዋል።",
     },
   },
+  tr: enNotificationTemplates,
+  pl: enNotificationTemplates,
+  vi: enNotificationTemplates,
+  zh: enNotificationTemplates,
+  tl: enNotificationTemplates,
+  fa: enNotificationTemplates,
+  dar: enNotificationTemplates,
+  ur: enNotificationTemplates,
+  hi: enNotificationTemplates,
 };
 
 // =====================================================
@@ -212,7 +225,7 @@ function interpolate(template: string, variables: Record<string, string>): strin
  */
 function formatDateTime(isoString: string, locale: string, timezone?: string | null): { date: string; time: string } {
   const timezoneToUse = timezone || "UTC";
-  const localeToUse = locale === "nb" ? "nb-NO" : "en-US";
+  const localeToUse = appLocaleToBcp47(locale);
   
   // Use timezone utility function
   const { date: dateStr, time: timeStr } = formatDateTimeInTimezone(isoString, timezoneToUse, localeToUse);
@@ -239,12 +252,11 @@ export function renderNotificationTemplate(
   language: string = "en"
 ): RenderedTemplate {
   const locale = normalizeLocale(language);
-  const localeTranslations = translations[locale] || translations.en;
+  const localeTranslations = notificationTemplatesByLocale[locale] ?? notificationTemplatesByLocale.en;
   const template = localeTranslations[eventType];
 
   if (!template) {
-    // Fallback to English if event type not found
-    const fallback = translations.en[eventType];
+    const fallback = notificationTemplatesByLocale.en[eventType];
     return {
       title: fallback?.title || "Notification",
       body: fallback?.body || "You have a new notification.",

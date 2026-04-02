@@ -3,9 +3,9 @@
 // =====================================================
 // Email template for booking confirmations with i18n support
 
-import { translations } from "@/i18n/translations";
+import type { AppLocale } from "@/i18n/app-locale";
+import { appLocaleToBcp47 } from "@/i18n/locale-bcp47";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
-import type { AppLocale } from "@/i18n/translations";
 import type { Booking } from "@/lib/types/domain";
 import { format } from "date-fns";
 import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
@@ -21,35 +21,38 @@ export interface BookingConfirmationTemplateProps {
   timezone?: string | null; // IANA timezone identifier
 }
 
+type EmailCopy = {
+  subject: string;
+  greeting: string;
+  confirmed: string;
+  details: string;
+  service: string;
+  employee: string;
+  date: string;
+  time: string;
+  salon: string;
+  notes: string;
+  footer: string;
+};
+
+const enBookingEmail: EmailCopy = {
+  subject: "Booking Confirmation - {{salonName}}",
+  greeting: "Hello {{customerName}},",
+  confirmed: "Your booking has been confirmed!",
+  details: "Booking Details:",
+  service: "Service",
+  employee: "Employee",
+  date: "Date",
+  time: "Time",
+  salon: "Salon",
+  notes: "Notes",
+  footer: "We look forward to seeing you!",
+};
+
 // Helper to get translations
 function getTranslations(locale: AppLocale) {
-  // Email-specific translations (fallback to English if not available)
-  const emailTranslations: Partial<Record<AppLocale, {
-    subject: string;
-    greeting: string;
-    confirmed: string;
-    details: string;
-    service: string;
-    employee: string;
-    date: string;
-    time: string;
-    salon: string;
-    notes: string;
-    footer: string;
-  }>> = {
-    en: {
-      subject: "Booking Confirmation - {{salonName}}",
-      greeting: "Hello {{customerName}},",
-      confirmed: "Your booking has been confirmed!",
-      details: "Booking Details:",
-      service: "Service",
-      employee: "Employee",
-      date: "Date",
-      time: "Time",
-      salon: "Salon",
-      notes: "Notes",
-      footer: "We look forward to seeing you!",
-    },
+  const emailTranslations: Record<AppLocale, EmailCopy> = {
+    en: enBookingEmail,
     nb: {
       subject: "Bekreftelse av time - {{salonName}}",
       greeting: "Hei {{customerName}},",
@@ -115,22 +118,18 @@ function getTranslations(locale: AppLocale) {
       notes: "ማስታወሻዎች",
       footer: "እንድናያችሁ እንጠባበቃለን!",
     },
-  } as Record<string, {
-    subject: string;
-    greeting: string;
-    confirmed: string;
-    details: string;
-    service: string;
-    employee: string;
-    date: string;
-    time: string;
-    salon: string;
-    notes: string;
-    footer: string;
-  }>;
+    tr: enBookingEmail,
+    pl: enBookingEmail,
+    vi: enBookingEmail,
+    zh: enBookingEmail,
+    tl: enBookingEmail,
+    fa: enBookingEmail,
+    dar: enBookingEmail,
+    ur: enBookingEmail,
+    hi: enBookingEmail,
+  };
 
-  // Default to English for unsupported locales
-  return emailTranslations[locale] || emailTranslations.en || emailTranslations["en"]!;
+  return emailTranslations[locale] ?? enBookingEmail;
 }
 
 export function renderBookingConfirmationTemplate(
@@ -147,14 +146,13 @@ export function renderBookingConfirmationTemplate(
   
   // Use salon timezone if provided, otherwise use UTC
   const timezone = props.timezone || "UTC";
-  
-  // Format date and time in salon timezone
-  const startDateTime = formatDateTimeInTimezone(booking.start_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
-  const endTime = formatDateTimeInTimezone(booking.end_time, timezone, locale === "nb" ? "nb-NO" : "en-US");
-  
-  // Format date string (full date with weekday)
+  const bcp47 = appLocaleToBcp47(locale);
+
+  const startDateTime = formatDateTimeInTimezone(booking.start_time, timezone, bcp47);
+  const endTime = formatDateTimeInTimezone(booking.end_time, timezone, bcp47);
+
   const startDate = new Date(booking.start_time);
-  const dateStr = new Intl.DateTimeFormat(locale === "nb" ? "nb-NO" : "en-US", {
+  const dateStr = new Intl.DateTimeFormat(bcp47, {
     weekday: "long",
     year: "numeric",
     month: "long",

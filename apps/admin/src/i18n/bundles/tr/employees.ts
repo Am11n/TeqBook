@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "Çalışanlar",
+    description:
+      "Randevu alabilecek kuaför ve diğer çalışanları ekle.",
+    mustBeLoggedIn: "Çalışanları görmek için giriş yapmalısın.",
+    noSalon:
+      "Hesabına bağlı bir salon bulunamadı. Lütfen önce başlangıç adımlarını tamamla.",
+    addError: "Çalışan eklenemedi.",
+    updateError: "Çalışan güncellenemedi.",
+    newEmployee: "Yeni çalışan",
+    nameLabel: "İsim",
+    namePlaceholder: "örn. Alex Stilist",
+    emailLabel: "E-posta (opsiyonel)",
+    emailPlaceholder: "alex@salon.com",
+    phoneLabel: "Telefon (opsiyonel)",
+    phonePlaceholder: "+90 5XX XXX XX XX",
+    roleLabel: "Rol (opsiyonel)",
+    rolePlaceholder: "örn. Stilist, Resepsiyonist",
+    preferredLanguageLabel: "Tercih edilen dil",
+    servicesLabel: "Bu çalışanın sunduğu hizmetler",
+    servicesPlaceholder: "Hizmetleri seç...",
+    loading: "Çalışanlar yükleniyor…",
+    emptyTitle: "Henüz çalışan eklenmedi",
+    emptyDescription:
+      "Soldaki formdan çalışan eklediğinde burada görünecek ve takvim ile randevu motorunda kullanılacak.",
+    tableTitle: "Çalışanların",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "Durum",
+    colActions: "İşlemler",
+    active: "Aktif",
+    inactive: "Pasif",
+    delete: "Sil",
+    edit: "Düzenle",
+    addButton: "Çalışan ekle",
+    editTitle: "Çalışanı düzenle",
+    editDescription: "Çalışan bilgilerini ve hizmetlerini güncelleyin.",
+    cancel: "İptal",
+    save: "Kaydet",
+    saving: "Kaydediliyor…",
+};

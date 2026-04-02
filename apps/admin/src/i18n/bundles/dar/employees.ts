@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "کارمندان",
+    description:
+      "آرایشگران و دیگر کارمندانی را که می‌توانند نوبت بگیرند اضافه کنید.",
+    mustBeLoggedIn: "برای دیدن کارمندان باید وارد شوید.",
+    noSalon:
+      "حساب شما هنوز به هیچ سالونی وصل نشده است. اول راه‌اندازی ابتدایی را تکمیل کنید.",
+    addError: "اضافه کردن کارمند موفق نشد.",
+    updateError: "به‌روزرسانی کارمند موفق نشد.",
+    newEmployee: "کارمند جدید",
+    nameLabel: "نام",
+    emailLabel: "ایمیل (اختیاری)",
+    phoneLabel: "شماره تلفن (اختیاری)",
+    roleLabel: "نقش (اختیاری)",
+    rolePlaceholder: "مثال: آرایشگر، پذیرش",
+    preferredLanguageLabel: "زبان ترجیحی",
+    servicesLabel: "خدماتی که این کارمند ارائه می‌دهد",
+    servicesPlaceholder: "خدمات را انتخاب کنید...",
+    namePlaceholder: "مثال: علی آرایشگر",
+    emailPlaceholder: "ali@salon.com",
+    phonePlaceholder: "+47 400 00 000",
+    loading: "در حال بارگیری کارمندان…",
+    emptyTitle: "هنوز هیچ کارمندی اضافه نشده است",
+    emptyDescription:
+      "وقتی در فورم سمت چپ کارمندان را اضافه کنید، اینجا نشان داده می‌شوند و در تقویم و سیستم نوبت‌دهی قابل استفاده خواهند بود.",
+    tableTitle: "کارمندان شما",
+    colName: "نام",
+    colRole: "نقش",
+    colContact: "تماس",
+    colServices: "خدمات",
+    colStatus: "وضعیت",
+    colActions: "عملیات",
+    active: "فعال",
+    inactive: "غیرفعال",
+    delete: "حذف",
+    edit: "ویرایش",
+    addButton: "اضافه کردن کارمند",
+    editTitle: "ویرایش کارمند",
+    editDescription: "معلومات و خدمات کارمند را به‌روز کنید.",
+    cancel: "لغو",
+    save: "ذخیره",
+    saving: "در حال ذخیره…",
+};

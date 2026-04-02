@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const products: TranslationNamespaces["products"] = {
+
+    title: "Products",
+    description: "Manage your inventory and products",
+    noProducts: "No products yet",
+    createFirst: "Create your first product",
+    name: "Name",
+    price: "Price",
+    stock: "Stock",
+    sku: "SKU",
+    status: "Status",
+    actions: "Actions",
+    create: "Create Product",
+    edit: "Edit",
+    delete: "Delete",
+    save: "Save",
+    cancel: "Cancel",
+    active: "Active",
+    inactive: "Inactive",
+    namePlaceholder: "Product name",
+    pricePlaceholder: "0.00",
+    stockPlaceholder: "0",
+    skuPlaceholder: "SKU-001",
+};

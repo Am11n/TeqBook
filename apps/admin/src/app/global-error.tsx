@@ -1,7 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { AppLocale } from "@/i18n/translations";
+import { APP_LOCALES } from "@/i18n/translations";
+import { getAdminConsoleMessages } from "@/i18n/admin-console";
+
+const VALID = new Set<string>(APP_LOCALES);
+
+function localeFromDocument(): AppLocale {
+  if (typeof document === "undefined") return "en";
+  const lang = document.documentElement.getAttribute("lang");
+  if (lang && VALID.has(lang)) return lang as AppLocale;
+  return "en";
+}
 
 /**
  * Catches errors in the root layout (e.g. 502, critical failures).
@@ -14,12 +26,20 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [locale, setLocale] = useState<AppLocale>("en");
+
   useEffect(() => {
     console.error("Admin app global error:", error);
   }, [error]);
 
+  useEffect(() => {
+    setLocale(localeFromDocument());
+  }, []);
+
+  const e = getAdminConsoleMessages(locale).errors;
+
   return (
-    <html lang="nb">
+    <html lang={locale}>
       <body style={{
         margin: 0,
         fontFamily: "system-ui, sans-serif",
@@ -31,13 +51,15 @@ export default function GlobalError({
         justifyContent: "center",
         padding: "1rem",
         boxSizing: "border-box",
-      }}>
+        direction: ["ar", "fa", "ur", "dar"].includes(locale) ? "rtl" : "ltr",
+      }}
+      >
         <div style={{ maxWidth: "28rem", textAlign: "center" }}>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-            TeqBook Admin – noe gikk galt
+            {e.globalTitle}
           </h1>
           <p style={{ color: "#64748b", marginBottom: "1.5rem", lineHeight: 1.6 }}>
-            Det oppstod en alvorlig feil. Prøv å laste siden på nytt, eller kontakt TeqBook-eieren / support.
+            {e.globalDescription}
           </p>
           <div style={{
             padding: "1rem",
@@ -48,12 +70,13 @@ export default function GlobalError({
             textAlign: "left",
             fontSize: "0.875rem",
             color: "#92400e",
-          }}>
-            <strong>Hva kan du gjøre?</strong>
+          }}
+          >
+            <strong>{e.globalHintTitle}</strong>
             <ul style={{ margin: "0.5rem 0 0 1.25rem", padding: 0 }}>
-              <li>Last siden på nytt (F5)</li>
-              <li>Kontakt den som har gitt deg tilgang til Admin</li>
-              <li>Ved vedvarende feil: kontakt TeqBook support</li>
+              <li>{e.globalHint1}</li>
+              <li>{e.globalHint2}</li>
+              <li>{e.globalHint3}</li>
             </ul>
           </div>
           <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -71,7 +94,7 @@ export default function GlobalError({
                 cursor: "pointer",
               }}
             >
-              Prøv på nytt
+              {e.globalRefresh}
             </button>
             <Link
               href="/"
@@ -86,7 +109,7 @@ export default function GlobalError({
                 textDecoration: "none",
               }}
             >
-              Til Admin-forsiden
+              {e.globalBackDashboard}
             </Link>
           </div>
         </div>

@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "Mga empleyado",
+    description:
+      "Magdagdag ng mga hairstylist at iba pang empleyado na puwedeng tumanggap ng booking.",
+    mustBeLoggedIn: "Kailangan mong mag-log in para makita ang mga empleyado.",
+    noSalon:
+      "Wala pang salon na naka-link sa account mo. Kumpletuhin muna ang onboarding.",
+    addError: "Hindi madagdag ang empleyado.",
+    updateError: "Hindi ma-update ang empleyado.",
+    newEmployee: "Bagong empleyado",
+    nameLabel: "Pangalan",
+    namePlaceholder: "hal. Alex Stylist",
+    emailLabel: "Email (opsyonal)",
+    emailPlaceholder: "alex@salon.com",
+    phoneLabel: "Telepono (opsyonal)",
+    phonePlaceholder: "+47 400 00 000",
+    roleLabel: "Tungkulin (opsyonal)",
+    rolePlaceholder: "hal. Stylist, Receptionist",
+    preferredLanguageLabel: "Gustong wika",
+    servicesLabel: "Mga serbisyo na inaalok ng empleyadong ito",
+    servicesPlaceholder: "Pumili ng mga serbisyo...",
+    loading: "Ikinakarga ang mga empleyado…",
+    emptyTitle: "Wala pang nadadagdag na empleyado",
+    emptyDescription:
+      "Kapag nagdagdag ka ng empleyado sa form sa kaliwa, lalabas sila rito at magiging available sa kalendaryo at booking engine.",
+    tableTitle: "Mga empleyado mo",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "Katayuan",
+    colActions: "Mga aksyon",
+    active: "Aktibo",
+    inactive: "Hindi aktibo",
+    delete: "Tanggalin",
+    edit: "I-edit",
+    addButton: "Magdagdag ng empleyado",
+    editTitle: "I-edit ang empleyado",
+    editDescription: "I-update ang impormasyon at mga serbisyo ng empleyado.",
+    cancel: "Kanselahin",
+    save: "I-save",
+    saving: "Sine-save…",
+};

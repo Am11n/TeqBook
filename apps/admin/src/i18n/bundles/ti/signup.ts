@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const signup: TranslationNamespaces["signup"] = {
+
+    title: "ኣካውንት ፍጠር",
+    description: "ኣካውንት ፍጠር ን TeqBook ንምጅማር።",
+    confirmPasswordLabel: "ሚስጥር ቃል ኣረጋግጽ",
+    confirmPasswordPlaceholder: "ሚስጥር ቃል ዳግማይ ኣእቱ",
+    signupButton: "ኣካውንት ፍጠር",
+    signingUp: "ኣካውንት ኣብ ምፍጣር...",
+    signupError: "ኣካውንት ኣይተፈጥረን",
+    alreadyHaveAccount: "ቀደም ኣካውንት ኣሎካ?",
+    loginLink: "እቶ",
+    passwordMismatch: "ሚስጥር ቃላት አይጣጣሙም",
+    createAccountTitle: "ናይ TeqBook ኣካውንትኩም ፍጠሩ",
+    createAccountDescription: "ናይ ነጻ ሙከራኩም ጀምሩ። ናይ ክሬድት ካርድ ኣየድልየን። ሰራዊትን ሳሎናትን ድሕሪኡ ክትወስኹ ትኽእሉ።",
+    bullet1: "ኣብ ደቂቕ ብኢንተርነት ቦኪንግ ጀምሩ",
+    bullet2: "ሳሎንኩም ምስ ዝዓብይ ዳግማይ ኣሻልኦ",
+    bullet3: "ናይ ብዙሕ ቋንቋ ቦኪንግ ገጽ ተገልጺ",
+    formSubtitle: "ናይ ነጻ ሙከራኩም TeqBook ጀምሩ። ናይ ክሬድት ካርድ ኣየድልየን።",
+    trustLine: "ንሳሎናት እቲ ቀሊል፣ ንጹር ናይ ምድላይ ዝደለዩ ዝእመኑ። ኣይኮነን ነዊሕ ሶፍትዌር።",
+    passwordPlaceholder: "ፓስዎርድ ፍጠር",
+    passwordHint: "እንተወሰነ 8 ፊደላት ተጠቐም። እዚ ድሕሪኡ ክትቀይሮ ትኽእል።",
+    termsAgreement: "ነቲ ሸርሕታትን ፖሊሲ ምስጢርን እተቀበልኩ።",
+    secureLoginLine: "ኣረጋዊ መግቢ። ፓስዎርድኩም ብጽሑፍ ኣይትከሓን።",
+};

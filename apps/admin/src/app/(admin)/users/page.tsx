@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { ListPage, type PageState } from "@teqbook/page";
@@ -12,6 +12,7 @@ import { NotesPanel, type AdminNote, type NoteTag } from "@/components/shared/no
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import { Building2, FileText, LogOut } from "lucide-react";
 import { format } from "date-fns";
@@ -36,22 +37,19 @@ const ROLE_COLORS: Record<string, string> = {
   staff: "bg-muted text-muted-foreground",
 };
 
-const columns: ColumnDef<UserRow>[] = [
-  { id: "email", header: "Email", cell: (r) => (
-    <div>
-      <span className="font-medium block">{r.email}</span>
-      {r.name && <span className="text-xs text-muted-foreground">{r.name}</span>}
-    </div>
-  ), sticky: true, hideable: false },
-  { id: "role", header: "Role", cell: (r) => (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? ""}`}>{r.is_superadmin ? "Super Admin" : r.role?.replace(/_/g, " ") ?? "user"}</span>
-  ), sortable: true },
-  { id: "salon_name", header: "Salon", cell: (r) => r.salon_name ?? "-" },
-  { id: "last_sign_in", header: "Last Login", cell: (r) => r.last_sign_in ? format(new Date(r.last_sign_in), "dd.MM.yyyy, HH:mm") : "Never", sortable: true },
-  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "dd.MM.yyyy, HH:mm"), sortable: true },
-];
+function formatUserRoleLabel(row: UserRow, u: { roleSuperAdmin: string; roleSalonOwner: string; roleStaff: string; roleFallback: string }) {
+  if (row.is_superadmin) return u.roleSuperAdmin;
+  const r = row.role;
+  if (r === "salon_owner") return u.roleSalonOwner;
+  if (r === "staff") return u.roleStaff;
+  return r?.replace(/_/g, " ") ?? u.roleFallback;
+}
 
 export default function AdminUsersPage() {
+  const t = useAdminConsoleMessages();
+  const u = t.pages.users;
+  const dq = t.pages.dashboard;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
 
@@ -104,11 +102,11 @@ export default function AdminUsersPage() {
       setUsers(rows);
       setTotal(rows.length > 0 ? rows[0].total_count : 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : c.unknownError);
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, sortBy, sortDir]);
+  }, [page, debouncedSearch, sortBy, sortDir, c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -139,14 +137,29 @@ export default function AdminUsersPage() {
     loadNotes(selectedUser.id);
   }, [selectedUser, loadNotes]);
 
-  const rowActions: RowAction<UserRow>[] = [
-    { label: "View Audit Trail", onClick: (u) => router.push(`/audit-logs?user=${u.id}`) },
-    { label: "Force Logout", onClick: async (u) => { console.log("Force logout", u.id); }, separator: true },
-  ];
+  const columns = useMemo((): ColumnDef<UserRow>[] => [
+    { id: "email", header: u.colEmail, cell: (r) => (
+      <div>
+        <span className="font-medium block">{r.email}</span>
+        {r.name && <span className="text-xs text-muted-foreground">{r.name}</span>}
+      </div>
+    ), sticky: true, hideable: false },
+    { id: "role", header: u.colRole, cell: (r) => (
+      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? ""}`}>{formatUserRoleLabel(r, u)}</span>
+    ), sortable: true },
+    { id: "salon_name", header: u.colSalon, cell: (r) => r.salon_name ?? "-" },
+    { id: "last_sign_in", header: u.colLastLogin, cell: (r) => r.last_sign_in ? format(new Date(r.last_sign_in), "dd.MM.yyyy, HH:mm") : c.never, sortable: true },
+    { id: "created_at", header: u.colCreated, cell: (r) => format(new Date(r.created_at), "dd.MM.yyyy, HH:mm"), sortable: true },
+  ], [u, c.never]);
 
-  const bulkActions = [
-    { label: "Export Selected", onClick: (ids: string[]) => { console.log("Export users", ids); } },
-  ];
+  const rowActions: RowAction<UserRow>[] = useMemo(() => [
+    { label: u.rowViewAudit, onClick: (usr) => router.push(`/audit-logs?user=${usr.id}`) },
+    { label: u.rowForceLogout, onClick: async (usr) => { console.log("Force logout", usr.id); }, separator: true },
+  ], [u.rowViewAudit, u.rowForceLogout, router]);
+
+  const bulkActions = useMemo(() => [
+    { label: c.exportSelected, onClick: (ids: string[]) => { console.log("Export users", ids); } },
+  ], [c.exportSelected]);
 
   if (contextLoading || !isSuperAdmin) return null;
 
@@ -156,16 +169,16 @@ export default function AdminUsersPage() {
     : error
       ? { status: "error", message: error, retry: loadUsers }
       : users.length === 0
-        ? { status: "empty", title: "No users found" }
+        ? { status: "empty", title: u.emptyTitle }
         : { status: "ready" };
 
   return (
     <ErrorBoundary>
       <AdminShell>
         <ListPage
-          title="Users"
-          description="Manage platform users and access"
-          actions={[{ label: "Invite User", onClick: () => {}, priority: "primary" }]}
+          title={u.title}
+          description={u.description}
+          actions={[{ label: u.inviteUser, onClick: () => {}, priority: "primary" }]}
           state={pageState}
         >
           <DataTable
@@ -178,7 +191,7 @@ export default function AdminUsersPage() {
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}
-            searchPlaceholder="Search users..."
+            searchPlaceholder={u.searchPlaceholder}
             sortColumn={sortBy}
             sortDirection={sortDir}
             onSortChange={(col, dir) => { setSortBy(col); setSortDir(dir); }}
@@ -186,34 +199,34 @@ export default function AdminUsersPage() {
             bulkActions={bulkActions}
             onRowClick={handleRowClick}
             loading={loading}
-            emptyMessage="No users found"
+            emptyMessage={u.emptyTitle}
             storageKey="users-pro"
           />
         </ListPage>
 
-        <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedUser?.email ?? "User"} description={selectedUser?.role ?? ""}>
+        <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedUser?.email ?? u.drawerUserFallback} description={selectedUser ? formatUserRoleLabel(selectedUser, u) : ""}>
           {selectedUser && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Email:</span> {selectedUser.email}</div>
-                <div><span className="text-muted-foreground">Role:</span> <Badge variant="outline">{selectedUser.is_superadmin ? "Super Admin" : selectedUser.role}</Badge></div>
-                <div><span className="text-muted-foreground">Salon:</span> {selectedUser.salon_id ? <EntityLink type="salon" id={selectedUser.salon_id} label={selectedUser.salon_name} /> : <span className="text-muted-foreground">None</span>}</div>
-                <div><span className="text-muted-foreground">Created:</span> {format(new Date(selectedUser.created_at), "PPP")}</div>
-                <div><span className="text-muted-foreground">Last login:</span> {selectedUser.last_sign_in ? format(new Date(selectedUser.last_sign_in), "PPpp") : "Never"}</div>
+                <div><span className="text-muted-foreground">{c.email}:</span> {selectedUser.email}</div>
+                <div><span className="text-muted-foreground">{u.colRole}:</span> <Badge variant="outline">{formatUserRoleLabel(selectedUser, u)}</Badge></div>
+                <div><span className="text-muted-foreground">{c.salon}:</span> {selectedUser.salon_id ? <EntityLink type="salon" id={selectedUser.salon_id} label={selectedUser.salon_name} /> : <span className="text-muted-foreground">{c.none}</span>}</div>
+                <div><span className="text-muted-foreground">{c.created}:</span> {format(new Date(selectedUser.created_at), "PPP")}</div>
+                <div><span className="text-muted-foreground">{c.lastLogin}:</span> {selectedUser.last_sign_in ? format(new Date(selectedUser.last_sign_in), "PPpp") : c.never}</div>
               </div>
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quick Actions</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{dq.quickActions}</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedUser.salon_id && (
-                    <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/salons?highlight=${selectedUser.salon_id}`)}><Building2 className="h-3 w-3" /> View Salon</Button>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/salons?highlight=${selectedUser.salon_id}`)}><Building2 className="h-3 w-3" /> {u.drawerViewSalon}</Button>
                   )}
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/audit-logs?user=${selectedUser.id}`)}><FileText className="h-3 w-3" /> Audit Trail</Button>
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => { console.log("Force logout", selectedUser.id); }}><LogOut className="h-3 w-3" /> Force Logout</Button>
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => router.push(`/audit-logs?user=${selectedUser.id}`)}><FileText className="h-3 w-3" /> {c.auditTrail}</Button>
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => { console.log("Force logout", selectedUser.id); }}><LogOut className="h-3 w-3" /> {u.rowForceLogout}</Button>
                 </div>
               </div>
               {recentActivity.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recent Activity</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{dq.recentActivity}</p>
                   <div className="space-y-1.5">
                     {recentActivity.map((a) => (
                       <div key={a.id} className="flex items-center justify-between text-xs p-2 rounded border">

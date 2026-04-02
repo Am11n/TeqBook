@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import { ToggleRight, Globe } from "lucide-react";
 
@@ -24,6 +25,9 @@ type FeatureFlag = {
 };
 
 export default function FeatureFlagsPage() {
+  const t = useAdminConsoleMessages();
+  const ff = t.pages.featureFlags;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
@@ -40,11 +44,11 @@ export default function FeatureFlagsPage() {
       if (e) { setError(e.message); return; }
       setFlags((data as FeatureFlag[]) ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : c.unknownError);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -67,21 +71,21 @@ export default function FeatureFlagsPage() {
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="Feature Flags"
-          description={`${enabledCount} of ${flags.length} flags enabled`}
-          breadcrumbs={<span>Analytics / Feature Flags</span>}
-          actions={<Button size="sm">Add Flag</Button>}
+          title={ff.title}
+          description={ff.descriptionTemplate.replace("{enabled}", String(enabledCount)).replace("{total}", String(flags.length))}
+          breadcrumbs={<span>{ff.breadcrumbs}</span>}
+          actions={<Button size="sm">{ff.addFlag}</Button>}
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           {/* Global flags */}
           <Card className="mb-6">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4" /> Global Flags</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4" /> {ff.globalFlags}</CardTitle>
             </CardHeader>
             <CardContent>
               {globalFlags.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No global flags defined</p>
+                <p className="text-sm text-muted-foreground">{ff.noGlobalFlags}</p>
               ) : (
                 <div className="space-y-3">
                   {globalFlags.map((flag) => (
@@ -93,7 +97,7 @@ export default function FeatureFlagsPage() {
                           {flag.description && <p className="text-xs text-muted-foreground">{flag.description}</p>}
                         </div>
                       </div>
-                      <Badge variant="outline" className={flag.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{flag.enabled ? "ON" : "OFF"}</Badge>
+                      <Badge variant="outline" className={flag.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{flag.enabled ? ff.badgeOn : ff.badgeOff}</Badge>
                     </div>
                   ))}
                 </div>
@@ -105,7 +109,7 @@ export default function FeatureFlagsPage() {
           {salonFlags.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2"><ToggleRight className="h-4 w-4" /> Salon-Specific Overrides</CardTitle>
+                <CardTitle className="text-sm flex items-center gap-2"><ToggleRight className="h-4 w-4" /> {ff.salonOverridesTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -115,10 +119,10 @@ export default function FeatureFlagsPage() {
                         <Switch checked={flag.enabled} onCheckedChange={(v) => toggleFlag(flag.id, v)} />
                         <div>
                           <p className="text-sm font-medium font-mono">{flag.flag_key}</p>
-                          <p className="text-xs text-muted-foreground">Salon: {flag.salon_id?.slice(0, 8)}...</p>
+                          <p className="text-xs text-muted-foreground">{ff.salonIdLabel} {flag.salon_id?.slice(0, 8)}...</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className={flag.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{flag.enabled ? "ON" : "OFF"}</Badge>
+                      <Badge variant="outline" className={flag.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700" : ""}>{flag.enabled ? ff.badgeOn : ff.badgeOff}</Badge>
                     </div>
                   ))}
                 </div>

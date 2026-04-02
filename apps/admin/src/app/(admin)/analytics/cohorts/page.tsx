@@ -8,31 +8,31 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import { format } from "date-fns";
 
 type CohortRow = { cohort_week: string; week_offset: number; retention_pct: number };
 
 export default function CohortsPage() {
+  const t = useAdminConsoleMessages();
+  const co = t.pages.cohorts;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cohortData, setCohortData] = useState<CohortRow[]>([]);
   const [weeks, setWeeks] = useState(8);
 
   const loadCohorts = useCallback(async () => {
-    setLoading(true);
     try {
       const { data, error: e } = await supabase.rpc("get_admin_cohort_retention", { period_weeks: weeks });
       if (e) { setError(e.message); return; }
       setCohortData((data as CohortRow[]) ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
+      setError(err instanceof Error ? err.message : c.unknownError);
     }
-  }, [weeks]);
+  }, [weeks, c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
@@ -41,7 +41,6 @@ export default function CohortsPage() {
 
   if (contextLoading || !isSuperAdmin) return null;
 
-  // Build cohort matrix
   const cohorts = Array.from(new Set(cohortData.map((r) => r.cohort_week))).sort();
   const maxOffset = Math.max(...cohortData.map((r) => r.week_offset), 0);
   const offsets = Array.from({ length: maxOffset + 1 }, (_, i) => i);
@@ -64,21 +63,21 @@ export default function CohortsPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Cohort Retention" description="Weekly salon retention cohorts" breadcrumbs={<span>Analytics / Cohorts</span>}>
+        <PageLayout title={co.title} description={co.description} breadcrumbs={<span>{co.breadcrumbs}</span>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
           <Card>
-            <CardHeader><CardTitle className="text-sm">Salon Retention (week-over-week)</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm">{co.cardTitle}</CardTitle></CardHeader>
             <CardContent>
               {cohortData.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No cohort data available yet. Salons need to be created and have booking activity.</p>
+                <p className="text-sm text-muted-foreground">{co.emptyMessage}</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="text-xs w-full">
                     <thead>
                       <tr>
-                        <th className="text-left p-1.5 font-medium text-muted-foreground">Cohort</th>
-                        {offsets.map((o) => <th key={o} className="p-1.5 text-center font-medium text-muted-foreground">W{o}</th>)}
+                        <th className="text-left p-1.5 font-medium text-muted-foreground">{co.colCohort}</th>
+                        {offsets.map((o) => <th key={o} className="p-1.5 text-center font-medium text-muted-foreground">{co.colWeekPrefix}{o}</th>)}
                       </tr>
                     </thead>
                     <tbody>

@@ -1,0 +1,40 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const services: TranslationNamespaces["services"] = {
+
+    title: "Dịch vụ",
+    description:
+      "Định nghĩa dịch vụ với thời lượng và giá. Dùng trong engine đặt lịch.",
+    mustBeLoggedIn: "Bạn cần đăng nhập để xem danh sách dịch vụ.",
+    noSalon:
+      "Tài khoản của bạn chưa được gắn với salon nào. Hãy hoàn tất onboarding trước.",
+    addError: "Không thêm được dịch vụ.",
+    updateError: "Không cập nhật được dịch vụ.",
+    newService: "Dịch vụ mới",
+    nameLabel: "Tên dịch vụ",
+    namePlaceholder: "Ví dụ: Cắt tóc nữ",
+    categoryLabel: "Danh mục",
+    categoryCut: "Cắt",
+    categoryBeard: "Râu",
+    categoryColor: "Nhuộm",
+    categoryNails: "Móng",
+    categoryMassage: "Massage",
+    categoryOther: "Khác",
+    durationLabel: "Thời lượng (phút)",
+    priceLabel: "Giá (NOK)",
+    sortOrderLabel: "Thứ tự sắp xếp",
+    loading: "Đang tải dịch vụ…",
+    emptyTitle: "Chưa thêm dịch vụ nào",
+    emptyDescription:
+      "Thêm dịch vụ trong form bên trái. Chúng được dùng để tính thời gian và giá trong engine đặt lịch.",
+    tableTitle: "Dịch vụ của bạn",
+    colName: "Name",
+    colCategory: "Category",
+    colDuration: "Thời lượng",
+    colPrice: "Giá",
+    colStatus: "Trạng thái",
+    colActions: "Hành động",
+    active: "Đang dùng",
+    inactive: "Tạm dừng",
+    delete: "Xóa",
+};

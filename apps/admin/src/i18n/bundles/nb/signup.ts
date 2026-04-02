@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const signup: TranslationNamespaces["signup"] = {
+
+    title: "Opprett konto",
+    description: "Opprett en konto for å komme i gang med TeqBook.",
+    confirmPasswordLabel: "Bekreft passord",
+    confirmPasswordPlaceholder: "Skriv passordet igjen",
+    signupButton: "Opprett konto",
+    signingUp: "Oppretter konto...",
+    signupError: "Kunne ikke opprette konto",
+    alreadyHaveAccount: "Har du allerede en konto?",
+    loginLink: "Logg inn",
+    passwordMismatch: "Passordene matcher ikke",
+    createAccountTitle: "Opprett din TeqBook-konto",
+    createAccountDescription: "Start din gratis prøveperiode. Ingen kredittkort påkrevd. Du kan legge til ansatte, tjenester og lokasjoner senere.",
+    bullet1: "Start å ta imot bookinger på minutter",
+    bullet2: "Voks fra én stol til flere lokasjoner",
+    bullet3: "Tilby en flerspråklig booking-side når du er klar",
+    formSubtitle: "Start din gratis TeqBook-prøveperiode – ingen kredittkort påkrevd.",
+    trustLine: "Stolt brukt av salonger som vil ha enkel, ren timeplanlegging – ikke oppblåst programvare.",
+    passwordPlaceholder: "Opprett et passord",
+    passwordHint: "Bruk minst 8 tegn. Du kan endre dette senere.",
+    termsAgreement: "Jeg godtar vilkårene og personvernreglene.",
+    secureLoginLine: "Sikker innlogging. Passordet ditt lagres aldri i ren tekst.",
+};

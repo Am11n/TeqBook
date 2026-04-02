@@ -1,0 +1,27 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const calendar: TranslationNamespaces["calendar"] = {
+
+    title: "تقویم",
+    description:
+      "یک تقویم داخلی ساده بر اساس روز و کارمند؛ اساس برای drag‑and‑drop و نماهای پیشرفته‌تر.",
+    mustBeLoggedIn: "برای دیدن تقویم باید وارد شوید.",
+    noSalon:
+      "حساب شما هنوز به هیچ سالونی وصل نشده است. اول راه‌اندازی ابتدایی را تکمیل کنید.",
+    loadError: "بارگیری معلومات تقویم موفق نشد.",
+    selectedDayLabel: "روز انتخاب‌شده:",
+    viewDay: "Day view",
+    viewWeek: "Week view",
+    filterEmployeeLabel: "Filter by employee",
+    filterEmployeeAll: "All employees",
+    prev: "قبلی",
+    today: "امروز",
+    next: "بعدی",
+    loading: "در حال بارگیری تقویم…",
+    noEmployeesTitle: "هنوز هیچ کارمندی وجود ندارد",
+    noEmployeesDescription: "اول کارمندان را ایجاد کنید تا در تقویم نشان داده شوند.",
+    noBookingsTitle: "هیچ نوبتی برای این روز وجود ندارد",
+    noBookingsDescription: "تاریخ دیگری انتخاب کنید یا نوبت‌های جدید ایجاد کنید.",
+    unknownService: "خدمت نامعلوم",
+    unknownCustomer: "مشتری عبوری / نامعلوم",
+};

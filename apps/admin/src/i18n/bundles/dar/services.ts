@@ -1,0 +1,39 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const services: TranslationNamespaces["services"] = {
+
+    title: "خدمات",
+    description: "خدماتی که سالون شما ارائه می‌دهد را مدیریت کنید.",
+    mustBeLoggedIn: "برای دیدن خدمات باید وارد شوید.",
+    noSalon:
+      "حساب شما هنوز به هیچ سالونی وصل نشده است. اول راه‌اندازی ابتدایی را تکمیل کنید.",
+    addError: "اضافه کردن خدمت انجام نشد.",
+    updateError: "به‌روزرسانی خدمت انجام نشد.",
+    newService: "خدمت جدید",
+    nameLabel: "نام خدمت",
+    namePlaceholder: "مثال: کوتاه کردن مو",
+    categoryLabel: "Category",
+    categoryCut: "کوتاه کردن",
+    categoryBeard: "ریش",
+    categoryColor: "رنگ",
+    categoryNails: "ناخن",
+    categoryMassage: "ماساژ",
+    categoryOther: "سایر",
+    durationLabel: "مدت زمان (دقیقه)",
+    priceLabel: "قیمت",
+    sortOrderLabel: "ترتیب نمایش",
+    loading: "در حال بارگیری خدمات…",
+    emptyTitle: "هنوز هیچ خدمتی اضافه نشده است",
+    emptyDescription:
+      "وقتی در فورم سمت چپ خدمات را اضافه کنید، اینجا نشان داده می‌شوند و در سیستم نوبت‌دهی قابل استفاده خواهند بود.",
+    tableTitle: "خدمات شما",
+    colName: "نام",
+    colCategory: "دسته‌بندی",
+    colDuration: "مدت زمان",
+    colPrice: "قیمت",
+    colStatus: "وضعیت",
+    colActions: "عملیات",
+    active: "فعال",
+    inactive: "غیرفعال",
+    delete: "حذف",
+};

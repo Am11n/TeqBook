@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -9,48 +9,51 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { EntityLink } from "@/components/shared/entity-link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { getAllAuditLogs } from "@/lib/services/audit-log-service";
 import type { AuditLog } from "@/lib/repositories/audit-log";
 import { logError } from "@/lib/services/logger";
-import { Download, Filter, FileJson } from "lucide-react";
+import { Download, FileJson } from "lucide-react";
 import { format } from "date-fns";
 
-// Presets for quick date ranges
-const PRESETS = [
-  { label: "Today", getValue: () => { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); } },
-  { label: "Last 24h", getValue: () => new Date(Date.now() - 86400000).toISOString() },
-  { label: "Last 7d", getValue: () => new Date(Date.now() - 7 * 86400000).toISOString() },
-  { label: "Last 30d", getValue: () => new Date(Date.now() - 30 * 86400000).toISOString() },
-];
-
-// View presets
-const VIEW_PRESETS = [
-  { label: "Security events (24h)", action: "all", resource: "all", preset: 1 },
-  { label: "All booking changes", action: "all", resource: "booking", preset: 3 },
-  { label: "All admin actions", action: "all", resource: "admin", preset: 3 },
-];
 const PAGE_SIZE = 10;
 
-const columns: ColumnDef<AuditLog>[] = [
-  { id: "created_at", header: "Time", cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm:ss"), sortable: true, sticky: true, hideable: false },
-  { id: "action", header: "Action", cell: (r) => <Badge variant="outline" className="text-xs font-mono">{r.action}</Badge>, sortable: true },
-  { id: "resource_type", header: "Resource", cell: (r) => r.resource_type, sortable: true },
-  { id: "user_id", header: "User", cell: (r) => r.user_id ? <span className="font-mono text-xs">{r.user_id.slice(0, 8)}...</span> : "System" },
-  { id: "salon_id", header: "Salon", cell: (r) => r.salon_id ? <span className="font-mono text-xs">{r.salon_id.slice(0, 8)}...</span> : "-" },
-  { id: "ip_address", header: "IP", cell: (r) => r.ip_address ?? "-", defaultVisible: false },
-  { id: "resource_id", header: "Resource ID", cell: (r) => r.resource_id ? <span className="font-mono text-xs">{r.resource_id.slice(0, 8)}...</span> : "-", defaultVisible: false },
-];
-
 function AuditLogsContent() {
+  const t = useAdminConsoleMessages();
+  const al = t.pages.auditLogs;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const datePresets = useMemo(() => [
+    { label: al.presetToday, getValue: () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.toISOString(); } },
+    { label: al.presetLast24h, getValue: () => new Date(Date.now() - 86400000).toISOString() },
+    { label: al.presetLast7d, getValue: () => new Date(Date.now() - 7 * 86400000).toISOString() },
+    { label: al.presetLast30d, getValue: () => new Date(Date.now() - 30 * 86400000).toISOString() },
+  ], [al.presetToday, al.presetLast24h, al.presetLast7d, al.presetLast30d]);
+
+  const viewPresets = useMemo(() => [
+    { label: al.chipSecurity24h, action: "all", resource: "all", preset: 1 },
+    { label: al.chipBookingChanges, action: "all", resource: "booking", preset: 3 },
+    { label: al.chipAdminActions, action: "all", resource: "admin", preset: 3 },
+  ], [al.chipSecurity24h, al.chipBookingChanges, al.chipAdminActions]);
+
+  const columns = useMemo((): ColumnDef<AuditLog>[] => [
+    { id: "created_at", header: al.colTime, cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm:ss"), sortable: true, sticky: true, hideable: false },
+    { id: "action", header: al.colAction, cell: (r) => <Badge variant="outline" className="text-xs font-mono">{r.action}</Badge>, sortable: true },
+    { id: "resource_type", header: al.colResource, cell: (r) => r.resource_type, sortable: true },
+    { id: "user_id", header: al.colUser, cell: (r) => r.user_id ? <span className="font-mono text-xs">{r.user_id.slice(0, 8)}...</span> : c.system },
+    { id: "salon_id", header: al.colSalon, cell: (r) => r.salon_id ? <span className="font-mono text-xs">{r.salon_id.slice(0, 8)}...</span> : "-" },
+    { id: "ip_address", header: al.colIp, cell: (r) => r.ip_address ?? "-", defaultVisible: false },
+    { id: "resource_id", header: al.colResourceId, cell: (r) => r.resource_id ? <span className="font-mono text-xs">{r.resource_id.slice(0, 8)}...</span> : "-", defaultVisible: false },
+  ], [al, c.system]);
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +76,6 @@ function AuditLogsContent() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [correlatedLogs, setCorrelatedLogs] = useState<AuditLog[]>([]);
 
-  // Pick up ?user= from URL for deep linking
   useEffect(() => {
     const userParam = searchParams.get("user");
     if (userParam) setSearch(userParam);
@@ -97,24 +99,24 @@ function AuditLogsContent() {
       setLogs(rows);
       setTotal(result.total ?? rows.length);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : c.unknownError);
       logError("Audit load error", err);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, actionFilter, resourceFilter, startDate, endDate, search]);
+  }, [page, pageSize, actionFilter, resourceFilter, startDate, endDate, search, c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
     if (isSuperAdmin) loadLogs();
   }, [isSuperAdmin, contextLoading, router, loadLogs]);
 
-  function handleExport(fmt: "csv" | "json") {
+  const handleExport = useCallback((fmt: "csv" | "json") => {
     const data = fmt === "json"
       ? JSON.stringify(logs, null, 2)
       : [
-          ["ID", "User", "Salon", "Action", "Resource", "Resource ID", "Metadata", "IP", "Agent", "Time"].join(","),
-          ...logs.map((l) => [l.id, l.user_id, l.salon_id, l.action, l.resource_type, l.resource_id, JSON.stringify(l.metadata), l.ip_address, l.user_agent, l.created_at].map((c) => `"${c ?? ""}"`).join(",")),
+          [al.csvHeaderId, al.csvHeaderUser, al.csvHeaderSalon, al.csvHeaderAction, al.csvHeaderResource, al.csvHeaderResourceId, al.csvHeaderMetadata, al.csvHeaderIp, al.csvHeaderAgent, al.csvHeaderTime].join(","),
+          ...logs.map((l) => [l.id, l.user_id, l.salon_id, l.action, l.resource_type, l.resource_id, JSON.stringify(l.metadata), l.ip_address, l.user_agent, l.created_at].map((cell) => `"${cell ?? ""}"`).join(",")),
         ].join("\n");
     const blob = new Blob([data], { type: fmt === "json" ? "application/json" : "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -123,18 +125,17 @@ function AuditLogsContent() {
     a.download = `audit-logs-${format(new Date(), "yyyy-MM-dd")}.${fmt}`;
     a.click();
     URL.revokeObjectURL(url);
-  }
+  }, [logs, al.csvHeaderId, al.csvHeaderUser, al.csvHeaderSalon, al.csvHeaderAction, al.csvHeaderResource, al.csvHeaderResourceId, al.csvHeaderMetadata, al.csvHeaderIp, al.csvHeaderAgent, al.csvHeaderTime]);
 
-  function handlePreset(presetIdx: number) {
-    const preset = PRESETS[presetIdx];
+  const handlePreset = useCallback((presetIdx: number) => {
+    const preset = datePresets[presetIdx];
     if (preset) setStartDate(new Date(preset.getValue()).toISOString().split("T")[0]);
     setEndDate("");
-  }
+  }, [datePresets]);
 
-  async function handleRowClick(log: AuditLog) {
+  const handleRowClick = useCallback(async (log: AuditLog) => {
     setSelectedLog(log);
     setDrawerOpen(true);
-    // Load correlated events if correlation_id exists
     const logAny = log as Record<string, unknown>;
     if (logAny.correlation_id) {
       try {
@@ -145,36 +146,37 @@ function AuditLogsContent() {
     } else {
       setCorrelatedLogs([]);
     }
-  }
+  }, []);
 
   const uniqueActions = Array.from(new Set(logs.map((l) => l.action))).sort();
   const uniqueResources = Array.from(new Set(logs.map((l) => l.resource_type))).sort();
 
   if (contextLoading || !isSuperAdmin) return null;
 
+  const showingText = al.showingLogsTemplate.replace("{visible}", String(logs.length)).replace("{total}", String(total));
+
   return (
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="Audit Logs"
-          description="Security audit log for compliance and monitoring"
+          title={al.title}
+          description={al.description}
           actions={
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} className="gap-1"><Download className="h-4 w-4" /> CSV</Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("json")} className="gap-1"><FileJson className="h-4 w-4" /> JSON</Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} className="gap-1"><Download className="h-4 w-4" /> {al.exportLabelCsv}</Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("json")} className="gap-1"><FileJson className="h-4 w-4" /> {al.exportLabelJson}</Button>
             </div>
           }
         >
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
-          {/* Presets */}
           <div className="flex gap-2 mb-4 flex-wrap">
-            <span className="text-xs text-muted-foreground self-center mr-1">Quick:</span>
-            {PRESETS.map((p, i) => (
+            <span className="text-xs text-muted-foreground self-center mr-1">{al.quickFiltersLabel}</span>
+            {datePresets.map((p, i) => (
               <Button key={p.label} variant="outline" size="sm" className="h-7 text-xs" onClick={() => handlePreset(i)}>{p.label}</Button>
             ))}
-            <span className="text-xs text-muted-foreground self-center ml-3 mr-1">Views:</span>
-            {VIEW_PRESETS.map((v) => (
+            <span className="text-xs text-muted-foreground self-center ml-3 mr-1">{al.viewPresetsLabel}</span>
+            {viewPresets.map((v) => (
               <Button key={v.label} variant="ghost" size="sm" className="h-7 text-xs" onClick={() => {
                 setActionFilter(v.action);
                 setResourceFilter(v.resource);
@@ -183,32 +185,31 @@ function AuditLogsContent() {
             ))}
           </div>
 
-          {/* Filters */}
           <Card className="mb-4">
             <CardContent className="py-3">
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-                <Input placeholder="Search..." value={search} onChange={(e) => handleSearchChange(e.target.value)} className="h-9" />
+                <Input placeholder={al.filterSearchPlaceholder} value={search} onChange={(e) => handleSearchChange(e.target.value)} className="h-9" />
                 <Select value={actionFilter} onValueChange={(value) => { setPage(0); setActionFilter(value); }}>
-                  <SelectTrigger className="h-9"><SelectValue placeholder="Action" /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue placeholder={al.selectActionPlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All actions</SelectItem>
-                    {uniqueActions.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    <SelectItem value="all">{al.filterActionAll}</SelectItem>
+                    {uniqueActions.map((act) => <SelectItem key={act} value={act}>{act}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <Select value={resourceFilter} onValueChange={(value) => { setPage(0); setResourceFilter(value); }}>
-                  <SelectTrigger className="h-9"><SelectValue placeholder="Resource" /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue placeholder={al.selectResourcePlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    {uniqueResources.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    <SelectItem value="all">{al.filterResourceAll}</SelectItem>
+                    {uniqueResources.map((res) => <SelectItem key={res} value={res}>{res}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Input type="date" value={startDate} onChange={(e) => { setPage(0); setStartDate(e.target.value); }} className="h-9" placeholder="Start" />
-                <Input type="date" value={endDate} onChange={(e) => { setPage(0); setEndDate(e.target.value); }} className="h-9" placeholder="End" />
+                <Input type="date" value={startDate} onChange={(e) => { setPage(0); setStartDate(e.target.value); }} className="h-9" placeholder={al.dateStartPlaceholder} />
+                <Input type="date" value={endDate} onChange={(e) => { setPage(0); setEndDate(e.target.value); }} className="h-9" placeholder={al.dateEndPlaceholder} />
               </div>
             </CardContent>
           </Card>
 
-          <p className="text-xs text-muted-foreground mb-2">Showing {logs.length} of {total} logs</p>
+          <p className="text-xs text-muted-foreground mb-2">{showingText}</p>
 
           <DataTable
             columns={columns}
@@ -220,35 +221,33 @@ function AuditLogsContent() {
             onPageChange={setPage}
             onRowClick={handleRowClick}
             loading={loading}
-            emptyMessage="No audit logs found"
+            emptyMessage={al.emptyMessage}
             storageKey="audit-logs-pro"
           />
 
-          {/* Detail Drawer */}
-          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title="Event Detail" description={selectedLog?.action ?? ""}>
+          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={al.drawerTitle} description={selectedLog?.action ?? ""}>
             {selectedLog && (
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Action:</span> <Badge variant="outline">{selectedLog.action}</Badge></div>
-                  <div><span className="text-muted-foreground">Resource:</span> {selectedLog.resource_type}</div>
-                  <div><span className="text-muted-foreground">User:</span> {selectedLog.user_id ? <EntityLink type="user" id={selectedLog.user_id} /> : <span className="text-muted-foreground">System</span>}</div>
-                  <div><span className="text-muted-foreground">Salon:</span> {selectedLog.salon_id ? <EntityLink type="salon" id={selectedLog.salon_id} /> : <span className="text-muted-foreground">-</span>}</div>
-                  <div><span className="text-muted-foreground">Time:</span> {format(new Date(selectedLog.created_at), "PPpp")}</div>
-                  <div><span className="text-muted-foreground">IP:</span> {selectedLog.ip_address ?? "-"}</div>
-                  <div className="col-span-2"><span className="text-muted-foreground">User Agent:</span> <span className="text-xs">{selectedLog.user_agent ?? "-"}</span></div>
+                  <div><span className="text-muted-foreground">{al.colAction}:</span> <Badge variant="outline">{selectedLog.action}</Badge></div>
+                  <div><span className="text-muted-foreground">{al.colResource}:</span> {selectedLog.resource_type}</div>
+                  <div><span className="text-muted-foreground">{al.colUser}:</span> {selectedLog.user_id ? <EntityLink type="user" id={selectedLog.user_id} /> : <span className="text-muted-foreground">{c.system}</span>}</div>
+                  <div><span className="text-muted-foreground">{al.colSalon}:</span> {selectedLog.salon_id ? <EntityLink type="salon" id={selectedLog.salon_id} /> : <span className="text-muted-foreground">-</span>}</div>
+                  <div><span className="text-muted-foreground">{al.colTime}:</span> {format(new Date(selectedLog.created_at), "PPpp")}</div>
+                  <div><span className="text-muted-foreground">{al.colIp}:</span> {selectedLog.ip_address ?? "-"}</div>
+                  <div className="col-span-2"><span className="text-muted-foreground">{al.labelUserAgent}:</span> <span className="text-xs">{selectedLog.user_agent ?? "-"}</span></div>
                 </div>
 
-                {/* Before/After diff */}
                 {Boolean((selectedLog as Record<string, unknown>).before_state || (selectedLog as Record<string, unknown>).after_state) && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Changes (diff)</p>
+                    <p className="text-sm font-medium mb-2">{al.sectionDiff}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Before</p>
+                        <p className="text-xs text-muted-foreground mb-1">{al.labelBefore}</p>
                         <pre className="text-xs bg-red-50 p-2 rounded max-h-40 overflow-auto">{JSON.stringify((selectedLog as Record<string, unknown>).before_state, null, 2)}</pre>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">After</p>
+                        <p className="text-xs text-muted-foreground mb-1">{al.labelAfter}</p>
                         <pre className="text-xs bg-emerald-50 p-2 rounded max-h-40 overflow-auto">{JSON.stringify((selectedLog as Record<string, unknown>).after_state, null, 2)}</pre>
                       </div>
                     </div>
@@ -257,15 +256,14 @@ function AuditLogsContent() {
 
                 {selectedLog.metadata && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Metadata</p>
+                    <p className="text-sm font-medium mb-1">{al.sectionMetadata}</p>
                     <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-48">{JSON.stringify(selectedLog.metadata, null, 2)}</pre>
                   </div>
                 )}
 
-                {/* Correlated events */}
                 {correlatedLogs.length > 0 && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Correlated Events ({correlatedLogs.length})</p>
+                    <p className="text-sm font-medium mb-2">{al.correlatedEventsTemplate.replace("{count}", String(correlatedLogs.length))}</p>
                     <div className="space-y-2">
                       {correlatedLogs.map((cl) => (
                         <div key={cl.id} className="flex items-center justify-between p-2 rounded border text-xs">

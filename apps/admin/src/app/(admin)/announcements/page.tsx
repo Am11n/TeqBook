@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,9 @@ const STATUS_BADGE: Record<StatusFilter, string> = {
 };
 
 export default function AnnouncementsAdminPage() {
+  const t = useAdminConsoleMessages();
+  const an = t.pages.announcements;
+  const c = t.common;
   const [items, setItems] = useState<Announcement[]>([]);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -87,7 +91,7 @@ export default function AnnouncementsAdminPage() {
   async function submitForm() {
     const payload: AnnouncementInput = { title, body, is_pinned: isPinned };
     if (!payload.title.trim() || !payload.body.trim()) {
-      setError("Title and body are required.");
+      setError(an.titleBodyRequired);
       return;
     }
     setSaving(true);
@@ -117,14 +121,14 @@ export default function AnnouncementsAdminPage() {
   return (
     <AdminShell>
       <PageLayout
-        title="Announcements"
-        description="Editorial announcements shown on dashboard users."
+        title={an.title}
+        description={an.description}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => void load()} disabled={loading}>
-              Refresh
+              {an.refresh}
             </Button>
-            <Button onClick={openCreate}>Create announcement</Button>
+            <Button onClick={openCreate}>{an.create}</Button>
           </div>
         }
       >
@@ -135,7 +139,13 @@ export default function AnnouncementsAdminPage() {
         )}
 
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          {(["all", "draft", "published"] as const).map((status) => (
+          {(
+            [
+              ["all", an.filterAll] as const,
+              ["draft", an.filterDraft] as const,
+              ["published", an.filterPublished] as const,
+            ] as const
+          ).map(([status, label]) => (
             <Button
               key={status}
               type="button"
@@ -143,9 +153,7 @@ export default function AnnouncementsAdminPage() {
               size="sm"
               onClick={() => setFilter(status)}
             >
-              {status === "all" ? "All" : status[0].toUpperCase() + status.slice(1)}
-              {" "}
-              ({counts[status]})
+              {label} ({counts[status]})
             </Button>
           ))}
         </div>
@@ -154,7 +162,7 @@ export default function AnnouncementsAdminPage() {
           {!loading && items.length === 0 && (
             <Card>
               <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                No announcements for this filter.
+                {an.emptyForFilter}
               </CardContent>
             </Card>
           )}
@@ -166,13 +174,13 @@ export default function AnnouncementsAdminPage() {
                   <div>
                     <CardTitle className="text-base">{item.title}</CardTitle>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Updated {new Date(item.updated_at).toLocaleString()}
+                      {an.updatedAt.replace("{date}", new Date(item.updated_at).toLocaleString())}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {item.is_pinned && <Badge variant="outline">Pinned</Badge>}
+                    {item.is_pinned && <Badge variant="outline">{an.pinned}</Badge>}
                     <Badge variant="outline" className={STATUS_BADGE[item.status]}>
-                      {item.status}
+                      {item.status === "published" ? an.filterPublished : an.filterDraft}
                     </Badge>
                   </div>
                 </div>
@@ -181,10 +189,10 @@ export default function AnnouncementsAdminPage() {
                 <p className="mb-4 whitespace-pre-wrap text-sm text-foreground">{item.body}</p>
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={() => openEdit(item)}>
-                    Edit
+                    {an.edit}
                   </Button>
                   <Button size="sm" onClick={() => void togglePublish(item)}>
-                    {item.status === "published" ? "Unpublish" : "Publish"}
+                    {item.status === "published" ? an.unpublish : an.publish}
                   </Button>
                 </div>
               </CardContent>
@@ -195,28 +203,26 @@ export default function AnnouncementsAdminPage() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit announcement" : "Create announcement"}</DialogTitle>
-              <DialogDescription>
-                Draft announcements are not shown on dashboard until published.
-              </DialogDescription>
+              <DialogTitle>{editing ? an.dialogEditTitle : an.dialogCreateTitle}</DialogTitle>
+              <DialogDescription>{an.dialogDescription}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="announcement-title" className="text-sm font-medium">Title</label>
+                <label htmlFor="announcement-title" className="text-sm font-medium">{an.fieldTitle}</label>
                 <Input
                   id="announcement-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Announcement title"
+                  placeholder={an.placeholderTitle}
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="announcement-body" className="text-sm font-medium">Body</label>
+                <label htmlFor="announcement-body" className="text-sm font-medium">{an.fieldBody}</label>
                 <Textarea
                   id="announcement-body"
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  placeholder="Write announcement content"
+                  placeholder={an.placeholderBody}
                   rows={6}
                 />
               </div>
@@ -226,13 +232,13 @@ export default function AnnouncementsAdminPage() {
                   checked={isPinned}
                   onChange={(e) => setIsPinned(e.target.checked)}
                 />
-                Pin this announcement
+                {an.pinLabel}
               </label>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{c.cancel}</Button>
               <Button onClick={() => void submitForm()} disabled={saving}>
-                {saving ? "Saving..." : "Save"}
+                {saving ? an.saving : c.save}
               </Button>
             </DialogFooter>
           </DialogContent>

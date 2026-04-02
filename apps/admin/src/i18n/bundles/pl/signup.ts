@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const signup: TranslationNamespaces["signup"] = {
+
+    title: "Utwórz konto",
+    description: "Utwórz konto, aby rozpocząć pracę z TeqBook.",
+    confirmPasswordLabel: "Potwierdź hasło",
+    confirmPasswordPlaceholder: "Wprowadź hasło ponownie",
+    signupButton: "Utwórz konto",
+    signingUp: "Tworzenie konta...",
+    signupError: "Nie udało się utworzyć konta",
+    alreadyHaveAccount: "Masz już konto?",
+    loginLink: "Zaloguj się",
+    passwordMismatch: "Hasła nie pasują",
+    createAccountTitle: "Utwórz swoje konto TeqBook",
+    createAccountDescription: "Rozpocznij bezpłatny okres próbny. Karta kredytowa nie jest wymagana. Pracowników i salony możesz dodać później.",
+    bullet1: "Zacznij od rezerwacji online w ciągu minut",
+    bullet2: "Ulepsz później, gdy Twój salon rośnie",
+    bullet3: "Dostępna wielojęzyczna strona rezerwacji",
+    formSubtitle: "Rozpocznij bezpłatny okres próbny TeqBook – karta kredytowa nie jest wymagana.",
+    trustLine: "Zaufane przez salony, które chcą prostej, czystej harmonogramu – nie napompowanego oprogramowania.",
+    passwordPlaceholder: "Utwórz hasło",
+    passwordHint: "Użyj co najmniej 8 znaków. Możesz to zmienić później.",
+    termsAgreement: "Akceptuję Warunki i Politykę prywatności.",
+    secureLoginLine: "Bezpieczne logowanie. Twoje hasło nigdy nie jest przechowywane w postaci zwykłego tekstu.",
+};

@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import {
   LogIn,
   LogOut,
@@ -90,6 +91,8 @@ export function RecentActivity({
   maxEvents = 20,
   className,
 }: RecentActivityProps) {
+  const t = useAdminConsoleMessages();
+  const ra = t.widgets.recentActivity;
   const visibleEvents = events.slice(0, maxEvents);
 
   if (loading) {
@@ -116,7 +119,7 @@ export function RecentActivity({
           className
         )}
       >
-        No recent activity
+        {ra.empty}
       </div>
     );
   }
@@ -164,7 +167,7 @@ export function RecentActivity({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="text-[10px] text-muted-foreground">
-                  {event.user_email ?? event.user_id?.substring(0, 8) ?? "System"}
+                  {event.user_email ?? event.user_id?.substring(0, 8) ?? ra.system}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
                   &middot;{" "}

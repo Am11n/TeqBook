@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/lib/hooks/profile/useProfile";
 import { Upload, X, Shield, AlertCircle } from "lucide-react";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { CardSkeleton, getInitials, useToast } from "./_components/shared";
 import { ChangePasswordSection } from "./_components/ChangePasswordSection";
 import { TwoFactorSection } from "./_components/TwoFactorSection";
@@ -19,6 +20,7 @@ import { ActivityCard } from "./_components/ActivityCard";
 import { AccessInfoCard } from "./_components/AccessInfoCard";
 
 export default function ProfilePage() {
+  const pr = useAdminConsoleMessages().pages.profile;
   const {
     loading,
     saving,
@@ -52,19 +54,19 @@ export default function ProfilePage() {
   } = useProfile();
 
   const { show: showToast, ToastContainer } = useToast();
-  const displayName = [firstName, lastName].filter(Boolean).join(" ") || "Admin User";
+  const displayName = [firstName, lastName].filter(Boolean).join(" ") || pr.defaultDisplayName;
   const mfaEnabled = (mfaFactors?.length ?? 0) > 0;
 
   async function handleProfileSave() {
     await handleSave();
-    showToast("Profile updated successfully");
+    showToast(pr.saveSuccessToast);
   }
 
   if (loading) {
     return (
       <ErrorBoundary>
         <AdminShell>
-          <PageLayout title="My Profile" description="Update your personal information" showCard={false}>
+          <PageLayout title={pr.title} description={pr.description} showCard={false}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="space-y-6">
                 <div className="h-[420px] animate-pulse rounded-2xl bg-muted" />
@@ -84,7 +86,7 @@ export default function ProfilePage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="My Profile" description="Update your personal information" showCard={false}>
+        <PageLayout title={pr.title} description={pr.description} showCard={false}>
           <ToastContainer />
 
           {error && (
@@ -92,7 +94,7 @@ export default function ProfilePage() {
               <AlertCircle className="h-4 w-4 shrink-0" />
               {error}
               <button onClick={() => setError(null)} className="ml-auto text-xs underline">
-                Dismiss
+                {pr.dismiss}
               </button>
             </div>
           )}

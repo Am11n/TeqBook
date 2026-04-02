@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "Staff",
+    description:
+      "Add stylists and other staff who can receive bookings.",
+    mustBeLoggedIn: "You must be logged in to view staff.",
+    noSalon:
+      "No salon is linked to your user. Please complete onboarding first.",
+    addError: "Could not add staff member.",
+    updateError: "Could not update staff member.",
+    newEmployee: "New staff member",
+    nameLabel: "Name",
+    emailLabel: "Email (optional)",
+    phoneLabel: "Phone (optional)",
+    roleLabel: "Role (optional)",
+    rolePlaceholder: "e.g. Stylist, Receptionist",
+    preferredLanguageLabel: "Preferred language",
+    servicesLabel: "Services this staff member offers",
+    servicesPlaceholder: "Select services...",
+    namePlaceholder: "e.g. Alex Stylist",
+    emailPlaceholder: "alex@salon.com",
+    phonePlaceholder: "+47 99 99 99 99",
+    loading: "Loading staff…",
+    emptyTitle: "No staff registered yet",
+    emptyDescription:
+      "When you add staff in the form on the left, they will appear here and can be used in the calendar and booking logic.",
+    tableTitle: "Your staff",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "Status",
+    colActions: "Actions",
+    active: "Active",
+    inactive: "Inactive",
+    delete: "Delete",
+    edit: "Edit",
+    addButton: "Add staff",
+    editTitle: "Edit staff member",
+    editDescription: "Update staff information and services.",
+    cancel: "Cancel",
+    save: "Save",
+    saving: "Saving…",
+};

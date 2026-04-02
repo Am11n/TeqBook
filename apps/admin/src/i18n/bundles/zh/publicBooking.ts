@@ -1,0 +1,38 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const publicBooking: TranslationNamespaces["publicBooking"] = {
+
+    notFound: "无法找到该沙龙，或者该沙龙尚未设置为公开。",
+    loadError: "无法加载服务或员工。",
+    loadingSalon: "正在加载沙龙信息…",
+    headerSubtitle: "预约时间——到店付款。",
+    payInSalonBadge: "到店付款",
+    step1Title: "1. 选择服务",
+    step1Description: "先选择服务，然后选择员工和时间。",
+    serviceLabel: "服务",
+    servicePlaceholder: "选择服务…",
+    employeeLabel: "员工",
+    employeePlaceholder: "选择员工…",
+    dateLabel: "日期",
+    loadSlots: "查看可用时间",
+    loadingSlots: "正在加载可用时间…",
+    step2Label: "2. 选择时间",
+    noSlotsYet: "请先加载可用时间",
+    selectSlotPlaceholder: "选择时间…",
+    step3Title: "3. 您的资料",
+    step3Description:
+      "我们会使用这些信息来确认预约，如有需要也会发送提醒。付款始终在沙龙现场完成。",
+    nameLabel: "姓名",
+    emailLabel: "邮箱（可选）",
+    emailPlaceholder: "you@example.com",
+    phoneLabel: "电话（可选）",
+    phonePlaceholder: "+47 99 99 99 99",
+    submitSaving: "正在发送请求…",
+    submitLabel: "确认预约",
+    payInfo: "您始终在沙龙现场付款。不支持在线信用卡支付。",
+    successMessage:
+      "您的预约已保存！沙龙会与您联系进行确认，付款将在到店时完成。",
+    createError: "创建预约时出现错误。",
+    unavailableTitle: "无法显示预约页面",
+    unavailableDescription: "该沙龙不存在或尚未对公众开放。",
+};

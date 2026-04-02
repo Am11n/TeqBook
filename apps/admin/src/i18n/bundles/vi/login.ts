@@ -1,0 +1,28 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const login: TranslationNamespaces["login"] = {
+
+    title: "Đăng nhập vào TeqBook",
+    description:
+      "Dành cho môi trường phát triển: tạo người dùng với email và mật khẩu trong Supabase, sau đó đăng nhập ở đây mà không cần xác thực email.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@salon.com",
+    passwordLabel: "Mật khẩu",
+    passwordPlaceholder: "Ít nhất 6 ký tự",
+    loginError: "Không đăng nhập được.",
+    loggingIn: "Đang đăng nhập…",
+    loginButton: "Đăng nhập",
+    tip: "Mẹo: Trong Supabase, bạn có thể tạm thời tắt bắt buộc xác thực email trong Auth > Authentication > Email để người dùng mới đăng nhập ngay lập tức.",
+    welcomeBackTitle: "Chào mừng trở lại TeqBook",
+    welcomeBackDescription: "Phần mềm salon đơn giản giữ lịch, khách hàng và nhân viên đồng bộ.",
+    bullet1: "Đặt chỗ nhanh và đặt lại cho khách hàng thường xuyên",
+    bullet2: "Hoạt động cho salon đơn lẻ và đa địa điểm",
+    bullet3: "Được xây dựng cho các doanh nghiệp thanh toán tại salon",
+    trustLine: "Được tin tưởng bởi các salon bận rộn cần ngày làm việc của họ hoạt động trơn tru.",
+    formSubtitle: "Sử dụng tài khoản TeqBook của bạn để truy cập bảng điều khiển salon.",
+    forgotPassword: "Quên mật khẩu?",
+    keepMeLoggedIn: "Giữ tôi đăng nhập",
+    dontHaveAccount: "Chưa có tài khoản?",
+    createOne: "Tạo một tài khoản",
+    secureLoginLine: "Đăng nhập an toàn. Mật khẩu của bạn không bao giờ được lưu dưới dạng văn bản thuần túy.",
+};

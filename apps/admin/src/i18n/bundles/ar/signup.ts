@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const signup: TranslationNamespaces["signup"] = {
+
+    title: "إنشاء حساب",
+    description: "أنشئ حسابًا للبدء مع TeqBook.",
+    confirmPasswordLabel: "تأكيد كلمة المرور",
+    confirmPasswordPlaceholder: "أعد إدخال كلمة المرور",
+    signupButton: "إنشاء حساب",
+    signingUp: "جارٍ إنشاء الحساب...",
+    signupError: "تعذر إنشاء الحساب",
+    alreadyHaveAccount: "هل لديك حساب بالفعل؟",
+    loginLink: "تسجيل الدخول",
+    passwordMismatch: "كلمات المرور غير متطابقة",
+    createAccountTitle: "إنشاء حساب TeqBook الخاص بك",
+    createAccountDescription: "ابدأ تجربتك المجانية. لا حاجة لبطاقة ائتمان. ستتمكن من إضافة الموظفين والصالونات لاحقًا.",
+    bullet1: "ابدأ بالحجز عبر الإنترنت في دقائق",
+    bullet2: "قم بالترقية لاحقًا مع نمو صالونك",
+    bullet3: "صفحة حجز متعددة اللغات متاحة",
+    formSubtitle: "ابدأ تجربتك المجانية لـ TeqBook – لا حاجة لبطاقة ائتمان.",
+    trustLine: "موثوق به من قبل الصالونات التي تريد جدولة بسيطة ونظيفة – وليس برنامجًا منتفخًا.",
+    passwordPlaceholder: "إنشاء كلمة مرور",
+    passwordHint: "استخدم 8 أحرف على الأقل. يمكنك تغيير هذا لاحقًا.",
+    termsAgreement: "أوافق على الشروط وسياسة الخصوصية.",
+    secureLoginLine: "تسجيل دخول آمن. كلمة المرور الخاصة بك لا يتم تخزينها أبدًا كنص عادي.",
+};

@@ -1,10 +1,13 @@
 "use client";
 
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { translations, type AppLocale } from "@/i18n/translations";
+import type { AppLocale } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
+import { useDocumentLangDir } from "@/i18n/use-document-lang-dir";
 import { CommandPalette } from "@/components/shared/command-palette";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -12,11 +15,7 @@ import { AdminCommandPalette } from "@/components/admin-command-palette";
 import { ShellHeader } from "./ShellHeader";
 import { SidebarNav } from "./SidebarNav";
 import { MobileNav } from "./MobileNav";
-import { NAV_SECTIONS, computeActiveHref } from "./nav-config";
-
-const VALID_LOCALES = new Set<string>([
-  "nb", "en", "ar", "so", "ti", "am", "tr", "pl", "vi", "zh", "tl", "fa", "dar", "ur", "hi",
-]);
+import { buildAdminNavSections, computeActiveHref } from "./nav-config";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
@@ -29,6 +28,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
 function AdminShellContent({ children }: { children: ReactNode }) {
   const { locale, setLocale } = useLocale();
+  const t = useAdminConsoleMessages();
   const { isSuperAdmin, loading, profile, salon } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
@@ -39,15 +39,16 @@ function AdminShellContent({ children }: { children: ReactNode }) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const appLocale = normalizeLocale(locale) as AppLocale;
+  useDocumentLangDir(appLocale);
+
+  const navSections = useMemo(() => buildAdminNavSections(t.nav), [t.nav]);
+
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
   useEffect(() => {
     if (mounted && !loading && !isSuperAdmin) router.push("/login");
   }, [mounted, loading, isSuperAdmin, router]);
-
-  const appLocale = (VALID_LOCALES.has(locale) ? locale : "en") as AppLocale;
-  const texts = translations[appLocale].admin;
-  void texts;
 
   useEffect(() => {
     getCurrentUser().then(({ data: user }) => {
@@ -67,7 +68,17 @@ function AdminShellContent({ children }: { children: ReactNode }) {
     }
   }
 
-  const activeHref = computeActiveHref(pathname);
+  const activeHref = computeActiveHref(pathname, navSections);
+
+  const shellPick = useMemo(
+    () => ({
+      collapseSidebarAria: t.shell.collapseSidebarAria,
+      expandSidebarAria: t.shell.expandSidebarAria,
+      collapseSidebarTooltip: t.shell.collapseSidebarTooltip,
+      expandSidebarTooltip: t.shell.expandSidebarTooltip,
+    }),
+    [t.shell],
+  );
 
   if (!mounted || loading || !isSuperAdmin) return null;
 
@@ -83,6 +94,8 @@ function AdminShellContent({ children }: { children: ReactNode }) {
         onOpenMobileNav={() => setMobileNavOpen(true)}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onSignOut={handleSignOut}
+        shell={t.shell}
+        shellBrand={t.widgets.shellBrand}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -93,14 +106,15 @@ function AdminShellContent({ children }: { children: ReactNode }) {
         >
           <div className="flex h-full flex-col p-5 overflow-y-auto">
             <SidebarNav
-              sections={NAV_SECTIONS}
+              sections={navSections}
               activeHref={activeHref}
               collapsed={sidebarCollapsed}
               onToggle={() => setSidebarCollapsed((c) => !c)}
+              shell={shellPick}
             />
             {!sidebarCollapsed && (
               <div className="mt-auto pt-4 border-t border-border/60">
-                <p className="text-xs text-muted-foreground">Built for system administration</p>
+                <p className="text-xs text-muted-foreground">{t.shell.navFooterHint}</p>
               </div>
             )}
           </div>
@@ -111,8 +125,14 @@ function AdminShellContent({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <AdminCommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
-      <MobileNav open={mobileNavOpen} activeHref={activeHref} onClose={() => setMobileNavOpen(false)} />
+      <AdminCommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} messages={t.commandPalette} />
+      <MobileNav
+        open={mobileNavOpen}
+        activeHref={activeHref}
+        onClose={() => setMobileNavOpen(false)}
+        sections={navSections}
+        shell={t.shell}
+      />
     </div>
   );
 }

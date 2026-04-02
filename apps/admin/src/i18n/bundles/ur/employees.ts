@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "ملازمین",
+    description:
+      "وہ ملازمین شامل کریں جو بُکنگز لے سکتے ہیں اور کیلنڈر میں نظر آئیں گے۔",
+    mustBeLoggedIn: "ملازمین کو دیکھنے کے لیے آپ کا لاگ اِن ہونا ضروری ہے۔",
+    noSalon:
+      "آپ کے یوزر کے ساتھ کوئی سیلون منسلک نہیں ملا۔ پہلے آن بورڈنگ مکمل کریں۔",
+    addError: "ملازم شامل نہیں ہو سکا۔",
+    updateError: "ملازم اپ ڈیٹ نہیں ہو سکا۔",
+    newEmployee: "نیا ملازم",
+    nameLabel: "نام",
+    namePlaceholder: "مثال: علی رضایی",
+    emailLabel: "ای میل (اختیاری)",
+    emailPlaceholder: "alex@salon.com",
+    phoneLabel: "فون (اختیاری)",
+    phonePlaceholder: "+47 99 99 99 99",
+    roleLabel: "کردار (اختیاری)",
+    rolePlaceholder: "مثال: اسٹائلسٹ، رسیپشنسٹ",
+    preferredLanguageLabel: "ترجیحی زبان",
+    servicesLabel: "یہ ملازم کون سی خدمات پیش کرتا ہے",
+    servicesPlaceholder: "خدمات منتخب کریں...",
+    loading: "ملازمین لوڈ ہو رہے ہیں…",
+    emptyTitle: "ابھی تک کوئی ملازم رجسٹر نہیں",
+    emptyDescription:
+      "جب آپ بائیں جانب فارم سے ملازمین شامل کریں گے، وہ یہاں ظاہر ہوں گے اور بعد میں کیلنڈر اور بُکنگ لاجک میں استعمال ہوں گے۔",
+    tableTitle: "آپ کے ملازمین",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "اسٹیٹس",
+    colActions: "ایکشنز",
+    active: "فعال",
+    inactive: "غیر فعال",
+    delete: "حذف کریں",
+    edit: "ترمیم کریں",
+    addButton: "ملازم شامل کریں",
+    editTitle: "ملازم میں ترمیم کریں",
+    editDescription: "ملازم کی معلومات اور سروسز کو اپ ڈیٹ کریں۔",
+    cancel: "منسوخ کریں",
+    save: "محفوظ کریں",
+    saving: "محفوظ ہو رہا ہے…",
+};

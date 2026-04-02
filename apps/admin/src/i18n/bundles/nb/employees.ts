@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "Ansatte",
+    description:
+      "Legg til frisører og annet personale som kan motta bookinger.",
+    mustBeLoggedIn: "Du må være logget inn for å se ansatte.",
+    noSalon:
+      "Fant ingen salong tilknyttet brukeren din. Fullfør onboarding først.",
+    addError: "Kunne ikke legge til ansatt.",
+    updateError: "Kunne ikke oppdatere ansatt.",
+    newEmployee: "Ny ansatt",
+    nameLabel: "Navn",
+    emailLabel: "E-post (valgfri)",
+    phoneLabel: "Telefon (valgfri)",
+    roleLabel: "Rolle (valgfri)",
+    rolePlaceholder: "F.eks. Frisør, Resepsjonist",
+    preferredLanguageLabel: "Foretrukket språk",
+    servicesLabel: "Tjenester ansatt tilbyr",
+    servicesPlaceholder: "Velg tjenester...",
+    namePlaceholder: "F.eks. Kari Klipp",
+    emailPlaceholder: "kari@salong.no",
+    phonePlaceholder: "+47 99 99 99 99",
+    loading: "Laster ansatte…",
+    emptyTitle: "Ingen ansatte registrert ennå",
+    emptyDescription:
+      "Når du legger til ansatte i skjemaet til venstre dukker de opp her. De brukes senere i kalenderen og bookinglogikken.",
+    tableTitle: "Dine ansatte",
+    colName: "Navn",
+    colRole: "Rolle",
+    colContact: "Kontakt",
+    colServices: "Tjenester",
+    colStatus: "Status",
+    colActions: "Handlinger",
+    active: "Aktiv",
+    inactive: "Inaktiv",
+    delete: "Slett",
+    edit: "Rediger",
+    addButton: "Legg til ansatt",
+    editTitle: "Rediger ansatt",
+    editDescription: "Oppdater ansattinformasjon og tjenester.",
+    cancel: "Avbryt",
+    save: "Lagre",
+    saving: "Lagrer…",
+};

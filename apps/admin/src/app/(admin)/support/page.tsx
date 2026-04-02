@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import {
   getSupportCases,
   updateCaseStatus,
@@ -39,40 +40,12 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
 };
 
-const columns: ColumnDef<SupportCase>[] = [
-  { id: "title", header: "Title", cell: (r) => <span className="font-medium truncate max-w-[200px] block">{r.title}</span>, sticky: true, hideable: false },
-  { id: "type", header: "Type", cell: (r) => <Badge variant="outline" className="text-xs">{r.type.replace(/_/g, " ")}</Badge>, sortable: true },
-  { id: "category", header: "Category", cell: (r) => r.category ? <Badge variant="secondary" className="text-xs">{r.category.replace(/_/g, " ")}</Badge> : "-" },
-  { id: "salon_name", header: "Salon", cell: (r) => r.salon_name ?? "-" },
-  {
-    id: "salon_plan",
-    header: "Plan",
-    cell: (r) =>
-      r.salon_plan ? (
-        <Badge variant="outline" className="text-xs capitalize">
-          {r.salon_plan}
-        </Badge>
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
-    sortable: true,
-  },
-  { id: "status", header: "Status", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? ""}`}>{r.status}</span>, sortable: true },
-  { id: "priority", header: "Priority", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[r.priority] ?? ""}`}>{r.priority}</span>, sortable: true },
-  { id: "assignee_email", header: "Assignee", cell: (r) => r.assignee_email ?? "Unassigned", defaultVisible: true },
-  { id: "created_at", header: "Created", cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm"), sortable: true },
-  { id: "updated_at", header: "Updated", cell: (r) => format(new Date(r.updated_at), "MMM d, HH:mm"), defaultVisible: false },
-];
 const PAGE_SIZE = 10;
 
-const SALON_PLAN_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "All plans" },
-  { value: "starter", label: "Starter" },
-  { value: "pro", label: "Pro" },
-  { value: "business", label: "Business" },
-];
-
 export default function SupportInboxPage() {
+  const t = useAdminConsoleMessages();
+  const s = t.pages.support;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [cases, setCases] = useState<SupportCase[]>([]);
@@ -94,14 +67,49 @@ export default function SupportInboxPage() {
   const [selectedCase, setSelectedCase] = useState<SupportCase | null>(null);
   const [notes, setNotes] = useState<AdminNote[]>([]);
 
+  const planFilterOptions = useMemo(
+    () => [
+      { value: "", label: s.filterAllPlans },
+      { value: "starter", label: s.filterStarter },
+      { value: "pro", label: s.filterPro },
+      { value: "business", label: s.filterBusiness },
+    ],
+    [s.filterAllPlans, s.filterStarter, s.filterPro, s.filterBusiness],
+  );
+
+  const columns = useMemo((): ColumnDef<SupportCase>[] => [
+    { id: "title", header: s.colTitle, cell: (r) => <span className="font-medium truncate max-w-[200px] block">{r.title}</span>, sticky: true, hideable: false },
+    { id: "type", header: s.colType, cell: (r) => <Badge variant="outline" className="text-xs">{r.type.replace(/_/g, " ")}</Badge>, sortable: true },
+    { id: "category", header: s.colCategory, cell: (r) => r.category ? <Badge variant="secondary" className="text-xs">{r.category.replace(/_/g, " ")}</Badge> : "-" },
+    { id: "salon_name", header: s.colSalon, cell: (r) => r.salon_name ?? "-" },
+    {
+      id: "salon_plan",
+      header: s.colPlan,
+      cell: (r) =>
+        r.salon_plan ? (
+          <Badge variant="outline" className="text-xs capitalize">
+            {r.salon_plan}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+      sortable: true,
+    },
+    { id: "status", header: s.colStatus, cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? ""}`}>{r.status}</span>, sortable: true },
+    { id: "priority", header: s.colPriority, cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[r.priority] ?? ""}`}>{r.priority}</span>, sortable: true },
+    { id: "assignee_email", header: s.colAssignee, cell: (r) => r.assignee_email ?? c.unassigned, defaultVisible: true },
+    { id: "created_at", header: s.colCreated, cell: (r) => format(new Date(r.created_at), "MMM d, HH:mm"), sortable: true },
+    { id: "updated_at", header: s.colUpdated, cell: (r) => format(new Date(r.updated_at), "MMM d, HH:mm"), defaultVisible: false },
+  ], [s, c.unassigned]);
+
   const loadCases = useCallback(async () => {
     setLoading(true);
     const filters: SupportCaseFilters = {};
     if (search.trim()) filters.search = search.trim();
     if (salonPlanFilter) filters.salon_plan = salonPlanFilter;
-    const { data, total: t, error: e } = await getSupportCases(filters, PAGE_SIZE, page * PAGE_SIZE);
+    const { data, total: tot, error: e } = await getSupportCases(filters, PAGE_SIZE, page * PAGE_SIZE);
     if (e) setError(e);
-    else { setCases(data ?? []); setTotal(t); }
+    else { setCases(data ?? []); setTotal(tot); }
     setLoading(false);
   }, [page, search, salonPlanFilter]);
 
@@ -115,10 +123,10 @@ export default function SupportInboxPage() {
     if (data) setNotes(data as AdminNote[]);
   }, []);
 
-  const handleRowClick = useCallback((c: SupportCase) => {
-    setSelectedCase(c);
+  const handleRowClick = useCallback((row: SupportCase) => {
+    setSelectedCase(row);
     setDrawerOpen(true);
-    loadNotes(c.id);
+    loadNotes(row.id);
   }, [loadNotes]);
 
   const handleCreateNote = useCallback(async (content: string, tags: NoteTag[]) => {
@@ -129,12 +137,12 @@ export default function SupportInboxPage() {
     loadNotes(selectedCase.id);
   }, [selectedCase, loadNotes]);
 
-  const rowActions: RowAction<SupportCase>[] = [
-    { label: "Mark In Progress", onClick: async (c) => { await updateCaseStatus(c.id, "in_progress"); loadCases(); } },
-    { label: "Waiting on Salon", onClick: async (c) => { await updateCaseStatus(c.id, "waiting_on_salon"); loadCases(); } },
-    { label: "Resolve", onClick: async (c) => { await updateCaseStatus(c.id, "resolved"); loadCases(); } },
-    { label: "Close", onClick: async (c) => { await updateCaseStatus(c.id, "closed"); loadCases(); }, separator: true },
-  ];
+  const rowActions: RowAction<SupportCase>[] = useMemo(() => [
+    { label: s.rowMarkInProgress, onClick: async (row) => { await updateCaseStatus(row.id, "in_progress"); loadCases(); } },
+    { label: s.rowWaitingOnSalon, onClick: async (row) => { await updateCaseStatus(row.id, "waiting_on_salon"); loadCases(); } },
+    { label: s.rowResolve, onClick: async (row) => { await updateCaseStatus(row.id, "resolved"); loadCases(); } },
+    { label: s.rowClose, onClick: async (row) => { await updateCaseStatus(row.id, "closed"); loadCases(); }, separator: true },
+  ], [s.rowMarkInProgress, s.rowWaitingOnSalon, s.rowResolve, s.rowClose, loadCases]);
 
   if (contextLoading) return null;
   if (!isSuperAdmin) return null;
@@ -142,12 +150,12 @@ export default function SupportInboxPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Support Inbox" description="Manage support cases and operational issues" actions={<Button size="sm">Create Case</Button>}>
+        <PageLayout title={s.title} description={s.description} actions={<Button size="sm">{s.createCase}</Button>}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
           <div className="flex flex-wrap items-end gap-4 mb-4">
             <div className="space-y-1.5 min-w-[180px]">
               <Label htmlFor="support-plan-filter" className="text-xs text-muted-foreground">
-                Filter by salon plan
+                {s.filterBySalonPlan}
               </Label>
               <select
                 id="support-plan-filter"
@@ -155,7 +163,7 @@ export default function SupportInboxPage() {
                 value={salonPlanFilter}
                 onChange={(e) => handlePlanFilterChange(e.target.value)}
               >
-                {SALON_PLAN_FILTER_OPTIONS.map((o) => (
+                {planFilterOptions.map((o) => (
                   <option key={o.value || "all"} value={o.value}>
                     {o.label}
                   </option>
@@ -173,23 +181,23 @@ export default function SupportInboxPage() {
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}
-            searchPlaceholder="Search cases..."
+            searchPlaceholder={s.searchPlaceholder}
             rowActions={rowActions}
             onRowClick={handleRowClick}
             loading={loading}
-            emptyMessage="No support cases"
+            emptyMessage={s.emptyMessage}
             storageKey="support-cases"
           />
 
-          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedCase?.title ?? "Case Detail"} description={selectedCase?.type.replace(/_/g, " ") ?? ""}>
+          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selectedCase?.title ?? s.drawerCaseFallback} description={selectedCase?.type.replace(/_/g, " ") ?? ""}>
             {selectedCase && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Status:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${STATUS_COLORS[selectedCase.status]}`}>{selectedCase.status.replace(/_/g, " ")}</span></div>
-                  <div><span className="text-muted-foreground">Priority:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${PRIORITY_COLORS[selectedCase.priority]}`}>{selectedCase.priority}</span></div>
-                  <div><span className="text-muted-foreground">Salon:</span> {selectedCase.salon_id ? <EntityLink type="salon" id={selectedCase.salon_id} label={selectedCase.salon_name} /> : <span className="text-muted-foreground">N/A</span>}</div>
+                  <div><span className="text-muted-foreground">{s.colStatus}:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${STATUS_COLORS[selectedCase.status]}`}>{selectedCase.status.replace(/_/g, " ")}</span></div>
+                  <div><span className="text-muted-foreground">{s.colPriority}:</span> <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ml-1 ${PRIORITY_COLORS[selectedCase.priority]}`}>{selectedCase.priority}</span></div>
+                  <div><span className="text-muted-foreground">{s.colSalon}:</span> {selectedCase.salon_id ? <EntityLink type="salon" id={selectedCase.salon_id} label={selectedCase.salon_name} /> : <span className="text-muted-foreground">{c.notApplicable}</span>}</div>
                   <div>
-                    <span className="text-muted-foreground">Plan:</span>{" "}
+                    <span className="text-muted-foreground">{s.colPlan}:</span>{" "}
                     {selectedCase.salon_plan ? (
                       <Badge variant="outline" className="ml-1 text-xs capitalize">
                         {selectedCase.salon_plan}
@@ -198,29 +206,28 @@ export default function SupportInboxPage() {
                       <span className="text-muted-foreground ml-1">—</span>
                     )}
                   </div>
-                  <div><span className="text-muted-foreground">Assignee:</span> {selectedCase.assignee_email ?? "Unassigned"}</div>
-                  {selectedCase.category && <div><span className="text-muted-foreground">Category:</span> <Badge variant="secondary" className="ml-1 text-xs">{selectedCase.category.replace(/_/g, " ")}</Badge></div>}
-                  <div className="col-span-2"><span className="text-muted-foreground">Created:</span> {format(new Date(selectedCase.created_at), "PPpp")}</div>
+                  <div><span className="text-muted-foreground">{s.colAssignee}:</span> {selectedCase.assignee_email ?? c.unassigned}</div>
+                  {selectedCase.category && <div><span className="text-muted-foreground">{s.colCategory}:</span> <Badge variant="secondary" className="ml-1 text-xs">{selectedCase.category.replace(/_/g, " ")}</Badge></div>}
+                  <div className="col-span-2"><span className="text-muted-foreground">{s.colCreated}:</span> {format(new Date(selectedCase.created_at), "PPpp")}</div>
                 </div>
-                {selectedCase.description && <div><p className="text-sm font-medium mb-1">Description</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedCase.description}</p></div>}
-                {/* Attachments from metadata */}
+                {selectedCase.description && <div><p className="text-sm font-medium mb-1">{s.sectionDescription}</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedCase.description}</p></div>}
                 {(() => {
                   const atts = selectedCase.metadata?.attachments;
                   if (!Array.isArray(atts) || atts.length === 0) return null;
                   return (
                     <div>
-                      <p className="text-sm font-medium mb-2">Attachments</p>
+                      <p className="text-sm font-medium mb-2">{s.sectionAttachments}</p>
                       <div className="flex flex-wrap gap-2">
                         {(atts as { path: string; name: string; size: number }[]).map((att, i) => (
                           <button
                             key={i}
                             type="button"
                             onClick={async () => {
-                              const { data, error } = await supabase.storage
+                              const { data, error: urlErr } = await supabase.storage
                                 .from("support-attachments")
-                                .createSignedUrl(att.path, 300); // 5 min expiry
-                              if (error || !data?.signedUrl) {
-                                alert("Could not open file: " + (error?.message ?? "unknown error"));
+                                .createSignedUrl(att.path, 300);
+                              if (urlErr || !data?.signedUrl) {
+                                alert(`${s.openAttachmentFailed}: ${urlErr?.message ?? c.unknownError}`);
                                 return;
                               }
                               window.open(data.signedUrl, "_blank");

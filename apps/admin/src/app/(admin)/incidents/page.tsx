@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -10,6 +10,7 @@ import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import { format } from "date-fns";
 
@@ -40,16 +41,9 @@ const STATUS_COLORS: Record<string, string> = {
   resolved: "bg-emerald-50 text-emerald-700",
 };
 
-const columns: ColumnDef<Incident>[] = [
-  { id: "title", header: "Title", cell: (r) => <span className="font-medium">{r.title}</span>, sticky: true, hideable: false },
-  { id: "severity", header: "Severity", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SEV_COLORS[r.severity]}`}>{r.severity}</span>, sortable: true },
-  { id: "status", header: "Status", cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status]}`}>{r.status}</span>, sortable: true },
-  { id: "affected_services", header: "Affected", cell: (r) => r.affected_services?.join(", ") || "-" },
-  { id: "started_at", header: "Started", cell: (r) => format(new Date(r.started_at), "MMM d, HH:mm"), sortable: true },
-  { id: "resolved_at", header: "Resolved", cell: (r) => r.resolved_at ? format(new Date(r.resolved_at), "MMM d, HH:mm") : "-", defaultVisible: true },
-];
-
 export default function IncidentsPage() {
+  const t = useAdminConsoleMessages();
+  const inc = t.pages.incidents;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -63,6 +57,15 @@ export default function IncidentsPage() {
   }, []);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Incident | null>(null);
+
+  const columns = useMemo((): ColumnDef<Incident>[] => [
+    { id: "title", header: inc.colTitle, cell: (r) => <span className="font-medium">{r.title}</span>, sticky: true, hideable: false },
+    { id: "severity", header: inc.colSeverity, cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SEV_COLORS[r.severity]}`}>{r.severity}</span>, sortable: true },
+    { id: "status", header: inc.colStatus, cell: (r) => <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status]}`}>{r.status}</span>, sortable: true },
+    { id: "affected_services", header: inc.colAffected, cell: (r) => r.affected_services?.join(", ") || "-" },
+    { id: "started_at", header: inc.colStarted, cell: (r) => format(new Date(r.started_at), "MMM d, HH:mm"), sortable: true },
+    { id: "resolved_at", header: inc.colResolved, cell: (r) => r.resolved_at ? format(new Date(r.resolved_at), "MMM d, HH:mm") : "-", defaultVisible: true },
+  ], [inc]);
 
   const loadIncidents = useCallback(async () => {
     setLoading(true);
@@ -85,19 +88,19 @@ export default function IncidentsPage() {
     if (isSuperAdmin) loadIncidents();
   }, [isSuperAdmin, contextLoading, router, loadIncidents]);
 
-  const rowActions: RowAction<Incident>[] = [
-    { label: "Mark Investigating", onClick: async (i) => { await supabase.from("incidents").update({ status: "investigating" }).eq("id", i.id); loadIncidents(); } },
-    { label: "Mark Identified", onClick: async (i) => { await supabase.from("incidents").update({ status: "identified" }).eq("id", i.id); loadIncidents(); } },
-    { label: "Mark Monitoring", onClick: async (i) => { await supabase.from("incidents").update({ status: "monitoring" }).eq("id", i.id); loadIncidents(); } },
-    { label: "Resolve", onClick: async (i) => { await supabase.from("incidents").update({ status: "resolved", resolved_at: new Date().toISOString() }).eq("id", i.id); loadIncidents(); }, separator: true },
-  ];
+  const rowActions: RowAction<Incident>[] = useMemo(() => [
+    { label: inc.rowInvestigating, onClick: async (i) => { await supabase.from("incidents").update({ status: "investigating" }).eq("id", i.id); loadIncidents(); } },
+    { label: inc.rowIdentified, onClick: async (i) => { await supabase.from("incidents").update({ status: "identified" }).eq("id", i.id); loadIncidents(); } },
+    { label: inc.rowMonitoring, onClick: async (i) => { await supabase.from("incidents").update({ status: "monitoring" }).eq("id", i.id); loadIncidents(); } },
+    { label: inc.rowResolve, onClick: async (i) => { await supabase.from("incidents").update({ status: "resolved", resolved_at: new Date().toISOString() }).eq("id", i.id); loadIncidents(); }, separator: true },
+  ], [inc.rowInvestigating, inc.rowIdentified, inc.rowMonitoring, inc.rowResolve, loadIncidents]);
 
   if (contextLoading || !isSuperAdmin) return null;
 
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Incidents" description="Track and manage platform incidents" actions={<Button size="sm">New Incident</Button>}>
+        <PageLayout title={inc.title} description={inc.description} actions={<Button size="sm">{inc.newIncident}</Button>}>
           <DataTable
             columns={columns}
             data={incidents}
@@ -108,26 +111,26 @@ export default function IncidentsPage() {
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}
-            searchPlaceholder="Search incidents..."
+            searchPlaceholder={inc.searchPlaceholder}
             rowActions={rowActions}
             onRowClick={(i) => { setSelected(i); setDrawerOpen(true); }}
             loading={loading}
-            emptyMessage="No incidents recorded"
+            emptyMessage={inc.emptyMessage}
             storageKey="incidents"
           />
 
-          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected?.title ?? "Incident"} description={selected?.severity ?? ""}>
+          <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected?.title ?? inc.drawerFallback} description={selected?.severity ?? ""}>
             {selected && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Severity:</span> <Badge className={SEV_COLORS[selected.severity]}>{selected.severity}</Badge></div>
-                  <div><span className="text-muted-foreground">Status:</span> <Badge className={STATUS_COLORS[selected.status]}>{selected.status}</Badge></div>
-                  <div><span className="text-muted-foreground">Started:</span> {format(new Date(selected.started_at), "PPpp")}</div>
-                  {selected.resolved_at && <div><span className="text-muted-foreground">Resolved:</span> {format(new Date(selected.resolved_at), "PPpp")}</div>}
-                  {selected.affected_services?.length > 0 && <div className="col-span-2"><span className="text-muted-foreground">Affected:</span> {selected.affected_services.join(", ")}</div>}
+                  <div><span className="text-muted-foreground">{inc.colSeverity}:</span> <Badge className={SEV_COLORS[selected.severity]}>{selected.severity}</Badge></div>
+                  <div><span className="text-muted-foreground">{inc.colStatus}:</span> <Badge className={STATUS_COLORS[selected.status]}>{selected.status}</Badge></div>
+                  <div><span className="text-muted-foreground">{inc.colStarted}:</span> {format(new Date(selected.started_at), "PPpp")}</div>
+                  {selected.resolved_at && <div><span className="text-muted-foreground">{inc.colResolved}:</span> {format(new Date(selected.resolved_at), "PPpp")}</div>}
+                  {selected.affected_services?.length > 0 && <div className="col-span-2"><span className="text-muted-foreground">{inc.colAffected}:</span> {selected.affected_services.join(", ")}</div>}
                 </div>
-                {selected.description && <div><p className="text-sm font-medium mb-1">Description</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.description}</p></div>}
-                {selected.postmortem && <div><p className="text-sm font-medium mb-1">Post-mortem</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.postmortem}</p></div>}
+                {selected.description && <div><p className="text-sm font-medium mb-1">{inc.sectionDescription}</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.description}</p></div>}
+                {selected.postmortem && <div><p className="text-sm font-medium mb-1">{inc.sectionPostmortem}</p><p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.postmortem}</p></div>}
               </div>
             )}
           </DetailDrawer>

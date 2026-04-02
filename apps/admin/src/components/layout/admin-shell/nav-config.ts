@@ -6,6 +6,7 @@ import {
   TrendingUp, BarChart3, ToggleRight,
   MessageSquare, Megaphone,
 } from "lucide-react";
+import type { AdminConsoleMessages } from "@/i18n/admin-console";
 
 export type NavItem = {
   href: string;
@@ -18,65 +19,67 @@ export type NavSection = {
   items: NavItem[];
 };
 
-export const NAV_SECTIONS: NavSection[] = [
-  {
-    label: "Overview",
-    items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/system-health", label: "System Health", icon: HeartPulse },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { href: "/support", label: "Support Inbox", icon: Inbox },
-      { href: "/incidents", label: "Incidents", icon: AlertTriangle },
-    ],
-  },
-  {
-    label: "Tenants",
-    items: [
-      { href: "/salons", label: "Salons", icon: Building2 },
-      { href: "/onboarding", label: "Onboarding", icon: GitBranch },
-      { href: "/plans", label: "Plans & Billing", icon: CreditCard },
-      { href: "/plan-features", label: "Plan Features", icon: Puzzle },
-    ],
-  },
-  {
-    label: "Users & Access",
-    items: [
-      { href: "/users", label: "Users", icon: Users },
-      { href: "/admins", label: "Admins", icon: UserCheck },
-    ],
-  },
-  {
-    label: "Security",
-    items: [
-      { href: "/audit-logs", label: "Audit Logs", icon: FileText },
-      { href: "/security-events", label: "Security Events", icon: ShieldCheck },
-      { href: "/data-tools", label: "Data Tools", icon: Database },
-    ],
-  },
-  {
-    label: "Analytics",
-    items: [
-      { href: "/analytics", label: "Metrics", icon: TrendingUp },
-      { href: "/analytics/cohorts", label: "Cohorts", icon: BarChart3 },
-      { href: "/feature-flags", label: "Feature Flags", icon: ToggleRight },
-    ],
-  },
-  {
-    label: "Product",
-    items: [
-      { href: "/announcements", label: "Announcements", icon: Megaphone },
-      { href: "/changelog", label: "Changelog", icon: GitBranch },
-      { href: "/feedback", label: "Feedback", icon: MessageSquare },
-    ],
-  },
-];
+export function buildAdminNavSections(nav: AdminConsoleMessages["nav"]): NavSection[] {
+  return [
+    {
+      label: nav.sectionOverview,
+      items: [
+        { href: "/", label: nav.itemDashboard, icon: LayoutDashboard },
+        { href: "/system-health", label: nav.itemSystemHealth, icon: HeartPulse },
+      ],
+    },
+    {
+      label: nav.sectionOperations,
+      items: [
+        { href: "/support", label: nav.itemSupportInbox, icon: Inbox },
+        { href: "/incidents", label: nav.itemIncidents, icon: AlertTriangle },
+      ],
+    },
+    {
+      label: nav.sectionTenants,
+      items: [
+        { href: "/salons", label: nav.itemSalons, icon: Building2 },
+        { href: "/onboarding", label: nav.itemOnboarding, icon: GitBranch },
+        { href: "/plans", label: nav.itemPlansBilling, icon: CreditCard },
+        { href: "/plan-features", label: nav.itemPlanFeatures, icon: Puzzle },
+      ],
+    },
+    {
+      label: nav.sectionUsersAccess,
+      items: [
+        { href: "/users", label: nav.itemUsers, icon: Users },
+        { href: "/admins", label: nav.itemAdmins, icon: UserCheck },
+      ],
+    },
+    {
+      label: nav.sectionSecurity,
+      items: [
+        { href: "/audit-logs", label: nav.itemAuditLogs, icon: FileText },
+        { href: "/security-events", label: nav.itemSecurityEvents, icon: ShieldCheck },
+        { href: "/data-tools", label: nav.itemDataTools, icon: Database },
+      ],
+    },
+    {
+      label: nav.sectionAnalytics,
+      items: [
+        { href: "/analytics", label: nav.itemMetrics, icon: TrendingUp },
+        { href: "/analytics/cohorts", label: nav.itemCohorts, icon: BarChart3 },
+        { href: "/feature-flags", label: nav.itemFeatureFlags, icon: ToggleRight },
+      ],
+    },
+    {
+      label: nav.sectionProduct,
+      items: [
+        { href: "/announcements", label: nav.itemAnnouncements, icon: Megaphone },
+        { href: "/changelog", label: nav.itemChangelog, icon: GitBranch },
+        { href: "/feedback", label: nav.itemFeedback, icon: MessageSquare },
+      ],
+    },
+  ];
+}
 
-export function computeActiveHref(pathname: string): string | null {
-  const allHrefs = NAV_SECTIONS.flatMap((s) => s.items.map((i) => i.href));
+export function computeActiveHref(pathname: string, sections: NavSection[]): string | null {
+  const allHrefs = sections.flatMap((s) => s.items.map((i) => i.href));
   let best: string | null = null;
   for (const href of allHrefs) {
     if (pathname === href || pathname.startsWith(href + "/")) {

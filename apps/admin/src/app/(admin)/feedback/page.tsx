@@ -9,6 +9,7 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { DataTable, type RowAction } from "@/components/shared/data-table";
 import { DetailDrawer } from "@/components/shared/detail-drawer";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import {
   columns,
@@ -20,6 +21,9 @@ import { FeedbackDrawerContent } from "./_components/FeedbackDrawerContent";
 
 export default function FeedbackPage() {
   const PAGE_SIZE = 10;
+  const t = useAdminConsoleMessages();
+  const fb = t.pages.feedback;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
@@ -50,11 +54,11 @@ export default function FeedbackPage() {
       setEntries((data as FeedbackEntry[]) ?? []);
       setTotal(count ?? 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : c.unknownError);
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) {
@@ -80,7 +84,7 @@ export default function FeedbackPage() {
   }
 
   const rowActions: RowAction<FeedbackEntry>[] = STATUSES.map((s) => ({
-    label: `Set: ${s.replace(/_/g, " ")}`,
+    label: `${fb.setStatusPrefix} ${s.replace(/_/g, " ")}`,
     onClick: (entry) => updateStatus(entry.id, s),
   }));
 
@@ -91,7 +95,7 @@ export default function FeedbackPage() {
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Feedback" description={`${newCount} new feedback items`}>
+        <PageLayout title={fb.title} description={fb.descriptionTemplate.replace("{count}", String(newCount))}>
           {error && (
             <ErrorMessage
               message={error}
@@ -126,21 +130,21 @@ export default function FeedbackPage() {
             onPageChange={setPage}
             onSearchChange={handleSearchChange}
             searchQuery={search}
-            searchPlaceholder="Search feedback..."
+            searchPlaceholder={fb.searchPlaceholder}
             rowActions={rowActions}
             onRowClick={(e) => {
               setSelected(e);
               setDrawerOpen(true);
             }}
             loading={loading}
-            emptyMessage="No feedback yet"
+            emptyMessage={fb.emptyMessage}
             storageKey="feedback"
           />
 
           <DetailDrawer
             open={drawerOpen}
             onOpenChange={setDrawerOpen}
-            title={selected?.title ?? "Feedback"}
+            title={selected?.title ?? fb.drawerTitleFallback}
             description={selected?.type.replace(/_/g, " ") ?? ""}
             widthClass="w-[560px]"
           >

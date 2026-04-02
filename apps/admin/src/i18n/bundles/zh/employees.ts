@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "员工",
+    description:
+      "添加可接待预约的发型师及其他员工。",
+    mustBeLoggedIn: "你需要登录才能查看员工列表。",
+    noSalon:
+      "你的账号目前还没有关联到任何沙龙。请先完成 onboarding。",
+    addError: "添加员工失败。",
+    updateError: "更新员工失败。",
+    newEmployee: "新员工",
+    nameLabel: "姓名",
+    namePlaceholder: "例如：Alex 发型师",
+    emailLabel: "邮箱（可选）",
+    emailPlaceholder: "alex@salon.com",
+    phoneLabel: "电话（可选）",
+    phonePlaceholder: "+47 400 00 000",
+    roleLabel: "角色（可选）",
+    rolePlaceholder: "例如：发型师、前台",
+    preferredLanguageLabel: "首选语言",
+    servicesLabel: "该员工提供的服务",
+    servicesPlaceholder: "选择服务...",
+    loading: "正在加载员工…",
+    emptyTitle: "尚未添加任何员工",
+    emptyDescription:
+      "当你在左侧表单中添加员工后，他们会出现在这里，并可以在日历和预约引擎中使用。",
+    tableTitle: "你的员工",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "状态",
+    colActions: "操作",
+    active: "启用",
+    inactive: "停用",
+    delete: "删除",
+    edit: "编辑",
+    addButton: "添加员工",
+    editTitle: "编辑员工",
+    editDescription: "更新员工信息和服务。",
+    cancel: "取消",
+    save: "保存",
+    saving: "保存中…",
+};

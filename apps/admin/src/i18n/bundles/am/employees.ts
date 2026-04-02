@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "ሰራተኞች",
+    description:
+      "ቀለም መቀየሪያዎችን እና ቀጠሮ ሊቀበሉ የሚችሉ ሌሎች ሰራተኞችን ያክሉ።",
+    mustBeLoggedIn: "ሰራተኞችን ለማየት መግባት ያስፈልጋል።",
+    noSalon:
+      "ከመለያዎ ጋር የተያያዘ ሳሎን የለም። መጀመሪያ መጀመርያን ይጨርሱ።",
+    addError: "ሰራተኛ መጨመር አልተቻለም።",
+    updateError: "የሰራተኛ መረጃ ማዘመን አልተቻለም።",
+    newEmployee: "አዲስ ሰራተኛ",
+    nameLabel: "ስም",
+    emailLabel: "ኢሜይል (ምርጫዊ)",
+    phoneLabel: "ስልክ (ምርጫዊ)",
+    roleLabel: "Role (optional)",
+    rolePlaceholder: "e.g. Stylist, Receptionist",
+    preferredLanguageLabel: "Preferred language",
+    servicesLabel: "Services this staff member offers",
+    servicesPlaceholder: "Select services...",
+    namePlaceholder: "ለምሳሌ፦ አለሙ ስታይሊስት",
+    emailPlaceholder: "alem@salon.com",
+    phonePlaceholder: "+47 99 99 99 99",
+    loading: "ሰራተኞችን በመጫን ላይ…",
+    emptyTitle: "ገና ምንም ሰራተኛ አልተመዘገበም",
+    emptyDescription:
+      "ሰራተኞችን ከቀኝ ገጽታ በመጨመር እዚህ ይታያሉ። በኋላ በቀን መቁጠሪያና በመመዝገብ ሎጂክ ይጠቀሙባቸዋል።",
+    tableTitle: "የሳሎን ሰራተኞች",
+    colName: "ስም",
+    colRole: "የስራ ሚና",
+    colContact: "የመገናኛ",
+    colServices: "አገልግሎቶች",
+    colStatus: "ሁኔታ",
+    colActions: "መድረካዎች",
+    active: "ንቁ",
+    inactive: "ዝቅተኛ",
+    delete: "ሰርዝ",
+    edit: "አርም",
+    addButton: "ሰራተኛ ያክሉ",
+    editTitle: "ሰራተኛ አርም",
+    editDescription: "የሰራተኛ መረጃና አገልግሎቶችን ያዘምኑ።",
+    cancel: "ይቅር",
+    save: "አስቀምጥ",
+    saving: "በማስቀመጥ ላይ…",
+};

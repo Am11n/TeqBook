@@ -1,0 +1,26 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const signup: TranslationNamespaces["signup"] = {
+
+    title: "መለያ ፍጠር",
+    description: "ከ TeqBook ለመጀመር መለያ ፍጠር።",
+    confirmPasswordLabel: "ሚስጥር ቃል ያረጋግጡ",
+    confirmPasswordPlaceholder: "ሚስጥር ቃል እንደገና ያስገቡ",
+    signupButton: "መለያ ፍጠር",
+    signingUp: "መለያ በመፍጠር ላይ...",
+    signupError: "መለያ መፍጠር አልተቻለም",
+    alreadyHaveAccount: "አስቀድመው መለያ አሎት?",
+    loginLink: "ይግቡ",
+    passwordMismatch: "ሚስጥር ቃላት አይጣጣሙም",
+    createAccountTitle: "የ TeqBook መለያዎን ይፍጠሩ",
+    createAccountDescription: "ነጻ ሙከራዎን ይጀምሩ። ክሬዲት ካርድ አያስፈልግም። ሰራዊትን እና ሳሎኖችን በኋላ ማከል ይችላሉ።",
+    bullet1: "በደቂቃዎች ውስጥ በኢንተርኔት ማስቀመጥ ይጀምሩ",
+    bullet2: "ሳሎንዎ ሲያድግ በኋላ ያሻሽሉ",
+    bullet3: "በብዙ ቋንቋ የማስቀመጥ ገጽ ይገኛል",
+    formSubtitle: "ነጻ የ TeqBook ሙከራዎን ይጀምሩ። ክሬዲት ካርድ አያስፈልግም።",
+    trustLine: "ቀላል፣ ንጹር የጊዜ ሰሌዳ የሚፈልጉ ሳሎኖች ይታመኑበታል – አይደለም የተጨናነቀ ሶፍትዌር።",
+    passwordPlaceholder: "ሚስጥር ቃል ይፍጠሩ",
+    passwordHint: "ቢያንስ 8 ቁምፊዎችን ይጠቀሙ። ይህንን በኋላ ማስተካከል ይችላሉ።",
+    termsAgreement: "ውሎችን እና የግላዊነት ፖሊሲውን እቀበላለሁ።",
+    secureLoginLine: "አረጋዊ መግባት። የይለፍ ቃልዎ በግልጽ ጽሑፍ ተቀምጧል።",
+};

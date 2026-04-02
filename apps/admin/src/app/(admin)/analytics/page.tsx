@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -10,8 +10,8 @@ import { InsightText } from "@/components/shared/insight-text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
-import { Badge } from "@/components/ui/badge";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
 import { Building2, Calendar, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
@@ -22,20 +22,23 @@ type PlanDist = { plan: string; count: number };
 
 const PLAN_COLORS: Record<string, string> = { starter: "bg-muted", pro: "bg-blue-500", business: "bg-purple-500" };
 
-const topSalonColumns: ColumnDef<TopSalon>[] = [
-  { id: "salon_name", header: "Salon", cell: (r) => <span className="font-medium">{r.salon_name}</span>, hideable: false },
-  { id: "booking_count", header: "Bookings", cell: (r) => r.booking_count.toLocaleString(), sortable: true },
-  { id: "growth_pct", header: "Growth", cell: (r) => (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${r.growth_pct >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-      {r.growth_pct >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-      {Math.abs(r.growth_pct)}%
-    </span>
-  ), sortable: true },
-];
-
 export default function AdminAnalyticsPage() {
+  const t = useAdminConsoleMessages();
+  const an = t.pages.analytics;
+  const c = t.common;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
+
+  const topSalonColumns = useMemo((): ColumnDef<TopSalon>[] => [
+    { id: "salon_name", header: c.salon, cell: (r) => <span className="font-medium">{r.salon_name}</span>, hideable: false },
+    { id: "booking_count", header: an.kpiBookings, cell: (r) => r.booking_count.toLocaleString(), sortable: true },
+    { id: "growth_pct", header: an.colGrowth, cell: (r) => (
+      <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${r.growth_pct >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+        {r.growth_pct >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+        {Math.abs(r.growth_pct)}%
+      </span>
+    ), sortable: true },
+  ], [an.kpiBookings, an.colGrowth, c.salon]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,27 +72,23 @@ export default function AdminAnalyticsPage() {
       setTopSalons((ts.data as TopSalon[]) ?? []);
       setPlanDist((pd.data as PlanDist[]) ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : c.unknownError);
     } finally {
       setLoading(false);
     }
-  }, [periodDays]);
+  }, [periodDays, c.unknownError]);
 
   useEffect(() => {
     if (!contextLoading && !isSuperAdmin) { router.push("/login"); return; }
     if (isSuperAdmin) loadAnalytics();
   }, [isSuperAdmin, contextLoading, router, loadAnalytics]);
 
-  if (contextLoading || !isSuperAdmin) return null;
-
   const totalBookings = bookingsSeries.reduce((s, p) => s + Number(p.value), 0);
   const totalNewSalons = salonsSeries.reduce((s, p) => s + Number(p.value), 0);
   const avgActive = activeSeries.length > 0 ? Math.round(activeSeries.reduce((s, p) => s + Number(p.value), 0) / activeSeries.length) : 0;
   const totalPlans = planDist.reduce((s, p) => s + Number(p.count), 0);
 
-  // ── Compute insight messages ──────────────────────────
-  // Funnel: find biggest drop-off step
-  const funnelInsight = (() => {
+  const funnelInsight = useMemo(() => {
     if (funnel.length < 2) return null;
     let biggestDrop = 0;
     let dropStep = "";
@@ -104,34 +103,35 @@ export default function AdminAnalyticsPage() {
     const activationRate = funnel[0].count > 0
       ? Math.round((Number(funnel[funnel.length - 1].count) / Number(funnel[0].count)) * 100)
       : 0;
-    return `Activation rate: ${activationRate}%. Most salons drop at "${dropStep}" (${biggestDrop} salons lost).`;
-  })();
+    return an.insightFunnelDropoff
+      .replace("{rate}", String(activationRate))
+      .replace("{step}", dropStep)
+      .replace("{lost}", String(biggestDrop));
+  }, [funnel, an.insightFunnelDropoff]);
 
-  // Bookings trend: compare first vs second half of period
-  const bookingsInsight = (() => {
+  const bookingsInsight = useMemo(() => {
     if (bookingsSeries.length < 4) return null;
     const mid = Math.floor(bookingsSeries.length / 2);
     const firstHalf = bookingsSeries.slice(0, mid).reduce((s, p) => s + Number(p.value), 0);
     const secondHalf = bookingsSeries.slice(mid).reduce((s, p) => s + Number(p.value), 0);
     if (firstHalf === 0) return null;
     const changePct = Math.round(((secondHalf - firstHalf) / firstHalf) * 100);
-    if (changePct === 0) return "Booking volume is stable across the period.";
-    return `Bookings ${changePct > 0 ? "up" : "down"} ${Math.abs(changePct)}% in the second half of this period vs the first half.`;
-  })();
+    if (changePct === 0) return an.insightBookingsStable;
+    const direction = changePct > 0 ? an.directionUp : an.directionDown;
+    return an.insightBookingsTrend.replace("{direction}", direction).replace("{pct}", String(Math.abs(changePct)));
+  }, [bookingsSeries, an.insightBookingsStable, an.insightBookingsTrend, an.directionUp, an.directionDown]);
 
-  // Plan distribution insight
-  const planInsight = (() => {
+  const planInsight = useMemo(() => {
     if (planDist.length === 0 || totalPlans === 0) return null;
     const starterCount = planDist.find((p) => p.plan === "starter")?.count ?? 0;
     const starterPct = Math.round((Number(starterCount) / totalPlans) * 100);
-    if (starterPct > 50) return `${starterPct}% of salons are on the Starter plan. Upsell opportunity.`;
+    if (starterPct > 50) return an.insightPlanStarterHeavy.replace("{pct}", String(starterPct));
     const proPct = Math.round((Number(planDist.find((p) => p.plan === "pro")?.count ?? 0) / totalPlans) * 100);
-    return `Pro plan adoption: ${proPct}%. Starter: ${starterPct}%.`;
-  })();
+    return an.insightPlanMix.replace("{proPct}", String(proPct)).replace("{starterPct}", String(starterPct));
+  }, [planDist, totalPlans, an.insightPlanStarterHeavy, an.insightPlanMix]);
 
-  // Simple SVG bar chart renderer
   function BarChart({ data, color = "#3b82f6" }: { data: TimeSeriesPoint[]; color?: string }) {
-    if (data.length === 0) return <p className="text-sm text-muted-foreground">No data</p>;
+    if (data.length === 0) return <p className="text-sm text-muted-foreground">{an.noData}</p>;
     const max = Math.max(...data.map((d) => Number(d.value)), 1);
     const w = 100 / data.length;
     return (
@@ -143,45 +143,44 @@ export default function AdminAnalyticsPage() {
     );
   }
 
+  if (contextLoading || !isSuperAdmin) return null;
+
   return (
     <ErrorBoundary>
       <AdminShell>
-        <PageLayout title="Metrics" description="Platform analytics and growth metrics" showPeriodSelector period={period} onPeriodChange={setPeriod}>
+        <PageLayout title={an.title} description={an.description} showPeriodSelector period={period} onPeriodChange={setPeriod}>
           {error && <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" className="mb-4" />}
 
-          {/* KPI row */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-            <KpiCard title="Bookings" value={totalBookings} icon={Calendar} trendData={bookingsSeries.map((d) => Number(d.value))} period={period} />
-            <KpiCard title="New Salons" value={totalNewSalons} icon={Building2} trendData={salonsSeries.map((d) => Number(d.value))} period={period} />
-            <KpiCard title="Avg. Active/day" value={avgActive} icon={TrendingUp} period={period} />
-            <KpiCard title="Total Salons" value={totalPlans} icon={Users} />
+            <KpiCard title={an.kpiBookings} value={totalBookings} icon={Calendar} trendData={bookingsSeries.map((d) => Number(d.value))} period={period} />
+            <KpiCard title={an.kpiNewSalons} value={totalNewSalons} icon={Building2} trendData={salonsSeries.map((d) => Number(d.value))} period={period} />
+            <KpiCard title={an.kpiAvgActive} value={avgActive} icon={TrendingUp} period={period} />
+            <KpiCard title={an.kpiTotalSalons} value={totalPlans} icon={Users} />
           </div>
 
-          {/* Charts row */}
           <div className="grid gap-6 lg:grid-cols-2 mb-6">
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Bookings / day</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.chartBookingsDay}</CardTitle></CardHeader>
               <CardContent>
                 <BarChart data={bookingsSeries} color="#3b82f6" />
                 {bookingsInsight && <InsightText message={bookingsInsight} />}
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">New Salons / day</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.chartNewSalonsDay}</CardTitle></CardHeader>
               <CardContent><BarChart data={salonsSeries} color="#8b5cf6" /></CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Active Salons / day</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.chartActiveSalonsDay}</CardTitle></CardHeader>
               <CardContent><BarChart data={activeSeries} color="#10b981" /></CardContent>
             </Card>
 
-            {/* Activation Funnel */}
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Activation Funnel</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.chartActivationFunnel}</CardTitle></CardHeader>
               <CardContent>
-                {funnel.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> : (
+                {funnel.length === 0 ? <p className="text-sm text-muted-foreground">{an.noData}</p> : (
                   <div className="space-y-3">
-                    {funnel.map((step, i) => {
+                    {funnel.map((step) => {
                       const pct = funnel[0].count > 0 ? Math.round((Number(step.count) / Number(funnel[0].count)) * 100) : 0;
                       return (
                         <div key={step.step}>
@@ -202,10 +201,9 @@ export default function AdminAnalyticsPage() {
             </Card>
           </div>
 
-          {/* Bottom row: Top salons + Plan distribution */}
           <div className="grid gap-6 lg:grid-cols-3 mb-6">
             <Card className="lg:col-span-2">
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Top Salons (by bookings)</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.cardTopSalons}</CardTitle></CardHeader>
               <CardContent>
                 <DataTable
                   columns={topSalonColumns}
@@ -216,16 +214,16 @@ export default function AdminAnalyticsPage() {
                   pageSize={10}
                   onPageChange={() => {}}
                   loading={loading}
-                  emptyMessage="No data"
+                  emptyMessage={an.noData}
                   storageKey="top-salons"
                 />
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Plan Distribution</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">{an.cardPlanDistribution}</CardTitle></CardHeader>
               <CardContent>
-                {planDist.length === 0 ? <p className="text-sm text-muted-foreground">No data</p> : (
+                {planDist.length === 0 ? <p className="text-sm text-muted-foreground">{an.noData}</p> : (
                   <div className="space-y-3">
                     {planDist.map((p) => {
                       const pct = totalPlans > 0 ? Math.round((Number(p.count) / totalPlans) * 100) : 0;

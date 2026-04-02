@@ -1,0 +1,46 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const employees: TranslationNamespaces["employees"] = {
+
+    title: "Nhân viên",
+    description:
+      "Thêm các nhà tạo mẫu tóc và nhân viên khác có thể nhận đặt lịch.",
+    mustBeLoggedIn: "Bạn cần đăng nhập để xem danh sách nhân viên.",
+    noSalon:
+      "Tài khoản của bạn chưa được gắn với salon nào. Hãy hoàn tất onboarding trước.",
+    addError: "Không thêm được nhân viên.",
+    updateError: "Không cập nhật được nhân viên.",
+    newEmployee: "Nhân viên mới",
+    nameLabel: "Họ tên",
+    namePlaceholder: "vd. Alex Stylist",
+    emailLabel: "Email (không bắt buộc)",
+    emailPlaceholder: "alex@salon.com",
+    phoneLabel: "Số điện thoại (không bắt buộc)",
+    phonePlaceholder: "+47 400 00 000",
+    roleLabel: "Vai trò (không bắt buộc)",
+    rolePlaceholder: "vd. Stylist, Lễ tân",
+    preferredLanguageLabel: "Ngôn ngữ ưa thích",
+    servicesLabel: "Các dịch vụ mà nhân viên này cung cấp",
+    servicesPlaceholder: "Chọn dịch vụ...",
+    loading: "Đang tải nhân viên…",
+    emptyTitle: "Chưa thêm nhân viên nào",
+    emptyDescription:
+      "Khi bạn thêm nhân viên ở form bên trái, họ sẽ xuất hiện ở đây và có thể được chọn trong lịch và engine đặt lịch.",
+    tableTitle: "Nhân viên của bạn",
+    colName: "Name",
+    colRole: "Role",
+    colContact: "Contact",
+    colServices: "Services",
+    colStatus: "Trạng thái",
+    colActions: "Hành động",
+    active: "Đang làm",
+    inactive: "Tạm dừng",
+    delete: "Xóa",
+    edit: "Chỉnh sửa",
+    addButton: "Thêm nhân viên",
+    editTitle: "Chỉnh sửa nhân viên",
+    editDescription: "Cập nhật thông tin và dịch vụ của nhân viên.",
+    cancel: "Hủy",
+    save: "Lưu",
+    saving: "Đang lưu…",
+};

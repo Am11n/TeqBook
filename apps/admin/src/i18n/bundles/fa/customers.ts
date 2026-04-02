@@ -1,0 +1,40 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const customers: TranslationNamespaces["customers"] = {
+
+    title: "مشتریان",
+    description:
+      "یک دفترچه ساده مشتریان برای سالن شما؛ همراه با سوابق نوبت‌ها استفاده می‌شود.",
+    mustBeLoggedIn: "برای مشاهده مشتریان باید وارد شوید.",
+    noSalon:
+      "حساب شما هنوز به هیچ سالنی وصل نشده است. اول راه‌اندازی ابتدایی را تکمیل کنید.",
+    loadError: "بارگیری معلومات مشتری انجام نشد.",
+    addError: "اضافه کردن مشتری انجام نشد.",
+    newCustomer: "مشتری جدید",
+    nameLabel: "نام",
+    namePlaceholder: "مثال: علی احمدی",
+    emailLabel: "ایمیل (اختیاری)",
+    emailPlaceholder: "customer@example.com",
+    phoneLabel: "شماره تلفن (اختیاری)",
+    phonePlaceholder: "+47 400 00 000",
+    notesLabel: "یادداشت‌ها (اختیاری)",
+    notesPlaceholder: "مثال: آرایشگر ترجیحی، حساسیت‌ها و غیره.",
+    gdprLabel: "من رضایت دارم که این مشتری را ذخیره و تماس بگیرم (GDPR).",
+    saving: "در حال ذخیره…",
+    addButton: "اضافه کردن مشتری",
+    tableTitle: "مشتریان شما",
+    loading: "در حال بارگیری مشتریان…",
+    emptyTitle: "هنوز هیچ مشتری ثبت نشده است",
+    emptyDescription:
+      "وقتی مشتریان را در فورم سمت چپ اضافه کنید، اینجا نشان داده می‌شوند و بعداً می‌توانند به نوبت‌ها وصل شوند.",
+    mobileConsentYes: "رضایت ذخیره شد",
+    mobileConsentNo: "بدون رضایت",
+    delete: "حذف",
+    colName: "نام",
+    colContact: "تماس",
+    colNotes: "یادداشت‌ها",
+    colGdpr: "GDPR",
+    colActions: "عملیات",
+    consentYes: "بله",
+    consentNo: "خیر",
+};

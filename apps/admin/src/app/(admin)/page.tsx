@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { PageLayout } from "@/components/layout/page-layout";
@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { QuickActions, type QuickAction } from "@/components/shared/quick-actions";
 import { NeedsAttentionFeed, type AttentionItem } from "@/components/shared/needs-attention-feed";
@@ -32,6 +33,8 @@ type DashboardKpis = {
 type TrendPoint = { day: string; value: number };
 
 export default function AdminDashboardPage() {
+  const t = useAdminConsoleMessages();
+  const p = t.pages.dashboard;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
 
@@ -110,7 +113,7 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       logError("Dashboard load error", err);
-      setError("Failed to load dashboard data");
+      setError(p.loadError);
     } finally {
       setLoading(false);
     }
@@ -121,20 +124,23 @@ export default function AdminDashboardPage() {
     return ((current - prev) / prev) * 100;
   }
 
-  const quickActions: QuickAction[] = [
-    { id: "create-salon", label: "Create Salon", icon: Building2, onClick: () => router.push("/salons") },
-    { id: "invite-user", label: "Invite User", icon: UserPlus, onClick: () => router.push("/users") },
-    { id: "change-plan", label: "Change Plan", icon: CreditCard, onClick: () => router.push("/plans") },
-    { id: "suspend", label: "Suspend", icon: Pause, onClick: () => router.push("/salons") },
-    { id: "export", label: "Export Report", icon: Download, onClick: () => router.push("/analytics") },
-    { id: "audit-search", label: "Audit Search", icon: Search, onClick: () => router.push("/audit-logs") },
-  ];
+  const quickActions: QuickAction[] = useMemo(
+    () => [
+      { id: "create-salon", label: p.qaCreateSalon, icon: Building2, onClick: () => router.push("/salons") },
+      { id: "invite-user", label: p.qaInviteUser, icon: UserPlus, onClick: () => router.push("/users") },
+      { id: "change-plan", label: p.qaChangePlan, icon: CreditCard, onClick: () => router.push("/plans") },
+      { id: "suspend", label: p.qaSuspend, icon: Pause, onClick: () => router.push("/salons") },
+      { id: "export", label: p.qaExport, icon: Download, onClick: () => router.push("/analytics") },
+      { id: "audit-search", label: p.qaAuditSearch, icon: Search, onClick: () => router.push("/audit-logs") },
+    ],
+    [p, router]
+  );
 
   if (contextLoading || loading) {
     return (
       <AdminShell>
-        <PageLayout title="Admin Dashboard" description="Loading...">
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        <PageLayout title={p.titleLoading} description={p.descLoading}>
+          <p className="text-sm text-muted-foreground">{p.loadingBody}</p>
         </PageLayout>
       </AdminShell>
     );
@@ -146,8 +152,8 @@ export default function AdminDashboardPage() {
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="Dashboard"
-          description="Platform overview and operations"
+          title={p.title}
+          description={p.description}
           showCard={false}
           showPeriodSelector
           period={period}
@@ -160,7 +166,7 @@ export default function AdminDashboardPage() {
           {/* Section 1: KPI Row */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6">
             <KpiCard
-              title="Active Salons"
+              title={p.kpiActiveSalons}
               value={kpis?.active_salons ?? 0}
               change={kpis ? calcChange(kpis.active_salons, kpis.active_salons_prev) : null}
               period={period === "90d" ? "90d" : period}
@@ -168,7 +174,7 @@ export default function AdminDashboardPage() {
               onClick={() => router.push("/salons")}
             />
             <KpiCard
-              title="New Salons"
+              title={p.kpiNewSalons}
               value={kpis?.new_salons ?? 0}
               change={kpis ? calcChange(kpis.new_salons, kpis.new_salons_prev) : null}
               period={period === "90d" ? "90d" : period}
@@ -177,13 +183,13 @@ export default function AdminDashboardPage() {
               onClick={() => router.push("/salons")}
             />
             <KpiCard
-              title="Activated Salons"
+              title={p.kpiActivatedSalons}
               value={kpis?.activated_salons ?? 0}
               icon={Activity}
               onClick={() => router.push("/onboarding")}
             />
             <KpiCard
-              title="Bookings"
+              title={p.kpiBookings}
               value={kpis?.total_bookings ?? 0}
               change={kpis ? calcChange(kpis.total_bookings, kpis.total_bookings_prev) : null}
               period={period === "90d" ? "90d" : period}
@@ -191,13 +197,13 @@ export default function AdminDashboardPage() {
               icon={Calendar}
             />
             <KpiCard
-              title="Total Users"
+              title={p.kpiTotalUsers}
               value={kpis?.total_users ?? 0}
               icon={Users}
               onClick={() => router.push("/users")}
             />
             <KpiCard
-              title="Open Cases"
+              title={p.kpiOpenCases}
               value={kpis?.open_support_cases ?? 0}
               icon={Inbox}
               positiveIsGood={false}
@@ -211,7 +217,7 @@ export default function AdminDashboardPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  Needs Attention
+                  {p.needsAttention}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -234,7 +240,7 @@ export default function AdminDashboardPage() {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
+                <CardTitle className="text-base">{p.quickActions}</CardTitle>
               </CardHeader>
               <CardContent>
                 <QuickActions actions={quickActions} className="grid-cols-2 lg:grid-cols-2" />
@@ -245,7 +251,7 @@ export default function AdminDashboardPage() {
           {/* Section 4: Recent Activity */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Recent Activity</CardTitle>
+              <CardTitle className="text-base">{p.recentActivity}</CardTitle>
             </CardHeader>
             <CardContent>
               <RecentActivity
@@ -263,20 +269,20 @@ export default function AdminDashboardPage() {
           <DetailDrawer
             open={drawerOpen}
             onOpenChange={setDrawerOpen}
-            title="Event Detail"
+            title={p.eventDetailTitle}
             description={drawerEvent?.action ?? ""}
           >
             {drawerEvent && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Action:</span> <span className="font-medium">{drawerEvent.action}</span></div>
-                  <div><span className="text-muted-foreground">Type:</span> <span className="font-medium">{drawerEvent.resource_type}</span></div>
-                  <div><span className="text-muted-foreground">User:</span> <span className="font-mono text-xs">{drawerEvent.user_id ?? "System"}</span></div>
-                  <div><span className="text-muted-foreground">Time:</span> <span>{new Date(drawerEvent.created_at).toLocaleString()}</span></div>
+                  <div><span className="text-muted-foreground">{p.labelAction}:</span> <span className="font-medium">{drawerEvent.action}</span></div>
+                  <div><span className="text-muted-foreground">{p.labelType}:</span> <span className="font-medium">{drawerEvent.resource_type}</span></div>
+                  <div><span className="text-muted-foreground">{p.labelUser}:</span> <span className="font-mono text-xs">{drawerEvent.user_id ?? t.widgets.recentActivity.system}</span></div>
+                  <div><span className="text-muted-foreground">{p.labelTime}:</span> <span>{new Date(drawerEvent.created_at).toLocaleString()}</span></div>
                 </div>
                 {drawerEvent.metadata && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Metadata</p>
+                    <p className="text-sm font-medium mb-1">{p.metadata}</p>
                     <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
                       {JSON.stringify(drawerEvent.metadata, null, 2)}
                     </pre>

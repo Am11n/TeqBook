@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
-import { Search, Building2, Users, User, X, ArrowRight } from "lucide-react";
+import { Search, Building2, User, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   type SearchResult,
-  navigationItems,
-  actionItems,
-  GROUP_LABELS,
+  buildAdminCommandPaletteNav,
 } from "./admin-command-palette-nav";
+import type { AdminConsoleMessages } from "@/i18n/admin-console";
 
 type AdminCommandPaletteProps = {
   open: boolean;
   onClose: () => void;
+  messages: AdminConsoleMessages["commandPalette"];
 };
 
-export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps) {
+export function AdminCommandPalette({ open, onClose, messages: cmd }: AdminCommandPaletteProps) {
   const router = useRouter();
+  const { navigationItems, actionItems, groupLabel } = useMemo(
+    () => buildAdminCommandPaletteNav(cmd),
+    [cmd],
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -26,13 +30,11 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Search function
   useEffect(() => {
     if (!open) return;
 
     const search = async () => {
       if (!query.trim()) {
-        // Show a useful default: top nav items + actions
         setResults([...navigationItems.slice(0, 6), ...actionItems.slice(0, 3)]);
         setLoading(false);
         return;
@@ -43,19 +45,16 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
       const allResults: SearchResult[] = [];
 
       try {
-        // 1. Filter navigation items
         const matchingNav = navigationItems.filter((item) =>
           item.label.toLowerCase().includes(term)
         );
         allResults.push(...matchingNav);
 
-        // 2. Filter action items
         const matchingActions = actionItems.filter((item) =>
           item.label.toLowerCase().includes(term)
         );
         allResults.push(...matchingActions);
 
-        // 3. Search salons by name (only if query is 2+ chars)
         if (term.length >= 2) {
           const { data: salons } = await supabase
             .from("salons")
@@ -76,7 +75,6 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
             );
           }
 
-          // 4. Search users by email via RPC (includes auth.users email)
           const { data: userResults } = await supabase.rpc("get_users_paginated", {
             filters: { search: term },
             sort_col: "created_at",
@@ -87,14 +85,17 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
 
           if (userResults) {
             allResults.push(
-              ...(userResults as Array<Record<string, unknown>>).map((u) => ({
-                id: `user-${u.user_id as string}`,
-                type: "user" as const,
-                label: (u.email as string) ?? `User ${(u.user_id as string).slice(0, 8)}`,
-                metadata: (u.salon_name as string) ?? undefined,
-                href: `/users?highlight=${u.user_id as string}`,
-                icon: User,
-              }))
+              ...(userResults as Array<Record<string, unknown>>).map((u) => {
+                const uid = u.user_id as string;
+                return {
+                  id: `user-${uid}`,
+                  type: "user" as const,
+                  label: (u.email as string) ?? `${cmd.anonymousUserLabel} ${uid.slice(0, 8)}`,
+                  metadata: (u.salon_name as string) ?? undefined,
+                  href: `/users?highlight=${uid}`,
+                  icon: User,
+                };
+              })
             );
           }
         }
@@ -110,7 +111,7 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
 
     const timeoutId = setTimeout(search, 200);
     return () => clearTimeout(timeoutId);
-  }, [query, open]);
+  }, [query, open, navigationItems, actionItems, cmd.anonymousUserLabel]);
 
   const handleSelect = useCallback((result: SearchResult) => {
     if (result.href) {
@@ -119,7 +120,6 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
     }
   }, [router, onClose]);
 
-  // Keyboard navigation
   useEffect(() => {
     if (!open) return;
 
@@ -142,23 +142,20 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, results, selectedIndex, onClose, handleSelect]);
 
-  // Reset on results change
   useEffect(() => {
     setSelectedIndex(0);
   }, [results]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setQuery("");
       setResults([...navigationItems.slice(0, 6), ...actionItems.slice(0, 3)]);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open]);
+  }, [open, navigationItems, actionItems]);
 
   if (!open) return null;
 
-  // Group results by type for rendering
   const groupedResults: { group: string; items: SearchResult[] }[] = [];
   const seen = new Set<string>();
   for (const r of results) {
@@ -168,13 +165,11 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
     }
   }
 
-  // Flat index counter for keyboard selection
   let flatIdx = -1;
 
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
-        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -183,7 +178,6 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
           onClick={onClose}
         />
 
-        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -191,33 +185,31 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
           transition={{ duration: 0.2 }}
           className="relative w-full max-w-2xl rounded-2xl bg-white/80 backdrop-blur-2xl border border-slate-100/60 shadow-2xl"
         >
-          {/* Search input */}
           <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
-            <Search className="h-5 w-5 text-slate-400" />
+            <Search className="h-5 w-5 text-slate-400" aria-hidden />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search salons, users, or type a command..."
+              placeholder={cmd.placeholder}
               className="flex-1 border-none bg-transparent text-base outline-none placeholder:text-slate-400"
             />
-            <button onClick={onClose} className="rounded-lg p-1 hover:bg-slate-100">
+            <button type="button" onClick={onClose} className="rounded-lg p-1 hover:bg-slate-100" aria-label={cmd.closeLabel}>
               <X className="h-4 w-4 text-slate-400" />
             </button>
           </div>
 
-          {/* Results */}
           <div ref={resultsRef} className="max-h-[400px] overflow-y-auto p-2">
             {loading ? (
-              <div className="py-8 text-center text-sm text-slate-500">Searching...</div>
+              <div className="py-8 text-center text-sm text-slate-500">{cmd.searching}</div>
             ) : results.length === 0 ? (
-              <div className="py-8 text-center text-sm text-slate-500">No results found</div>
+              <div className="py-8 text-center text-sm text-slate-500">{cmd.empty}</div>
             ) : (
               groupedResults.map(({ group, items }) => (
                 <div key={group} className="mb-1">
                   <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    {GROUP_LABELS[group] ?? group}
+                    {groupLabel(group as SearchResult["type"])}
                   </p>
                   {items.map((result) => {
                     flatIdx++;
@@ -227,6 +219,7 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
 
                     return (
                       <button
+                        type="button"
                         key={result.id}
                         onClick={() => handleSelect(result)}
                         onMouseEnter={() => setSelectedIndex(currentIdx)}
@@ -256,10 +249,9 @@ export function AdminCommandPalette({ open, onClose }: AdminCommandPaletteProps)
             )}
           </div>
 
-          {/* Footer hint */}
           <div className="border-t border-slate-200 px-4 py-2 text-xs text-slate-500">
             <div className="flex items-center justify-between">
-              <span>↑↓ navigate &middot; Enter select &middot; Esc close</span>
+              <span>{cmd.footerKeyboardHint}</span>
               <kbd className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs">⌘K</kbd>
             </div>
           </div>

@@ -10,12 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCurrentSalon } from "@/components/salon-provider";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { supabase } from "@/lib/supabase-client";
-import { PLAN_TYPES, type PlanType } from "@/lib/config/feature-limits";
-import {
-  MATRIX_FEATURE_KEYS,
-  isMatrixFeatureKey,
-} from "@/lib/plan-features/matrix-feature-keys";
+import { type PlanType } from "@/lib/config/feature-limits";
 import { Save, Search, CheckCircle2 } from "lucide-react";
 import {
   type FeatureRow,
@@ -27,8 +24,10 @@ import {
 import { FeatureMatrixTable } from "./_components/FeatureMatrixTable";
 import { ConfirmOverlay } from "./_components/ConfirmOverlay";
 import { useMatrixActions, filterFeaturesByCategory } from "./_components/useMatrixActions";
+import { fetchPlanFeaturesInitialState } from "./_lib/fetch-plan-features-initial-state";
 
 export default function PlanFeaturesPage() {
+  const pf = useAdminConsoleMessages().pages.planFeatures;
   const { isSuperAdmin, loading: contextLoading } = useCurrentSalon();
   const router = useRouter();
 
@@ -78,62 +77,12 @@ export default function PlanFeaturesPage() {
     setLoading(true);
     setError(null);
     try {
-      const [featuresRes, pfRes, salonsRes] = await Promise.all([
-        supabase.from("features").select("id, key, name, description").order("key"),
-        supabase.from("plan_features").select("id, plan_type, feature_id, limit_value, created_at"),
-        supabase.rpc("get_admin_plan_distribution"),
-      ]);
-
-      if (featuresRes.error) throw new Error(featuresRes.error.message);
-      if (pfRes.error) throw new Error(pfRes.error.message);
-
-      const allRows = (featuresRes.data ?? []) as FeatureRow[];
-      const featureRows = allRows.filter((f) => isMatrixFeatureKey(f.key));
-      const keysFromDb = new Set(featureRows.map((f) => f.key));
-      const missingKeys = MATRIX_FEATURE_KEYS.filter((k) => !keysFromDb.has(k));
-      if (missingKeys.length > 0) {
-        throw new Error(
-          `Missing plan features in database: ${missingKeys.join(", ")}. Run migrations or sync features.`
-        );
-      }
-
-      setFeatures(featureRows);
-
-      const m: MatrixState = {};
-      for (const f of featureRows) {
-        m[f.id] = {} as Record<PlanType, { enabled: boolean; limitValue: number | null }>;
-        for (const plan of PLAN_TYPES) {
-          m[f.id][plan] = { enabled: false, limitValue: null };
-        }
-      }
-      for (const pf of pfRes.data ?? []) {
-        const fid = pf.feature_id as string;
-        const plan = pf.plan_type as PlanType;
-        if (m[fid]) {
-          m[fid][plan] = {
-            enabled: true,
-            limitValue: pf.limit_value != null ? Number(pf.limit_value) : null,
-          };
-        }
-      }
-
-      setMatrix(m);
-      setOriginalMatrix(deepCloneMatrix(m));
-
-      const latest = (pfRes.data ?? []).reduce(
-        (max: string | null, row: { created_at: string }) =>
-          !max || row.created_at > max ? row.created_at : max,
-        null as string | null
-      );
-      setSnapshotAt(latest);
-
-      const counts: Record<PlanType, number> = { starter: 0, pro: 0, business: 0 };
-      for (const row of (salonsRes.data ?? []) as { plan: string; count: number }[]) {
-        if (row.plan in counts) {
-          counts[row.plan as PlanType] = Number(row.count);
-        }
-      }
-      setSalonCounts(counts);
+      const data = await fetchPlanFeaturesInitialState();
+      setFeatures(data.features);
+      setMatrix(data.matrix);
+      setOriginalMatrix(deepCloneMatrix(data.matrix));
+      setSnapshotAt(data.snapshotAt);
+      setSalonCounts(data.salonCounts);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
@@ -211,14 +160,14 @@ export default function PlanFeaturesPage() {
     <ErrorBoundary>
       <AdminShell>
         <PageLayout
-          title="Plan Features"
-          description="Manage which features are included in each plan"
-          breadcrumbs={<span>Tenants / Plan Features</span>}
+          title={pf.title}
+          description={pf.description}
+          breadcrumbs={<span>{pf.breadcrumbs}</span>}
           actions={
             <div className="flex items-center gap-2">
               {isDirty && (
                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-                  {changeCount} unsaved change{changeCount !== 1 ? "s" : ""}
+                  {changeCount === 1 ? pf.unsavedChangesOne : pf.unsavedChangesMany.replace("{count}", String(changeCount))}
                 </Badge>
               )}
               <Button
@@ -228,7 +177,7 @@ export default function PlanFeaturesPage() {
                 className="gap-1"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Saving..." : "Save changes"}
+                {saving ? pf.saving : pf.saveChanges}
               </Button>
             </div>
           }
@@ -252,7 +201,7 @@ export default function PlanFeaturesPage() {
           <div className="relative mb-4 max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search features..."
+              placeholder={pf.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"

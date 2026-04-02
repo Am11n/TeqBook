@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import {
   AlertTriangle,
   UserX,
@@ -53,22 +55,6 @@ type NeedsAttentionFeedProps = {
   className?: string;
 };
 
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
-
-const TYPE_CONFIG: Record<
-  AttentionItemType,
-  { icon: React.ComponentType<{ className?: string }>; label: string }
-> = {
-  onboarding_stuck: { icon: Clock, label: "Onboarding Stuck" },
-  high_cancellation: { icon: XCircle, label: "High Cancellation" },
-  login_failures: { icon: UserX, label: "Login Failures" },
-  audit_spike: { icon: AlertTriangle, label: "Audit Spike" },
-  payment_issue: { icon: AlertTriangle, label: "Payment Issue" },
-  manual: { icon: Flag, label: "Flagged" },
-};
-
 const SEVERITY_COLORS: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
   medium: "bg-amber-50 text-amber-700",
@@ -88,6 +74,24 @@ export function NeedsAttentionFeed({
   maxItems = 5,
   className,
 }: NeedsAttentionFeedProps) {
+  const t = useAdminConsoleMessages();
+  const w = t.widgets.needsAttention;
+
+  const typeConfig = useMemo(
+    (): Record<
+      AttentionItemType,
+      { icon: React.ComponentType<{ className?: string }>; label: string }
+    > => ({
+      onboarding_stuck: { icon: Clock, label: w.typeOnboardingStuck },
+      high_cancellation: { icon: XCircle, label: w.typeHighCancellation },
+      login_failures: { icon: UserX, label: w.typeLoginFailures },
+      audit_spike: { icon: AlertTriangle, label: w.typeAuditSpike },
+      payment_issue: { icon: AlertTriangle, label: w.typePaymentIssue },
+      manual: { icon: Flag, label: w.typeManual },
+    }),
+    [w]
+  );
+
   const visibleItems = items.slice(0, maxItems);
 
   if (loading) {
@@ -118,7 +122,7 @@ export function NeedsAttentionFeed({
         )}
       >
         <CheckCircle className="h-8 w-8 mb-2 opacity-40" />
-        <p className="text-sm">All clear -- nothing needs attention</p>
+        <p className="text-sm">{w.emptyTitle}</p>
       </div>
     );
   }
@@ -126,7 +130,7 @@ export function NeedsAttentionFeed({
   return (
     <div className={cn("space-y-2", className)}>
       {visibleItems.map((item) => {
-        const config = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.manual;
+        const config = typeConfig[item.type] ?? typeConfig.manual;
         const Icon = config.icon;
         const severityClass = SEVERITY_COLORS[item.severity] ?? SEVERITY_COLORS.medium;
 
@@ -174,7 +178,7 @@ export function NeedsAttentionFeed({
                 onClick={() => onView(item)}
               >
                 <Eye className="h-3 w-3" />
-                View
+                {w.view}
               </Button>
               {onResolve && (
                 <Button
@@ -184,7 +188,7 @@ export function NeedsAttentionFeed({
                   onClick={() => onResolve(item)}
                 >
                   <CheckCircle className="h-3 w-3" />
-                  Resolve
+                  {w.resolve}
                 </Button>
               )}
             </div>
@@ -194,7 +198,10 @@ export function NeedsAttentionFeed({
 
       {items.length > maxItems && (
         <p className="text-xs text-muted-foreground text-center pt-1">
-          +{items.length - maxItems} more items
+          {w.moreItemsTemplate.replace(
+            "{count}",
+            String(items.length - maxItems)
+          )}
         </p>
       )}
     </div>

@@ -1,0 +1,38 @@
+import type { TranslationNamespaces } from "../../types/namespaces";
+
+export const services: TranslationNamespaces["services"] = {
+
+    title: "አገልግሎቶች",
+    description:
+      "አገልግሎቶችን ለጊዜ እና ለዋጋ በመግለጽ ይመዝግቡ። ከዚህ ውስጥ በመመዝገብ ሞተሩ ይጠቀማል።",
+    mustBeLoggedIn: "አገልግሎቶችን ለማየት መግባት ያስፈልጋል።",
+    noSalon:
+      "ከመለያዎ ጋር የተያያዘ ሳሎን የለም። መጀመሪያ መጀመርያን ይጨርሱ።",
+    addError: "አገልግሎት መጨመር አልተቻለም።",
+    updateError: "አገልግሎት ማዘመን አልተቻለም።",
+    newService: "አዲስ አገልግሎት",
+    nameLabel: "ስም",
+    namePlaceholder: "ለምሳሌ፦ የሴቶች ርክት",
+    categoryLabel: "Category",
+    categoryCut: "Cut",
+    categoryBeard: "Beard",
+    categoryColor: "Color",
+    categoryNails: "Nails",
+    categoryMassage: "Massage",
+    categoryOther: "Other",    durationLabel: "ጊዜ (ደቂቃዎች)",
+    priceLabel: "ዋጋ (NOK)",
+    sortOrderLabel: "Sort order",    loading: "አገልግሎቶችን በመጫን ላይ…",
+    emptyTitle: "ገና ምንም አገልግሎት አልተመዘገበም",
+    emptyDescription:
+      "አገልግሎቶችን በግንባር ላይ በመጨመር በመመዝገብ ሞተሩ የጊዜን እና የዋጋን ሂሳብ ለማድረግ ይጠቀሙባቸዋል።",
+    tableTitle: "አገልግሎቶችዎ",
+    colName: "ስም",
+    colCategory: "ምድብ",
+    colDuration: "ጊዜ",
+    colPrice: "ዋጋ",
+    colStatus: "ሁኔታ",
+    colActions: "መድረካዎች",
+    active: "ንቁ",
+    inactive: "ዝቅተኛ",
+    delete: "ሰርዝ",
+};

@@ -13,9 +13,10 @@ interface LanguageSelectorProps {
   locale: string;
   salon: { supported_languages?: string[] | null } | null;
   setLocale: (locale: AppLocale) => void;
+  languageAria: string;
 }
 
-export function LanguageSelector({ locale, salon, setLocale }: LanguageSelectorProps) {
+export function LanguageSelector({ locale, salon, setLocale, languageAria }: LanguageSelectorProps) {
   const supportedLanguages =
     salon?.supported_languages && salon.supported_languages.length > 0
       ? salon.supported_languages
@@ -50,7 +51,7 @@ export function LanguageSelector({ locale, salon, setLocale }: LanguageSelectorP
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-lg bg-card/60 backdrop-blur-lg outline-none transition-all hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/20"
-              aria-label="Language"
+              aria-label={languageAria}
             >
               <span className="text-base leading-none">{flag}</span>
             </button>
@@ -66,7 +67,7 @@ export function LanguageSelector({ locale, salon, setLocale }: LanguageSelectorP
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-              aria-label="Language"
+              aria-label={languageAria}
             >
               <span className="text-base leading-none">{flag}</span>
             </button>

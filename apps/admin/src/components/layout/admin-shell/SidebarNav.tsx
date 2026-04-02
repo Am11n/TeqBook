@@ -4,15 +4,23 @@ import {
 } from "@/components/ui/tooltip";
 import { NavLink } from "./NavLink";
 import type { NavSection } from "./nav-config";
+import type { AdminConsoleMessages } from "@/i18n/admin-console";
 
 interface SidebarNavProps {
   sections: NavSection[];
   activeHref: string | null;
   collapsed: boolean;
   onToggle?: () => void;
+  shell: Pick<
+    AdminConsoleMessages["shell"],
+    | "collapseSidebarAria"
+    | "expandSidebarAria"
+    | "collapseSidebarTooltip"
+    | "expandSidebarTooltip"
+  >;
 }
 
-export function SidebarNav({ sections, activeHref, collapsed, onToggle }: SidebarNavProps) {
+export function SidebarNav({ sections, activeHref, collapsed, onToggle, shell }: SidebarNavProps) {
   return (
     <nav className="flex flex-1 flex-col gap-3 overflow-y-auto min-h-0">
       {sections.map((section, idx) => (
@@ -28,12 +36,12 @@ export function SidebarNav({ sections, activeHref, collapsed, onToggle }: Sideba
                     <button
                       onClick={onToggle}
                       className="flex h-6 w-6 items-center justify-center rounded border border-primary/20 bg-primary/10 transition-colors hover:bg-primary/20 hover:border-primary/30"
-                      aria-label="Collapse sidebar"
+                      aria-label={shell.collapseSidebarAria}
                     >
                       <ChevronLeft className="h-3 w-3 text-primary" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Collapse sidebar</TooltipContent>
+                  <TooltipContent side="right">{shell.collapseSidebarTooltip}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -46,12 +54,12 @@ export function SidebarNav({ sections, activeHref, collapsed, onToggle }: Sideba
                     <button
                       onClick={onToggle}
                       className="flex h-6 w-6 items-center justify-center rounded border border-blue-200/60 bg-blue-50/80 transition-colors hover:bg-blue-100/60 hover:border-blue-300/60"
-                      aria-label="Expand sidebar"
+                      aria-label={shell.expandSidebarAria}
                     >
                       <ChevronRight className="h-3 w-3 text-primary" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Expand sidebar</TooltipContent>
+                  <TooltipContent side="right">{shell.expandSidebarTooltip}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
