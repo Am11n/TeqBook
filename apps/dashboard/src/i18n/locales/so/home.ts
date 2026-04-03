@@ -34,7 +34,7 @@ export const home: TranslationNamespaces['home'] = {
     onboardingBodyText: "Waxaan mustaqbalka ku dari doonaa wizard fudud oo loogu talagalay magaca, cinwaanka iyo faahfaahinta milkiilaha.",
     onboardingBodyTitle: "Samee saloonkaagii ugu horreeyay",
     onboardingDescription: "Saloonkii ugu horreeyay",
-    onboardingTitle: "Onboarding",
+    onboardingTitle: "Hawlaha bilowga",
     online: "Onlayn",
     quickActions: "Ficilal degdeg ah",
     returningCustomers: "Macmiilada soo noqda",

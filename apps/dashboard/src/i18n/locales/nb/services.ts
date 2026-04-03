@@ -31,7 +31,7 @@ export const services: TranslationNamespaces['services'] = {
     colCategory: "Kategori",
     colDuration: "Varighet",
     colPrice: "Pris",
-    colStatus: "Status",
+    colStatus: "Tilstand",
     colActions: "Handlinger",
     active: "Aktiv",
     inactive: "Inaktiv",
@@ -46,7 +46,7 @@ export const services: TranslationNamespaces['services'] = {
     statsWithoutEmployees: "Uten ansatte",
     // Table enrichment
     colEmployees: "Ansatte",
-    colBuffer: "Buffer",
+    colBuffer: "Mellomtid",
     noEmployeesAssigned: "Ingen ansatte tildelt",
     // Filters
     searchPlaceholder: "Søk tjenester...",

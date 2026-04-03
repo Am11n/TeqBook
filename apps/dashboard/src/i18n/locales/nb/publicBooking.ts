@@ -26,7 +26,7 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
     emailLabel: "E-post (valgfri)",
     emailPlaceholder: "deg@eksempel.no",
     phoneLabel: "Telefon (valgfri)",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+47 12 34 56 78",
     submitSaving: "Sender forespørsel…",
     submitLabel: "Bekreft forespørsel",
     payInfo:

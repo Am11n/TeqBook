@@ -20,7 +20,7 @@ export const employees: TranslationNamespaces['employees'] = {
     servicesPlaceholder: "Velg tjenester...",
     namePlaceholder: "F.eks. Kari Klipp",
     emailPlaceholder: "kari@salong.no",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+47 12 34 56 78",
     loading: "Laster ansatte…",
     emptyTitle: "Ingen ansatte registrert ennå",
     emptyDescription:
@@ -30,7 +30,7 @@ export const employees: TranslationNamespaces['employees'] = {
     colRole: "Rolle",
     colContact: "Kontakt",
     colServices: "Tjenester",
-    colStatus: "Status",
+    colStatus: "Tilstand",
     colActions: "Handlinger",
     active: "Aktiv",
     inactive: "Inaktiv",
@@ -75,7 +75,7 @@ export const employees: TranslationNamespaces['employees'] = {
     detailRole: "Rolle",
     detailContact: "Kontakt",
     detailNoContact: "Ingen kontaktinformasjon",
-    detailStatus: "Status",
+    detailStatus: "Tilstand",
     // Roles
     roleOwner: "Eier",
     roleManager: "Leder",
@@ -124,9 +124,9 @@ export const employees: TranslationNamespaces['employees'] = {
     servicesSectionTitle: "Tjenester",
     servicesSectionDescription:
       "Velg hvilke tjenester denne ansatte kan utfore.",
-    publicTitleLabel: "Public title",
-    publicTitlePlaceholder: "Senior Barber",
-    publicSortOrderLabel: "Public sort order",
+    publicTitleLabel: "Offentlig tittel",
+    publicTitlePlaceholder: "Senior frisør",
+    publicSortOrderLabel: "Sortering (offentlig visning)",
     publicSortOrderPlaceholder: "0",
     publicSortOrderHint: "Lavere tall vises forst i offentlig booking.",
     profileImageLabel: "Profilbilde",
@@ -138,7 +138,7 @@ export const employees: TranslationNamespaces['employees'] = {
     specialtiesLabel: "Spesialiteter",
     specialtiesHint: "Trykk Enter eller komma for a legge til spesialiteter.",
     specialtiesPlaceholder: "f.eks. Fade",
-    bioLabel: "Bio",
+    bioLabel: "Biografi",
     bioHint:
       "Tips: Hold teksten kort og kundevendt (anbefalt maks 240 tegn).",
     bioPlaceholder:

@@ -10,7 +10,7 @@ export const login: TranslationNamespaces['login'] = {
     description: "Horumarinta maxalliga ah: ka abuur isticmaale email iyo password gudaha Supabase dashboard-ka, ka dibna halkaan kaga soo gal adiga oo aan u baahnayn xaqiijin email.",
     dontHaveAccount: "Ma haysatid akoon?",
     emailLabel: "Iimaylka",
-    emailPlaceholder: "you@salon.com",
+    emailPlaceholder: "adka@saloon.com",
     forgotPassword: "Ma ilowday password-ka?",
     formSubtitle: "Isticmaal akoonkaaga TeqBook si aad u hesho dashboard-ka saloonkaaga.",
     keepMeLoggedIn: "I sii wad inaan soo galo",

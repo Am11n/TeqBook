@@ -13,7 +13,7 @@ export const shifts: TranslationNamespaces['shifts'] = {
     employeeLabel: "Ansatt",
     employeePlaceholder: "Velg ansatt…",
     weekdayLabel: "Ukedag",
-    startLabel: "Start",
+    startLabel: "Starttid",
     endLabel: "Slutt",
     saving: "Lagrer…",
     addButton: "Legg til arbeidstid",

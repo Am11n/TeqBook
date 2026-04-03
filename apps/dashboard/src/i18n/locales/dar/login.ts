@@ -19,7 +19,7 @@ export const login: TranslationNamespaces['login'] = {
     loginError: "ورود موفق نشد.",
     loginGenericFailure: "ورود ناموفق بود. لطفاً دوباره تلاش کنید.",
     passwordLabel: "رمز",
-    passwordPlaceholder: "••••••••",
+    passwordPlaceholder: "رمز عبور را وارد کنید",
     secureLoginLine: "ورود امن. رمز شما هرگز به صورت متن ساده ذخیره نمی‌شود.",
     tip: "نکته: در Supabase می‌توانید به صورت موقتی تأیید ایمیل را در Auth > Authentication > Email غیر فعال بسازید تا کاربران جدید فوراً وارد شوند.",
     title: "ورود به TeqBook",

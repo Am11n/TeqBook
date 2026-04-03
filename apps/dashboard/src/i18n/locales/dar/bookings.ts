@@ -132,7 +132,7 @@ export const bookings: TranslationNamespaces['bookings'] = {
     waitlistOverrideSave: "ذخیره تنظیم دستی",
     waitlistOverrideSaving: "در حال ذخیره…",
     waitlistOverrideScoreLabel: "اولویت دستی {score}",
-    waitlistPageOf: "{current} / {total}",
+    waitlistPageOf: "{current} از {total}",
     waitlistPagination: "نمایش {from}-{to} از {total}",
     waitlistPreferenceFlexibleDay: "روز انعطاف‌پذیر",
     waitlistPreferenceSpecificTime: "زمان مشخص",

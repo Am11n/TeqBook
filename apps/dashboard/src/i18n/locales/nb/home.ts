@@ -14,8 +14,8 @@ export const home: TranslationNamespaces['home'] = {
     createFirstBooking: "Opprett din første booking",
     yourStaff: "Dine ansatte",
     manageStaff: "Administrer ansatte",
-    online: "Online",
-    offline: "Offline",
+    online: "På nett",
+    offline: "Frakoblet",
     quickActions: "Hurtighandlinger",
     addNewBooking: "Legg til ny booking",
     addNewCustomer: "Legg til ny kunde",
@@ -50,12 +50,12 @@ export const home: TranslationNamespaces['home'] = {
     nextStepBodyTitle: "Koble til Supabase",
     nextStepBodyText:
       "Legg inn Supabase-nøkler i .env.local og sett opp multi-tenancy.",
-    onboardingTitle: "Onboarding",
+    onboardingTitle: "Kom i gang",
     onboardingDescription: "Første salong",
     onboardingBodyTitle: "Opprett første salong",
     onboardingBodyText:
       "Vi lager en enkel wizard for navn, adresse og eier senere.",
-    bookingTitle: "Booking",
+    bookingTitle: "Timebestilling",
     bookingDescription: "Kommer snart",
     bookingBodyTitle: "Intern kalender & offentlig side",
     bookingBodyText:

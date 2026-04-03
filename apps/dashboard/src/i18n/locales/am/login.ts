@@ -10,7 +10,7 @@ export const login: TranslationNamespaces['login'] = {
     description: "ለአካባቢያዊ ልማት፡ በ Supabase dashboard ውስጥ በኢሜይል እና ሚስጥር ቃል የሚገነባ ተጠቃሚ ፍጠሩ፣ እዚህ ግን ዋስትና ኢሜይል ሳይፈልግ ይግቡ።",
     dontHaveAccount: "መለያ የሎትም?",
     emailLabel: "ኢሜይል",
-    emailPlaceholder: "you@salon.com",
+    emailPlaceholder: "አበቃ@ሳሎን.com",
     forgotPassword: "ፓስዎርድ ረሳዎት?",
     formSubtitle: "የሳሎን ዳሽቦርድዎን ለመድረስ የ TeqBook መለያዎን ይጠቀሙ።",
     keepMeLoggedIn: "እንደገና አይግቡ",

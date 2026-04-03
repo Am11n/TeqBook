@@ -28,7 +28,7 @@ export const services: TranslationNamespaces['services'] = {
     cleanupMinutesLabel: "Waqtiga Nadiifinta (min)",
     close: "Xir",
     colActions: "Falal",
-    colBuffer: "Buffer",
+    colBuffer: "Bufer",
     colCategory: "Nooca",
     colDuration: "Wakhti",
     colEmployees: "Shaqalaha",

@@ -9,7 +9,7 @@ export const products: TranslationNamespaces['products'] = {
     price: "Pris",
     stock: "Lager",
     sku: "SKU",
-    status: "Status",
+    status: "Tilstand",
     actions: "Handlinger",
     create: "Opprett produkt",
     edit: "Rediger",

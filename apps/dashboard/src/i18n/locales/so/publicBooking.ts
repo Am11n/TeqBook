@@ -4,7 +4,7 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
     createError: "Khalad ayaa dhacay inta la samaynayay ballanta.",
     dateLabel: "Taariikhda",
     emailLabel: "Email (ikhtiyaari)",
-    emailPlaceholder: "you@example.com",
+    emailPlaceholder: "adka@tusaale.com",
     employeeLabel: "Shaqaalaha",
     employeePlaceholder: "Dooro shaqaale…",
     headerSubtitle: "Samee ballan – lacag bixintu waxay ka dhacdaa gudaha saloonka.",

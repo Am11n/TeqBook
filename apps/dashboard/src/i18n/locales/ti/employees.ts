@@ -50,7 +50,7 @@ export const employees: TranslationNamespaces['employees'] = {
     editDescriptionRich: "ሓበሬታ ሰራሕተኛታት ፣ ህዝባዊ መገለጺን ኣገልግሎታትን ይሓድጎ ።",
     editTitle: "ሰራሕተኛ ኣስተኻኽል",
     emailLabel: "ኢመይል (ዝፈለጠ እዋይ)",
-    emailPlaceholder: "alex@salon.com",
+    emailPlaceholder: "you@salon.com",
     employeeCreatedImageUploadFailed: "እቲ ሰራሕተኛ ተፈጢሩ ፡ እቲ ናይ መገለጺ ስእሊ ግን ክስቀል ኣይከኣለን ።",
     emptyActionDescription: "ናይ መጀመርታ ኣባል ሰራሕተኛታትካ ኣክሊልካ ምዝገባታት ክትረክብ ትጅምር ። ሰራሕተኛታት ኣብ ኣቆጣጠር ይረኣዩ ፡ ኣገልግሎት ድማ ክውሃቡ ይኽእሉ እዮም ።",
     emptyDescription: "ሰራሕተኛታትን ኣብ ጸብጻብ ግንባር ሕማም ብምጨመር ኣብዚ ይተርክቡ። ብድሕሪኡ ካለንደርን መመዝገብታት ስርሒትን ይጥቀሙ።",
