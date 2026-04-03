@@ -7,11 +7,11 @@ export const products: TranslationNamespaces['products'] = {
     createFirst: "Utwórz pierwszy produkt",
     name: "Nazwa",
     price: "Cena",
-    stock: "Stan",
-    sku: "SKU",
-    status: "Status",
+    stock: "Stan magazynowy",
+    sku: "Kod SKU",
+    status: "Stan",
     actions: "Akcje",
-    create: "Utwórz produkt",
+    create: "Dodaj produkt",
     edit: "Edytuj",
     delete: "Usuń",
     save: "Zapisz",
@@ -21,5 +21,5 @@ export const products: TranslationNamespaces['products'] = {
     namePlaceholder: "Nazwa produktu",
     pricePlaceholder: "0.00",
     stockPlaceholder: "0",
-    skuPlaceholder: "SKU-001",
-  };
+    skuPlaceholder: "PRZ-001",
+};

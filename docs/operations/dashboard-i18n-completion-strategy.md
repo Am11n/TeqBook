@@ -10,7 +10,7 @@ Per locale (unntatt `en`): maksimalt **~18 / 1443** strenger identisk med engels
 2. `ar`, `tl`, `fa`, `dar`, `ti` — middels volum.
 3. `so`
 4. `am`
-5. `vi`, `pl`, `tr` — størst volum.
+5. `vi`, `pl`, `tr` — størst volum (`tr` gjenstår).
 
 ## Etter hvert språk (obligatorisk)
 
@@ -44,4 +44,5 @@ Mål: **18** (±0 uten ny beslutning) identiske strenger som `en` — kun avtalt
 | so     | **5** / 1443 (~0,3 %) | 2026-04-03: `settings` oo dhan Soomaali + `bookings`/`shifts` buuxa; kale oo fiksan. Gjenstående = allowlist (`—`, PDF, `0`/`0.00`/`500`). |
 | am     | **4** / 1443 (~0,3 %) | 2026-04-03: `settings`/`bookings`/`shifts`/`employees`/`customers`/`services` በአማርኛ ተሞልቷል፤ ቀሪ ትዕዛዞች። Gjenstående = allowlist (`—`፣ PDF፣ `0`፣ `500`). |
 | vi     | **5** / 1443 (~0,3 %) | 2026-04-03: Full vietnamesisk `settings`/`dashboard`/`bookings` m.m.; resterende = allowlist (`—`, PDF, `0`/`0.00`/`500`). |
-| pl, tr | — | |
+| pl     | **5** / 1443 (~0,3 %) | 2026-04-03: Full polsk `settings`/`dashboard`/`bookings` m.m.; resterende = allowlist (`—`, PDF, `0`/`0.00`/`500`). |
+| tr     | — | |

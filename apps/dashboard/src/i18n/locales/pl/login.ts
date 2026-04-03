@@ -4,8 +4,8 @@ export const login: TranslationNamespaces['login'] = {
     title: "Zaloguj się do TeqBook",
     description:
       "Do lokalnego developmentu: utwórz użytkownika z e‑mailem i hasłem w panelu Supabase, a następnie zaloguj się tutaj bez weryfikacji e‑mail.",
-    emailLabel: "E‑mail",
-    emailPlaceholder: "you@salon.com",
+    emailLabel: "Adres e-mail",
+    emailPlaceholder: "jan@twoj-salon.pl",
     passwordLabel: "Hasło",
     passwordPlaceholder: "Co najmniej 6 znaków",
     loginError: "Nie udało się zalogować.",

@@ -24,9 +24,9 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
       "Używamy tych danych, aby potwierdzić Twoją wizytę i opcjonalnie wysłać przypomnienie. Płatność zawsze odbywa się w salonie.",
     nameLabel: "Imię i nazwisko",
     emailLabel: "E‑mail (opcjonalnie)",
-    emailPlaceholder: "you@example.com",
+    emailPlaceholder: "anna.kowalska@example.pl",
     phoneLabel: "Telefon (opcjonalnie)",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+48 12 345 67 89",
     submitSaving: "Wysyłanie prośby…",
     submitLabel: "Potwierdź rezerwację",
     payInfo:
