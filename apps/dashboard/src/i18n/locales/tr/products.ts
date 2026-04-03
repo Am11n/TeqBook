@@ -2,13 +2,13 @@ import type { TranslationNamespaces } from '../../types';
 
 export const products: TranslationNamespaces['products'] = {
     title: "Ürünler",
-    description: "Envanter ve ürünleri yönetin",
+    description: "Stok ve ürünleri yönetin",
     noProducts: "Henüz ürün yok",
     createFirst: "İlk ürününüzü oluşturun",
     name: "Ad",
     price: "Fiyat",
     stock: "Stok",
-    sku: "SKU",
+    sku: "SKU kodu",
     status: "Durum",
     actions: "İşlemler",
     create: "Ürün oluştur",
@@ -21,5 +21,5 @@ export const products: TranslationNamespaces['products'] = {
     namePlaceholder: "Ürün adı",
     pricePlaceholder: "0.00",
     stockPlaceholder: "0",
-    skuPlaceholder: "SKU-001",
+    skuPlaceholder: "URN-001",
   };
