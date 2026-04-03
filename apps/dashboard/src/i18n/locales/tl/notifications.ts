@@ -1,24 +1,30 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const notifications: TranslationNamespaces['notifications'] = {
-    title: "Mga Abiso",
-    noNotifications: "Walang mga abiso",
-    markAllRead: "Markahan lahat bilang nabasa",
-    viewAll: "Tingnan lahat ng mga abiso",
-    justNow: "Ngayon lang",
-    minutesAgo: "{count} minuto ang nakakaraan",
-    hoursAgo: "{count} oras ang nakakaraan",
-    daysAgo: "{count} araw ang nakakaraan",
-    bookingConfirmedTitle: "Nakumpirma ang Appointment",
-    bookingConfirmedBody: "Nakumpirma ang iyong appointment para sa {serviceName} sa {date} ng {time}.",
-    bookingChangedTitle: "Na-update ang Appointment",
-    bookingChangedBody: "Inilipat ang iyong appointment para sa {serviceName} sa {date} ng {time}.",
-    bookingCancelledTitle: "Kinansela ang Appointment",
-    bookingCancelledBody: "Kinansela ang iyong appointment para sa {serviceName} sa {date}.",
-    reminder24hTitle: "Appointment Bukas",
-    reminder24hBody: "Paalala: May appointment ka para sa {serviceName} bukas ng {time}.",
-    reminder2hTitle: "Malapit na ang Appointment",
-    reminder2hBody: "Paalala: Ang iyong appointment para sa {serviceName} ay sa loob ng 2 oras ng {time}.",
-    newBookingTitle: "Bagong Appointment",
-    newBookingBody: "Nag-book si {customerName} ng {serviceName} sa {date} ng {time}.",
-  };
+  title: "Mga abiso",
+  noNotifications: "Walang abiso",
+  markAllRead: "Markahan lahat na nabasa",
+  viewAll: "Tingnan lahat ng abiso",
+  justNow: "Ngayon lang",
+  minutesAgo: "{count} min ang nakalipas",
+  hoursAgo: "{count} oras ang nakalipas",
+  daysAgo: "{count} araw ang nakalipas",
+  bookingConfirmedTitle: "Nakumpirma ang booking",
+  bookingConfirmedBody:
+    "Nakumpirma ang appointment mo para sa {serviceName} sa {date} nang {time}.",
+  bookingChangedTitle: "Na-update ang booking",
+  bookingChangedBody:
+    "Na-update ang appointment mo para sa {serviceName} sa {date} nang {time}.",
+  bookingCancelledTitle: "Kinansela ang booking",
+  bookingCancelledBody:
+    "Kinansela ang appointment mo para sa {serviceName} sa {date}.",
+  reminder24hTitle: "Bukas ang appointment",
+  reminder24hBody:
+    "Paalala: May appointment ka para sa {serviceName} bukas nang {time}.",
+  reminder2hTitle: "Malapit na ang appointment",
+  reminder2hBody:
+    "Paalala: Ang appointment mo para sa {serviceName} ay sa loob ng 2 oras nang {time}.",
+  newBookingTitle: "Bagong booking",
+  newBookingBody:
+    "Si {customerName} ay nag-book ng {serviceName} sa {date} nang {time}.",
+};

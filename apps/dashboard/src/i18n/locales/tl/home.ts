@@ -1,62 +1,58 @@
 import type { TranslationNamespaces } from '../../types';
 
 export const home: TranslationNamespaces['home'] = {
-    title: "Pangkalahatang ideya",
-    description:
-      "Mabilis na tanaw kung nasaan ang salon mo. Sa hinaharap, magmumula nang direkta sa booking engine ang mga numerong makikita dito.",
-    welcomeBack: "Welcome back, {name}.",
-    welcomeSubtitle:
-      "Here's an overview of your salon – staff, appointments, customers and performance.",
-    todaysBookings: "Today's bookings",
-    viewCalendar: "View calendar",
-    noBookingsYet: "No bookings yet.",
-    noBookingsYetSubtitle: "New appointments will appear here.",
-    createFirstBooking: "Create your first booking",
-    yourStaff: "Your staff",
-    manageStaff: "Manage staff",
-    online: "Online",
-    offline: "Offline",
-    quickActions: "Quick actions",
-    addNewBooking: "Add new booking",
-    addNewCustomer: "Add new customer",
-    addNewService: "Add new service",
-    inviteNewStaff: "Invite new staff member",
-    // Performance snapshot
-    thisWeek: "This week",
-    bookingsLabel: "Bookings",
-    newCustomersLabel: "New customers",
-    topServiceLabel: "Top service",
-    mostBookedStaffLabel: "Most booked staff",
-    noInsightsYet:
-      "Your salon insights will appear here once bookings start coming in.",
-    // KPI labels
-    totalBookingsThisWeek: "Kabuuang bookings sa linggong ito",
-    returningCustomers: "Bumalik na mga customer",
-    revenueEstimate: "Tinatayang kita (manual na pagbabayad)",
-    // Staff empty state
-    manageStaffPermissions: "Pamahalaan ang mga pahintulot at tungkulin ng staff",
-    // Announcements
-    // Announcements
-    announcements: "Mga Anunsyo",
-    announcementWalkIn: "Maaari mo nang tanggapin ang walk-in bookings.",
-    announcementLanguages: "Mga bagong wika na available: Turkish, Arabic",
-    announcementDashboardUpdate: "Bagong dashboard update na inilabas.",
-    viewAllUpdates: "Tingnan ang lahat ng updates",
-    noAnnouncementsYet: "No announcements yet.",
-    // Legacy (deprecated)
-    nextStepTitle: "Susunod na hakbang",
-    nextStepDescription: "Tech setup",
-    nextStepBodyTitle: "Ikonekta sa Supabase",
-    nextStepBodyText:
-      "Idagdag ang Supabase keys sa .env.local at i-enable ang multi‑tenancy.",
-    onboardingTitle: "Onboarding",
-    onboardingDescription: "Unang salon",
-    onboardingBodyTitle: "Gumawa ng unang salon mo",
-    onboardingBodyText:
-      "Magdadagdag tayo mamaya ng simpleng wizard para sa pangalan, address, at detalye ng may-ari.",
-    bookingTitle: "Booking",
-    bookingDescription: "Coming soon",
-    bookingBodyTitle: "Internal calendar at public booking page",
-    bookingBodyText:
-      "Mapapalitan ang card na ito ng totoong booking data mula sa system.",
-  };
+  title: "Pangkalahatang-ideya",
+  description:
+    "Mabilis na tanaw sa salon mo. Malapit na, manggagaling sa booking engine ang mga numerong ito.",
+  welcomeBack: "Maligayang pagbabalik, {name}.",
+  welcomeSubtitle:
+    "Narito ang buod ng salon mo – staff, appointment, customer, at performance.",
+  todaysBookings: "Mga booking ngayon",
+  viewCalendar: "Tingnan ang kalendaryo",
+  noBookingsYet: "Wala pang booking.",
+  noBookingsYetSubtitle: "Lalabas dito ang mga bagong appointment.",
+  createFirstBooking: "Gumawa ng unang booking",
+  yourStaff: "Ang staff mo",
+  manageStaff: "Pamahalaan ang staff",
+  online: "Naka-online",
+  offline: "Naka-offline",
+  quickActions: "Mabilis na aksyon",
+  addNewBooking: "Magdagdag ng booking",
+  addNewCustomer: "Magdagdag ng customer",
+  addNewService: "Magdagdag ng serbisyo",
+  inviteNewStaff: "Imbitahang bagong staff",
+  thisWeek: "Ngayong linggo",
+  bookingsLabel: "Mga booking",
+  newCustomersLabel: "Bagong customer",
+  topServiceLabel: "Pinakasikat na serbisyo",
+  mostBookedStaffLabel: "Staff na pinakamadalas i-book",
+  noInsightsYet:
+    "Lalabas dito ang insights ng salon kapag may mga booking na.",
+  totalBookingsThisWeek: "Kabuuang booking ngayong linggo",
+  returningCustomers: "Bumabalik na customer",
+  newCustomers: "Bagong customer",
+  revenueEstimate: "Tinatayang kita (manual na bayad)",
+  manageStaffPermissions: "Pamahalaan ang pahintulot at role ng staff",
+  announcements: "Mga anunsyo",
+  announcementWalkIn: "Puwede mo nang tanggapin ang walk-in booking.",
+  announcementLanguages: "May bagong wika: Turkish, Arabic",
+  announcementDashboardUpdate: "May bagong update sa dashboard.",
+  viewAllUpdates: "Tingnan lahat ng update",
+  announcementsLoading: "Nilo-load ang mga anunsyo…",
+  noAnnouncementsYet: "Wala pang anunsyo.",
+  nextStepTitle: "Susunod na hakbang",
+  nextStepDescription: "Teknikal na setup",
+  nextStepBodyTitle: "Ikonekta ang Supabase",
+  nextStepBodyText:
+    "Ilagay ang Supabase keys sa .env.local at i-enable ang multi-tenancy.",
+  onboardingTitle: "Pagsisimula",
+  onboardingDescription: "Unang salon",
+  onboardingBodyTitle: "Gumawa ng unang salon",
+  onboardingBodyText:
+    "Magdaragdag tayo ng simpleng wizard para sa pangalan, address, at may-ari.",
+  bookingTitle: "Mga booking",
+  bookingDescription: "Malapit na",
+  bookingBodyTitle: "Internal na kalendaryo at public booking page",
+  bookingBodyText:
+    "Mapapalitan ang card na ito ng totoong booking data mula sa system.",
+};

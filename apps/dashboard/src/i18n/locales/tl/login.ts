@@ -4,9 +4,9 @@ export const login: TranslationNamespaces['login'] = {
     title: "Mag-log in sa TeqBook",
     description:
       "Para sa local development: gumawa ng user na may email at password sa Supabase, tapos mag-log in dito nang hindi kailangan ng email verification.",
-    emailLabel: "Email",
+    emailLabel: "E-mail",
     emailPlaceholder: "you@salon.com",
-    passwordLabel: "Password",
+    passwordLabel: "Kontrasenyas",
     passwordPlaceholder: "Hindi bababa sa 6 na karakter",
     loginError: "Hindi makapag-log in.",
     loggingIn: "Nagla-log in…",

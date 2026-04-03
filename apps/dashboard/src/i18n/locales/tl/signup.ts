@@ -20,6 +20,7 @@ export const signup: TranslationNamespaces['signup'] = {
     trustLine: "Pinagkakatiwalaan ng mga salon na gusto ng simple, malinis na scheduling – hindi bloated na software.",
     passwordPlaceholder: "Gumawa ng password",
     passwordHint: "Gumamit ng hindi bababa sa 8 na karakter. Maaari mong baguhin ito mamaya.",
-    termsAgreement: "Sumasang-ayon ako sa Terms at Privacy Policy.",
+    termsAgreement:
+      "Sumasang-ayon ako sa Mga Tuntunin (Terms) at Patakaran sa Privacy.",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
    };
