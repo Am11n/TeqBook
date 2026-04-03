@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useCurrentSalon } from "@/components/salon-provider";
-import { getPolicy, savePolicy, type NoShowPolicy } from "@/lib/services/noshow-policy-service";
+import { getPolicy, savePolicy } from "@/lib/services/noshow-policy-service";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { useLocale } from "@/components/locale-provider";
+import { translations } from "@/i18n/translations";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveSettings } from "@/app/settings/_helpers/resolve-settings";
 
 const DEFAULT_POLICY = {
   max_strikes: 3,
@@ -15,6 +19,9 @@ const DEFAULT_POLICY = {
 
 export default function NoShowPolicyPage() {
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const t = resolveSettings(translations[appLocale].settings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,30 +69,25 @@ export default function NoShowPolicyPage() {
   };
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-8">Loading policy...</p>;
+    return <p className="text-sm text-muted-foreground py-8">{t.noShowPolicyLoading}</p>;
   }
 
   return (
     <div className="space-y-6 max-w-xl">
       <div>
-        <h3 className="text-sm font-semibold">No-Show Policy</h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Configure how the system tracks and handles customer no-shows.
-          Customers who repeatedly miss appointments can be warned or automatically blocked from booking.
-        </p>
+        <h3 className="text-sm font-semibold">{t.noShowPolicyPageTitle}</h3>
+        <p className="text-xs text-muted-foreground mt-1">{t.noShowPolicyPageDescription}</p>
       </div>
 
       {error && (
         <ErrorMessage message={error} onDismiss={() => setError(null)} variant="destructive" />
       )}
-      {success && (
-        <p className="text-sm text-green-600">Policy saved successfully.</p>
-      )}
+      {success && <p className="text-sm text-green-600">{t.noShowPolicySaveSuccess}</p>}
 
       <div className="space-y-4">
         <div>
           <label htmlFor="maxStrikes" className="text-xs font-medium">
-            Max no-shows before block
+            {t.noShowPolicyMaxStrikesLabel}
           </label>
           <input
             id="maxStrikes"
@@ -96,14 +98,12 @@ export default function NoShowPolicyPage() {
             onChange={(e) => setMaxStrikes(parseInt(e.target.value, 10) || 1)}
             className="mt-1 h-9 w-full max-w-[120px] rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
           />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            After this many no-shows, the customer is blocked (if auto-block is on).
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">{t.noShowPolicyMaxStrikesHint}</p>
         </div>
 
         <div>
           <label htmlFor="warningThreshold" className="text-xs font-medium">
-            Warning threshold
+            {t.noShowPolicyWarningThresholdLabel}
           </label>
           <input
             id="warningThreshold"
@@ -115,7 +115,7 @@ export default function NoShowPolicyPage() {
             className="mt-1 h-9 w-full max-w-[120px] rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
           />
           <p className="text-[10px] text-muted-foreground mt-1">
-            A warning badge appears on the customer after this many no-shows.
+            {t.noShowPolicyWarningThresholdHint}
           </p>
         </div>
 
@@ -128,31 +128,29 @@ export default function NoShowPolicyPage() {
             className="h-4 w-4 rounded border-input"
           />
           <label htmlFor="autoBlock" className="text-xs font-medium">
-            Auto-block customers who reach max no-shows
+            {t.noShowPolicyAutoBlockLabel}
           </label>
         </div>
 
         <div>
           <label htmlFor="resetAfterDays" className="text-xs font-medium">
-            Reset strikes after (days)
+            {t.noShowPolicyResetDaysLabel}
           </label>
           <input
             id="resetAfterDays"
             type="number"
             min={1}
-            placeholder="Never"
+            placeholder={t.noShowPolicyResetNeverPlaceholder}
             value={resetAfterDays}
             onChange={(e) => setResetAfterDays(e.target.value)}
             className="mt-1 h-9 w-full max-w-[120px] rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
           />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Leave empty for strikes that never expire.
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">{t.noShowPolicyResetDaysHint}</p>
         </div>
       </div>
 
       <Button onClick={handleSave} disabled={saving}>
-        {saving ? "Saving..." : "Save Policy"}
+        {saving ? t.noShowPolicySaving : t.noShowPolicySaveButton}
       </Button>
     </div>
   );

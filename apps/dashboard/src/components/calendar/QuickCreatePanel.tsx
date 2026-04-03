@@ -18,6 +18,7 @@ import type { Service } from "@/lib/types";
 import type { QuickCreatePanelProps, CustomerSuggestion } from "./quick-create-types";
 import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
 
 export function QuickCreatePanel({
   open,
@@ -36,6 +37,10 @@ export function QuickCreatePanel({
   const appLocale = normalizeLocale(locale);
   const bk = useMemo(
     () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+  const tc = useMemo(
+    () => resolveNamespace("calendar", translations[appLocale].calendar),
     [appLocale],
   );
   const salonCurrency = salon?.currency ?? "NOK";
@@ -182,17 +187,19 @@ export function QuickCreatePanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>New Booking</DialogTitle>
-          <DialogDescription>Create a new booking quickly.</DialogDescription>
+          <DialogTitle>{bk.dialogTitle}</DialogTitle>
+          <DialogDescription>{tc.quickCreateDescription}</DialogDescription>
         </DialogHeader>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            {tc.quickCreateLoading}
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Customer search */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Customer</label>
+              <label className="text-xs font-medium text-muted-foreground">{bk.colCustomer}</label>
               <div className="relative mt-1">
                 <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
                 <input
@@ -202,7 +209,7 @@ export function QuickCreatePanel({
                     setCustomerQuery(e.target.value);
                     if (selectedCustomer) setSelectedCustomer(null);
                   }}
-                  placeholder="Search or enter name..."
+                  placeholder={tc.quickCreateCustomerSearchPlaceholder}
                   className="h-9 w-full rounded-md border bg-background pl-7 pr-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2"
                 />
                 {showSuggestions && (customerSuggestions.length > 0 || customerQuery.length >= 2) && (
@@ -215,28 +222,30 @@ export function QuickCreatePanel({
                     ))}
                     <button type="button" onClick={handleNewCustomer} className="flex w-full items-center gap-2 px-3 py-2 text-xs text-blue-600 hover:bg-accent transition-colors border-t">
                       <UserPlus className="h-3 w-3" />
-                      Create new customer &quot;{customerQuery}&quot;
+                      {applyTemplate(tc.quickCreateNewCustomerNamed, {
+                        name: customerQuery,
+                      })}
                     </button>
                   </div>
                 )}
               </div>
               {isNewCustomer && (
                 <div className="mt-2 space-y-2 rounded-md border p-2 bg-muted/30">
-                  <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Full name" required className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
-                  <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Phone" className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
-                  <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="Email" className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
+                  <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder={bk.customerNameLabel} required className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
+                  <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder={bk.customerPhonePlaceholder} className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
+                  <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder={bk.customerEmailPlaceholder} className="h-8 w-full rounded-md border bg-background px-2 text-xs outline-none ring-ring/0 transition focus-visible:ring-2" />
                 </div>
               )}
             </div>
 
             {/* Service */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Service</label>
+              <label className="text-xs font-medium text-muted-foreground">{bk.serviceLabel}</label>
               <DialogSelect
                 value={serviceId}
                 onChange={setServiceId}
                 required
-                placeholder="Select service..."
+                placeholder={bk.servicePlaceholder}
                 className="mt-1"
                 options={services.map((s) => ({
                   value: s.id,
@@ -245,21 +254,27 @@ export function QuickCreatePanel({
               />
               {selectedService && (selectedService.prep_minutes > 0 || selectedService.cleanup_minutes > 0) && (
                 <p className="mt-1 text-[10px] text-amber-600">
-                  {selectedService.prep_minutes > 0 && `${selectedService.prep_minutes}min prep`}
-                  {selectedService.prep_minutes > 0 && selectedService.cleanup_minutes > 0 && " + "}
-                  {selectedService.cleanup_minutes > 0 && `${selectedService.cleanup_minutes}min cleanup`}
+                  {selectedService.prep_minutes > 0 &&
+                    applyTemplate(tc.quickCreatePrepAbbr, {
+                      minutes: selectedService.prep_minutes,
+                    })}
+                  {selectedService.prep_minutes > 0 && selectedService.cleanup_minutes > 0 && tc.quickCreateDurationJoin}
+                  {selectedService.cleanup_minutes > 0 &&
+                    applyTemplate(tc.quickCreateCleanupAbbr, {
+                      minutes: selectedService.cleanup_minutes,
+                    })}
                 </p>
               )}
             </div>
 
             {/* Employee */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Employee</label>
+              <label className="text-xs font-medium text-muted-foreground">{bk.employeeLabel}</label>
               <DialogSelect
                 value={employeeId}
                 onChange={setEmployeeId}
                 required
-                placeholder="Select employee..."
+                placeholder={bk.employeePlaceholder}
                 className="mt-1"
                 options={employees.map((emp) => ({
                   value: emp.id,
@@ -271,19 +286,44 @@ export function QuickCreatePanel({
             {/* Date + Time */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Date</label>
+                <label className="text-xs font-medium text-muted-foreground">{bk.dateLabel}</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Start time</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tc.quickCreateStartTimeLabel}
+                </label>
                 <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm outline-none ring-ring/0 transition focus-visible:ring-2" />
               </div>
             </div>
 
             {selectedService && time && (
               <div className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
-                Total: {selectedService.prep_minutes + selectedService.duration_minutes + selectedService.cleanup_minutes}min
-                ({selectedService.prep_minutes > 0 ? `${selectedService.prep_minutes}prep + ` : ""}{selectedService.duration_minutes}service{selectedService.cleanup_minutes > 0 ? ` + ${selectedService.cleanup_minutes}cleanup` : ""})
+                {applyTemplate(tc.quickCreateTotalDuration, {
+                  total:
+                    selectedService.prep_minutes +
+                    selectedService.duration_minutes +
+                    selectedService.cleanup_minutes,
+                })}
+                (
+                {[
+                  selectedService.prep_minutes > 0
+                    ? applyTemplate(tc.quickCreatePrepAbbr, {
+                        minutes: selectedService.prep_minutes,
+                      })
+                    : null,
+                  applyTemplate(tc.quickCreateServiceAbbr, {
+                    minutes: selectedService.duration_minutes,
+                  }),
+                  selectedService.cleanup_minutes > 0
+                    ? applyTemplate(tc.quickCreateCleanupAbbr, {
+                        minutes: selectedService.cleanup_minutes,
+                      })
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(tc.quickCreateDurationJoin)}
+                )
               </div>
             )}
 
@@ -292,9 +332,11 @@ export function QuickCreatePanel({
             )}
 
             <DialogFooter className="mt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                {bk.cancelButton}
+              </Button>
               <Button type="submit" disabled={saving || !serviceId || !employeeId || !date || !time || !customerName.trim()}>
-                {saving ? "Creating..." : "Create Booking"}
+                {saving ? bk.creatingBooking : bk.createBooking}
               </Button>
             </DialogFooter>
           </form>

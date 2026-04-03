@@ -136,7 +136,18 @@ export default function FeedbackPage() {
           ))}
         </div>
       ) : filteredEntries.length === 0 && filterTab === "all" && entries.length === 0 ? (
-        <FeedbackEmptyState onSelect={openCreateDialog} />
+        <FeedbackEmptyState
+          onSelect={openCreateDialog}
+          labels={{
+            intro: td.helpFeedbackEmptyIntro!,
+            bugTitle: td.feedbackTypeBugReport!,
+            bugDescription: td.helpFeedbackEmptyBugDescription!,
+            featureTitle: td.feedbackTypeFeatureRequestOption!,
+            featureDescription: td.helpFeedbackEmptyFeatureDescription!,
+            improvementTitle: td.feedbackTypeImprovement!,
+            improvementDescription: td.helpFeedbackEmptyImprovementDescription!,
+          }}
+        />
       ) : filteredEntries.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">
           {td.helpNoFeedbackInCategory}

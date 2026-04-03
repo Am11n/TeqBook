@@ -10,13 +10,27 @@ import { InfoRow } from "@/components/profile/info-row";
 import { TwoFactorEnrollment } from "./TwoFactorEnrollment";
 import { unenrollTOTP } from "@/lib/services/two-factor-service";
 
+export type TwoFactorCardCopy = {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusEnabled: string;
+  statusDisabled: string;
+  enabledAlert: string;
+  disabledAlert: string;
+  recommendShort: string;
+  disableButton: string;
+  confirmDisable: string;
+};
+
 interface TwoFactorCardProps {
   factors: Array<{ id: string; type: string; friendlyName: string }>;
   loading: boolean;
   onReload: () => Promise<void>;
+  copy: TwoFactorCardCopy;
 }
 
-export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps) {
+export function TwoFactorCard({ factors, loading, onReload, copy }: TwoFactorCardProps) {
   const [enrolling, setEnrolling] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
@@ -25,7 +39,7 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
   const has2FA = factors.length > 0;
 
   async function handleDisable2FA(factorIdToDisable: string) {
-    if (!confirm("Are you sure you want to disable 2FA? This will make your account less secure.")) {
+    if (!confirm(copy.confirmDisable)) {
       return;
     }
 
@@ -43,18 +57,18 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
-          Two-Factor Authentication (2FA)
+          {copy.title}
         </CardTitle>
-        <CardDescription>Add an extra layer of security to your account</CardDescription>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <InfoRow
-          label="Status"
+          label={copy.statusLabel}
           value={
             has2FA ? (
-              <StatusPill status="enabled" label="Enabled" />
+              <StatusPill status="enabled" label={copy.statusEnabled} />
             ) : (
-              <StatusPill status="disabled" label="Disabled" />
+              <StatusPill status="disabled" label={copy.statusDisabled} />
             )
           }
         />
@@ -63,10 +77,7 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
           <div className="space-y-4">
             <Alert>
               <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                2FA is enabled for your account. You&apos;ll need to enter a code from your authenticator app when
-                logging in.
-              </AlertDescription>
+              <AlertDescription>{copy.enabledAlert}</AlertDescription>
             </Alert>
 
             {factors.map((factor) => (
@@ -81,7 +92,7 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
                   onClick={() => handleDisable2FA(factor.id)}
                   disabled={loading}
                 >
-                  Disable
+                  {copy.disableButton}
                 </Button>
               </div>
             ))}
@@ -90,13 +101,9 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
           <div className="space-y-4">
             <Alert>
               <XCircle className="h-4 w-4" />
-              <AlertDescription>
-                2FA is not enabled. Enable it to add an extra layer of security to your account.
-              </AlertDescription>
+              <AlertDescription>{copy.disabledAlert}</AlertDescription>
             </Alert>
-            <p className="text-xs text-muted-foreground">
-              We recommend enabling 2FA for better account security.
-            </p>
+            <p className="text-xs text-muted-foreground">{copy.recommendShort}</p>
 
             {!qrCode ? (
               <TwoFactorEnrollment
@@ -132,4 +139,3 @@ export function TwoFactorCard({ factors, loading, onReload }: TwoFactorCardProps
     </Card>
   );
 }
-

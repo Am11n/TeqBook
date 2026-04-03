@@ -55,6 +55,11 @@ export type DashboardMessages = {
   tabInProgress?: string;
   tabDone?: string;
   helpNoFeedbackInCategory?: string;
+  /** Feedback empty state (no entries yet) */
+  helpFeedbackEmptyIntro?: string;
+  helpFeedbackEmptyBugDescription?: string;
+  helpFeedbackEmptyFeatureDescription?: string;
+  helpFeedbackEmptyImprovementDescription?: string;
   salesNewGiftCard?: string;
   salesNewPackage?: string;
   salesNoGiftCardsTitle?: string;
@@ -283,4 +288,43 @@ export type CalendarMessages = {
   noBookingsDescription: string;
   unknownService: string;
   unknownCustomer: string;
+  // Find first available dialog
+  findFirstAvailableTitle: string;
+  findFirstAvailableDescription: string;
+  findFirstAvailableServiceLabel: string;
+  findFirstAvailableServicePlaceholder: string;
+  findFirstAvailableFromLabel: string;
+  findFirstAvailableToOptionalLabel: string;
+  findFirstAvailableSearching: string;
+  findFirstAvailableFindSlots: string;
+  findFirstAvailableNoSlots: string;
+  findFirstAvailableSlotCountOne: string;
+  /** e.g. "{count} slots found" */
+  findFirstAvailableSlotCountOther: string;
+  findFirstAvailableBook: string;
+  // Quick create panel (calendar); shares labels with bookings where applicable
+  quickCreateDescription: string;
+  quickCreateLoading: string;
+  quickCreateCustomerSearchPlaceholder: string;
+  /** e.g. Create new customer "{name}" */
+  quickCreateNewCustomerNamed: string;
+  quickCreateStartTimeLabel: string;
+  /** e.g. "Total: {total}min" */
+  quickCreateTotalDuration: string;
+  quickCreatePrepAbbr: string;
+  quickCreateServiceAbbr: string;
+  quickCreateCleanupAbbr: string;
+  quickCreateDurationJoin: string;
+  // Toolbar / views
+  toolbarNewShort: string;
+  toolbarFindSlot: string;
+  viewList: string;
+  densityCompactTooltip: string;
+  densityComfortableTooltip: string;
+  // Command palette
+  commandPalettePlaceholder: string;
+  /** e.g. No commands found. Press Enter to search for "{query}" */
+  commandPaletteNoMatchEnterSearch: string;
+  commandPaletteDateModeHint: string;
+  commandGoToDate: string;
 };

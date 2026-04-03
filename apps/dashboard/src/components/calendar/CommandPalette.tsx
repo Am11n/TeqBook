@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Search, Plus, CalendarSearch, CalendarDays, List, Columns2 } from "lucide-react";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -30,62 +35,91 @@ export function CommandPalette({
   onSwitchView,
   onSearchBooking,
 }: CommandPaletteProps) {
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const tc = useMemo(
+    () => resolveNamespace("calendar", translations[appLocale].calendar),
+    [appLocale],
+  );
+  const tb = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [dateMode, setDateMode] = useState(false);
   const [dateInput, setDateInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const commands: Command[] = [
-    {
-      id: "new-booking",
-      label: "New booking",
-      icon: Plus,
-      action: () => { onNewBooking(); onClose(); },
-      keywords: ["new", "booking", "create", "add", "ny"],
-    },
-    {
-      id: "find-available",
-      label: "Find first available",
-      icon: CalendarSearch,
-      action: () => { onFindAvailable(); onClose(); },
-      keywords: ["find", "available", "first", "search", "ledig", "finn"],
-    },
-    {
-      id: "go-to-date",
-      label: "Go to date",
-      icon: CalendarDays,
-      action: () => setDateMode(true),
-      keywords: ["go", "date", "jump", "navigate", "dato"],
-    },
-    {
-      id: "view-day",
-      label: "Day view",
-      icon: Columns2,
-      action: () => { onSwitchView("day"); onClose(); },
-      keywords: ["day", "view", "dag"],
-    },
-    {
-      id: "view-week",
-      label: "Week view",
-      icon: CalendarDays,
-      action: () => { onSwitchView("week"); onClose(); },
-      keywords: ["week", "view", "uke"],
-    },
-    {
-      id: "view-list",
-      label: "List view",
-      icon: List,
-      action: () => { onSwitchView("list"); onClose(); },
-      keywords: ["list", "view", "liste"],
-    },
-  ];
+  const commands: Command[] = useMemo(
+    () => [
+      {
+        id: "new-booking",
+        label: tb.newBookingButton,
+        icon: Plus,
+        action: () => {
+          onNewBooking();
+          onClose();
+        },
+        keywords: ["new", "booking", "create", "add", "ny"],
+      },
+      {
+        id: "find-available",
+        label: tc.findFirstAvailableTitle,
+        icon: CalendarSearch,
+        action: () => {
+          onFindAvailable();
+          onClose();
+        },
+        keywords: ["find", "available", "first", "search", "ledig", "finn"],
+      },
+      {
+        id: "go-to-date",
+        label: tc.commandGoToDate,
+        icon: CalendarDays,
+        action: () => setDateMode(true),
+        keywords: ["go", "date", "jump", "navigate", "dato"],
+      },
+      {
+        id: "view-day",
+        label: tc.viewDay,
+        icon: Columns2,
+        action: () => {
+          onSwitchView("day");
+          onClose();
+        },
+        keywords: ["day", "view", "dag"],
+      },
+      {
+        id: "view-week",
+        label: tc.viewWeek,
+        icon: CalendarDays,
+        action: () => {
+          onSwitchView("week");
+          onClose();
+        },
+        keywords: ["week", "view", "uke"],
+      },
+      {
+        id: "view-list",
+        label: tc.viewList,
+        icon: List,
+        action: () => {
+          onSwitchView("list");
+          onClose();
+        },
+        keywords: ["list", "view", "liste"],
+      },
+    ],
+    [tb.newBookingButton, tc, onClose, onFindAvailable, onNewBooking, onSwitchView],
+  );
 
   const filtered = query
     ? commands.filter(
         (c) =>
           c.label.toLowerCase().includes(query.toLowerCase()) ||
-          c.keywords.some((k) => k.includes(query.toLowerCase()))
+          c.keywords.some((k) => k.includes(query.toLowerCase())),
       )
     : commands;
 
@@ -122,7 +156,6 @@ export function CommandPalette({
           onGoToDate(dateInput);
           onClose();
         } else if (query && filtered.length === 0) {
-          // Treat as search
           onSearchBooking(query);
           onClose();
         } else if (filtered[selectedIndex]) {
@@ -138,12 +171,9 @@ export function CommandPalette({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 
-      {/* Palette */}
       <div className="relative w-full max-w-lg rounded-xl border bg-popover shadow-2xl animate-in fade-in-0 zoom-in-95">
-        {/* Input */}
         <div className="flex items-center gap-2 border-b px-4 py-3">
           <Search className="h-4 w-4 text-muted-foreground shrink-0" />
           {dateMode ? (
@@ -164,7 +194,7 @@ export function CommandPalette({
                 setQuery(e.target.value);
                 setSelectedIndex(0);
               }}
-              placeholder="Type a command or search..."
+              placeholder={tc.commandPalettePlaceholder}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               autoFocus
             />
@@ -174,13 +204,12 @@ export function CommandPalette({
           </kbd>
         </div>
 
-        {/* Commands */}
         {!dateMode && (
           <div className="max-h-[300px] overflow-y-auto p-1">
             {filtered.length === 0 && query && (
               <div className="px-3 py-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  No commands found. Press Enter to search for &quot;{query}&quot;
+                  {applyTemplate(tc.commandPaletteNoMatchEnterSearch, { query })}
                 </p>
               </div>
             )}
@@ -189,6 +218,7 @@ export function CommandPalette({
               return (
                 <button
                   key={cmd.id}
+                  type="button"
                   onClick={cmd.action}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                     i === selectedIndex ? "bg-accent" : "hover:bg-accent/50"
@@ -205,7 +235,7 @@ export function CommandPalette({
 
         {dateMode && (
           <div className="p-4 text-center text-sm text-muted-foreground">
-            Select a date and press Enter
+            {tc.commandPaletteDateModeHint}
           </div>
         )}
       </div>

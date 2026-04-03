@@ -21,10 +21,15 @@ interface CalendarControlsProps {
     selectedDayLabel: string;
     viewDay: string;
     viewWeek: string;
+    viewList: string;
     filterEmployeeAll: string;
     prev: string;
     today: string;
     next: string;
+    toolbarNewShort: string;
+    toolbarFindSlot: string;
+    densityCompactTooltip: string;
+    densityComfortableTooltip: string;
   };
   formatDayHeading: (date: string) => string;
   getWeekDates: (date: string) => string[];
@@ -74,7 +79,7 @@ export function CalendarControls({
               className="h-7 text-xs gap-1"
             >
               <Plus className="h-3 w-3" />
-              New
+              {translations.toolbarNewShort}
             </Button>
           )}
 
@@ -88,7 +93,7 @@ export function CalendarControls({
               className="h-7 text-xs gap-1"
             >
               <Search className="h-3 w-3" />
-              Find slot
+              {translations.toolbarFindSlot}
             </Button>
           )}
 
@@ -138,7 +143,7 @@ export function CalendarControls({
             className="h-7 text-xs gap-1"
           >
             <List className="h-3 w-3" />
-            List
+            {translations.viewList}
           </Button>
         </div>
 
@@ -150,7 +155,7 @@ export function CalendarControls({
             size="sm"
             onClick={() => setDensity("compact")}
             className="h-7 text-xs gap-1"
-            title="Compact view"
+            title={translations.densityCompactTooltip}
           >
             <Rows4 className="h-3 w-3" />
           </Button>
@@ -160,7 +165,7 @@ export function CalendarControls({
             size="sm"
             onClick={() => setDensity("comfortable")}
             className="h-7 text-xs gap-1"
-            title="Comfortable view"
+            title={translations.densityComfortableTooltip}
           >
             <Rows3 className="h-3 w-3" />
           </Button>

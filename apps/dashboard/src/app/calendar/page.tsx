@@ -124,10 +124,15 @@ export default function CalendarPage() {
             selectedDayLabel: t.selectedDayLabel,
             viewDay: t.viewDay,
             viewWeek: t.viewWeek,
+            viewList: t.viewList,
             filterEmployeeAll: t.filterEmployeeAll,
             prev: t.prev,
             today: t.today,
             next: t.next,
+            toolbarNewShort: t.toolbarNewShort,
+            toolbarFindSlot: t.toolbarFindSlot,
+            densityCompactTooltip: t.densityCompactTooltip,
+            densityComfortableTooltip: t.densityComfortableTooltip,
           }}
           formatDayHeading={(date) => formatDayHeading(date, appLocale, salon?.timezone || "UTC")}
           getWeekDates={getWeekDates}

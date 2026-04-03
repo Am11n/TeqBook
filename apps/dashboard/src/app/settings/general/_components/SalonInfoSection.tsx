@@ -93,12 +93,12 @@ export function SalonInfoSection({
         <DialogSelect
           value={salonType}
           onChange={(v) => onChangeField("salonType", v)}
-          placeholder="Select type..."
+          placeholder={t.salonTypeSelectPlaceholder}
           options={[
-            { value: "barber", label: "Barber" },
-            { value: "nails", label: "Nails" },
-            { value: "massage", label: "Massage" },
-            { value: "other", label: "Other" },
+            { value: "barber", label: t.salonTypeBarber },
+            { value: "nails", label: t.salonTypeNails },
+            { value: "massage", label: t.salonTypeMassage },
+            { value: "other", label: t.salonTypeOther },
           ]}
         />
       </FormRow>
@@ -123,24 +123,24 @@ export function SalonInfoSection({
         />
       </FormRow>
 
-      <FormRow label="Public description" htmlFor="description">
+      <FormRow label={t.publicDescriptionLabel} htmlFor="description">
         <textarea
           id="description"
           value={description}
           onChange={(e) => onChangeField("description", e.target.value)}
           rows={3}
-          placeholder="Tell customers what makes your salon unique..."
+          placeholder={t.publicDescriptionPlaceholder}
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
         />
       </FormRow>
 
-      <FormRow label="Cover image" htmlFor="coverImage">
+      <FormRow label={t.coverImageLabel} htmlFor="coverImage">
         <div className="space-y-3">
           {coverImage ? (
             <div className="relative h-28 w-full max-w-sm overflow-hidden rounded-md border bg-muted">
               <Image
                 src={coverImage}
-                alt="Cover preview"
+                alt={t.coverImageAlt}
                 fill
                 sizes="384px"
                 className="object-cover"
@@ -148,7 +148,7 @@ export function SalonInfoSection({
             </div>
           ) : (
             <div className="flex h-28 w-full max-w-sm items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
-              No cover image uploaded
+              {t.coverImageEmpty}
             </div>
           )}
 
@@ -171,75 +171,75 @@ export function SalonInfoSection({
               onClick={() => coverInputRef.current?.click()}
               disabled={uploadingCoverImage}
             >
-              {uploadingCoverImage ? "Uploading..." : "Upload cover image"}
+              {uploadingCoverImage ? t.coverImageUploading : t.coverImageUploadButton}
             </Button>
             {coverImage ? (
               <Button type="button" variant="ghost" onClick={() => onChangeField("coverImage", "")}>
-                Remove
+                {t.coverImageRemoveButton}
               </Button>
             ) : null}
           </div>
-          <p className="text-xs text-muted-foreground">JPG, PNG or WebP (max 10MB)</p>
+          <p className="text-xs text-muted-foreground">{t.coverImageFormatsHint}</p>
           {coverImageUploadError ? (
             <p className="text-xs text-destructive">{coverImageUploadError}</p>
           ) : null}
         </div>
       </FormRow>
 
-      <FormRow label="Instagram URL" htmlFor="instagramUrl">
+      <FormRow label={t.instagramUrlLabel} htmlFor="instagramUrl">
         <Input
           id="instagramUrl"
           value={instagramUrl}
           onChange={(e) => onChangeField("instagramUrl", e.target.value)}
-          placeholder="https://instagram.com/..."
+          placeholder={t.instagramUrlPlaceholder}
         />
       </FormRow>
 
-      <FormRow label="Facebook URL" htmlFor="facebookUrl">
+      <FormRow label={t.facebookUrlLabel} htmlFor="facebookUrl">
         <Input
           id="facebookUrl"
           value={facebookUrl}
           onChange={(e) => onChangeField("facebookUrl", e.target.value)}
-          placeholder="https://facebook.com/..."
+          placeholder={t.facebookUrlPlaceholder}
         />
       </FormRow>
 
-      <FormRow label="X (Twitter) URL" htmlFor="twitterUrl">
+      <FormRow label={t.twitterUrlLabel} htmlFor="twitterUrl">
         <Input
           id="twitterUrl"
           value={twitterUrl}
           onChange={(e) => onChangeField("twitterUrl", e.target.value)}
-          placeholder="https://x.com/..."
+          placeholder={t.twitterUrlPlaceholder}
         />
       </FormRow>
 
-      <FormRow label="TikTok URL" htmlFor="tiktokUrl">
+      <FormRow label={t.tiktokUrlLabel} htmlFor="tiktokUrl">
         <Input
           id="tiktokUrl"
           value={tiktokUrl}
           onChange={(e) => onChangeField("tiktokUrl", e.target.value)}
-          placeholder="https://tiktok.com/@..."
+          placeholder={t.tiktokUrlPlaceholder}
         />
       </FormRow>
 
-      <FormRow label="Website URL" htmlFor="websiteUrl">
+      <FormRow label={t.websiteUrlLabel} htmlFor="websiteUrl">
         <Input
           id="websiteUrl"
           value={websiteUrl}
           onChange={(e) => onChangeField("websiteUrl", e.target.value)}
-          placeholder="https://..."
+          placeholder={t.websiteUrlPlaceholder}
         />
       </FormRow>
 
       {(publicProfileUrl || directBookingUrl) && (
-        <FormRow label="Public links">
+        <FormRow label={t.publicLinksSectionLabel}>
           <div className="space-y-3">
             {publicProfileUrl ? (
               <div className="space-y-1.5">
                 <p className="text-xs text-muted-foreground">
-                  Public profile
+                  {t.publicProfileLinkLabel}
                   <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                    Recommended for Instagram bio
+                    {t.publicProfileLinkBadge}
                   </span>
                 </p>
                 <div className="flex items-center gap-2">
@@ -279,7 +279,7 @@ export function SalonInfoSection({
 
             {directBookingUrl ? (
               <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground">Direct booking</p>
+                <p className="text-xs text-muted-foreground">{t.directBookingLinkLabel}</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 truncate text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
                     {directBookingUrl}
@@ -315,7 +315,7 @@ export function SalonInfoSection({
               </div>
             ) : null}
 
-            <p className="text-xs text-muted-foreground">Suggested bio text: Book your next appointment here</p>
+            <p className="text-xs text-muted-foreground">{t.suggestedBioText}</p>
           </div>
         </FormRow>
       )}

@@ -11,11 +11,12 @@ import { useSecurityData } from "@/lib/hooks/security/useSecurityData";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { resolveSettings } from "@/app/settings/_helpers/resolve-settings";
 
 export default function SecurityPage() {
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
-  const t = translations[appLocale].settings;
+  const t = resolveSettings(translations[appLocale].settings);
   const passwordCopy = {
     cardTitle: t.passwordCardTitle ?? "Password",
     cardDescription: t.passwordCardDescription ?? "Change your account password",
@@ -46,6 +47,19 @@ export default function SecurityPage() {
   const { loading, error, factors, emailVerified, sessionsCount, loadSecurityData } =
     useSecurityData();
 
+  const twoFactorCopy = {
+    title: t.twoFactorCardTitle,
+    description: t.twoFactorCardDescription,
+    statusLabel: t.twoFactorStatusLabel,
+    statusEnabled: t.twoFactorStatusEnabled,
+    statusDisabled: t.twoFactorStatusDisabled,
+    enabledAlert: t.twoFactorEnabledAlert,
+    disabledAlert: t.twoFactorDisabledAlert,
+    recommendShort: t.twoFactorRecommendShort,
+    disableButton: t.twoFactorDisableButton,
+    confirmDisable: t.twoFactorConfirmDisable,
+  };
+
   return (
     <ErrorBoundary>
       {error && (
@@ -67,7 +81,12 @@ export default function SecurityPage() {
       >
         <div className="space-y-6">
           <PasswordCard copy={passwordCopy} />
-          <TwoFactorCard factors={factors} loading={loading} onReload={loadSecurityData} />
+          <TwoFactorCard
+            factors={factors}
+            loading={loading}
+            onReload={loadSecurityData}
+            copy={twoFactorCopy}
+          />
         </div>
       </SettingsGrid>
     </ErrorBoundary>

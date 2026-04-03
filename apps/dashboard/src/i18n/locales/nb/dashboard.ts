@@ -57,6 +57,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     tabInProgress: "Pågår",
     tabDone: "Ferdig",
     helpNoFeedbackInCategory: "Ingen tilbakemeldinger i denne kategorien.",
+    helpFeedbackEmptyIntro:
+      "Ingen tilbakemeldinger ennå. Hvordan kan vi bli bedre?",
+    helpFeedbackEmptyBugDescription: "Noe som ikke fungerer? Si fra.",
+    helpFeedbackEmptyFeatureDescription: "Har du en idé? Vi vil gjerne høre den.",
+    helpFeedbackEmptyImprovementDescription:
+      "Noe kan bli bedre? Fortell oss hvordan.",
     salesNewGiftCard: "Nytt gavekort",
     salesNewPackage: "Ny pakke",
     salesNoGiftCardsTitle: "Ingen gavekort ennå",
