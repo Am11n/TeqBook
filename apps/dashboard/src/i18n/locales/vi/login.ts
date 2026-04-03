@@ -4,8 +4,8 @@ export const login: TranslationNamespaces['login'] = {
     title: "Đăng nhập vào TeqBook",
     description:
       "Dành cho môi trường phát triển: tạo người dùng với email và mật khẩu trong Supabase, sau đó đăng nhập ở đây mà không cần xác thực email.",
-    emailLabel: "Email",
-    emailPlaceholder: "you@salon.com",
+    emailLabel: "E-mail",
+    emailPlaceholder: "chu@salon-vidu.com",
     passwordLabel: "Mật khẩu",
     passwordPlaceholder: "Ít nhất 6 ký tự",
     loginError: "Không đăng nhập được.",

@@ -8,7 +8,7 @@ export const products: TranslationNamespaces['products'] = {
     name: "Tên",
     price: "Giá",
     stock: "Tồn kho",
-    sku: "SKU",
+    sku: "Mã SKU",
     status: "Trạng thái",
     actions: "Thao tác",
     create: "Tạo sản phẩm",
@@ -21,5 +21,5 @@ export const products: TranslationNamespaces['products'] = {
     namePlaceholder: "Tên sản phẩm",
     pricePlaceholder: "0.00",
     stockPlaceholder: "0",
-    skuPlaceholder: "SKU-001",
+    skuPlaceholder: "VD-SP-001",
   };

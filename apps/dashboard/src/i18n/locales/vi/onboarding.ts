@@ -13,7 +13,7 @@ export const onboarding: TranslationNamespaces['onboarding'] = {
     salonTypeLabel: "Loại salon",
     salonTypeBarber: "Cắt tóc",
     salonTypeNails: "Làm móng",
-    salonTypeMassage: "Massage",
+    salonTypeMassage: "Xoa bóp",
     salonTypeOther: "Khác",
     paymentMethodLabel: "Phương thức thanh toán mặc định",
     paymentMethodPhysicalOnly: "Chỉ thanh toán tại chỗ (mặc định)",

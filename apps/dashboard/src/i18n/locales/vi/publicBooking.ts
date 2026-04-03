@@ -25,9 +25,9 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
       "Chúng tôi dùng những thông tin này để xác nhận lịch hẹn và (nếu cần) gửi nhắc nhở. Thanh toán luôn được thực hiện tại salon.",
     nameLabel: "Họ tên",
     emailLabel: "Email (không bắt buộc)",
-    emailPlaceholder: "you@example.com",
+    emailPlaceholder: "ban@vidu.com",
     phoneLabel: "Số điện thoại (không bắt buộc)",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "Ví dụ: +84 90 12 34 567",
     submitSaving: "Đang gửi yêu cầu…",
     submitLabel: "Xác nhận đặt lịch",
     payInfo:

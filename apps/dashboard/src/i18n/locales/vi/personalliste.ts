@@ -16,7 +16,7 @@ export const personalliste: TranslationNamespaces['personalliste'] = {
     colDuration: "Thời lượng",
     colStatus: "Trạng thái",
     colChangedBy: "Sửa bởi / lúc nào",
-    statusOk: "Ok",
+    statusOk: "Ổn",
     statusEdited: "Đã chỉnh sửa",
     emptyTitle: "Không có bản ghi trong kỳ",
     emptyDescription: "Chọn kỳ và tùy chọn ghi nhận bản ghi.",
