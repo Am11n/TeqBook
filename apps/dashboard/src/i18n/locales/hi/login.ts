@@ -5,7 +5,7 @@ export const login: TranslationNamespaces['login'] = {
     description:
       "लोकल डेवलपमेंट के लिए: Supabase डैशबोर्ड में ई‑मेल और पासवर्ड के साथ एक यूज़र बनाइए, और यहाँ बिना ई‑मेल वेरिफिकेशन के लॉग इन कीजिए।",
     emailLabel: "ई‑मेल",
-    emailPlaceholder: "aap@salon.com",
+    emailPlaceholder: "you@salon.com",
     passwordLabel: "पासवर्ड",
     passwordPlaceholder: "कम से कम 6 अक्षर",
     loginError: "लॉग इन नहीं हो सका।",

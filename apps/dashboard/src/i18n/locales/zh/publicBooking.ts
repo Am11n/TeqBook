@@ -25,7 +25,7 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
     emailLabel: "邮箱（可选）",
     emailPlaceholder: "you@example.com",
     phoneLabel: "电话（可选）",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+86 138 0013 8000",
     submitSaving: "正在发送请求…",
     submitLabel: "确认预约",
     payInfo: "您始终在沙龙现场付款。不支持在线信用卡支付。",

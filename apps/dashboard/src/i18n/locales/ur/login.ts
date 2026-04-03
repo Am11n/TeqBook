@@ -5,7 +5,7 @@ export const login: TranslationNamespaces['login'] = {
     description:
       "لوکل ڈیویلپمنٹ کے لیے: Supabase ڈیش بورڈ میں ای میل اور پاس ورڈ کے ساتھ ایک یوزر بنائیں، اور یہاں بغیر ای میل ویری فیکیشن کے لاگ اِن کریں۔",
     emailLabel: "ای میل",
-    emailPlaceholder: "aap@salon.com",
+    emailPlaceholder: "you@salon.com",
     passwordLabel: "پاس ورڈ",
     passwordPlaceholder: "کم از کم 6 حروف",
     loginError: "لاگ اِن نہیں ہو سکا۔",

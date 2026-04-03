@@ -24,9 +24,9 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
       "हम इन विवरणों का उपयोग बुकिंग की पुष्टि और भविष्य की याद दिलाने के लिए करते हैं। भुगतान हमेशा सैलून में ही किया जाता है।",
     nameLabel: "नाम",
     emailLabel: "ई‑मेल (वैकल्पिक)",
-    emailPlaceholder: "aap@example.com",
+    emailPlaceholder: "you@example.com",
     phoneLabel: "फ़ोन (वैकल्पिक)",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+91 98765 43210",
     submitSaving: "अनुरोध भेजा जा रहा है…",
     submitLabel: "अनुरोध की पुष्टि करें",
     payInfo:

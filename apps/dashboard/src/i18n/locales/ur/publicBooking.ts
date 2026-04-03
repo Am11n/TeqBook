@@ -25,9 +25,9 @@ export const publicBooking: TranslationNamespaces['publicBooking'] = {
       "ہم یہ معلومات بُکنگ کی تصدیق اور آئندہ ریمائنڈرز کے لیے استعمال کرتے ہیں۔ ادائیگی ہمیشہ سیلون پر ہی کی جاتی ہے۔",
     nameLabel: "نام",
     emailLabel: "ای میل (اختیاری)",
-    emailPlaceholder: "aap@example.com",
+    emailPlaceholder: "you@example.com",
     phoneLabel: "فون (اختیاری)",
-    phonePlaceholder: "+47 99 99 99 99",
+    phonePlaceholder: "+92 300 1234567",
     submitSaving: "درخواست بھیجی جا رہی ہے…",
     submitLabel: "درخواست کنفرم کریں",
     payInfo:
