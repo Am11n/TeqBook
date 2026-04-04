@@ -1,6 +1,31 @@
 import { Crown, Zap, Building2 } from "lucide-react";
 import type { PlanType } from "@/lib/types";
 import type { Addon } from "@/lib/repositories/addons";
+import type { TranslationNamespaces } from "@/i18n/types";
+
+type PlanFeatureSettings = Pick<
+  TranslationNamespaces["settings"],
+  | "planStarter"
+  | "planPro"
+  | "planBusiness"
+  | "billingPlanStarterFeature1"
+  | "billingPlanStarterFeature2"
+  | "billingPlanStarterFeature3"
+  | "billingPlanStarterFeature4"
+  | "billingPlanStarterFeature5"
+  | "billingPlanStarterFeature6"
+  | "billingPlanProFeature1"
+  | "billingPlanProFeature2"
+  | "billingPlanProFeature3"
+  | "billingPlanProFeature4"
+  | "billingPlanProFeature5"
+  | "billingPlanProFeature6"
+  | "billingPlanProFeature7"
+  | "billingPlanBusinessFeature1"
+  | "billingPlanBusinessFeature2"
+  | "billingPlanBusinessFeature3"
+  | "billingPlanBusinessFeature4"
+>;
 
 export interface Plan {
   id: PlanType;
@@ -24,27 +49,54 @@ export interface AddonDisplay {
   quantity: number;
 }
 
+const PLAN_FEATURE_DEFAULTS: Record<keyof PlanFeatureSettings, string> = {
+  planStarter: "Starter",
+  planPro: "Pro",
+  planBusiness: "Business",
+  billingPlanStarterFeature1: "Online booking and calendar",
+  billingPlanStarterFeature2: "Customer list and service management",
+  billingPlanStarterFeature3: "Pay-in-salon flow",
+  billingPlanStarterFeature4: "WhatsApp communication (salon & customer)",
+  billingPlanStarterFeature5: "One additional language pack",
+  billingPlanStarterFeature6: "SMS reminders at cost price",
+  billingPlanProFeature1: "Includes everything in Starter, plus:",
+  billingPlanProFeature2: "Fully multilingual interface",
+  billingPlanProFeature3: "Advanced reports on revenue and capacity",
+  billingPlanProFeature4: "Automatic reminders and notifications",
+  billingPlanProFeature5: "Shift planning and staff scheduling",
+  billingPlanProFeature6: "Lightweight inventory for products",
+  billingPlanProFeature7: "Branded booking page",
+  billingPlanBusinessFeature1: "Includes everything in Pro, plus:",
+  billingPlanBusinessFeature2: "Roles and access control",
+  billingPlanBusinessFeature3: "Deeper statistics and export",
+  billingPlanBusinessFeature4: "Priority support",
+};
+
+function planString<K extends keyof PlanFeatureSettings>(
+  translations: Partial<PlanFeatureSettings>,
+  key: K,
+): string {
+  const v = translations[key];
+  return (typeof v === "string" && v.trim() !== "" ? v : PLAN_FEATURE_DEFAULTS[key]) as string;
+}
+
 /**
- * Get plans configuration
+ * Get plans configuration (names and feature bullets from settings i18n).
  */
-export function getPlans(translations: {
-  planStarter?: string;
-  planPro?: string;
-  planBusiness?: string;
-}): Plan[] {
+export function getPlans(translations: Partial<PlanFeatureSettings>): Plan[] {
   return [
     {
       id: "starter" as PlanType,
-      name: translations.planStarter || "Starter",
+      name: planString(translations, "planStarter"),
       price: "$25",
       icon: Zap,
       features: [
-        "Online booking and calendar",
-        "Customer list and service management",
-        "Pay-in-salon flow",
-        "WhatsApp communication (salon & customer)",
-        "One additional language pack",
-        "SMS reminders at cost price",
+        planString(translations, "billingPlanStarterFeature1"),
+        planString(translations, "billingPlanStarterFeature2"),
+        planString(translations, "billingPlanStarterFeature3"),
+        planString(translations, "billingPlanStarterFeature4"),
+        planString(translations, "billingPlanStarterFeature5"),
+        planString(translations, "billingPlanStarterFeature6"),
       ],
       limits: {
         employees: 2,
@@ -53,17 +105,17 @@ export function getPlans(translations: {
     },
     {
       id: "pro" as PlanType,
-      name: translations.planPro || "Pro",
+      name: planString(translations, "planPro"),
       price: "$50",
       icon: Crown,
       features: [
-        "Includes everything in Starter, plus:",
-        "Fully multilingual interface",
-        "Advanced reports on revenue and capacity",
-        "Automatic reminders and notifications",
-        "Shift planning and staff scheduling",
-        "Lightweight inventory for products",
-        "Branded booking page",
+        planString(translations, "billingPlanProFeature1"),
+        planString(translations, "billingPlanProFeature2"),
+        planString(translations, "billingPlanProFeature3"),
+        planString(translations, "billingPlanProFeature4"),
+        planString(translations, "billingPlanProFeature5"),
+        planString(translations, "billingPlanProFeature6"),
+        planString(translations, "billingPlanProFeature7"),
       ],
       limits: {
         employees: 5,
@@ -72,14 +124,14 @@ export function getPlans(translations: {
     },
     {
       id: "business" as PlanType,
-      name: translations.planBusiness || "Business",
+      name: planString(translations, "planBusiness"),
       price: "$75",
       icon: Building2,
       features: [
-        "Includes everything in Pro, plus:",
-        "Roles and access control",
-        "Deeper statistics and export",
-        "Priority support",
+        planString(translations, "billingPlanBusinessFeature1"),
+        planString(translations, "billingPlanBusinessFeature2"),
+        planString(translations, "billingPlanBusinessFeature3"),
+        planString(translations, "billingPlanBusinessFeature4"),
       ],
       limits: {
         employees: null, // unlimited

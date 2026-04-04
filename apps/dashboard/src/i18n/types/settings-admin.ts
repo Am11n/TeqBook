@@ -62,6 +62,32 @@ export type SettingsMessages = {
   planPro: string;
   planBusiness: string;
   addOns: string;
+  /** Subscribe / change-plan modal */
+  billingPlanSelectionTitle?: string;
+  billingPlanSelectionDescription?: string;
+  /** Shown under plan name; must include {price} */
+  billingPlanPriceMonth?: string;
+  billingPlanStarterFeature1?: string;
+  billingPlanStarterFeature2?: string;
+  billingPlanStarterFeature3?: string;
+  billingPlanStarterFeature4?: string;
+  billingPlanStarterFeature5?: string;
+  billingPlanStarterFeature6?: string;
+  billingPlanProFeature1?: string;
+  billingPlanProFeature2?: string;
+  billingPlanProFeature3?: string;
+  billingPlanProFeature4?: string;
+  billingPlanProFeature5?: string;
+  billingPlanProFeature6?: string;
+  billingPlanProFeature7?: string;
+  billingPlanBusinessFeature1?: string;
+  billingPlanBusinessFeature2?: string;
+  billingPlanBusinessFeature3?: string;
+  billingPlanBusinessFeature4?: string;
+  billingPlanDialogCancel?: string;
+  billingPlanDialogSubscribe?: string;
+  billingPlanDialogChangePlan?: string;
+  billingPlanDialogProcessing?: string;
   // Branding settings
   brandingTitle: string;
   brandingDescription: string;

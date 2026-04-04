@@ -75,6 +75,23 @@ export default function BillingSettingsPage() {
     planStarter: t.planStarter,
     planPro: t.planPro,
     planBusiness: t.planBusiness,
+    billingPlanStarterFeature1: t.billingPlanStarterFeature1,
+    billingPlanStarterFeature2: t.billingPlanStarterFeature2,
+    billingPlanStarterFeature3: t.billingPlanStarterFeature3,
+    billingPlanStarterFeature4: t.billingPlanStarterFeature4,
+    billingPlanStarterFeature5: t.billingPlanStarterFeature5,
+    billingPlanStarterFeature6: t.billingPlanStarterFeature6,
+    billingPlanProFeature1: t.billingPlanProFeature1,
+    billingPlanProFeature2: t.billingPlanProFeature2,
+    billingPlanProFeature3: t.billingPlanProFeature3,
+    billingPlanProFeature4: t.billingPlanProFeature4,
+    billingPlanProFeature5: t.billingPlanProFeature5,
+    billingPlanProFeature6: t.billingPlanProFeature6,
+    billingPlanProFeature7: t.billingPlanProFeature7,
+    billingPlanBusinessFeature1: t.billingPlanBusinessFeature1,
+    billingPlanBusinessFeature2: t.billingPlanBusinessFeature2,
+    billingPlanBusinessFeature3: t.billingPlanBusinessFeature3,
+    billingPlanBusinessFeature4: t.billingPlanBusinessFeature4,
   });
 
   const addonDisplay = getAddonDisplay(addons);
@@ -512,6 +529,13 @@ export default function BillingSettingsPage() {
         onConfirm={handlePlanChange}
         actionLoading={actionLoading}
         hasSubscription={hasSubscription}
+        title={t.billingPlanSelectionTitle}
+        description={t.billingPlanSelectionDescription}
+        priceMonthTemplate={t.billingPlanPriceMonth}
+        cancelLabel={t.billingPlanDialogCancel}
+        subscribeLabel={t.billingPlanDialogSubscribe}
+        changePlanLabel={t.billingPlanDialogChangePlan}
+        processingLabel={t.billingPlanDialogProcessing}
       />
 
       <PaymentFormDialog

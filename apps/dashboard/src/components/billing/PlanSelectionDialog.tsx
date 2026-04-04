@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { applyTemplate } from "@/i18n/apply-template";
 import { CheckCircle2 } from "lucide-react";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
 import type { PlanType } from "@/lib/types";
@@ -21,6 +22,14 @@ interface PlanSelectionDialogProps {
   onConfirm: () => void;
   actionLoading: boolean;
   hasSubscription: boolean;
+  title: string;
+  description: string;
+  /** Must include `{price}` */
+  priceMonthTemplate: string;
+  cancelLabel: string;
+  subscribeLabel: string;
+  changePlanLabel: string;
+  processingLabel: string;
 }
 
 export function PlanSelectionDialog({
@@ -32,13 +41,20 @@ export function PlanSelectionDialog({
   onConfirm,
   actionLoading,
   hasSubscription,
+  title,
+  description,
+  priceMonthTemplate,
+  cancelLabel,
+  subscribeLabel,
+  changePlanLabel,
+  processingLabel,
 }: PlanSelectionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Select a Plan</DialogTitle>
-          <DialogDescription>Choose a subscription plan that fits your needs</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {plans.map((plan) => {
@@ -58,7 +74,9 @@ export function PlanSelectionDialog({
                     <PlanIcon className="h-5 w-5 text-primary" />
                     <div>
                       <p className="font-semibold">{plan.name}</p>
-                      <p className="text-sm text-muted-foreground">{plan.price} / month</p>
+                      <p className="text-sm text-muted-foreground">
+                        {applyTemplate(priceMonthTemplate, { price: plan.price })}
+                      </p>
                     </div>
                   </div>
                   {selectedPlan === plan.id && (
@@ -79,14 +97,14 @@ export function PlanSelectionDialog({
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {cancelLabel}
           </Button>
           <Button onClick={onConfirm} disabled={!selectedPlan || actionLoading}>
             {actionLoading
-              ? "Processing..."
+              ? processingLabel
               : hasSubscription
-                ? "Change Plan"
-                : "Subscribe"}
+                ? changePlanLabel
+                : subscribeLabel}
           </Button>
         </div>
       </DialogContent>
