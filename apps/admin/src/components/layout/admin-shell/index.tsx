@@ -9,7 +9,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { useAdminConsoleMessages } from "@/i18n/use-admin-console-messages";
 import { useDocumentLangDir } from "@/i18n/use-document-lang-dir";
 import { CommandPalette } from "@/components/shared/command-palette";
-import { getCurrentUser, signOut } from "@/lib/services/auth-service";
+import { signOut } from "@/lib/services/auth-service";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AdminCommandPalette } from "@/components/admin-command-palette";
 import { ShellHeader } from "./ShellHeader";
@@ -29,12 +29,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
 function AdminShellContent({ children }: { children: ReactNode }) {
   const { locale, setLocale } = useLocale();
   const t = useAdminConsoleMessages();
-  const { isSuperAdmin, loading, profile, salon } = useCurrentSalon();
+  const { isSuperAdmin, loading, profile, salon, user } = useCurrentSalon();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -50,11 +49,7 @@ function AdminShellContent({ children }: { children: ReactNode }) {
     if (mounted && !loading && !isSuperAdmin) router.push("/login");
   }, [mounted, loading, isSuperAdmin, router]);
 
-  useEffect(() => {
-    getCurrentUser().then(({ data: user }) => {
-      if (user?.email) setUserEmail(user.email);
-    });
-  }, []);
+  const userEmail = user?.email ?? null;
 
   async function handleSignOut() {
     setLoggingOut(true);

@@ -50,6 +50,9 @@ type SalonContextType = {
 
 const SalonContext = createContext<SalonContextType | null>(null);
 
+/** Coalesces concurrent bootstrap loads (e.g. React Strict Mode dev double mount). Auth refresh always uses dedupe: false. */
+let adminSalonBootstrapInFlight: Promise<void> | null = null;
+
 type SalonProviderProps = {
   children: ReactNode;
 };
@@ -61,106 +64,127 @@ export function SalonProvider({ children }: SalonProviderProps) {
     status: "loading",
   });
 
-  const loadSalonData = useCallback(async () => {
-    try {
-      setState({ status: "loading" });
-
-      // 1. Get current user
-      const { data: user, error: userError } = await getCurrentUser();
-
-      if (userError || !user) {
-        setState({ status: "unauthenticated" });
-        return;
-      }
-
-      // 2. Get profile with salon_id and is_superadmin
-      const { data: profile, error: profileError } = await getProfileForUser(user.id);
-
-      // Super admins don't need a salon_id
-      if (profileError || !profile) {
-        setState({ status: "no-salon" });
-        return;
-      }
-
-      // If not superadmin and no salon_id, redirect to onboarding
-      if (!profile.is_superadmin && !profile.salon_id) {
-        setState({ status: "no-salon" });
-        return;
-      }
-
-      // 3. Get salon data (only if not superadmin or if salon_id exists)
-      let salon = null;
-      if (profile.salon_id) {
+  const loadSalonData = useCallback(
+    async (options?: { dedupe?: boolean }) => {
+      const execute = async () => {
         try {
-          const { data: salonData, error: salonError } = await getSalonByIdForUser(profile.salon_id);
+          setState({ status: "loading" });
 
-          if (salonError) {
-            console.warn("Error loading salon data:", salonError);
-            // Don't set error state - just continue without salon data
+          // 1. Get current user
+          const { data: user, error: userError } = await getCurrentUser();
+
+          if (userError || !user) {
+            setState({ status: "unauthenticated" });
+            return;
+          }
+
+          // 2. Get profile with salon_id and is_superadmin
+          const { data: profile, error: profileError } = await getProfileForUser(user.id);
+
+          // Super admins don't need a salon_id
+          if (profileError || !profile) {
             setState({ status: "no-salon" });
             return;
           }
 
-          salon = salonData;
-
-          // 4. Set locale from user's preferred_language (profile) or fall back to salon's preferred_language
-          const validLocales: AppLocale[] = [
-            "nb",
-            "en",
-            "ar",
-            "so",
-            "ti",
-            "am",
-            "tr",
-            "pl",
-            "vi",
-            "zh",
-            "tl",
-            "fa",
-            "dar",
-            "ur",
-            "hi",
-          ];
-          
-          // Priority: user's profile.preferred_language > salon.preferred_language > 'en'
-          const userLocale = profile?.preferred_language;
-          const salonLocale = salon?.preferred_language;
-          
-          if (userLocale && validLocales.includes(userLocale as AppLocale)) {
-            setLocale(userLocale as AppLocale);
-          } else if (salonLocale && validLocales.includes(salonLocale as AppLocale)) {
-            setLocale(salonLocale as AppLocale);
+          // If not superadmin and no salon_id, redirect to onboarding
+          if (!profile.is_superadmin && !profile.salon_id) {
+            setState({ status: "no-salon" });
+            return;
           }
+
+          // 3. Get salon data (only if not superadmin or if salon_id exists)
+          let salon = null;
+          if (profile.salon_id) {
+            try {
+              const { data: salonData, error: salonError } = await getSalonByIdForUser(profile.salon_id);
+
+              if (salonError) {
+                console.warn("Error loading salon data:", salonError);
+                // Don't set error state - just continue without salon data
+                setState({ status: "no-salon" });
+                return;
+              }
+
+              salon = salonData;
+
+              // 4. Set locale from user's preferred_language (profile) or fall back to salon's preferred_language
+              const validLocales: AppLocale[] = [
+                "nb",
+                "en",
+                "ar",
+                "so",
+                "ti",
+                "am",
+                "tr",
+                "pl",
+                "vi",
+                "zh",
+                "tl",
+                "fa",
+                "dar",
+                "ur",
+                "hi",
+              ];
+
+              // Priority: user's profile.preferred_language > salon.preferred_language > 'en'
+              const userLocale = profile?.preferred_language;
+              const salonLocale = salon?.preferred_language;
+
+              if (userLocale && validLocales.includes(userLocale as AppLocale)) {
+                setLocale(userLocale as AppLocale);
+              } else if (salonLocale && validLocales.includes(salonLocale as AppLocale)) {
+                setLocale(salonLocale as AppLocale);
+              }
+            } catch (err) {
+              console.warn("Exception loading salon data:", err);
+              setState({ status: "no-salon" });
+              return;
+            }
+          }
+
+          // Set error tracking context for Sentry
+          setErrorContext({
+            userId: user.id,
+            userEmail: user.email,
+            salonId: salon?.id || null,
+            salonName: salon?.name || null,
+            userRole: profile.is_superadmin ? "superadmin" : profile.role || "owner",
+          });
+
+          setState({
+            status: "ready",
+            user,
+            profile,
+            salon,
+          });
         } catch (err) {
-          console.warn("Exception loading salon data:", err);
-          setState({ status: "no-salon" });
+          console.error("Error in loadSalonData:", err);
+          // Clear error context on failure
+          clearErrorContext();
+          // Set to unauthenticated state instead of error to prevent crashes
+          setState({ status: "unauthenticated" });
+        }
+      };
+
+      if (options?.dedupe) {
+        if (adminSalonBootstrapInFlight) {
+          await adminSalonBootstrapInFlight;
           return;
         }
+        adminSalonBootstrapInFlight = execute().finally(() => {
+          adminSalonBootstrapInFlight = null;
+        });
+        await adminSalonBootstrapInFlight;
+        return;
       }
 
-      // Set error tracking context for Sentry
-      setErrorContext({
-        userId: user.id,
-        userEmail: user.email,
-        salonId: salon?.id || null,
-        salonName: salon?.name || null,
-        userRole: profile.is_superadmin ? "superadmin" : profile.role || "owner",
-      });
+      await execute();
+    },
+    [setLocale],
+  );
 
-      setState({
-        status: "ready",
-        user,
-        profile,
-        salon,
-      });
-    } catch (err) {
-      console.error("Error in loadSalonData:", err);
-      // Clear error context on failure
-      clearErrorContext();
-      // Set to unauthenticated state instead of error to prevent crashes
-      setState({ status: "unauthenticated" });
-    }
-  }, [setLocale]);
+  const refreshSalon = useCallback(() => loadSalonData(), [loadSalonData]);
 
   useEffect(() => {
     // Only run on client side
@@ -169,12 +193,12 @@ export function SalonProvider({ children }: SalonProviderProps) {
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadSalonData();
+    void loadSalonData({ dedupe: true });
 
     // Listen for auth changes
     try {
       const unsubscribe = subscribeToAuthChanges(() => {
-        loadSalonData();
+        void loadSalonData();
       });
 
       return () => {
@@ -203,7 +227,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
           isReady: true,
           isSuperAdmin: state.profile?.is_superadmin ?? false,
           userRole,
-          refreshSalon: loadSalonData,
+          refreshSalon,
         };
       }
 
@@ -216,7 +240,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
         isReady: false,
         isSuperAdmin: false,
         userRole: null,
-        refreshSalon: loadSalonData,
+        refreshSalon,
       };
     } catch (err) {
       console.error("Error in SalonProvider value calculation:", err);
@@ -230,10 +254,10 @@ export function SalonProvider({ children }: SalonProviderProps) {
         isReady: false,
         isSuperAdmin: false,
         userRole: null,
-        refreshSalon: loadSalonData,
+        refreshSalon,
       };
     }
-  }, [state, loadSalonData]);
+  }, [state, refreshSalon]);
 
   // Show loading screen when loading (only on client to avoid hydration mismatch)
   const [mounted, setMounted] = useState(false);
