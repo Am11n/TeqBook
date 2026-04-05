@@ -33,4 +33,3 @@ Dokumentasjon skal være bevis-basert:
 - Påstander om implementerte features skal peke til kodefiler eller testfiler.
 - Hvis noe er planlagt, skal det være eksplisitt merket som planlagt.
 - Ved tvil: referer til implementasjonskilder i `apps/*`, `packages/*` eller `supabase/supabase/functions/*`.
-
