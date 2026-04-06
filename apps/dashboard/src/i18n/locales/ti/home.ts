@@ -48,5 +48,6 @@ export const home: TranslationNamespaces['home'] = {
     viewCalendar: "ካለንደር ርአ",
     welcomeBack: "{name}",
     welcomeSubtitle: "ኣብዚ ናይ ሳሎንካ ሓፈሻዊ ምርኣይ ኣሎ – ሰራሕተኛታት ፣ ኣወዳድባታት ፣ ኣገልጋሊታትን ኣፈፃፅማታትን ።",
+    welcomeSubtitleStarter: "ኣብዚ ናይ ሳሎንካ ሓፈሻዊ ምርኣይ ኣሎ – ሰራሕተኛታት ፣ ኣወዳድባታት ፣ ኣገልጋሊታትን ።",
     yourStaff: "ሰራሕተኛኻ",
   };

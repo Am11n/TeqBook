@@ -7,6 +7,8 @@ export const home: TranslationNamespaces['home'] = {
     welcomeBack: "वापसी पर स्वागत है, {name}।",
     welcomeSubtitle:
       "यहाँ आपके सैलून का सारांश है — स्टाफ, अपॉइंटमेंट, ग्राहक और प्रदर्शन।",
+    welcomeSubtitleStarter:
+      "यहाँ आपके सैलून का सारांश है — स्टाफ, अपॉइंटमेंट और ग्राहक।",
     todaysBookings: "आज की बुकिंग",
     viewCalendar: "कैलेंडर देखें",
     noBookingsYet: "अभी कोई बुकिंग नहीं।",

@@ -5,6 +5,7 @@ export const home: TranslationNamespaces['home'] = {
     description: "快速了解沙龙状况。数据将很快来自预约引擎。",
     welcomeBack: "欢迎回来，{name}。",
     welcomeSubtitle: "这是你的沙龙概览——员工、预约、客户与表现。",
+    welcomeSubtitleStarter: "这是你的沙龙概览——员工、预约与客户。",
     todaysBookings: "今日预约",
     viewCalendar: "查看日历",
     noBookingsYet: "尚无预约。",

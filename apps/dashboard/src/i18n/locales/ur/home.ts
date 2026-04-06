@@ -5,6 +5,7 @@ export const home: TranslationNamespaces['home'] = {
     description: "سیلون کا فوری حال، اعداد جلد بُکنگ انجن سے آئیں گے۔",
     welcomeBack: "خوش آمدید، {name}۔",
     welcomeSubtitle: "سیلون کا جائزہ — عملہ، ملاقاتیں، گاہک اور کارکردگی۔",
+    welcomeSubtitleStarter: "سیلون کا جائزہ — عملہ، ملاقاتیں اور گاہک۔",
     todaysBookings: "آج کی بُکنگز",
     viewCalendar: "کیلنڈر دیکھیں",
     noBookingsYet: "ابھی کوئی بُکنگ نہیں۔",

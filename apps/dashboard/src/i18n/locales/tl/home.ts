@@ -7,6 +7,8 @@ export const home: TranslationNamespaces['home'] = {
   welcomeBack: "Maligayang pagbabalik, {name}.",
   welcomeSubtitle:
     "Narito ang buod ng salon mo – staff, appointment, customer, at performance.",
+  welcomeSubtitleStarter:
+    "Narito ang buod ng salon mo – staff, appointment, at customer.",
   todaysBookings: "Mga booking ngayon",
   viewCalendar: "Tingnan ang kalendaryo",
   noBookingsYet: "Wala pang booking.",

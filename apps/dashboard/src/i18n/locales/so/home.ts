@@ -48,5 +48,6 @@ export const home: TranslationNamespaces['home'] = {
     viewCalendar: "Eeg kalendarka",
     welcomeBack: "Soo dhawoow, {name}.",
     welcomeSubtitle: "Halkan waa isku xirka saloonkaaga – shaqaalaha, ballamada, macaamiisha iyo waxqabadka.",
+    welcomeSubtitleStarter: "Halkan waa isku xirka saloonkaaga – shaqaalaha, ballamada iyo macaamiisha.",
     yourStaff: "Shaqaalahaaga",
   };

@@ -29,7 +29,7 @@ export default function DashboardHomePage() {
     () => resolveNamespace("home", translations[appLocale].home),
     [appLocale],
   );
-  const { hasFeature } = useFeatures();
+  const { hasFeature, loading: featuresLoading } = useFeatures();
   const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
   const [announcements, setAnnouncements] = useState<DashboardAnnouncement[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
@@ -45,6 +45,11 @@ export default function DashboardHomePage() {
   } = useDashboardData(timeRange);
 
   const featuresMounted = mounted;
+  const showPerformanceInsights =
+    !featuresLoading && hasFeature("ADVANCED_REPORTS");
+  const welcomeSubtitle = showPerformanceInsights
+    ? t.welcomeSubtitle
+    : t.welcomeSubtitleStarter;
 
   useEffect(() => {
     let active = true;
@@ -81,7 +86,13 @@ export default function DashboardHomePage() {
   return (
     <ErrorBoundary>
       <DashboardShell>
-        <DashboardHeader ownerName={ownerName} translations={t} />
+        <DashboardHeader
+          ownerName={ownerName}
+          translations={{
+            welcomeBack: t.welcomeBack,
+            welcomeSubtitle,
+          }}
+        />
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <TodaysBookingsCard
@@ -121,7 +132,7 @@ export default function DashboardHomePage() {
           />
         </div>
 
-        {featuresMounted && hasFeature("ADVANCED_REPORTS") && (
+        {featuresMounted && showPerformanceInsights && (
           <PerformanceSnapshotCard
             loading={loading}
             performanceData={performanceData}

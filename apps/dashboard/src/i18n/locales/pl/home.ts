@@ -7,6 +7,8 @@ export const home: TranslationNamespaces['home'] = {
     welcomeBack: "Witaj ponownie, {name}.",
     welcomeSubtitle:
       "Oto podsumowanie salonu — personel, wizyty, klienci i wyniki.",
+    welcomeSubtitleStarter:
+      "Oto podsumowanie salonu — personel, wizyty i klienci.",
     todaysBookings: "Dzisiejsze rezerwacje",
     viewCalendar: "Otwórz kalendarz",
     noBookingsYet: "Brak rezerwacji na dziś.",

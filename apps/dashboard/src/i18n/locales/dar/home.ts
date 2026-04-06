@@ -48,5 +48,6 @@ export const home: TranslationNamespaces['home'] = {
     viewCalendar: "مشاهده تقویم",
     welcomeBack: "خوش آمدید، {name}.",
     welcomeSubtitle: "این نمای کلی سالون شماست: کارکنان، نوبت‌ها، مشتریان و عملکرد.",
+    welcomeSubtitleStarter: "این نمای کلی سالون شماست: کارکنان، نوبت‌ها و مشتریان.",
     yourStaff: "کارکنان شما",
   };

@@ -18,13 +18,13 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 ## 2) Core Product Flows (Must Pass)
 
 - [x] Signup, login, forgot password, and logout work.
-- [ ] Onboarding can be completed without manual DB fixes.
-- [ ] Salon has at least 1 active staff member.
-- [ ] Salon has at least 3 active services.
-- [ ] Opening hours or shifts are configured.
-- [ ] Public booking slug resolves correctly.
-- [ ] A real test booking can be created from the public flow.
-- [ ] New booking appears in owner dashboard/calendar.
+- [x] Onboarding can be completed without manual DB fixes.
+- [x] Salon has at least 1 active staff member.
+- [x] Salon has at least 3 active services.
+- [x] Opening hours or shifts are configured.
+- [x] Public booking slug resolves correctly.
+- [x] A real test booking can be created from the public flow.
+- [x] New booking appears in owner dashboard. Calendar not working yet since it is not integrated.
 - [ ] Reschedule flow works end-to-end.
 - [ ] Cancel flow works end-to-end.
 

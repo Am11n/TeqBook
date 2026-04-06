@@ -213,6 +213,8 @@ export type HomeMessages = {
   description: string;
   welcomeBack: string;
   welcomeSubtitle: string;
+  /** Shown when ADVANCED_REPORTS is off (e.g. Starter) — avoid promising performance insights */
+  welcomeSubtitleStarter: string;
   // Today's bookings card
   todaysBookings: string;
   viewCalendar: string;
