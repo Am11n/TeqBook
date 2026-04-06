@@ -5,6 +5,7 @@ export {
   createBooking,
   updateBookingStatus,
   updateBooking,
+  directRescheduleBooking,
   cancelBooking,
   deleteBooking,
 } from "./bookings";

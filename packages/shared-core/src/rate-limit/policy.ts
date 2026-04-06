@@ -50,6 +50,22 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "dashboard-reschedule-proposal": {
+    endpointType: "dashboard-reschedule-proposal",
+    identifierType: "user_id",
+    maxAttempts: 15,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "public-booking-reschedule": {
+    endpointType: "public-booking-reschedule",
+    identifierType: "ip",
+    maxAttempts: 30,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "public-booking-notifications": {
     endpointType: "public-booking-notifications",
     identifierType: "ip",

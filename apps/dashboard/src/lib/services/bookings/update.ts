@@ -153,3 +153,69 @@ export async function updateBooking(
     };
   }
 }
+
+type DirectRescheduleRpcRow = {
+  ok: boolean;
+  message: string | null;
+  error_code: string | null;
+  id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  is_walk_in: boolean;
+  notes: string | null;
+  customers: unknown;
+  employees: unknown;
+  services: unknown;
+};
+
+/**
+ * Owner/manager immediate reschedule (bypass customer approval); audited in DB.
+ */
+export async function directRescheduleBooking(
+  salonId: string,
+  bookingId: string,
+  startTime: string,
+  endTime: string,
+  reason?: string | null,
+): Promise<{ data: Booking | null; error: string | null }> {
+  try {
+    const { supabase } = await import("@/lib/supabase-client");
+    const { data, error } = await supabase.rpc("direct_reschedule_booking_atomic", {
+      p_salon_id: salonId,
+      p_booking_id: bookingId,
+      p_start_time: startTime,
+      p_end_time: endTime,
+      p_reason: reason?.trim() || null,
+    });
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    const row = (Array.isArray(data) ? data[0] : data) as DirectRescheduleRpcRow | undefined;
+    if (!row?.ok) {
+      return { data: null, error: row?.message || row?.error_code || "Direct reschedule failed" };
+    }
+
+    return {
+      data: {
+        id: row.id,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        status: row.status,
+        is_walk_in: row.is_walk_in,
+        notes: row.notes,
+        customers: row.customers,
+        employees: row.employees,
+        services: row.services,
+      } as Booking,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Unknown error occurred",
+    };
+  }
+}

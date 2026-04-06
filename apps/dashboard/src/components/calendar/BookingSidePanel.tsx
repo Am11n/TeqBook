@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, Clock, User, CreditCard, MessageSquare, AlertTriangle, UserPlus, CalendarPlus, ShieldAlert } from "lucide-react";
+import { Phone, Clock, User, CreditCard, MessageSquare, AlertTriangle, UserPlus, CalendarPlus, ShieldAlert, History } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +14,51 @@ import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { supabase } from "@/lib/supabase-client";
 import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
 import { getNoShowInfo } from "@/lib/services/noshow-policy-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 import { getStatusBadgeClass, formatDuration, PROBLEM_BADGES } from "./booking-panel-helpers";
 import { BookingQuickActions } from "./BookingQuickActions";
+
+type RescheduleActivityRow = {
+  id: string;
+  event_type: string;
+  created_at: string;
+  payload: Record<string, unknown> | null;
+};
+
+function rescheduleActivityLabel(
+  type: string,
+  tc: (typeof translations)["en"]["calendar"],
+): string {
+  switch (type) {
+    case "proposal_created":
+      return tc.rescheduleActCreated;
+    case "proposal_activated":
+      return tc.rescheduleActActivated;
+    case "proposal_superseded":
+      return tc.rescheduleActSuperseded;
+    case "proposal_accepted":
+      return tc.rescheduleActAccepted;
+    case "proposal_declined":
+      return tc.rescheduleActDeclined;
+    case "proposal_expired":
+      return tc.rescheduleActExpired;
+    case "proposal_failed_slot":
+      return tc.rescheduleActFailedSlot;
+    case "notification_failed":
+      return tc.rescheduleActNotificationFailed;
+    case "delivery_recorded":
+      return tc.rescheduleActDelivery;
+    case "direct_reschedule":
+      return tc.rescheduleActDirect;
+    default:
+      return type;
+  }
+}
 
 interface BookingSidePanelProps {
   booking: CalendarBooking | null;
@@ -46,12 +85,19 @@ export function BookingSidePanel({
   const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const tc = translations[appLocale].calendar;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
   const [updating, setUpdating] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [noShowCount, setNoShowCount] = useState(0);
   const [customerBlocked, setCustomerBlocked] = useState(false);
+  const [rescheduleActivity, setRescheduleActivity] = useState<RescheduleActivityRow[]>([]);
+  const [latestProposal, setLatestProposal] = useState<{
+    status: string;
+    delivery_attempts: unknown;
+    token_expires_at: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!booking?.customer_id || !salon?.id) {
@@ -64,6 +110,46 @@ export function BookingSidePanel({
       setCustomerBlocked(data?.is_blocked ?? false);
     });
   }, [booking?.customer_id, salon?.id]);
+
+  useEffect(() => {
+    if (!open || !booking?.id) {
+      setRescheduleActivity([]);
+      setLatestProposal(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [actRes, propRes] = await Promise.all([
+        supabase
+          .from("booking_reschedule_activity")
+          .select("id, event_type, created_at, payload")
+          .eq("booking_id", booking.id)
+          .order("created_at", { ascending: false })
+          .limit(25),
+        supabase
+          .from("booking_reschedule_proposals")
+          .select("status, delivery_attempts, token_expires_at, created_at")
+          .eq("booking_id", booking.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      setRescheduleActivity((actRes.data as RescheduleActivityRow[]) || []);
+      setLatestProposal(
+        propRes.data
+          ? {
+              status: propRes.data.status as string,
+              delivery_attempts: propRes.data.delivery_attempts,
+              token_expires_at: propRes.data.token_expires_at,
+            }
+          : null,
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, booking?.id]);
 
   if (!booking) return null;
 
@@ -213,6 +299,49 @@ export function BookingSidePanel({
               </div>
             </div>
           </div>
+
+          {(rescheduleActivity.length > 0 || latestProposal) && (
+            <div className="border-b px-4 py-3">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                <History className="h-3 w-3" />
+                {tc.rescheduleTimelineTitle}
+              </h3>
+              {latestProposal && (
+                <div className="mb-2 rounded-md bg-muted/40 p-2 text-[10px] text-muted-foreground space-y-1">
+                  <div>
+                    <span className="font-medium text-foreground">{tc.rescheduleStatusPrefix}:</span>{" "}
+                    {latestProposal.status}
+                  </div>
+                  {latestProposal.token_expires_at && ["pending", "notification_pending"].includes(latestProposal.status) && (
+                    <div>
+                      Until: {formatTime(latestProposal.token_expires_at)} ({formatDate(latestProposal.token_expires_at)})
+                    </div>
+                  )}
+                  {Array.isArray(latestProposal.delivery_attempts) && latestProposal.delivery_attempts.length > 0 && (
+                    <div>
+                      {tc.rescheduleActDelivery}:{" "}
+                      {(latestProposal.delivery_attempts as { channel?: string; success?: boolean }[])
+                        .map((a) => `${a.channel || "?"}:${a.success ? "ok" : "fail"}`)
+                        .join(", ")}
+                    </div>
+                  )}
+                </div>
+              )}
+              <ul className="space-y-1.5 text-[10px] text-muted-foreground">
+                {rescheduleActivity.map((row) => (
+                  <li key={row.id} className="border-l-2 border-muted pl-2">
+                    <span className="text-foreground font-medium">
+                      {rescheduleActivityLabel(row.event_type, tc)}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {formatDate(row.created_at)} {formatTime(row.created_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {isActive && (
             <BookingQuickActions

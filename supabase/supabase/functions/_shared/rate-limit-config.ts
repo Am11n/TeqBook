@@ -38,6 +38,18 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "dashboard-reschedule-proposal": {
+    maxAttempts: 15,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "public-booking-reschedule": {
+    maxAttempts: 30,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "public-booking-notifications": {
     maxAttempts: 20,
     windowMs: ONE_MINUTE_MS,

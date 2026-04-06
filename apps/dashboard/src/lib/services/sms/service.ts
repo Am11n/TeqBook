@@ -78,7 +78,12 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
       };
     }
 
-    const claimOrManualEndpoint = input.type === "waitlist_claim" ? "claim-sms" : input.type === "manual" ? "manual-sms" : null;
+    const claimOrManualEndpoint =
+      input.type === "waitlist_claim"
+        ? "claim-sms"
+        : input.type === "manual" || input.type === "booking_reschedule_proposal"
+          ? "manual-sms"
+          : null;
     if (claimOrManualEndpoint) {
       const rlIdentifier = `${input.salonId}:${input.type}:${normalizedPhone}`;
       const rl = await checkRateLimit(rlIdentifier, claimOrManualEndpoint, {

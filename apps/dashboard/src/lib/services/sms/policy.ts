@@ -16,9 +16,23 @@ const DEFAULT_UNIT_PRICE_BY_PLAN: Record<PlanType, number> = {
 };
 
 const ALLOWED_TYPES_BY_PLAN: Record<PlanType, SmsType[]> = {
-  starter: ["booking_confirmation", "booking_reminder", "waitlist_claim"],
-  pro: ["booking_confirmation", "booking_reminder", "booking_cancellation", "waitlist_claim", "manual"],
-  business: ["booking_confirmation", "booking_reminder", "booking_cancellation", "waitlist_claim", "manual"],
+  starter: ["booking_confirmation", "booking_reminder", "waitlist_claim", "booking_reschedule_proposal"],
+  pro: [
+    "booking_confirmation",
+    "booking_reminder",
+    "booking_cancellation",
+    "waitlist_claim",
+    "booking_reschedule_proposal",
+    "manual",
+  ],
+  business: [
+    "booking_confirmation",
+    "booking_reminder",
+    "booking_cancellation",
+    "waitlist_claim",
+    "booking_reschedule_proposal",
+    "manual",
+  ],
 };
 
 export async function resolveSmsPolicyForSalon(salonId: string): Promise<{

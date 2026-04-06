@@ -11,6 +11,11 @@
 
 ---
 
+## 2026-04-06
+
+- [remote] `supabase db push`: `pgcrypto` sikret (`20260406140400`); `create_booking_reschedule_proposal` / `respond_booking_reschedule_proposal` bruker `extensions.gen_random_bytes` og `extensions.digest` slik at `SET search_path = public` ikke skjuler pgcrypto (`20260406140401`, `20260406140402`). Fikser «function gen_random_bytes(integer) does not exist» ved «Send til kunde».
+- [remote] `supabase db push`: `bookings.updated_at` + trigger; `booking_reschedule_proposals` / `booking_reschedule_activity` + RLS; RPC-er `create_booking_reschedule_proposal`, `activate_booking_reschedule_proposal`, `respond_booking_reschedule_proposal`, `expire_stale_booking_reschedule_proposals`, `direct_reschedule_booking_atomic`; pg_cron `expire-booking-reschedule-proposals` (minutely). Migrasjoner: `20260406140000`–`20260406140300`, `20260406140200`–`20260406140207`.
+
 ## 2026-03-29
 
 - [pilot / dokumentasjon] Skrev `docs/operations/pilot-supabase-migrasjon-retrospektiv.md` (full retrospektiv på pilot-`db push`, CLI-feil, idempotens, legacy-filer, sjekklister). Etablerte denne changelog-filen for daglige notater.

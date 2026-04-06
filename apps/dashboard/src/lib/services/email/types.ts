@@ -56,6 +56,23 @@ export interface SendBookingCancellationInput {
   timezone?: string | null;
 }
 
+export interface SendRescheduleProposalEmailInput {
+  recipientEmail: string;
+  salonName: string;
+  serviceName: string;
+  customerName: string;
+  /** ISO strings for display */
+  previousStartIso: string;
+  previousEndIso: string;
+  proposedStartIso: string;
+  proposedEndIso: string;
+  timezone: string;
+  /** Public page where the customer can accept or decline (POST). */
+  respondUrl: string;
+  language?: string;
+  salonId?: string | null;
+}
+
 export interface SendPaymentFailureInput {
   salonName: string;
   recipientEmail: string;

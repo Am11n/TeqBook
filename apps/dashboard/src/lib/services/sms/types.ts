@@ -5,6 +5,7 @@ export type SmsType =
   | "booking_reminder"
   | "booking_cancellation"
   | "waitlist_claim"
+  | "booking_reschedule_proposal"
   | "manual";
 
 export type SmsLogStatus =

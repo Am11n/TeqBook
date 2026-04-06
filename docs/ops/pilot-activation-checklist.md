@@ -15,6 +15,14 @@ Use this checklist before sharing TeqBook with pilot salons in `pilot-production
 - [x] No active Sev1 incident is open.
 - [x] Designated on-call owner is assigned for the current week.
 
+### Email (re-integration checklist)
+
+Runbook: [`docs/ops/pilot-resend-integration.md`](./pilot-resend-integration.md).
+
+- [ ] **Dashboard (Vercel):** `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_FROM_NAME` set on the **dashboard** project; domain verified in Resend; redeploy after changes.
+- [ ] **Supabase Auth:** Custom SMTP enabled (e.g. Resend SMTP) for password reset / auth emails.
+- [ ] **Proof:** test email from dashboard settings + row in `email_log` with `status = sent` (or Resend dashboard delivery).
+
 ## 2) Core Product Flows (Must Pass)
 
 - [x] Signup, login, forgot password, and logout work.

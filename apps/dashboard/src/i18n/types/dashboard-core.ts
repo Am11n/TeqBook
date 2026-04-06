@@ -329,4 +329,28 @@ export type CalendarMessages = {
   commandPaletteNoMatchEnterSearch: string;
   commandPaletteDateModeHint: string;
   commandGoToDate: string;
+  /** Reschedule: customer approval flow */
+  rescheduleModalTitle: string;
+  rescheduleSendToCustomer: string;
+  rescheduleMoveNow: string;
+  rescheduleBypassDialogTitle: string;
+  rescheduleBypassReasonLabel: string;
+  rescheduleBypassConfirm: string;
+  rescheduleSendingProposal: string;
+  rescheduleProposalSent: string;
+  rescheduleProposalFailed: string;
+  rescheduleNoCustomerContact: string;
+  rescheduleTimelineTitle: string;
+  rescheduleTimelineEmpty: string;
+  rescheduleActCreated: string;
+  rescheduleActActivated: string;
+  rescheduleActSuperseded: string;
+  rescheduleActAccepted: string;
+  rescheduleActDeclined: string;
+  rescheduleActExpired: string;
+  rescheduleActFailedSlot: string;
+  rescheduleActNotificationFailed: string;
+  rescheduleActDirect: string;
+  rescheduleActDelivery: string;
+  rescheduleStatusPrefix: string;
 };
