@@ -99,71 +99,74 @@ async function sendCancellationNotifications(
       customerEmail: options?.customerEmail,
     });
 
-    fetch(dashboardApiPath("/api/bookings/send-cancellation/"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bookingId,
-        customerEmail: options?.customerEmail,
-        salonId,
-        language: options?.language || salon?.preferred_language || "en",
-        cancelledBy: "salon",
-        cancellationReason: reason || undefined,
-        bookingData: options?.booking ? {
-          id: options.booking.id,
-          salon_id: salonId,
-          start_time: options.booking.start_time,
-          end_time: options.booking.end_time,
-          status: options.booking.status,
-          is_walk_in: options.booking.is_walk_in,
-          customer_full_name: (options.booking as any).customer_full_name || options.booking.customers?.full_name || "Customer",
-          service_name: (options.booking as any).service?.name || (options.booking as any).services?.name || options.booking.services?.name || undefined,
-          employee_name: (options.booking as any).employee?.name || (options.booking as any).employees?.full_name || options.booking.employees?.full_name || undefined,
-        } : undefined,
-      }),
-    })
-      .then(async (response) => {
-        const text = await response.text();
-        let responseData: { customerEmail?: unknown; salonInApp?: unknown; error?: string };
-        try {
-          responseData = text ? JSON.parse(text) : {};
-        } catch {
-          logWarn("send-cancellation API route returned non-JSON response", {
-            ...logContext,
-            bookingId,
-            status: response.status,
-            statusText: response.statusText,
-            responseText: text.substring(0, 200),
-          });
-          return;
-        }
+    try {
+      // Must await: UI closes the dialog and refetches bookings right after cancelBooking returns;
+      // fire-and-forget fetch is often aborted before the API runs → no customer email.
+      const response = await fetch(dashboardApiPath("/api/bookings/send-cancellation/"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          bookingId,
+          customerEmail: options?.customerEmail,
+          salonId,
+          language: options?.language || salon?.preferred_language || "en",
+          cancelledBy: "salon",
+          cancellationReason: reason || undefined,
+          bookingData: options?.booking ? {
+            id: options.booking.id,
+            salon_id: salonId,
+            start_time: options.booking.start_time,
+            end_time: options.booking.end_time,
+            status: options.booking.status,
+            is_walk_in: options.booking.is_walk_in,
+            customer_full_name: (options.booking as any).customer_full_name || options.booking.customers?.full_name || "Customer",
+            service_name: (options.booking as any).service?.name || (options.booking as any).services?.name || options.booking.services?.name || undefined,
+            employee_name: (options.booking as any).employee?.name || (options.booking as any).employees?.full_name || options.booking.employees?.full_name || undefined,
+          } : undefined,
+        }),
+      });
 
-        if (!response.ok) {
-          logWarn("send-cancellation API route returned error", {
-            ...logContext,
-            bookingId,
-            status: response.status,
-            statusText: response.statusText,
-            error: responseData?.error || "Unknown error",
-            url: response.url,
-          });
-        } else {
-          logInfo("send-cancellation API route succeeded", {
-            ...logContext,
-            bookingId,
-            emailResult: responseData.customerEmail,
-            inAppResult: responseData.salonInApp,
-          });
-        }
-      })
-      .catch((fetchError) => {
-        logWarn("Failed to call send-cancellation API route", {
+      const text = await response.text();
+      let responseData: { customerEmail?: unknown; salonInApp?: unknown; error?: string };
+      try {
+        responseData = text ? (JSON.parse(text) as typeof responseData) : {};
+      } catch {
+        logWarn("send-cancellation API route returned non-JSON response", {
           ...logContext,
           bookingId,
-          fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+          status: response.status,
+          statusText: response.statusText,
+          responseText: text.substring(0, 200),
         });
+        return;
+      }
+
+      if (!response.ok) {
+        logWarn("send-cancellation API route returned error", {
+          ...logContext,
+          bookingId,
+          status: response.status,
+          statusText: response.statusText,
+          error: responseData?.error || "Unknown error",
+          url: response.url,
+        });
+      } else {
+        logInfo("send-cancellation API route succeeded", {
+          ...logContext,
+          bookingId,
+          emailResult: responseData.customerEmail,
+          inAppResult: responseData.salonInApp,
+        });
+      }
+    } catch (fetchError) {
+      logWarn("Failed to call send-cancellation API route", {
+        ...logContext,
+        bookingId,
+        fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
       });
+    }
   } catch (notificationError) {
     logWarn("Exception sending cancellation notifications", {
       ...logContext,

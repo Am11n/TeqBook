@@ -33,7 +33,7 @@ Runbook: [`docs/ops/pilot-resend-integration.md`](./pilot-resend-integration.md)
 - [x] Public booking slug resolves correctly.
 - [x] A real test booking can be created from the public flow.
 - [x] New booking appears in owner dashboard. Calendar not working yet since it is not integrated.
-- [ ] Reschedule flow works end-to-end.
+- [x] Reschedule flow works end-to-end.
 - [ ] Cancel flow works end-to-end.
 
 ## 3) Integrity and Safety Gates (Must Pass)

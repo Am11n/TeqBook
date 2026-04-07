@@ -10,13 +10,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import type { CalendarBooking } from "@/lib/types";
+import type { Booking, CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
 import { supabase } from "@/lib/supabase-client";
-import { updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
+import { cancelBooking, updateBookingStatus, updateBooking } from "@/lib/services/bookings-service";
 import { getNoShowInfo } from "@/lib/services/noshow-policy-service";
 import { formatTimeInTimezone } from "@/lib/utils/timezone";
 import { formatPrice } from "@/lib/utils/services/services-utils";
@@ -180,8 +180,19 @@ export function BookingSidePanel({
   const handleStatusChange = async (newStatus: string) => {
     if (!salon?.id) return;
     setUpdating(true);
-    await updateBookingStatus(salon.id, booking.id, newStatus);
-    setUpdating(false);
+    if (newStatus === "cancelled") {
+      const customerEmail = booking.customers?.email?.trim() || undefined;
+      const { error } = await cancelBooking(salon.id, booking.id, null, {
+        booking: booking as unknown as Booking,
+        customerEmail,
+        language: appLocale,
+      });
+      setUpdating(false);
+      if (error) return;
+    } else {
+      await updateBookingStatus(salon.id, booking.id, newStatus);
+      setUpdating(false);
+    }
     onBookingUpdated();
   };
 
