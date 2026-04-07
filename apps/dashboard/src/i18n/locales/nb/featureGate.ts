@@ -10,4 +10,6 @@ export const featureGate: TranslationNamespaces['featureGate'] = {
     advanced_reportsDescription: "Avanserte rapporter og analyser er tilgjengelig på Pro og høyere.",
     exportsDescription: "Dataeksport til CSV er tilgjengelig på Business-planen.",
     brandingDescription: "Egendefinert merkevare for bookingsiden din er tilgjengelig på Pro og høyere.",
+    minimumProDescription:
+      "Denne siden er tilgjengelig på Pro- og Business-planer. Oppgrader for å fortsette.",
   };

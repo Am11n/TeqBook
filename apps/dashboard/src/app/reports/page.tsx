@@ -11,8 +11,17 @@ import { ReportsStatsGrid } from "@/components/reports/ReportsStatsGrid";
 import { RevenueChart } from "@/components/reports/RevenueChart";
 import { BookingsPerServiceChart } from "@/components/reports/BookingsPerServiceChart";
 import { CapacityUtilisationChart } from "@/components/reports/CapacityUtilisationChart";
+import { FeatureGate } from "@/components/feature-gate";
 
 export default function ReportsPage() {
+  return (
+    <FeatureGate feature="ADVANCED_REPORTS">
+      <ReportsPageContent />
+    </FeatureGate>
+  );
+}
+
+function ReportsPageContent() {
   const { isReady } = useCurrentSalon();
   const [filters, setFilters] = useState<ReportsFilters>({});
   const [showFilters, setShowFilters] = useState(false);

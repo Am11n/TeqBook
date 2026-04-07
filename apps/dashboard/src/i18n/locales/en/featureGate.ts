@@ -10,4 +10,6 @@ export const featureGate: TranslationNamespaces['featureGate'] = {
     advanced_reportsDescription: "Advanced reports and analytics are available on Pro and above.",
     exportsDescription: "Data export to CSV is available on the Business plan.",
     brandingDescription: "Custom branding for your booking page is available on Pro and above.",
+    minimumProDescription:
+      "This page is available on Pro and Business plans. Upgrade to continue.",
   };

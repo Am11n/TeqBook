@@ -66,6 +66,10 @@ export type DashboardMessages = {
   salesNoGiftCardsDescription?: string;
   salesNoPackagesTitle?: string;
   salesNoPackagesDescription?: string;
+  /** Placeholder when Sales module is disabled (see DASHBOARD_SALES_MODULE_ENABLED) */
+  salesModuleUnavailableTitle?: string;
+  salesModuleUnavailableDescription?: string;
+  salesModuleBackToOverview?: string;
   reportsFiltersTitle?: string;
   reportsFiltersClear?: string;
   reportsFiltersShow?: string;

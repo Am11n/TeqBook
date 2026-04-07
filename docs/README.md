@@ -25,6 +25,7 @@ Dette er hoveddokumentasjonen for TeqBook-monorepoet (`apps/*` + `packages/*`).
 - [`backend/sms-architecture.md`](./backend/sms-architecture.md)
 - [`api/README.md`](./api/README.md)
 - [`frontend/ui-composition-patterns.md`](./frontend/ui-composition-patterns.md)
+- [`operations/future-improvements.md`](./operations/future-improvements.md) — planlagt/flagget funksjonalitet (f.eks. Salg)
 
 ## Evidens-prinsipp
 

@@ -10,6 +10,7 @@ import { LivePreviewCard } from "@/components/branding/LivePreviewCard";
 import { BrandingForm } from "@/components/branding/BrandingForm";
 import { supabase } from "@/lib/supabase-client";
 import { Card, Button, Input } from "@teqbook/ui";
+import { FeatureGate } from "@/components/feature-gate";
 
 type PortfolioItem = {
   id: string;
@@ -20,6 +21,14 @@ type PortfolioItem = {
 };
 
 export default function BrandingSettingsPage() {
+  return (
+    <FeatureGate feature="BRANDING" wrapInShell={false}>
+      <BrandingSettingsPageInner />
+    </FeatureGate>
+  );
+}
+
+function BrandingSettingsPageInner() {
   const { locale } = useLocale();
   const { salon } = useCurrentSalon();
   const appLocale = normalizeLocale(locale);

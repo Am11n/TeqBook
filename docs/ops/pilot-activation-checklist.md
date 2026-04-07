@@ -34,13 +34,13 @@ Runbook: [`docs/ops/pilot-resend-integration.md`](./pilot-resend-integration.md)
 - [x] A real test booking can be created from the public flow.
 - [x] New booking appears in owner dashboard. Calendar not working yet since it is not integrated.
 - [x] Reschedule flow works end-to-end.
-- [ ] Cancel flow works end-to-end.
+- [x] Cancel flow works end-to-end.
 
 ## 3) Integrity and Safety Gates (Must Pass)
 
-- [ ] Inactive services/employees are not bookable.
-- [ ] Overlap and invalid-time bookings are blocked.
-- [ ] No tenant isolation issue is observed (salon A cannot see salon B data).
+- [x] Inactive services/employees are not bookable.
+- [x] Overlap and invalid-time bookings are blocked.
+- [x] No tenant isolation issue is observed (salon A cannot see salon B data).
 - [ ] No critical release gate in CI is red for the release candidate.
 
 ## 4) Pilot Operations Readiness

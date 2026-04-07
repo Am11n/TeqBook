@@ -12,7 +12,6 @@ import {
   Package,
   FileCheck,
   HelpCircle,
-  ShoppingBag,
 } from "lucide-react";
 import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
@@ -95,12 +94,6 @@ export function useDashboardMenuItems({
       }
     }
 
-    items.push({
-      href: "/sales/gift-cards",
-      label: texts.sales,
-      icon: ShoppingBag,
-    });
-
     return items;
   }, [
     mounted,
@@ -113,7 +106,6 @@ export function useDashboardMenuItems({
     texts.shifts,
     texts.products,
     texts.reports,
-    texts.sales,
   ]);
 
   const complianceItems = useMemo<MenuItem[]>(() => {

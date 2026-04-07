@@ -55,5 +55,7 @@ export type FeatureGateMessages = {
   advanced_reportsDescription?: string;
   exportsDescription?: string;
   brandingDescription?: string;
+  /** Shown when page requires Pro or Business (plan gate) */
+  minimumProDescription?: string;
   [key: string]: string | undefined;
 };

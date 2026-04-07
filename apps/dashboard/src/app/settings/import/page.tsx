@@ -15,8 +15,17 @@ import { PreviewStep } from "./_components/PreviewStep";
 import { ImportingStep } from "./_components/ImportingStep";
 import { DoneStep } from "./_components/DoneStep";
 import { ImportHistory } from "./_components/ImportHistory";
+import { FeatureGate } from "@/components/feature-gate";
 
 export default function ImportPage() {
+  return (
+    <FeatureGate minPlan="pro" wrapInShell={false}>
+      <ImportPageContent />
+    </FeatureGate>
+  );
+}
+
+function ImportPageContent() {
   const { salon } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
@@ -125,3 +134,4 @@ export default function ImportPage() {
     </div>
   );
 }
+

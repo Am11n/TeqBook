@@ -9,6 +9,7 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { resolveSettings } from "./_helpers/resolve-settings";
 import { usePathname, useRouter } from "next/navigation";
 import { useFeatures } from "@/lib/hooks/use-features";
+import { useCurrentSalon } from "@/components/salon-provider";
 
 interface TabGuardContextValue {
   registerDirtyState: (tabId: string, isDirty: boolean) => void;
@@ -29,8 +30,12 @@ export function useTabGuard() {
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const { locale } = useLocale();
   const { hasFeature } = useFeatures();
+  const { salon, isReady } = useCurrentSalon();
   const [featuresMounted, setFeaturesMounted] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
+  const plan = (salon?.plan || "starter") as "starter" | "pro" | "business";
+  const isProOrHigher = isReady && plan !== "starter";
 
   useEffect(() => {
     setFeaturesMounted(true);
@@ -57,11 +62,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { id: "general", label: t.generalTab, href: "/settings/general" },
     { id: "opening-hours", label: t.openingHoursTab, href: "/settings/opening-hours" },
     { id: "no-show-policy", label: t.noShowTab, href: "/settings/no-show-policy" },
-    { id: "import", label: t.importTab, href: "/settings/import" },
+    { id: "import", label: t.importTab, href: "/settings/import", visible: featuresMounted && isProOrHigher },
     { id: "notifications", label: t.notificationsTab, href: "/settings/notifications" },
     { id: "billing", label: t.billingTab, href: "/settings/billing" },
     { id: "security", label: t.securityTab, href: "/settings/security" },
-    { id: "audit-trail", label: t.auditTrailTab, href: "/settings/audit-trail" },
+    { id: "audit-trail", label: t.auditTrailTab, href: "/settings/audit-trail", visible: featuresMounted && isProOrHigher },
     { id: "branding", label: t.brandingTab, href: "/settings/branding", visible: featuresMounted && hasFeature("BRANDING") },
   ];
 

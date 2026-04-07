@@ -19,8 +19,17 @@ import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
 import { resolveSettings } from "../_helpers/resolve-settings";
 import { DataTable, type ColumnDef } from "@/components/shared/data-table";
+import { FeatureGate } from "@/components/feature-gate";
 
 export default function AuditTrailPage() {
+  return (
+    <FeatureGate minPlan="pro" wrapInShell={false}>
+      <AuditTrailPageContent />
+    </FeatureGate>
+  );
+}
+
+function AuditTrailPageContent() {
   const { salon, loading: contextLoading } = useCurrentSalon();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);

@@ -40,6 +40,10 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     helpDescription: "Feedback and support",
     salesTabGiftCards: "Gift Cards",
     salesTabPackages: "Packages",
+    salesModuleUnavailableTitle: "Sales is not available yet",
+    salesModuleUnavailableDescription:
+      "Gift cards and packages are being improved before we open this area to everyone. Check back later or contact support if you need this urgently.",
+    salesModuleBackToOverview: "Back to overview",
     helpTabFeedback: "Feedback",
     helpTabSupport: "Support",
     reportsDescription: "Analytics, commissions, capacity and data exports",

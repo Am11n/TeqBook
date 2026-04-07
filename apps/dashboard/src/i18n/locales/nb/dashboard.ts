@@ -41,6 +41,10 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     helpDescription: "Tilbakemelding og support",
     salesTabGiftCards: "Gavekort",
     salesTabPackages: "Pakker",
+    salesModuleUnavailableTitle: "Salg er ikke tilgjengelig ennå",
+    salesModuleUnavailableDescription:
+      "Gavekort og pakker jobber vi videre med før området åpnes for alle. Kom tilbake senere, eller ta kontakt med support hvis du trenger dette snart.",
+    salesModuleBackToOverview: "Tilbake til oversikten",
     helpTabFeedback: "Tilbakemelding",
     helpTabSupport: "Hjelpesenter",
     reportsDescription: "Analyse, provisjon, kapasitet og dataeksport",
