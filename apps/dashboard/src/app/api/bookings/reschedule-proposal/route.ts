@@ -22,9 +22,52 @@ function normalizeToE164(input?: string | null): string | null {
   return E164_REGEX.test(normalized) ? normalized : null;
 }
 
-function publicAppBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "";
+function publicAppBaseUrlFromEnv(): string {
+  const raw =
+    (process.env.NEXT_PUBLIC_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim();
   return raw.replace(/\/$/, "");
+}
+
+/**
+ * Base URL for links sent to customers (public app), e.g. https://teqbook.com
+ * Env is required for local dev (dashboard vs public on different ports). On production,
+ * Origin/Referer can backstop missing Vercel env when staff use the real domain.
+ */
+function resolvePublicAppBaseUrl(request: NextRequest): string | null {
+  const fromEnv = publicAppBaseUrlFromEnv();
+  if (fromEnv) return fromEnv;
+
+  const publicOrigin = (url: string): string | null => {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+      // Local: dashboard (3002) and public (3001) differ — avoid wrong links without env.
+      if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return null;
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      return null;
+    }
+  };
+
+  const origin = request.headers.get("origin");
+  if (origin) {
+    const o = publicOrigin(origin.trim());
+    if (o) return o;
+  }
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    const o = publicOrigin(referer.trim());
+    if (o) return o;
+  }
+
+  const xfHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const xfProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  if (xfHost && !xfHost.startsWith("localhost") && !xfHost.startsWith("127.0.0.1")) {
+    return `${xfProto}://${xfHost}`.replace(/\/$/, "");
+  }
+
+  return null;
 }
 
 type Body = {
@@ -99,9 +142,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const publicBase = publicAppBaseUrl();
+    const publicBase = resolvePublicAppBaseUrl(request);
     if (!publicBase) {
-      logError("reschedule-proposal missing NEXT_PUBLIC_APP_URL", new Error("no public base"), { requestId });
+      logError(
+        "reschedule-proposal missing public app base URL",
+        new Error("Set NEXT_PUBLIC_APP_URL or NEXT_PUBLIC_PUBLIC_APP_URL on the dashboard app (localhost: set public app URL explicitly)"),
+        { requestId },
+      );
       return NextResponse.json({ error: "Server is not configured with a public app URL" }, { status: 500 });
     }
 
