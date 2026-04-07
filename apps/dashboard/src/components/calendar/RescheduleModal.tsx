@@ -99,10 +99,11 @@ export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: 
     setSendLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/bookings/reschedule-proposal", {
+      const res = await fetch("/api/bookings/reschedule-proposal/", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
+        keepalive: true,
         body: JSON.stringify({
           bookingId: booking.id,
           salonId: salon.id,

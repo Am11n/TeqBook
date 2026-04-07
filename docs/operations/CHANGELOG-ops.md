@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-04-07
+
+- [remote] `supabase db push`: `GRANT SELECT` på `booking_reschedule_proposals` / `booking_reschedule_activity` til `authenticated` (+ `service_role` ALL). Fikser PostgREST **403** ved lesing fra dashboard (tabell hadde RLS men manglet tabellrettigheter). Migrasjon: `20260407105000_booking_reschedule_table_grants.sql`.
+
 ## 2026-04-06
 
 - [remote] `supabase db push`: `pgcrypto` sikret (`20260406140400`); `create_booking_reschedule_proposal` / `respond_booking_reschedule_proposal` bruker `extensions.gen_random_bytes` og `extensions.digest` slik at `SET search_path = public` ikke skjuler pgcrypto (`20260406140401`, `20260406140402`). Fikser «function gen_random_bytes(integer) does not exist» ved «Send til kunde».
