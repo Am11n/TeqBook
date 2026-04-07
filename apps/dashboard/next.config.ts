@@ -11,11 +11,19 @@ const supabaseHost = (() => {
 
 const fallbackSupabaseHosts = ["qacgwgecrsinwjvuiobd.supabase.co"];
 
+const dashboardBasePath =
+  process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH || (process.env.VERCEL === "1" ? "/dashboard" : "");
+
 const nextConfig: NextConfig = {
   // Served at teqbook.com/dashboard when behind Public app rewrites.
   // On Vercel, always use /dashboard as basePath so asset URLs are correct.
   // Locally (no VERCEL env), basePath is empty so / works on localhost:3002.
-  basePath: process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH || (process.env.VERCEL === "1" ? "/dashboard" : ""),
+  basePath: dashboardBasePath,
+
+  // Inlined into the client bundle so `fetch()` can use the same prefix as `basePath`.
+  env: {
+    NEXT_PUBLIC_DASHBOARD_BASE_PATH: dashboardBasePath,
+  },
 
   // Dashboard app: standard Next.js config
   images: {

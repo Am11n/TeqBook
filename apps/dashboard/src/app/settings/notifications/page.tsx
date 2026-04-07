@@ -20,6 +20,7 @@ import { Bell, Mail, CalendarCheck, CalendarX, UserPlus, Check, AlertCircle } fr
 import { NotificationItem } from "./_components/NotificationItem";
 import { TestEmailInput } from "./_components/TestEmailInput";
 import { DEFAULT_VALUES, PREVIEW_TEMPLATES, type NotificationForm } from "./_components/constants";
+import { dashboardApiPath } from "@/lib/dashboard-api-path";
 
 export default function NotificationsPage() {
   const { locale } = useLocale();
@@ -70,7 +71,7 @@ export default function NotificationsPage() {
     setSendingTest(true);
     setTestErrorMessage(null);
     try {
-      const res = await fetch("/api/settings/send-test-notification", {
+      const res = await fetch(dashboardApiPath("/api/settings/send-test-notification/"), {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientEmail, group, salonId: salon.id }),

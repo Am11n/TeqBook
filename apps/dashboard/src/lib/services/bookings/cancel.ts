@@ -5,6 +5,7 @@ import type { Booking } from "@/lib/types";
 import { logInfo, logError, logWarn } from "@/lib/services/logger";
 import { cancelReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
+import { dashboardApiPath } from "@/lib/dashboard-api-path";
 import { logBookingEvent } from "@/lib/services/audit-trail-service";
 
 /**
@@ -98,7 +99,7 @@ async function sendCancellationNotifications(
       customerEmail: options?.customerEmail,
     });
 
-    fetch("/api/bookings/send-cancellation", {
+    fetch(dashboardApiPath("/api/bookings/send-cancellation/"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -188,7 +189,7 @@ async function checkWaitlistForCancelledSlot(salonId: string, bookingId: string)
         : null;
 
       if (bookingDate) {
-        fetch("/api/waitlist/process-cancellation", {
+        fetch(dashboardApiPath("/api/waitlist/process-cancellation/"), {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

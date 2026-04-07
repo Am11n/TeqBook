@@ -8,6 +8,7 @@ import { scheduleReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logBookingEvent } from "@/lib/services/audit-trail-service";
 import { getCurrentUser } from "@/lib/services/auth-service";
+import { dashboardApiPath } from "@/lib/dashboard-api-path";
 
 /**
  * Create a new booking with business logic
@@ -143,7 +144,7 @@ async function sendBookingNotifications(
       });
 
       try {
-        const response = await fetch("/api/bookings/send-notifications/", {
+        const response = await fetch(dashboardApiPath("/api/bookings/send-notifications/"), {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

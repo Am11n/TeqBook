@@ -18,6 +18,7 @@ import { translations } from "@/i18n/translations";
 import { validateBookingChange } from "@/lib/repositories/schedule-segments";
 import { directRescheduleBooking } from "@/lib/services/bookings-service";
 import { localISOStringToUTC } from "@/lib/utils/timezone";
+import { dashboardApiPath } from "@/lib/dashboard-api-path";
 import type { CalendarBooking, ConflictResponse, SuggestedSlot } from "@/lib/types";
 
 interface RescheduleModalProps {
@@ -99,7 +100,7 @@ export function RescheduleModal({ booking, open, onOpenChange, onRescheduled }: 
     setSendLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/bookings/reschedule-proposal/", {
+      const res = await fetch(dashboardApiPath("/api/bookings/reschedule-proposal/"), {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

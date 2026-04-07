@@ -7,6 +7,7 @@ import {
   type WaitlistEntry,
   type WaitlistPreferenceMode,
 } from "@/lib/repositories/waitlist";
+import { dashboardApiPath } from "@/lib/dashboard-api-path";
 
 export type { WaitlistEntry };
 
@@ -97,7 +98,7 @@ export async function notifyWithClaimOffer(input: {
   const { fallbackError, ...payload } = input;
   const fallback = fallbackError ?? "Failed to send offer";
   try {
-    const res = await fetch("/api/waitlist/notify", {
+    const res = await fetch(dashboardApiPath("/api/waitlist/notify/"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -119,7 +120,7 @@ export async function convertWaitlistToBooking(input: {
   const { fallbackError, ...payload } = input;
   const fallback = fallbackError ?? "Failed to convert waitlist entry";
   try {
-    const res = await fetch("/api/waitlist/convert-booking", {
+    const res = await fetch(dashboardApiPath("/api/waitlist/convert-booking/"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -143,7 +144,7 @@ export async function setPriorityOverride(input: {
   const { fallbackError, ...payload } = input;
   const fallback = fallbackError ?? "Failed to update priority override";
   try {
-    const res = await fetch("/api/waitlist/priority-override", {
+    const res = await fetch(dashboardApiPath("/api/waitlist/priority-override/"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
