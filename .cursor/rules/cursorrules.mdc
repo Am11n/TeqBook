@@ -194,6 +194,7 @@ import {
 - Keep files under 300 lines when practical; if a file grows beyond that, split by concern (for example locale dictionaries into dedicated i18n modules per feature/locale).
 - For large translation dictionaries, prefer separate locale/i18n files over embedding dictionaries inside page/component files.
 - If a change requires a dev server restart (env/config/dependency/runtime state), the agent should restart it proactively without asking the user to do it.
+- After editing `apps/*/.env.local`, `.env`, or root env files that affect an app, restart that app’s dev server (e.g. `pnpm dev:public` on port 3001, dashboard on 3002) without being asked — Next does not hot-reload env vars.
 
 ## Public Profile i18n
 

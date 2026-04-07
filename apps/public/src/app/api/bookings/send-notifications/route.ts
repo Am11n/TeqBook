@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     const { data: bookingRow, error: bookingError } = await admin
       .from("bookings")
       .select(
-        "id, salon_id, start_time, end_time, status, is_walk_in, customers(full_name, email, phone), employees(full_name), services(name)",
+        "id, salon_id, start_time, end_time, status, is_walk_in, customers(id, full_name, email, phone), employees(full_name), services(name)",
       )
       .eq("id", bookingId)
       .eq("salon_id", salonId)
@@ -180,21 +180,50 @@ export async function POST(request: NextRequest) {
       ? bookingRow.services[0]
       : bookingRow.services;
 
+    const customerRecordId =
+      bookingCustomer &&
+      typeof bookingCustomer === "object" &&
+      "id" in bookingCustomer &&
+      typeof (bookingCustomer as { id: unknown }).id === "string"
+        ? (bookingCustomer as { id: string }).id
+        : null;
+
     const authoritativeEmail = bookingCustomer?.email?.trim() || null;
     const authoritativePhone = bookingCustomer?.phone?.trim() || null;
+    const bodyEmail = customerEmail?.trim() || null;
 
-    if (!authoritativeEmail) {
-      return NextResponse.json(
-        { error: "Booking does not have a customer email address" },
-        { status: 400 },
-      );
-    }
-
-    if (customerEmail && customerEmail.trim().toLowerCase() !== authoritativeEmail.toLowerCase()) {
+    if (
+      authoritativeEmail &&
+      bodyEmail &&
+      authoritativeEmail.toLowerCase() !== bodyEmail.toLowerCase()
+    ) {
       return NextResponse.json(
         { error: "Provided customerEmail does not match booking owner" },
         { status: 403 },
       );
+    }
+
+    const recipientEmail = authoritativeEmail || bodyEmail || null;
+
+    if (!authoritativeEmail && bodyEmail && customerRecordId) {
+      const { error: backfillError } = await admin
+        .from("customers")
+        .update({ email: bodyEmail })
+        .eq("id", customerRecordId)
+        .eq("salon_id", salonId);
+
+      if (backfillError) {
+        logWarn("Could not backfill customer email from booking notification request", {
+          ...logContext,
+          customerId: customerRecordId,
+          error: backfillError.message,
+        });
+      } else {
+        logInfo("Backfilled customer email from public send-notifications body", {
+          ...logContext,
+          customerId: customerRecordId,
+        });
+      }
     }
 
     const { data: existingEvent } = await admin
@@ -276,30 +305,34 @@ export async function POST(request: NextRequest) {
       salon: salon ? { name: salon.name, time_format: salon.time_format ?? null } : null,
     } as any;
 
-    // Send confirmation email (do not fail the request if email fails)
-    logInfo("Attempting to send public booking confirmation email", {
+    // Send confirmation email when the booking has a customer email (do not fail the request if email fails)
+    logInfo("Public booking confirmation email", {
       ...logContext,
       timezone,
       language: effectiveLanguage,
       hasResendApiKey: !!process.env.RESEND_API_KEY,
+      willSendEmail: !!recipientEmail,
+      usedBodyEmailFallback: Boolean(!authoritativeEmail && bodyEmail),
     });
 
-    const emailResult = await sendBookingConfirmation({
-      booking: bookingForEmail,
-      recipientEmail: authoritativeEmail,
-      language: effectiveLanguage,
-      salonId,
-      timezone,
-    }).catch((emailError) => {
-      logWarn("Failed to send public booking confirmation email", {
-        ...logContext,
-        emailError: emailError instanceof Error ? emailError.message : "Unknown error",
-      });
-      return {
-        data: null,
-        error: emailError instanceof Error ? emailError.message : "Unknown error",
-      };
-    });
+    const emailResult = recipientEmail
+      ? await sendBookingConfirmation({
+          booking: bookingForEmail,
+          recipientEmail,
+          language: effectiveLanguage,
+          salonId,
+          timezone,
+        }).catch((emailError) => {
+          logWarn("Failed to send public booking confirmation email", {
+            ...logContext,
+            emailError: emailError instanceof Error ? emailError.message : "Unknown error",
+          });
+          return {
+            data: null,
+            error: emailError instanceof Error ? emailError.message : "Unknown error",
+          };
+        })
+      : { data: null, error: null, skipped: true as const };
 
     // Schedule reminders (24h and 2h before appointment)
     const reminderResult = await scheduleReminders({
@@ -447,7 +480,13 @@ export async function POST(request: NextRequest) {
           error: rawPhone ? "Customer phone must be valid E.164 format" : "No customer phone provided",
         };
 
-    const anyDeliverySuccess = Boolean(emailResult?.data || smsResult?.sent || inAppResult?.success);
+    // Require successful email when we have a recipient; otherwise in-app/SMS-only success
+    // incorrectly marks the event "sent" and hides Resend failures (user sees no mail).
+    const emailChannelOk = !recipientEmail || Boolean(emailResult?.data);
+    const someChannelDelivered = Boolean(
+      emailResult?.data || smsResult?.sent || inAppResult?.success,
+    );
+    const anyDeliverySuccess = emailChannelOk && someChannelDelivered;
     if (anyDeliverySuccess) {
       await admin
         .from("notification_events")

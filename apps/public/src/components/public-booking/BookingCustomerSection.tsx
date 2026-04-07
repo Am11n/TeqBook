@@ -158,6 +158,9 @@ export function BookingCustomerSection({
             </p>
           ) : null}
         </div>
+        <p className="text-xs font-medium" style={{ color: tokens.colors.text }}>
+          {t.contactConfirmationIntro}
+        </p>
         <div className="space-y-1 text-sm">
           <label className="text-[13px] font-medium text-[var(--pb-muted)]" htmlFor="customer_email">
             {t.emailLabelPlain}

@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve customer email (prefer booking, then body)
+    // Resolve customer email (prefer booking payload, then body, then linked customer row — dashboard sends bookingData without DB email)
     const customerPhoneFromRow = (() => {
       const c = Array.isArray((bookingRow as { customers?: unknown }).customers)
         ? (bookingRow as { customers?: { phone?: string | null }[] }).customers?.[0]
@@ -183,7 +183,16 @@ export async function POST(request: NextRequest) {
       return (c as { phone?: string | null } | null)?.phone ?? null;
     })();
 
-    let customerEmail = booking.customer_email || bodyCustomerEmail || null;
+    const customerEmailFromRow = (() => {
+      const c = Array.isArray((bookingRow as { customers?: unknown }).customers)
+        ? (bookingRow as { customers?: { email?: string | null }[] }).customers?.[0]
+        : (bookingRow as { customers?: { email?: string | null } | null }).customers;
+      const e = (c as { email?: string | null } | null)?.email;
+      return typeof e === "string" && e.trim() ? e.trim() : null;
+    })();
+
+    let customerEmail =
+      booking.customer_email || bodyCustomerEmail || customerEmailFromRow || null;
 
     if (!customerEmail) {
       logWarn("Booking missing customer email", {

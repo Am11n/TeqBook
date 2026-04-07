@@ -19,10 +19,14 @@ These variables are used across multiple apps:
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 
-**Optional:**
-- `RESEND_API_KEY` - Only if public app sends emails (usually not needed)
-- `EMAIL_FROM` - Email sender address
+**Required for booking confirmation email (and related server sends):**
+- `RESEND_API_KEY` - Public app’s `POST /api/bookings/send-notifications` uses Resend like the dashboard
+- `EMAIL_FROM` - Email sender address (verified domain in Resend)
 - `EMAIL_FROM_NAME` - Email sender name
+
+**Optional:**
+- `EMAIL_REPLY_TO`, `EMAIL_UNSUBSCRIBE`
+- `TWILIO_*` / `SMS_PROVIDER` - if SMS is sent from the public notification route
 
 **Security Notes:**
 - No session cookies needed (public app)

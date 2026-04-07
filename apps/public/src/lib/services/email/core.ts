@@ -24,7 +24,7 @@ function getResendClient(): Resend | null {
 
 export async function sendEmail(
   input: SendEmailInput
-): Promise<{ data: { id: string } | null; error: string | null }> {
+): Promise<{ data: { id: string } | null; error: string | null; simulated?: boolean }> {
   const correlationId = crypto.randomUUID();
   const logContext = {
     correlationId,
@@ -59,6 +59,7 @@ export async function sendEmail(
     }
 
     let providerResponse;
+    let emailSimulated = false;
     try {
       const client = getResendClient();
 
@@ -71,6 +72,7 @@ export async function sendEmail(
       });
 
       if (!client) {
+        emailSimulated = true;
         logWarn("Resend client is null - simulating email send (no API key in dev/test)", logContext);
         providerResponse = {
           data: { id: `test-email-${Date.now()}` },
@@ -144,11 +146,16 @@ export async function sendEmail(
       });
     }
 
-    logInfo("Email sent successfully", { ...logContext, providerId: providerResponse.data?.id });
+    logInfo("Email sent successfully", {
+      ...logContext,
+      providerId: providerResponse.data?.id,
+      simulated: emailSimulated,
+    });
 
     return {
       data: { id: providerResponse.data?.id || emailLogResult.data?.id || "" },
       error: null,
+      ...(emailSimulated ? { simulated: true as const } : {}),
     };
   } catch (error) {
     logError("Exception sending email", error, logContext);

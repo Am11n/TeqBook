@@ -24,11 +24,11 @@ export const enPartA = {
     selectSlotPlaceholder: "Select a time…",
     step3Title: "Your details",
     step3Description:
-      "We use this to confirm your booking and optionally send a reminder. Payment always happens in the salon.",
+      "We use this to confirm your booking and send reminders. Payment always happens in the salon.",
     nameLabel: "Name",
-    emailLabel: "Email (optional)",
+    emailLabel: "Email",
     emailPlaceholder: "you@example.com",
-    phoneLabel: "Phone (optional)",
+    phoneLabel: "Phone",
     phonePlaceholder: "+47 99 99 99 99",
     submitSaving: "Sending request…",
     submitLabel: "Confirm request",
@@ -57,7 +57,7 @@ export const enPartA = {
       "Join the waitlist and the salon can contact you if a slot opens up.",
     waitlistButton: "Join waitlist",
     waitlistSubmitting: "Joining waitlist...",
-    waitlistContactRequired: "Please provide email or phone to join the waitlist.",
+    waitlistContactRequired: "Enter email or phone so we can reach you on the waitlist.",
     waitlistSuccess:
       "You're on the waitlist. The salon will contact you if a matching slot opens.",
     waitlistAlreadyJoined:
@@ -103,11 +103,13 @@ export const enPartA = {
     waitlistSecureLinkInfo:
       "You will receive a message with a secure confirmation link if a slot becomes available.",
     waitlistCanLeavePage: "You can leave this page now.",
-    bookingContactRequired: "Please provide email or phone so we can send booking confirmation.",
+    bookingContactRequired: "Enter email or phone so we can send your booking confirmation (by email or SMS).",
     emailLabelPlain: "Email",
     phoneLabelPlain: "Phone",
     phoneFormatHint: "Use international format, for example +47 99 99 99 99",
     nameRequiredHint: "Please enter your name.",
-    contactRequiredHint: "Please provide at least email or phone.",
+    contactConfirmationIntro:
+      "To receive confirmation by email or SMS, enter at least one: email or phone number.",
+    contactRequiredHint: "Email or phone is required for booking confirmation.",
   },
 } satisfies Pick<TranslationNamespaces, "publicBooking">;

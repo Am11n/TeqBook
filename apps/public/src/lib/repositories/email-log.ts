@@ -4,6 +4,19 @@
 // Repository for email delivery status tracking
 
 import { supabase } from "@/lib/supabase-client";
+import { getAdminClient } from "@/lib/supabase/admin";
+
+/** API routes run on the server; anon RLS often blocks email_log writes — use service role there. */
+function supabaseForEmailLogWrite() {
+  if (typeof window !== "undefined") {
+    return supabase;
+  }
+  try {
+    return getAdminClient();
+  } catch {
+    return supabase;
+  }
+}
 
 export type EmailLogStatus = "pending" | "sent" | "delivered" | "failed" | "bounced";
 
@@ -58,7 +71,7 @@ export async function createEmailLog(
   input: CreateEmailLogInput
 ): Promise<{ data: EmailLog | null; error: string | null }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseForEmailLogWrite()
       .from("email_log")
       .insert({
         salon_id: input.salon_id || null,
@@ -114,7 +127,7 @@ export async function updateEmailLogStatus(
       updateData.sent_at = new Date().toISOString();
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseForEmailLogWrite()
       .from("email_log")
       .update(updateData)
       .eq("id", input.id)

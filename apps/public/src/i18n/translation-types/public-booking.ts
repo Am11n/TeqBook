@@ -94,5 +94,7 @@ export type PublicBookingMessages = {
   joinWaitlist: string;
   mobileChangeSelectionLabel: string;
   nameRequiredHint: string;
+  /** Shown above email/phone: at least one is required for confirmation (email or SMS). */
+  contactConfirmationIntro: string;
   contactRequiredHint: string;
 };

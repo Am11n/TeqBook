@@ -177,4 +177,65 @@ describe("Public bookings/send-notifications rate limiting", () => {
     expect(mockIncrementRateLimit).toHaveBeenCalledOnce();
     expect(mockSendBookingConfirmation).toHaveBeenCalledOnce();
   });
+
+  it("returns 200 and skips email when booking has phone but no customer email", async () => {
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 19,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
+    mockIncrementRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 18,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
+    mockGetSalonById.mockResolvedValue({
+      data: { id: "salon-1", name: "Test Salon", timezone: "UTC", preferred_language: "en" },
+      error: null,
+    });
+    mockAdminMaybeSingle.mockResolvedValue({
+      data: {
+        id: "booking-1",
+        salon_id: "salon-1",
+        start_time: "2026-03-01T10:00:00Z",
+        end_time: "2026-03-01T11:00:00Z",
+        status: "confirmed",
+        is_walk_in: false,
+        customers: { full_name: "Jane Doe", email: null, phone: "+4799999999" },
+        employees: { full_name: "Alex" },
+        services: { name: "Cut" },
+      },
+      error: null,
+    });
+    mockScheduleReminders.mockResolvedValue({ error: null });
+    mockRpc.mockResolvedValue({ data: 1, error: null });
+    mockEventMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockEventUpsert.mockReturnValue({
+      select: () => ({
+        maybeSingle: () => Promise.resolve({ data: { id: "job-1" }, error: null }),
+      }),
+    });
+    mockEventUpdateEq.mockResolvedValue({ error: null });
+    mockAttemptInsert.mockResolvedValue({ error: null });
+
+    const req = new NextRequest("http://localhost/api/bookings/send-notifications", {
+      method: "POST",
+      body: JSON.stringify({
+        bookingId: "booking-1",
+        salonId: "salon-1",
+        customerPhone: "+4799999999",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.email?.skipped).toBe(true);
+    expect(mockSendBookingConfirmation).not.toHaveBeenCalled();
+    expect(mockIncrementRateLimit).toHaveBeenCalledOnce();
+  });
 });

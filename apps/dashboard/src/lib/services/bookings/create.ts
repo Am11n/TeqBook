@@ -93,7 +93,10 @@ export async function createBooking(
         });
       });
 
-      if (input.customer_email && result.data) {
+      if (result.data) {
+        // Always notify after create when possible: server resolves email from the booking's customer row
+        // if the form omitted it (e.g. existing customer). Request must be awaited — fire-and-forget fetch
+        // is aborted when the dialog closes / state resets.
         await sendBookingNotifications(input, result.data, logContext);
       }
     }
@@ -130,82 +133,88 @@ async function sendBookingNotifications(
       salon: salon ? { name: salon.name } : null,
     };
 
+    const customerEmailForNotify = input.customer_email?.trim() || null;
+
     if (typeof window !== "undefined") {
       logInfo("Calling send-notifications API route from browser", {
         ...logContext,
         bookingId: booking.id,
-        customerEmail: input.customer_email,
+        customerEmail: customerEmailForNotify,
       });
 
-      fetch("/api/bookings/send-notifications", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: booking.id,
-          customerEmail: input.customer_email,
-          salonId: input.salon_id,
-          language: salon?.preferred_language || "en",
-          bookingData: {
-            id: booking.id,
-            salon_id: input.salon_id,
-            start_time: booking.start_time,
-            end_time: booking.end_time,
-            status: booking.status,
-            is_walk_in: booking.is_walk_in,
-            customer_full_name: input.customer_full_name,
-            service_name: booking.services?.name || undefined,
-            employee_name: booking.employees?.full_name || undefined,
-          },
-        }),
-      })
-        .then(async (response) => {
-          let responseData;
-          try {
-            responseData = await response.json();
-          } catch (jsonError) {
-            const text = await response.text();
-            logWarn("send-notifications API route returned non-JSON response", {
-              ...logContext,
-              bookingId: booking.id,
-              status: response.status,
-              statusText: response.statusText,
-              responseText: text.substring(0, 200),
-            });
-            return;
-          }
+      try {
+        const response = await fetch("/api/bookings/send-notifications/", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({
+            bookingId: booking.id,
+            customerEmail: customerEmailForNotify,
+            salonId: input.salon_id,
+            language: salon?.preferred_language || "en",
+            bookingData: {
+              id: booking.id,
+              salon_id: input.salon_id,
+              start_time: booking.start_time,
+              end_time: booking.end_time,
+              status: booking.status,
+              is_walk_in: booking.is_walk_in,
+              customer_full_name: input.customer_full_name,
+              service_name: booking.services?.name || undefined,
+              employee_name: booking.employees?.full_name || undefined,
+            },
+          }),
+        });
 
-          if (!response.ok) {
-            logWarn("send-notifications API route returned error", {
-              ...logContext,
-              bookingId: booking.id,
-              status: response.status,
-              statusText: response.statusText,
-              error: responseData?.error || "Unknown error",
-              url: response.url,
-            });
-          } else {
-            logInfo("send-notifications API route succeeded", {
-              ...logContext,
-              bookingId: booking.id,
-              emailResult: responseData.email,
-              reminderResult: responseData.reminders,
-            });
-          }
-        })
-        .catch((fetchError) => {
-          logWarn("Failed to call send-notifications API route", {
+        let responseData: Record<string, unknown> | undefined;
+        try {
+          responseData = (await response.json()) as Record<string, unknown>;
+        } catch {
+          const text = await response.text();
+          logWarn("send-notifications API route returned non-JSON response", {
             ...logContext,
             bookingId: booking.id,
-            fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
-            errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
+            status: response.status,
+            statusText: response.statusText,
+            responseText: text.substring(0, 200),
           });
+          return;
+        }
+
+        if (!response.ok) {
+          logWarn("send-notifications API route returned error", {
+            ...logContext,
+            bookingId: booking.id,
+            status: response.status,
+            statusText: response.statusText,
+            error: (responseData?.error as string) || "Unknown error",
+            url: response.url,
+          });
+        } else {
+          logInfo("send-notifications API route succeeded", {
+            ...logContext,
+            bookingId: booking.id,
+            emailResult: responseData.email,
+            reminderResult: responseData.reminders,
+          });
+        }
+      } catch (fetchError) {
+        logWarn("Failed to call send-notifications API route", {
+          ...logContext,
+          bookingId: booking.id,
+          fetchError: fetchError instanceof Error ? fetchError.message : "Unknown error",
+          errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
         });
+      }
     } else {
+      if (!customerEmailForNotify) {
+        return;
+      }
       const { sendBookingConfirmation } = await import("@/lib/services/email-service");
       await sendBookingConfirmation({
         booking: bookingForEmail,
-        recipientEmail: input.customer_email!,
+        recipientEmail: customerEmailForNotify,
         language: salon?.preferred_language || "en",
         salonId: input.salon_id,
       }).catch((emailError) => {

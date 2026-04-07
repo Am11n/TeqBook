@@ -10,7 +10,7 @@ import type {
 
 export async function sendBookingConfirmation(
   input: SendBookingConfirmationInput
-): Promise<{ data: { id: string } | null; error: string | null }> {
+): Promise<{ data: { id: string } | null; error: string | null; simulated?: boolean }> {
   if (input.userId) {
     const shouldSend = await shouldSendNotification({
       userId: input.userId,
