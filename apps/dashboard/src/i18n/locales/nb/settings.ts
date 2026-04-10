@@ -300,7 +300,7 @@ const settingsCore: TranslationNamespaces['settings'] = {
     coverImageRemoveButton: "Fjern",
     coverImageFormatsHint: "JPG, PNG eller WebP (maks 10 MB)",
     salonTypeSelectPlaceholder: "Velg type…",
-    salonTypeBarber: "Herreklipp / barber",
+    salonTypeBarber: "Frisør",
     salonTypeNails: "Negler",
     salonTypeMassage: "Massasje",
     salonTypeOther: "Annet",

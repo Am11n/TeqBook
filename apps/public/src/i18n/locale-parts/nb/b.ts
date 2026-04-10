@@ -61,7 +61,7 @@ onboarding: {
     nameLabel: "Salongnavn",
     namePlaceholder: "F.eks. TeqBook Frisør Majorstuen",
     salonTypeLabel: "Type salong",
-    salonTypeBarber: "Barber",
+    salonTypeBarber: "Frisør",
     salonTypeNails: "Negler",
     salonTypeMassage: "Massasje",
     salonTypeOther: "Annet",
