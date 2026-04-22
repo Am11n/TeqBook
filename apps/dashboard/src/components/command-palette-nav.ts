@@ -17,17 +17,31 @@ export type SearchResult = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-export const navigationItems: SearchResult[] = [
-  { id: "nav-dashboard", type: "navigation", label: "Go to Dashboard", href: "/", icon: Settings },
-  { id: "nav-calendar", type: "navigation", label: "Go to Calendar", href: "/calendar", icon: Calendar },
-  { id: "nav-create-booking", type: "navigation", label: "New booking", href: "/bookings?new=true", icon: BookOpen },
-  { id: "nav-create-customer", type: "navigation", label: "New customer", href: "/customers?new=true", icon: UserCircle },
-  { id: "nav-employees", type: "navigation", label: "Manage employees", href: "/employees", icon: Users },
-  { id: "nav-services", type: "navigation", label: "Manage services", href: "/services", icon: Scissors },
-  { id: "nav-customers", type: "navigation", label: "Manage customers", href: "/customers", icon: UserCircle },
-  { id: "nav-shifts", type: "navigation", label: "Manage shifts", href: "/shifts", icon: Clock },
-  { id: "nav-settings", type: "navigation", label: "Settings", href: "/settings/general", icon: Settings },
-];
+type NavigationLabels = {
+  goToDashboard: string;
+  goToCalendar: string;
+  newBooking: string;
+  newCustomer: string;
+  manageEmployees: string;
+  manageServices: string;
+  manageCustomers: string;
+  manageShifts: string;
+  settings: string;
+};
+
+export function buildNavigationItems(labels: NavigationLabels): SearchResult[] {
+  return [
+    { id: "nav-dashboard", type: "navigation", label: labels.goToDashboard, href: "/", icon: Settings },
+    { id: "nav-calendar", type: "navigation", label: labels.goToCalendar, href: "/calendar", icon: Calendar },
+    { id: "nav-create-booking", type: "navigation", label: labels.newBooking, href: "/bookings?new=true", icon: BookOpen },
+    { id: "nav-create-customer", type: "navigation", label: labels.newCustomer, href: "/customers?new=true", icon: UserCircle },
+    { id: "nav-employees", type: "navigation", label: labels.manageEmployees, href: "/employees", icon: Users },
+    { id: "nav-services", type: "navigation", label: labels.manageServices, href: "/services", icon: Scissors },
+    { id: "nav-customers", type: "navigation", label: labels.manageCustomers, href: "/customers", icon: UserCircle },
+    { id: "nav-shifts", type: "navigation", label: labels.manageShifts, href: "/shifts", icon: Clock },
+    { id: "nav-settings", type: "navigation", label: labels.settings, href: "/settings/general", icon: Settings },
+  ];
+}
 
 export function getIconForType(type: string) {
   if (type === "customer") return UserCircle;

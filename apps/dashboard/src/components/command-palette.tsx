@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { searchSalonEntities } from "@/lib/services/search-service";
 import { Search, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { type SearchResult, navigationItems, getIconForType } from "./command-palette-nav";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { type SearchResult, buildNavigationItems, getIconForType } from "./command-palette-nav";
 
 type CommandPaletteProps = {
   open: boolean;
@@ -16,6 +20,39 @@ type CommandPaletteProps = {
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const { salon } = useCurrentSalon();
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const dashboardT = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
+  const calendarT = useMemo(
+    () => resolveNamespace("calendar", translations[appLocale].calendar),
+    [appLocale],
+  );
+  const bookingsT = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+  const homeT = useMemo(
+    () => resolveNamespace("home", translations[appLocale].home),
+    [appLocale],
+  );
+  const navigationItems = useMemo(
+    () =>
+      buildNavigationItems({
+        goToDashboard: dashboardT.overview || "Go to dashboard",
+        goToCalendar: dashboardT.calendar || "Go to calendar",
+        newBooking: bookingsT.newBookingButton || "New booking",
+        newCustomer: homeT.addNewCustomer || "New customer",
+        manageEmployees: dashboardT.employees || "Manage employees",
+        manageServices: dashboardT.services || "Manage services",
+        manageCustomers: dashboardT.customers || "Manage customers",
+        manageShifts: dashboardT.shifts || "Manage shifts",
+        settings: dashboardT.settings || "Settings",
+      }),
+    [dashboardT, bookingsT, homeT],
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>(navigationItems);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -75,7 +112,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
     const timeoutId = setTimeout(search, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, open, salon?.id]);
+  }, [query, open, salon?.id, navigationItems]);
 
   const handleSelect = useCallback((result: SearchResult) => {
     if (result.href) {
@@ -122,7 +159,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       setQuery("");
       setResults(navigationItems);
     }
-  }, [open]);
+  }, [open, navigationItems]);
 
 
   if (!open) return null;
@@ -155,7 +192,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search bookings, customers, services..."
+              placeholder={dashboardT.globalSearchPlaceholder || calendarT.commandPalettePlaceholder}
               className="flex-1 border-none bg-transparent text-base outline-none placeholder:text-slate-400"
             />
             <button
@@ -173,11 +210,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           >
             {loading ? (
               <div className="py-8 text-center text-sm text-slate-500">
-                Searching...
+                {calendarT.quickCreateLoading}
               </div>
             ) : results.length === 0 ? (
               <div className="py-8 text-center text-sm text-slate-500">
-                No results found
+                {calendarT.commandPaletteNoMatchEnterSearch.replace("{query}", query || "…")}
               </div>
             ) : (
               results.map((result, index) => {
@@ -224,7 +261,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                             isSelected ? "text-white/60" : "text-slate-400"
                           }`}
                         >
-                          Navigation
+                          {dashboardT.menu || "Navigation"}
                         </span>
                       )}
                       <ArrowRight
@@ -242,7 +279,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           {/* Footer hint */}
           <div className="border-t border-slate-200 px-4 py-2 text-xs text-slate-500">
             <div className="flex items-center justify-between">
-              <span>Use ↑↓ to navigate, Enter to select, Esc to close</span>
+              <span>↑↓ · Enter · Esc</span>
               <span className="flex items-center gap-4">
                 <kbd className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs">
                   ⌘K
