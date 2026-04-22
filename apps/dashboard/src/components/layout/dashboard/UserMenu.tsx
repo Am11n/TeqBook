@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { User, CreditCard, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -104,10 +104,6 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
               </Link>
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem disabled className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span>Billing (coming soon)</span>
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleLogout}
