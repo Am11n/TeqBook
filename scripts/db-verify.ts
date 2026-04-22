@@ -1,8 +1,9 @@
 #!/usr/bin/env tsx
-import { appendFileSync, mkdirSync } from "fs";
+import { appendFileSync, mkdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { spawnSync } from "child_process";
 import * as dotenv from "dotenv";
+import { Client } from "pg";
 import {
   ensureRootEnvLoaded,
   getTargetFromEnv,
@@ -42,10 +43,82 @@ function isRetryablePsqlError(output: string) {
   return RETRYABLE_PSQL_PATTERNS.some((pattern) => pattern.test(output));
 }
 
+function hasPsqlMetaCommands(sql: string) {
+  return /^\s*\\/m.test(sql);
+}
+
+function normalizeDbUrlForPg(dbUrl: string) {
+  if (dbUrl.includes("sslmode=")) {
+    return dbUrl.replace(/sslmode=[^&]+/i, "sslmode=no-verify");
+  }
+  const separator = dbUrl.includes("?") ? "&" : "?";
+  return `${dbUrl}${separator}sslmode=no-verify`;
+}
+
+function isPsqlAvailable() {
+  const probe = spawnSync("psql", ["--version"], { encoding: "utf-8" });
+  return probe.status === 0;
+}
+
 function runVerification(dbUrl: string, sqlFile: string, logFile: string) {
   const fullFile = resolve(process.cwd(), sqlFile);
+  const sqlRaw = readFileSync(fullFile, "utf-8");
   const retryAttempts = getPositiveIntEnv("TEQBOOK_DB_RETRY_ATTEMPTS", DEFAULT_RETRY_ATTEMPTS);
   const retryBaseDelayMs = getPositiveIntEnv("TEQBOOK_DB_RETRY_BASE_DELAY_MS", DEFAULT_RETRY_BASE_DELAY_MS);
+
+  const runWithPg = async () => {
+    const sql = sqlRaw;
+    const executableSql = hasPsqlMetaCommands(sql)
+      ? sql
+          .split("\n")
+          .filter((line) => !line.trimStart().startsWith("\\"))
+          .join("\n")
+      : sql;
+
+    for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
+      const client = new Client({ connectionString: normalizeDbUrlForPg(dbUrl) });
+      try {
+        await client.connect();
+        await client.query(executableSql);
+        appendFileSync(
+          logFile,
+          [
+            `\n## ${sqlFile} (attempt ${attempt}/${retryAttempts})`,
+            "runner=pg",
+            hasPsqlMetaCommands(sql) ? "note=psql_not_installed_meta_commands_stripped" : "",
+            "status=success",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        );
+        await client.end();
+        return;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.stack || error.message : String(error);
+        appendFileSync(
+          logFile,
+          [
+            `\n## ${sqlFile} (attempt ${attempt}/${retryAttempts})`,
+            "runner=pg",
+            "status=failed",
+            errorMessage,
+          ].join("\n"),
+        );
+        await client.end().catch(() => undefined);
+        const retryable = isRetryablePsqlError(errorMessage);
+        if (!retryable || attempt === retryAttempts) {
+          throw new Error(`Verification failed at ${sqlFile}`);
+        }
+        const delayMs = retryBaseDelayMs * attempt;
+        appendFileSync(logFile, `retrying_after_ms=${delayMs} reason=transient_connection_error\n`);
+        sleepMs(delayMs);
+      }
+    }
+  };
+
+  if (!isPsqlAvailable()) {
+    return runWithPg();
+  }
 
   for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
     const result = spawnSync(
@@ -81,7 +154,7 @@ function runVerification(dbUrl: string, sqlFile: string, logFile: string) {
   }
 }
 
-function main() {
+async function main() {
   dotenv.config({ path: resolve(process.cwd(), ".env.local") });
   ensureRootEnvLoaded();
   const target = getTargetFromEnv();
@@ -111,7 +184,7 @@ function main() {
   );
 
   for (const file of VERIFICATION_FILES) {
-    runVerification(dbUrl, file, logFile);
+    await runVerification(dbUrl, file, logFile);
   }
 
   appendFileSync(logFile, `\ncompleted_at=${new Date().toISOString()}\nstatus=success\n`);

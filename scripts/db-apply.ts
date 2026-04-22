@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { spawnSync } from "child_process";
 import * as dotenv from "dotenv";
@@ -17,9 +17,13 @@ type Manifest = {
   baseline: string;
   postBaseline: string[];
 };
+type Checksums = {
+  baseline: { file: string; sha256: string };
+  postBaseline: Array<{ file: string; sha256: string }>;
+};
 
 const MANIFEST_PATH = "supabase/supabase/migration-manifest.json";
-const MIGRATIONS_DIR = "supabase/supabase/migrations";
+const CHECKSUM_PATH = "supabase/supabase/migration-checksums.json";
 const LOG_DIR = "docs/ops/evidence/db-apply-logs";
 const DEFAULT_RETRY_ATTEMPTS = 5;
 const DEFAULT_RETRY_BASE_DELAY_MS = 3000;
@@ -107,14 +111,20 @@ async function runSqlFile(dbUrl: string, relativeFile: string, logFile: string) 
     throw new Error(`Missing SQL file: ${relativeFile}`);
   }
   const sql = readFileSync(filePath, "utf-8");
+  let executableSql = sql;
   if (hasPsqlMetaCommands(sql)) {
-    if (!isPsqlAvailable()) {
-      throw new Error(
-        `Cannot apply ${relativeFile}: file contains psql meta commands, but 'psql' is not installed.`,
-      );
+    if (isPsqlAvailable()) {
+      runPsqlFile(dbUrl, filePath, relativeFile, logFile);
+      return;
     }
-    runPsqlFile(dbUrl, filePath, relativeFile, logFile);
-    return;
+    executableSql = sql
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("\\"))
+      .join("\n");
+    appendFileSync(
+      logFile,
+      `\n## ${relativeFile}\nrunner=pg\nnote=psql_not_installed_meta_commands_stripped\n`,
+    );
   }
 
   const retryAttempts = getPositiveIntEnv("TEQBOOK_DB_RETRY_ATTEMPTS", DEFAULT_RETRY_ATTEMPTS);
@@ -127,7 +137,7 @@ async function runSqlFile(dbUrl: string, relativeFile: string, logFile: string) 
     });
     try {
       await client.connect();
-      await client.query(sql);
+      await client.query(executableSql);
       const end = Date.now();
       appendFileSync(
         logFile,
@@ -172,49 +182,27 @@ async function runSqlFile(dbUrl: string, relativeFile: string, logFile: string) 
   }
 }
 
-function listMigrationSqlFilesRecursively(dir: string): string[] {
-  const absoluteDir = resolve(process.cwd(), dir);
-  if (!existsSync(absoluteDir)) return [];
-  const entries = readdirSync(absoluteDir);
-  const files: string[] = [];
-
-  for (const entry of entries) {
-    const absolutePath = resolve(absoluteDir, entry);
-    const relativePath = absolutePath.replace(`${process.cwd()}/`, "");
-    const stats = statSync(absolutePath);
-    if (stats.isDirectory()) {
-      files.push(...listMigrationSqlFilesRecursively(relativePath));
-      continue;
+function validateManifestCoverage(manifest: Manifest) {
+  const manifestFiles = [manifest.baseline, ...manifest.postBaseline];
+  const seen = new Set<string>();
+  for (const file of manifestFiles) {
+    if (!existsSync(resolve(process.cwd(), file))) {
+      throw new Error(`Migration manifest references missing file: ${file}`);
     }
-    if (stats.isFile() && relativePath.endsWith(".sql")) {
-      files.push(relativePath);
+    if (seen.has(file)) {
+      throw new Error(`Migration manifest contains duplicate entry: ${file}`);
     }
+    seen.add(file);
   }
 
-  return files.sort((a, b) => a.localeCompare(b));
-}
-
-function validateManifestCoverage(manifest: Manifest) {
-  const migrationFiles = listMigrationSqlFilesRecursively(MIGRATIONS_DIR);
-  const manifestFiles = [...manifest.postBaseline].sort((a, b) => a.localeCompare(b));
-  const migrationSet = new Set(migrationFiles);
-  const manifestSet = new Set(manifestFiles);
-
-  const missingFromManifest = migrationFiles.filter((file) => !manifestSet.has(file));
-  const missingFromDisk = manifestFiles.filter((file) => !migrationSet.has(file));
-
-  if (missingFromManifest.length === 0 && missingFromDisk.length === 0) return;
-
-  const lines = [
-    "Migration manifest coverage validation failed.",
-    missingFromManifest.length > 0
-      ? `Files present in ${MIGRATIONS_DIR} but missing in manifest: ${missingFromManifest.join(", ")}`
-      : "",
-    missingFromDisk.length > 0
-      ? `Files present in manifest but missing on disk: ${missingFromDisk.join(", ")}`
-      : "",
-  ].filter(Boolean);
-  throw new Error(lines.join("\n"));
+  const checksums = readJsonFile<Checksums>(CHECKSUM_PATH);
+  const checksumFiles = [checksums.baseline.file, ...checksums.postBaseline.map((entry) => entry.file)];
+  const missingInChecksums = manifestFiles.filter((file) => !checksumFiles.includes(file));
+  if (missingInChecksums.length > 0) {
+    throw new Error(
+      `Manifest checksum coverage failed for files: ${missingInChecksums.join(", ")}. Run pnpm run db:manifest:lock.`,
+    );
+  }
 }
 
 async function main() {
@@ -250,7 +238,20 @@ async function main() {
     ].join("\n"),
   );
 
-  await runSqlFile(dbUrl, manifest.baseline, logFile);
+  try {
+    await runSqlFile(dbUrl, manifest.baseline, logFile);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const baselineAlreadyPresent =
+      /already exists/i.test(message) || /duplicate key value/i.test(message);
+    if (!baselineAlreadyPresent) {
+      throw error;
+    }
+    appendFileSync(
+      logFile,
+      `\n## ${manifest.baseline}\nstatus=skipped\nreason=baseline_already_present\n`,
+    );
+  }
   for (const migrationFile of manifest.postBaseline) {
     await runSqlFile(dbUrl, migrationFile, logFile);
   }

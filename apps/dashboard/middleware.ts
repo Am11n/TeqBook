@@ -37,7 +37,30 @@ export async function middleware(request: NextRequest) {
   response.headers.set(REQUEST_ID_HEADER, requestId);
 
   const isApi = pathname.startsWith("/api/");
-  if (!isApi && supabaseUrl && supabaseAnonKey) {
+  if (!isApi) {
+    const isPublicPath = PUBLIC_PATHS.has(pathname);
+    const hasAuthCookie = request.cookies
+      .getAll()
+      .some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("auth-token"));
+    if (!isPublicPath && !hasAuthCookie) {
+      const loginUrl = new URL(DASHBOARD_LOGIN_PATH, request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      const redirect = NextResponse.redirect(loginUrl);
+      redirect.headers.set(REQUEST_ID_HEADER, requestId);
+      return redirect;
+    }
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      if (!isPublicPath) {
+        const loginUrl = new URL(DASHBOARD_LOGIN_PATH, request.url);
+        loginUrl.searchParams.set("redirectTo", pathname);
+        const redirect = NextResponse.redirect(loginUrl);
+        redirect.headers.set(REQUEST_ID_HEADER, requestId);
+        return redirect;
+      }
+      return response;
+    }
+
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
@@ -70,7 +93,6 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const isPublicPath = PUBLIC_PATHS.has(pathname);
     if (!user && !isPublicPath) {
       const loginUrl = new URL(DASHBOARD_LOGIN_PATH, request.url);
       loginUrl.searchParams.set("redirectTo", pathname);

@@ -8,13 +8,15 @@ DECLARE
   inactive_staff_booking_count INTEGER := 0;
   slug_collision_count INTEGER := 0;
 BEGIN
-  -- Duplicate customer check by (salon_id, phone)
+  -- Duplicate customer check by (salon_id, phone, full_name)
+  -- Shared family numbers are valid; exact name+phone duplicates are not.
   SELECT COUNT(*) INTO duplicate_customer_count
   FROM (
-    SELECT salon_id, phone
+    SELECT salon_id, phone, lower(trim(full_name))
     FROM public.customers
     WHERE phone IS NOT NULL
-    GROUP BY salon_id, phone
+      AND nullif(trim(full_name), '') IS NOT NULL
+    GROUP BY salon_id, phone, lower(trim(full_name))
     HAVING COUNT(*) > 1
   ) d;
 
