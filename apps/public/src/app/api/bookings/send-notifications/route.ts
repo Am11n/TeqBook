@@ -8,12 +8,14 @@ import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
+import { verifyPublicBookingActionToken } from "@/lib/security/public-booking-action-token";
 
 type BookingNotificationPayload = {
   bookingId: string;
   salonId: string;
   customerEmail?: string;
   language?: string;
+  actionToken?: string;
 };
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
-    const { bookingId, salonId, customerEmail, language } = body;
+    const { bookingId, salonId, customerEmail, language, actionToken } = body;
 
     const logContext = {
       requestId,
@@ -93,12 +95,21 @@ export async function POST(request: NextRequest) {
 
     logInfo("Public send-notifications API route called", logContext);
 
-    if (!bookingId || !salonId) {
+    if (!bookingId || !salonId || !actionToken) {
       logWarn("Missing required fields in public send-notifications API route", logContext);
       return NextResponse.json(
-        { error: "Missing required fields: bookingId and salonId are required" },
+        { error: "Missing required fields: bookingId, salonId and actionToken are required" },
         { status: 400 },
       );
+    }
+
+    const tokenCheck = verifyPublicBookingActionToken({
+      token: actionToken,
+      bookingId,
+      allowedPurposes: ["notify", "manage"],
+    });
+    if (!tokenCheck.valid) {
+      return NextResponse.json({ error: "Invalid or expired action token" }, { status: 403 });
     }
 
     const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";

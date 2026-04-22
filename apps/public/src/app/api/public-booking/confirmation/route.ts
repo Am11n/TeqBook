@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyPublicBookingActionToken } from "@/lib/security/public-booking-action-token";
 
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,9 +21,19 @@ function getAdminClient() {
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug")?.trim();
   const bookingId = request.nextUrl.searchParams.get("bookingId")?.trim();
+  const actionToken = request.nextUrl.searchParams.get("actionToken")?.trim();
 
-  if (!slug || !bookingId) {
-    return NextResponse.json({ error: "slug and bookingId are required" }, { status: 400 });
+  if (!slug || !bookingId || !actionToken) {
+    return NextResponse.json({ error: "slug, bookingId and actionToken are required" }, { status: 400 });
+  }
+
+  const tokenCheck = verifyPublicBookingActionToken({
+    token: actionToken,
+    bookingId,
+    allowedPurposes: ["confirmation", "manage"],
+  });
+  if (!tokenCheck.valid) {
+    return NextResponse.json({ error: "Invalid or expired action token" }, { status: 401 });
   }
 
   try {

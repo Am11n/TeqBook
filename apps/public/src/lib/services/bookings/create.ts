@@ -131,6 +131,33 @@ async function sendBookingNotifications(
       salon: salon ? { name: salon.name } : null,
     };
 
+    let actionToken: string | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const tokenResponse = await fetch("/api/public-booking/action-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: booking.id,
+            salonId: input.salon_id,
+            customerEmail: input.customer_email || null,
+          }),
+        });
+        if (tokenResponse.ok) {
+          const tokenPayload = (await tokenResponse.json().catch(() => null)) as
+            | { actionToken?: string }
+            | null;
+          actionToken = tokenPayload?.actionToken ?? null;
+        }
+      } catch (tokenError) {
+        logWarn("Failed to issue public booking action token", {
+          ...logContext,
+          bookingId: booking.id,
+          tokenError: tokenError instanceof Error ? tokenError.message : "Unknown error",
+        });
+      }
+    }
+
     if (typeof window !== "undefined") {
       logInfo("Calling send-notifications API route from browser", {
         ...logContext,
@@ -151,6 +178,7 @@ async function sendBookingNotifications(
             customerEmail: input.customer_email,
             customerPhone: input.customer_phone,
             salonId: input.salon_id,
+            actionToken,
             language: salon?.preferred_language || "en",
             bookingData: {
               id: booking.id,

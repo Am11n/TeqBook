@@ -169,25 +169,25 @@ export async function submitBooking(params: {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-}): Promise<{ bookingId: string | null; error: string | null; errorCode?: "slot_conflict" }> {
+}): Promise<{ bookingId: string | null; actionToken: string | null; error: string | null; errorCode?: "slot_conflict" }> {
   const { salon, serviceId, employeeId, selectedSlot, customerName, customerEmail, customerPhone } = params;
 
   const identifier = customerEmail || "anonymous";
   const identifierType = customerEmail ? "email" : "ip";
   const rateLimit = await checkAndIncrementBookingRateLimit(identifier, identifierType);
   if (rateLimit.blockedMessage) {
-    return { bookingId: null, error: rateLimit.blockedMessage, errorCode: undefined };
+    return { bookingId: null, actionToken: null, error: rateLimit.blockedMessage, errorCode: undefined };
   }
 
   const slotDate = selectedSlot.slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(slotDate)) {
     const { data: freshSlots, error: refreshError } = await getAvailableTimeSlots(salon.id, employeeId, serviceId, slotDate);
     if (refreshError) {
-      return { bookingId: null, error: "Could not confirm this slot right now. Please refresh and try again.", errorCode: undefined };
+      return { bookingId: null, actionToken: null, error: "Could not confirm this slot right now. Please refresh and try again.", errorCode: undefined };
     }
     const stillAvailable = (freshSlots ?? []).some((slot) => isSameInstant(slot.slot_start, selectedSlot));
     if (!stillAvailable) {
-      return { bookingId: null, error: "This time is no longer available. Please choose another time.", errorCode: "slot_conflict" };
+      return { bookingId: null, actionToken: null, error: "This time is no longer available. Please choose another time.", errorCode: "slot_conflict" };
     }
   }
 
@@ -207,10 +207,32 @@ export async function submitBooking(params: {
   if (bookingError || !bookingData) {
     return {
       bookingId: null,
+      actionToken: null,
       error: bookingError || null,
       errorCode: bookingErrorCode,
     };
   }
 
-  return { bookingId: bookingData.id, error: null, errorCode: undefined };
+  let actionToken: string | null = null;
+  try {
+    const tokenResponse = await fetch("/api/public-booking/action-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bookingId: bookingData.id,
+        salonId: salon.id,
+        customerEmail: customerEmail || null,
+      }),
+    });
+    if (tokenResponse.ok) {
+      const tokenPayload = (await tokenResponse.json().catch(() => null)) as
+        | { actionToken?: string }
+        | null;
+      actionToken = tokenPayload?.actionToken ?? null;
+    }
+  } catch {
+    actionToken = null;
+  }
+
+  return { bookingId: bookingData.id, actionToken, error: null, errorCode: undefined };
 }

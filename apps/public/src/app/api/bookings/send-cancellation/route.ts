@@ -7,6 +7,7 @@ import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
+import { verifyPublicBookingActionToken } from "@/lib/security/public-booking-action-token";
 
 /**
  * Public send-cancellation: same pattern as send-notifications.
@@ -19,6 +20,7 @@ type BookingCancellationPayload = {
   customerEmail?: string;
   language?: string;
   cancellationReason?: string | null;
+  actionToken?: string;
 };
 const MAX_NOTIFICATION_ATTEMPTS = 5;
 const RETRY_SCHEDULE_MS = [30_000, 120_000, 600_000] as const;
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingCancellationPayload;
-    const { bookingId, salonId, customerEmail, language, cancellationReason } = body;
+    const { bookingId, salonId, customerEmail, language, cancellationReason, actionToken } = body;
 
     const logContext = {
       requestId,
@@ -47,12 +49,21 @@ export async function POST(request: NextRequest) {
 
     logInfo("Public send-cancellation API route called", logContext);
 
-    if (!bookingId || !salonId) {
+    if (!bookingId || !salonId || !actionToken) {
       logWarn("Missing required fields in public send-cancellation API route", logContext);
       return NextResponse.json(
-        { error: "Missing required fields: bookingId and salonId are required" },
+        { error: "Missing required fields: bookingId, salonId and actionToken are required" },
         { status: 400 },
       );
+    }
+
+    const tokenCheck = verifyPublicBookingActionToken({
+      token: actionToken,
+      bookingId,
+      allowedPurposes: ["cancel", "manage"],
+    });
+    if (!tokenCheck.valid) {
+      return NextResponse.json({ error: "Invalid or expired action token" }, { status: 403 });
     }
 
     const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";

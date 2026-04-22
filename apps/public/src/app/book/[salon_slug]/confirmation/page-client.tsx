@@ -24,6 +24,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   const searchParams = useSearchParams();
   const [slug] = useState<string>(salonSlug);
   const bookingId = searchParams.get("bookingId") || searchParams.get("id");
+  const actionToken = searchParams.get("actionToken");
   const [salon, setSalon] = useState<Salon | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
 
   useEffect(() => {
     async function loadData() {
-      if (!bookingId || !slug) {
+      if (!bookingId || !slug || !actionToken) {
         setError(t.bookingNotFound);
         setLoading(false);
         return;
@@ -64,7 +65,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         });
 
         const confirmationResponse = await fetch(
-          `/api/public-booking/confirmation?slug=${encodeURIComponent(slug)}&bookingId=${encodeURIComponent(bookingId)}`,
+          `/api/public-booking/confirmation?slug=${encodeURIComponent(slug)}&bookingId=${encodeURIComponent(bookingId)}&actionToken=${encodeURIComponent(actionToken)}`,
           { method: "GET", headers: { Accept: "application/json" } }
         );
         const confirmationPayload = await confirmationResponse.json().catch(() => null) as
@@ -88,7 +89,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     }
 
     loadData();
-  }, [bookingId, slug]);
+  }, [actionToken, bookingId, slug]);
 
   useEffect(() => {
     if (!salon?.id || !bookingId) return;
@@ -120,6 +121,9 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         salon.id,
         booking.id,
         cancellationReason || null,
+        {
+          actionToken: actionToken ?? undefined,
+        },
       );
       
       if (cancelError) {

@@ -389,7 +389,11 @@ export function usePublicBooking(slug: string) {
       }
 
       setSlotConflictActive(false);
-      window.location.href = `/book/${slug}/confirmation?bookingId=${bookingResult.bookingId}`;
+      const query = new URLSearchParams({ bookingId: bookingResult.bookingId });
+      if (bookingResult.actionToken) {
+        query.set("actionToken", bookingResult.actionToken);
+      }
+      window.location.href = `/book/${slug}/confirmation?${query.toString()}`;
     } catch {
       setSlotConflictActive(false);
       setError(t.createError);

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
@@ -16,6 +16,7 @@ import { initSession } from "@/lib/services/session-service";
  */
 export default function DashboardLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const tl = useMemo(
@@ -30,6 +31,11 @@ export default function DashboardLoginPage() {
 
   const title = tl.dashboardDirectLoginTitle ?? tl.title;
   const subtitle = tl.dashboardDirectLoginSubtitle ?? tl.formSubtitle;
+  const redirectTo = searchParams.get("redirectTo");
+  const safeRedirectTo =
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : "/";
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -60,7 +66,7 @@ export default function DashboardLoginPage() {
     }
 
     if (profile.salon_id) {
-      router.push("/");
+      router.push(safeRedirectTo);
       return;
     }
 

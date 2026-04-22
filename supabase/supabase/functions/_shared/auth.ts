@@ -14,6 +14,13 @@ export interface AuthResult {
   error: string | null;
 }
 
+export interface SalonAuthorizationResult {
+  allowed: boolean;
+  status: number;
+  error: string | null;
+  profileSalonId: string | null;
+}
+
 /**
  * Authenticate request using Supabase Auth
  * Extracts JWT token from Authorization header and validates it
@@ -123,6 +130,63 @@ export async function getUserSalonId(
     return data.salon_id;
   } catch {
     return null;
+  }
+}
+
+export async function authorizeSalonAccess(
+  userId: string,
+  requestedSalonId: string,
+  supabaseUrl: string,
+  supabaseServiceKey: string
+): Promise<SalonAuthorizationResult> {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("salon_id, is_superadmin")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        allowed: false,
+        status: 403,
+        error: "Unable to resolve user tenant",
+        profileSalonId: null,
+      };
+    }
+
+    if (data.is_superadmin === true) {
+      return {
+        allowed: true,
+        status: 200,
+        error: null,
+        profileSalonId: data.salon_id ?? null,
+      };
+    }
+
+    if (!data.salon_id || data.salon_id !== requestedSalonId) {
+      return {
+        allowed: false,
+        status: 403,
+        error: "Forbidden: salon_id does not belong to authenticated user",
+        profileSalonId: data.salon_id ?? null,
+      };
+    }
+
+    return {
+      allowed: true,
+      status: 200,
+      error: null,
+      profileSalonId: data.salon_id,
+    };
+  } catch {
+    return {
+      allowed: false,
+      status: 403,
+      error: "Unable to verify tenant authorization",
+      profileSalonId: null,
+    };
   }
 }
 

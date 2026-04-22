@@ -11,6 +11,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
+import { authorizeSalonAccess } from "../_shared/auth.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -166,6 +167,22 @@ serve(async (req) => {
         JSON.stringify({ error: "Missing required fields: salon_id, email, name" }),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const authz = await authorizeSalonAccess(
+      user.id,
+      body.salon_id,
+      supabaseUrl,
+      supabaseServiceKey
+    );
+    if (!authz.allowed) {
+      return new Response(
+        JSON.stringify({ error: authz.error ?? "Forbidden" }),
+        {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );

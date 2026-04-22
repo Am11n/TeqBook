@@ -18,6 +18,7 @@ export async function cancelBooking(
     booking?: Booking;
     customerEmail?: string;
     language?: string;
+    actionToken?: string;
   }
 ): Promise<{ error: string | null }> {
   const correlationId = crypto.randomUUID();
@@ -102,6 +103,7 @@ async function sendCancellationNotifications(
         bookingId,
         customerEmail: options?.customerEmail,
         salonId,
+        actionToken: options?.actionToken,
         language: options?.language || salon?.preferred_language || "en",
         cancelledBy: "salon",
         bookingData: options?.booking ? {

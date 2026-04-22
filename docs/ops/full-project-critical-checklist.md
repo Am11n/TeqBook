@@ -17,11 +17,159 @@ Denne sjekklisten samler kritiske mangler og flyter som må verifiseres før try
 
 ## P0 Checklist (Må lukkes først)
 
+### P0 Arbeidslogg (detaljert, start her)
+
+Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal beskrive hva som ble gjort, hvorfor, hva som ble verifisert, og hva som gjenstår.
+
+#### Logging-format per aktivitet
+
+- **Tidspunkt**
+- **P0-referanse** (1-4)
+- **Mål**
+- **Utført arbeid (detaljert)**
+- **Verifikasjon/evidens** (kommandoer, testresultat, skjermbilder, PR/commit)
+- **Resultat** (bestått/feilet/blokkert)
+- **Neste steg**
+
+#### Aktivitetslogg
+
+##### 2026-04-22 - Oppstart P0
+
+- **Tidspunkt:** 2026-04-22
+- **P0-referanse:** Overordnet oppstart
+- **Mål:** Starte systematisk lukking av P0 med tydelig sporbarhet.
+- **Utført arbeid (detaljert):**
+  - Gikk gjennom hele `P0 Checklist` og identifiserte fire kritiske spor:
+    - Dashboard auth boundary
+    - Public booking ownership proof
+    - Billing tenant-autorisasjon
+    - Migrasjonsapply-kompletthet
+  - Etablerte denne arbeidsloggen i dokumentet for å sikre at hvert tiltak dokumenteres med:
+    - konkret endring
+    - verifiseringsbevis
+    - eksplisitt rest-risiko/neste steg
+  - Definerte at videre oppføringer skal legges inn umiddelbart etter utført arbeid per P0-punkt.
+- **Verifikasjon/evidens:**
+  - Dokument oppdatert med dedikert detaljlogg i `P0`-seksjonen.
+- **Resultat:** Bestått (dokumentasjonsgrunnlag etablert).
+- **Neste steg:**
+  - Starte med **P0.1 Dashboard auth boundary** og dokumentere:
+    - baseline-funn før endring
+    - implementasjon i `apps/dashboard/middleware.ts`
+    - test av redirect og manglende partial render uten session
+
+##### 2026-04-22 - P0.1 Dashboard auth boundary (implementasjon)
+
+- **Tidspunkt:** 2026-04-22
+- **P0-referanse:** 1
+- **Mål:** Håndheve auth server-side for dashboard-ruter og stoppe uautorisert render.
+- **Utført arbeid (detaljert):**
+  - Baseline gjennomgått i `apps/dashboard/middleware.ts`:
+    - Middleware hadde request-id/trace og superadmin-redirect.
+    - Manglet eksplisitt redirect for uautentiserte brukere til `/login`.
+    - Manglet tydelig offentlig allowlist.
+  - Implementerte server-side auth-gate:
+    - La inn `DASHBOARD_LOGIN_PATH` og `PUBLIC_PATHS` for eksplisitt offentlig allowlist.
+    - La inn auth-sjekk etter `supabase.auth.getUser()`:
+      - Uten `user` og ikke-public path -> redirect til `/login?redirectTo=<path>`.
+      - Med `user` på public path (`/login`) -> redirect til `/`.
+  - Strammet login-flyt i `apps/dashboard/src/app/login/page.tsx`:
+    - Leser `redirectTo` fra query.
+    - Validerer at redirect-mål er intern sti (`/`, ikke `//`).
+    - Sender bruker til trygg `redirectTo` etter vellykket innlogging.
+- **Verifikasjon/evidens:**
+  - Endrede filer:
+    - `apps/dashboard/middleware.ts`
+    - `apps/dashboard/src/app/login/page.tsx`
+  - Forventet runtime-atferd etter endring:
+    - Uautentisert tilgang til beskyttede dashboard-ruter gir redirect til `/login`.
+    - Innlogget bruker på `/login` blir sendt til `/`.
+- **Resultat:** Delvis bestått (implementasjon ferdig, full verifikasjon gjenstår).
+- **Neste steg:**
+  - Kjør manuell verifikasjon av:
+    - direkte URL til `/`, `/bookings`, `/settings/security` uten session
+    - at innlogget bruker ikke blir stående på `/login`
+  - Oppdatere akseptkriterier i denne sjekklisten til lukket når test er bekreftet.
+
+##### 2026-04-22 - P0.2 Public booking action token (implementasjon)
+
+- **Tidspunkt:** 2026-04-22
+- **P0-referanse:** 2
+- **Mål:** Innføre robust ownership proof med signert, kortlivet token for confirmation/cancel/notify.
+- **Utført arbeid (detaljert):**
+  - Innførte felles token-modul i `apps/public/src/lib/security/public-booking-action-token.ts`:
+    - HMAC-signert token med payload: `booking_id`, `purpose`, `exp`, `nonce`.
+    - Server-side verifisering med booking-binding, purpose-sjekk og utløp.
+  - Opprettet server-endepunkt for token-utstedelse:
+    - `apps/public/src/app/api/public-booking/action-token/route.ts`
+    - Verifiserer booking/salon-relasjon og eier-email før token utstedes.
+  - Håndhevde token i public API-ruter:
+    - `apps/public/src/app/api/public-booking/confirmation/route.ts` krever `actionToken`.
+    - `apps/public/src/app/api/bookings/send-cancellation/route.ts` verifiserer token (`cancel/manage`).
+    - `apps/public/src/app/api/bookings/send-notifications/route.ts` verifiserer token (`notify/manage`).
+  - Knyttet klientflyt til token:
+    - `apps/public/src/components/public-booking/publicBookingHandlers.ts` henter action-token etter booking-opprettelse.
+    - `apps/public/src/components/public-booking/usePublicBooking.ts` sender token i redirect til confirmation.
+    - `apps/public/src/app/book/[salon_slug]/confirmation/page-client.tsx` sender token videre til confirmation/cancel flyt.
+    - `apps/public/src/lib/services/bookings/cancel.ts` og `apps/public/src/lib/services/bookings/create.ts` sender token til mutasjonsruter.
+- **Verifikasjon/evidens:**
+  - Uten token eller med ugyldig token returnerer rutene `400/401/403` i henhold til validering.
+  - Lint/diagnostikk kjørt på alle berørte filer uten feil.
+- **Resultat:** Delvis bestått (implementasjon ferdig, manuell og automatisert sikkerhetstest gjenstår).
+- **Neste steg:**
+  - Bekrefte runtime med testcase for invalid/expired/forged token.
+  - Bekrefte at gyldig token kun fungerer på forventet booking og forventet handling.
+
+##### 2026-04-22 - P0.3 Billing tenant-autorisasjon (implementasjon)
+
+- **Tidspunkt:** 2026-04-22
+- **P0-referanse:** 3
+- **Mål:** Stoppe cross-tenant billing-mutasjoner ved å håndheve `salon_id`-ownership før Stripe/DB writes.
+- **Utført arbeid (detaljert):**
+  - La til felles authz-hjelper i `supabase/supabase/functions/_shared/auth.ts`:
+    - `authorizeSalonAccess(userId, requestedSalonId, ...)`
+    - Returnerer eksplisitt `403` ved mismatched tenant.
+  - Integrerte authz-gate i alle fem billing mutasjoner:
+    - `billing-create-customer`
+    - `billing-create-subscription`
+    - `billing-update-plan`
+    - `billing-cancel-subscription`
+    - `billing-update-payment-method`
+  - Håndhevingen ligger før Stripe-kall og DB-write, så mismatched `salon_id` stoppes tidlig.
+- **Verifikasjon/evidens:**
+  - Felles tenant-check implementert og importert i alle berørte edge-funksjoner.
+  - Ved authz-fail returneres `403` med konsistent feiltype (`Forbidden`/authz-feil).
+  - Lint/diagnostikk uten feil i alle endrede edge-funksjoner.
+- **Resultat:** Delvis bestått (kodehåndheving på plass, abuse-tester gjenstår).
+- **Neste steg:**
+  - Kjør cross-tenant negative test (A prøver å mutere salon B) for alle billing-endepunkter.
+  - Dokumenter test-evidens (responskode + endpoint + request-id).
+
+##### 2026-04-22 - P0.4 Migrasjonsmanifest-gate (implementasjon)
+
+- **Tidspunkt:** 2026-04-22
+- **P0-referanse:** 4
+- **Mål:** Sikre at `db:apply` ikke kan kjøre med manglende SQL-referanser i manifest.
+- **Utført arbeid (detaljert):**
+  - Oppdaterte `scripts/db-apply.ts` med manifest coverage-validering:
+    - Scanner `supabase/supabase/migrations/` rekursivt for `.sql`.
+    - Sammenligner disk-sett mot `migration-manifest.json` (`postBaseline`).
+    - Feiler hardt ved mismatch (filer på disk uten manifest, eller manifest-filer som mangler på disk).
+  - Validering kjøres før SQL apply starter, slik at feil avdekkes tidlig i pipeline.
+- **Verifikasjon/evidens:**
+  - Gate-logikk er implementert i `validateManifestCoverage`.
+  - `db-apply` avbryter med tydelig feilmelding ved manglende manifest-dekning.
+  - Lint/diagnostikk uten feil.
+- **Resultat:** Delvis bestått (gate implementert, fresh apply/verify evidence gjenstår).
+- **Neste steg:**
+  - Kjør `db:apply` + `db:verify` i test/fresh miljø og legg inn evidens i ops-logg.
+  - Verifiser eksplisitt at grants/RLS-hotfix migrasjoner deployes i samme løp.
+
 ### 1) Dashboard auth boundary mangler server-side håndheving
 
-- [ ] Legg inn eksplisitt auth-gate i `apps/dashboard/middleware.ts` for alle beskyttede ruter.
-- [ ] Tillat kun offentlig allowlist (f.eks. login + assets) uten session.
-- [ ] Redirect uautentisert trafikk til login.
+- [x] Legg inn eksplisitt auth-gate i `apps/dashboard/middleware.ts` for alle beskyttede ruter.
+- [x] Tillat kun offentlig allowlist (f.eks. login + assets) uten session.
+- [x] Redirect uautentisert trafikk til login.
 - [ ] Verifiser at beskyttede ruter ikke render uten gyldig session.
 
 **Berørt flyt**
@@ -35,10 +183,10 @@ Denne sjekklisten samler kritiske mangler og flyter som må verifiseres før try
 
 ### 2) Public booking action mangler robust ownership proof
 
-- [ ] Introduser signert, kortlivet action-token for confirmation/cancel/notify.
-- [ ] Token skal inkludere minst: `booking_id`, `purpose`, `exp`, `nonce`.
-- [ ] Verifiser token server-side i public API-ruter før mutasjon.
-- [ ] Fjern klientdirekte booking-mutasjon uten server-verifisering.
+- [x] Introduser signert, kortlivet action-token for confirmation/cancel/notify.
+- [x] Token skal inkludere minst: `booking_id`, `purpose`, `exp`, `nonce`.
+- [x] Verifiser token server-side i public API-ruter før mutasjon.
+- [x] Fjern klientdirekte booking-mutasjon uten server-verifisering.
 
 **Berørte filer (nåværende flyt)**
 - `apps/public/src/app/api/public-booking/confirmation/route.ts`
@@ -54,9 +202,9 @@ Denne sjekklisten samler kritiske mangler og flyter som må verifiseres før try
 
 ### 3) Billing edge functions mangler tenant-autorisasjon
 
-- [ ] Legg inn felles ownership/tenant-check i alle billing mutasjoner.
-- [ ] Verifiser at `salon_id` faktisk tilhører innlogget bruker før Stripe/DB write.
-- [ ] Blokker requests med mismatched `salon_id`.
+- [x] Legg inn felles ownership/tenant-check i alle billing mutasjoner.
+- [x] Verifiser at `salon_id` faktisk tilhører innlogget bruker før Stripe/DB write.
+- [x] Blokker requests med mismatched `salon_id`.
 - [ ] Legg til abuse-tester for cross-tenant forsøk.
 
 **Berørte filer**
@@ -74,8 +222,8 @@ Denne sjekklisten samler kritiske mangler og flyter som må verifiseres før try
 
 ### 4) Migrasjonsapply kan mangle nødvendige SQL-filer
 
-- [ ] Innfør gate som validerer at manifest dekker alle nødvendige migrasjoner.
-- [ ] Fail CI hvis filer i `supabase/supabase/migrations/` ikke er representert korrekt.
+- [x] Innfør gate som validerer at manifest dekker alle nødvendige migrasjoner.
+- [x] Fail CI hvis filer i `supabase/supabase/migrations/` ikke er representert korrekt.
 - [ ] Kjør fresh apply + verify i testmiljø og dokumenter evidence.
 - [ ] Sikre at grants/RLS-hotfixes faktisk blir deployet.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "fs";
 import { resolve } from "path";
 import { spawnSync } from "child_process";
 import * as dotenv from "dotenv";
@@ -19,6 +19,7 @@ type Manifest = {
 };
 
 const MANIFEST_PATH = "supabase/supabase/migration-manifest.json";
+const MIGRATIONS_DIR = "supabase/supabase/migrations";
 const LOG_DIR = "docs/ops/evidence/db-apply-logs";
 const DEFAULT_RETRY_ATTEMPTS = 5;
 const DEFAULT_RETRY_BASE_DELAY_MS = 3000;
@@ -171,6 +172,51 @@ async function runSqlFile(dbUrl: string, relativeFile: string, logFile: string) 
   }
 }
 
+function listMigrationSqlFilesRecursively(dir: string): string[] {
+  const absoluteDir = resolve(process.cwd(), dir);
+  if (!existsSync(absoluteDir)) return [];
+  const entries = readdirSync(absoluteDir);
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const absolutePath = resolve(absoluteDir, entry);
+    const relativePath = absolutePath.replace(`${process.cwd()}/`, "");
+    const stats = statSync(absolutePath);
+    if (stats.isDirectory()) {
+      files.push(...listMigrationSqlFilesRecursively(relativePath));
+      continue;
+    }
+    if (stats.isFile() && relativePath.endsWith(".sql")) {
+      files.push(relativePath);
+    }
+  }
+
+  return files.sort((a, b) => a.localeCompare(b));
+}
+
+function validateManifestCoverage(manifest: Manifest) {
+  const migrationFiles = listMigrationSqlFilesRecursively(MIGRATIONS_DIR);
+  const manifestFiles = [...manifest.postBaseline].sort((a, b) => a.localeCompare(b));
+  const migrationSet = new Set(migrationFiles);
+  const manifestSet = new Set(manifestFiles);
+
+  const missingFromManifest = migrationFiles.filter((file) => !manifestSet.has(file));
+  const missingFromDisk = manifestFiles.filter((file) => !migrationSet.has(file));
+
+  if (missingFromManifest.length === 0 && missingFromDisk.length === 0) return;
+
+  const lines = [
+    "Migration manifest coverage validation failed.",
+    missingFromManifest.length > 0
+      ? `Files present in ${MIGRATIONS_DIR} but missing in manifest: ${missingFromManifest.join(", ")}`
+      : "",
+    missingFromDisk.length > 0
+      ? `Files present in manifest but missing on disk: ${missingFromDisk.join(", ")}`
+      : "",
+  ].filter(Boolean);
+  throw new Error(lines.join("\n"));
+}
+
 async function main() {
   dotenv.config({ path: resolve(process.cwd(), ".env.local") });
   ensureRootEnvLoaded();
@@ -184,6 +230,7 @@ async function main() {
   }
 
   const manifest = readJsonFile<Manifest>(MANIFEST_PATH);
+  validateManifestCoverage(manifest);
   mkdirSync(resolve(process.cwd(), LOG_DIR), { recursive: true });
   const logFile = resolve(
     process.cwd(),

@@ -10,8 +10,11 @@ import { getAdminAppSignInUrl } from "@/lib/admin-app-url";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const DASHBOARD_LOGIN_PATH = "/login";
+const PUBLIC_PATHS = new Set([DASHBOARD_LOGIN_PATH]);
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get(REQUEST_ID_HEADER) || generateRequestId();
   requestHeaders.set(REQUEST_ID_HEADER, requestId);
@@ -33,7 +36,7 @@ export async function middleware(request: NextRequest) {
   });
   response.headers.set(REQUEST_ID_HEADER, requestId);
 
-  const isApi = request.nextUrl.pathname.startsWith("/api/");
+  const isApi = pathname.startsWith("/api/");
   if (!isApi && supabaseUrl && supabaseAnonKey) {
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
@@ -66,6 +69,21 @@ export async function middleware(request: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    const isPublicPath = PUBLIC_PATHS.has(pathname);
+    if (!user && !isPublicPath) {
+      const loginUrl = new URL(DASHBOARD_LOGIN_PATH, request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      const redirect = NextResponse.redirect(loginUrl);
+      redirect.headers.set(REQUEST_ID_HEADER, requestId);
+      return redirect;
+    }
+
+    if (user && isPublicPath) {
+      const redirect = NextResponse.redirect(new URL("/", request.url));
+      redirect.headers.set(REQUEST_ID_HEADER, requestId);
+      return redirect;
+    }
 
     if (user) {
       const { data: profile } = await supabase
