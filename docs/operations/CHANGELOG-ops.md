@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-04-22
+
+- [remote] `supabase db push`: opprettet `user-assets` storage-bucket + avatar-policies for `INSERT/SELECT/DELETE` på `storage.objects` (sti `avatars/{userId}/{filename}`). Fikser profilbilde-opplasting som feilet med «Bucket not found». Migrasjon: `20260422092000_create_user_assets_bucket.sql`.
+
 ## 2026-04-07
 
 - [remote] `supabase db push`: `GRANT SELECT` på `booking_reschedule_proposals` / `booking_reschedule_activity` til `authenticated` (+ `service_role` ALL). Fikser PostgREST **403** ved lesing fra dashboard (tabell hadde RLS men manglet tabellrettigheter). Migrasjon: `20260407105000_booking_reschedule_table_grants.sql`.

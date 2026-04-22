@@ -178,7 +178,15 @@ export async function uploadAvatar(
       });
 
     if (uploadError) {
-      return { data: null, error: uploadError.message };
+      const message = uploadError.message || "Upload failed";
+      if (/bucket/i.test(message) && /not found|does not exist/i.test(message)) {
+        return {
+          data: null,
+          error:
+            "Storage bucket 'user-assets' was not found. Please run the latest Supabase migrations and try again.",
+        };
+      }
+      return { data: null, error: message };
     }
 
     // Get public URL
