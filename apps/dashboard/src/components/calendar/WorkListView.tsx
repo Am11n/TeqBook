@@ -6,6 +6,8 @@ import type { CalendarBooking } from "@/lib/types";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { getBookingBadgeClasses } from "@/lib/ui/calendar-theme";
 import { formatPrice } from "@/lib/utils/services/services-utils";
 
@@ -20,6 +22,22 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
   const salonCurrency = salon?.currency ?? "NOK";
   const { locale } = useLocale();
   const appLocale = normalizeLocale(locale);
+  const t = useMemo(
+    () => resolveNamespace("calendar", translations[appLocale].calendar),
+    [appLocale],
+  );
+  const bookingsT = useMemo(
+    () => resolveNamespace("bookings", translations[appLocale].bookings),
+    [appLocale],
+  );
+  const servicesT = useMemo(
+    () => resolveNamespace("services", translations[appLocale].services),
+    [appLocale],
+  );
+  const dashboardT = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
 
   // Sort: problem bookings first (unpaid, unconfirmed, conflict), then by start time
@@ -51,7 +69,8 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
   if (sorted.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-        No bookings for this day. Press <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-xs font-medium">N</kbd> to create one.
+        {t.noBookingsTitle}. {t.toolbarNewShort}{" "}
+        <kbd className="mx-1 rounded border bg-muted px-1.5 py-0.5 text-xs font-medium">N</kbd>
       </div>
     );
   }
@@ -60,12 +79,12 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
     <div className="rounded-lg border">
       {/* Header */}
       <div className="grid grid-cols-[80px_1fr_1fr_1fr_100px_80px] gap-2 border-b bg-muted/50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <div>Time</div>
-        <div>Customer</div>
-        <div>Service</div>
-        <div>Employee</div>
-        <div>Price</div>
-        <div>Status</div>
+        <div>{bookingsT.timeLabel}</div>
+        <div>{bookingsT.customerNameLabel}</div>
+        <div>{bookingsT.serviceLabel}</div>
+        <div>{bookingsT.employeeLabel}</div>
+        <div>{servicesT.priceLabel}</div>
+        <div>{bookingsT.statusAll}</div>
       </div>
 
       {/* Rows */}
@@ -84,20 +103,22 @@ export function WorkListView({ bookings, onBookingClick }: WorkListViewProps) {
               <span>{formatTime(booking.start_time)}</span>
             </div>
             <div className="flex items-center gap-1 truncate">
-              {booking.customers?.full_name || "Unknown"}
+              {booking.customers?.full_name || bookingsT.unknownCustomer}
               {problems.includes("new_customer") && (
-                <span className="text-[8px] px-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">New</span>
+                <span className="text-[8px] px-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                  {dashboardT.tabNew || "New"}
+                </span>
               )}
               {problems.includes("missing_contact") && (
                 <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
               )}
             </div>
             <div className="truncate text-muted-foreground">
-              {booking.services?.name || "No service"}
+              {booking.services?.name || bookingsT.unknownService}
             </div>
             <div className="flex items-center gap-1 truncate text-muted-foreground">
               <User className="h-3 w-3 shrink-0" />
-              {booking.employees?.full_name || "Unassigned"}
+              {booking.employees?.full_name || bookingsT.unknownEmployee}
             </div>
             <div className="text-muted-foreground">
               {booking.services?.price_cents != null

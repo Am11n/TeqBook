@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,8 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getCurrentUser, signOut } from "@/lib/services/auth-service";
 import { canAccessSettings } from "@/lib/utils/access-control";
-import { getRoleDisplayName } from "@/lib/utils/access-control";
 import { getInitials } from "@/lib/utils/dashboard/dashboard-utils";
+import { useLocale } from "@/components/locale-provider";
+import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { translations } from "@/i18n/translations";
+import { resolveNamespace } from "@/i18n/resolve-namespace";
 import type { Salon, Profile } from "@/lib/types";
 
 interface UserMenuProps {
@@ -28,6 +31,20 @@ interface UserMenuProps {
 export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMenuProps) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const { locale } = useLocale();
+  const appLocale = normalizeLocale(locale);
+  const settingsT = useMemo(
+    () => resolveNamespace("settings", translations[appLocale].settings),
+    [appLocale],
+  );
+  const dashboardT = useMemo(
+    () => resolveNamespace("dashboard", translations[appLocale].dashboard),
+    [appLocale],
+  );
+  const employeesT = useMemo(
+    () => resolveNamespace("employees", translations[appLocale].employees),
+    [appLocale],
+  );
 
   useEffect(() => {
     async function loadUserEmail() {
@@ -52,7 +69,22 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
   const displayName =
     profile?.first_name && profile?.last_name
       ? `${profile.first_name} ${profile.last_name}`
-      : userEmail || "User";
+      : userEmail || settingsT.auditTrailUnknownActor || "User";
+
+  const roleDisplayName = (() => {
+    switch (userRole) {
+      case "owner":
+        return employeesT.roleOwner || "Owner";
+      case "manager":
+        return employeesT.roleManager || "Manager";
+      case "staff":
+        return employeesT.roleStaff || "Staff";
+      case "superadmin":
+        return "Super Admin";
+      default:
+        return settingsT.auditTrailUnknownActor || "Unknown";
+    }
+  })();
 
   return (
     <div suppressHydrationWarning>
@@ -86,11 +118,11 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">{displayName}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {salon?.name || "Salon"}
+                {salon?.name || settingsT.salonSectionTitle || "Salon"}
               </p>
               {userRole && !isMobile && (
                 <p className="text-xs leading-none text-muted-foreground">
-                  {getRoleDisplayName(userRole)}
+                  {roleDisplayName}
                 </p>
               )}
             </div>
@@ -100,7 +132,7 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
             <DropdownMenuItem asChild>
               <Link href="/profile" prefetch={true} className="flex items-center gap-2 cursor-pointer">
                 <User className="h-4 w-4" />
-                <span>My profile</span>
+                <span>{settingsT.profileTitle || "My profile"}</span>
               </Link>
             </DropdownMenuItem>
           )}
@@ -111,7 +143,11 @@ export function UserMenu({ profile, salon, userRole, isMobile = false }: UserMen
             className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
-            <span>{loggingOut ? "Logging out..." : "Log out"}</span>
+            <span>
+              {loggingOut
+                ? `${dashboardT.logout || "Log out"}...`
+                : dashboardT.logout || "Log out"}
+            </span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
