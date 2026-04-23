@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 /**
  * Admin Layout (route group)
  *
- * Auth guard for all admin pages. Redirects to /login if the user is not a superadmin.
- * Admin pages use AdminShell individually for their layout chrome.
+ * Middleware now enforces auth/superadmin at server boundary.
+ * This layout keeps a client-side guard only as UX fallback.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { isSuperAdmin, loading } = useCurrentSalon();

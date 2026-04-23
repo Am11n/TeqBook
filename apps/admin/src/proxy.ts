@@ -7,17 +7,13 @@ import {
   generateRequestId,
 } from "@teqbook/shared";
 
-/**
- * Admin app middleware.
- * Enforces server-side auth/superadmin checks for admin pages.
- */
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const ADMIN_COOKIE_NAME = "sb-admin-auth-token";
 const ADMIN_LOGIN_PATH = "/login";
 const PUBLIC_PATHS = new Set([ADMIN_LOGIN_PATH]);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get(REQUEST_ID_HEADER) || generateRequestId();

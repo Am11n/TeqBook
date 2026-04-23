@@ -307,11 +307,34 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ## P1 Checklist (Høy prioritet)
 
+### P1 Arbeidslogg (detaljert)
+
+##### 2026-04-23 - P1.5 Admin route guard (lukket)
+
+- **Tidspunkt:** 2026-04-23
+- **P1-referanse:** 5
+- **Mål:** Flytte admin-auth enforcement til server boundary og bruke klientguard kun som fallback.
+- **Utført arbeid (detaljert):**
+  - Implementerte server-side auth/superadmin-check i `apps/admin/middleware.ts`:
+    - Uautentisert tilgang til beskyttede ruter redirectes til `/login`.
+    - Innlogget ikke-superadmin redirectes til `/login`.
+    - Innlogget superadmin får tilgang.
+    - `/login` er eksplisitt offentlig allowlist.
+  - Implementerte Next 16 proxy entrypoint i `apps/admin/src/proxy.ts` med samme enforcement-logikk.
+  - Oppdaterte `apps/admin/src/app/(admin)/layout.tsx` til å tydelig være klient-fallback (UX), ikke primær sikkerhetsgrense.
+- **Verifikasjon/evidens:**
+  - Runtime-test:
+    - `GET http://localhost:3003/users` -> `307 Temporary Redirect`, `location: /login`.
+    - `GET http://localhost:3003/login` -> `200 OK`.
+  - Responser inkluderte `x-request-id`, som bekrefter at proxy/middleware-laget håndterte requesten.
+- **Resultat:** Bestått.
+- **Neste steg:** Fortsette med P1.6.
+
 ### 5) Admin route guard er hovedsakelig klientstyrt
 
-- [ ] Flytt auth/superadmin enforcement til server boundary (middleware/server layout).
-- [ ] Behold klientguard kun som UX-fallback.
-- [ ] Test uautorisert tilgang direkte mot admin-ruter.
+- [x] Flytt auth/superadmin enforcement til server boundary (middleware/server layout).
+- [x] Behold klientguard kun som UX-fallback.
+- [x] Test uautorisert tilgang direkte mot admin-ruter.
 
 **Berørte filer**
 - `apps/admin/middleware.ts`
