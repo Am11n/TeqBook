@@ -82,7 +82,9 @@ async function sendCancellationNotifications(
   salonId: string,
   bookingId: string,
   reason: string | null | undefined,
-  options: { booking?: Booking; customerEmail?: string; language?: string } | undefined,
+  options:
+    | { booking?: Booking; customerEmail?: string; language?: string; actionToken?: string }
+    | undefined,
   logContext: Record<string, unknown>
 ) {
   try {

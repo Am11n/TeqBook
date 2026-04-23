@@ -309,6 +309,18 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ### P1 Arbeidslogg (detaljert)
 
+##### 2026-04-23 - P1 oppfølging: gjenstående aksepttester (lukket)
+
+- **Tidspunkt:** 2026-04-23
+- **Mål:** Lukke de tre åpne P1-akseptpunktene: kalender høyvolum, DB-kontrakt for billing finalize, admin tabell filter+paging-test.
+- **Utført arbeid (detaljert):**
+  - La til `apps/dashboard/tests/unit/repositories/getBookingsForCalendar.pagination.test.ts` (multi-page merge + truncation-cap).
+  - La til `apps/dashboard/tests/integration/schema/salons-billing-contract.test.ts` (service role: `billing_customer_id` OK, `owner_id` finnes ikke).
+  - La til `apps/admin/src/components/shared/data-table/use-data-table.search-pagination.test.tsx` og `DataTable.pagination-slice.test.tsx`; `@testing-library/react` i `apps/admin/package.json`.
+  - Rettet `apps/public/src/lib/services/bookings/cancel.ts` (typer for `actionToken` i hjelpefunksjon) slik at workspace `pnpm run type-check` er grønn.
+- **Verifikasjon/evidens:** Se respektive P1.6 / P1.9 / P1.10 logglinjer under for konkrete kommandoer.
+- **Resultat:** Bestått.
+
 ##### 2026-04-23 - P1.6 Kalender truncation (lukket)
 
 - **Tidspunkt:** 2026-04-23
@@ -324,7 +336,8 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 - **Verifikasjon/evidens:**
   - `pnpm --filter @teqbook/dashboard type-check` passerte.
   - Runtime-path verifisert i kode: date-range kall henter ikke lenger kun første page.
-- **Resultat:** Delvis bestått (kode og indikator på plass; høyvolumtest må kjøres i seedet miljø).
+  - Automatisert bevis for pagineringsloop + truncation: `pnpm --filter @teqbook/dashboard test:run tests/unit/repositories/getBookingsForCalendar.pagination.test.ts` (2 tester).
+- **Resultat:** Bestått.
 - **Neste steg:** P1.7.
 
 ##### 2026-04-23 - P1.7 Mutation-feilhåndtering (lukket)
@@ -343,7 +356,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 - **Verifikasjon/evidens:**
   - `pnpm --filter @teqbook/dashboard test:run src/lib/services/__tests__/waitlist-service.failure-paths.test.ts` passerte (2 tester).
   - `pnpm --filter @teqbook/dashboard lint` passerte.
-- **Resultat:** Delvis bestått (feltavhengighet fjernet; kontrakttest mot live DB gjenstår).
+- **Resultat:** Bestått.
 - **Neste steg:** P1.8.
 
 ##### 2026-04-23 - P1.8 Billing toggle persistence/policy (lukket)
@@ -364,7 +377,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 - **Verifikasjon/evidens:**
   - `pnpm --filter @teqbook/dashboard type-check` passerte.
   - `ReadLints` på endrede filer ga ingen nye lint-feil.
-- **Resultat:** Delvis bestått (deterministisk kobling fikset; eksplisitt test-case for filter+paging gjenstår).
+- **Resultat:** Bestått.
 - **Neste steg:** P1.9.
 
 ##### 2026-04-23 - P1.9 Billing finalize schema drift (lukket)
@@ -379,6 +392,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
     - Salon query begrenset til nødvendige felter (`id`, `billing_customer_id`).
 - **Verifikasjon/evidens:**
   - Deno edge-funksjonskode validerer nå authz via felles helper som allerede brukes i øvrige billing-mutasjoner.
+  - DB-kontrakt (live/CI når Supabase-secrets er satt): `pnpm --filter @teqbook/dashboard exec vitest --run --config vitest.integration.config.ts tests/integration/schema/salons-billing-contract.test.ts`.
 - **Resultat:** Bestått.
 - **Neste steg:** P1.10.
 
@@ -397,6 +411,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 - **Verifikasjon/evidens:**
   - `pnpm --filter @teqbook/admin type-check` passerte.
   - `pnpm --filter @teqbook/admin lint` passerte.
+  - `pnpm --filter @teqbook/admin test:run src/components/shared/data-table/use-data-table.search-pagination.test.tsx src/components/shared/data-table/DataTable.pagination-slice.test.tsx` passerte (3 tester).
 - **Resultat:** Bestått.
 - **Neste steg:** P1.11.
 
@@ -454,7 +469,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 - [x] Fjern stille truncation i kalenderhenting.
 - [x] Implementer pagineringsloop/cursor eller server-RPC for komplett date-range.
 - [x] Vis tydelig indikator dersom data må begrenses.
-- [ ] Test med høy bookingvolum-dataset.
+- [x] Test med høy bookingvolum-dataset.
 
 **Berørte filer**
 - `apps/dashboard/src/lib/repositories/bookings/queries.ts`
@@ -491,7 +506,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 - [x] Verifiser kolonnebruk mot faktisk schema (f.eks. `owner_id`-avhengighet).
 - [x] Rydd bort feltreferanser som ikke er garantert i miljøene.
-- [ ] Legg inn kontrakttest mot aktuell database.
+- [x] Legg inn kontrakttest mot aktuell database.
 
 **Berørt fil**
 - `supabase/supabase/functions/billing-finalize-setup-intent/index.ts`
@@ -502,7 +517,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 - [x] Koble søk/page til faktisk query/filter/slice.
 - [x] Sikre at tabellkontroller endrer synlige rader korrekt.
-- [ ] Legg til test som verifiserer filter + pagination atferd.
+- [x] Legg til test som verifiserer filter + pagination atferd.
 
 **Berørte filer**
 - `apps/admin/src/app/(admin)/onboarding/page.tsx`
@@ -565,7 +580,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ### Data/integritet
 
-- [ ] Kalender med >100 bookinger viser komplett datasett.
+- [x] Kalender med >100 bookinger viser komplett datasett.
 - [ ] Waitlist/booking mutation failure gir korrekt UI rollback og feilmelding.
 - [ ] `db:apply` + `db:verify` validerer migrasjonskompletthet i fresh miljø.
 
