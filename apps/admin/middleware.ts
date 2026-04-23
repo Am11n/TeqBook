@@ -10,6 +10,9 @@ import {
 /**
  * Admin app middleware.
  * Enforces server-side auth/superadmin checks for admin pages.
+ *
+ * Keep this at the app root as `middleware.ts` only. A duplicate `src/proxy.ts` has caused Vercel
+ * deploys to fail tracing (`middleware.js.nft.json` ENOENT) on Next.js 16.x.
  */
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";

@@ -442,7 +442,7 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
     - Innlogget ikke-superadmin redirectes til `/login`.
     - Innlogget superadmin får tilgang.
     - `/login` er eksplisitt offentlig allowlist.
-  - Implementerte Next 16 proxy entrypoint i `apps/admin/src/proxy.ts` med samme enforcement-logikk.
+  - Admin auth enforcement ligger i `apps/admin/middleware.ts` (rot); unngå duplikat `src/proxy.ts` som kan gi Vercel `middleware.js.nft.json` ENOENT med Next 16.
   - Oppdaterte `apps/admin/src/app/(admin)/layout.tsx` til å tydelig være klient-fallback (UX), ikke primær sikkerhetsgrense.
 - **Verifikasjon/evidens:**
   - Runtime-test:
