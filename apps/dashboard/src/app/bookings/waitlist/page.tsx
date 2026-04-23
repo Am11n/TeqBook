@@ -351,26 +351,42 @@ export default function WaitlistPage() {
 
   const handleCancel = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    await cancelEntry(salon.id, entry.id);
+    const { error: cancelError } = await cancelEntry(salon.id, entry.id);
+    if (cancelError) {
+      setError(m(cancelError));
+      return;
+    }
     await loadEntries();
   };
 
   const handleRemove = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    await removeFromWaitlist(salon.id, entry.id);
+    const { error: removeError } = await removeFromWaitlist(salon.id, entry.id);
+    if (removeError) {
+      setError(m(removeError));
+      return;
+    }
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
   };
 
   const handleSetCooldown = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
     const cooldownUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    await markAsCooldown(salon.id, entry.id, cooldownUntil, "manual");
+    const { error: cooldownError } = await markAsCooldown(salon.id, entry.id, cooldownUntil, "manual");
+    if (cooldownError) {
+      setError(m(cooldownError));
+      return;
+    }
     await loadEntries();
   };
 
   const handleReactivate = async (entry: WaitlistEntry) => {
     if (!salon?.id) return;
-    await reactivateFromCooldown(salon.id, entry.id);
+    const { error: reactivateError } = await reactivateFromCooldown(salon.id, entry.id);
+    if (reactivateError) {
+      setError(m(reactivateError));
+      return;
+    }
     await loadEntries();
   };
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -47,7 +48,7 @@ export default function BillingSettingsPage() {
     handleCancelSubscription,
     handleUpdatePaymentMethod,
   } = useBillingActions();
-  const { refreshSalon } = useCurrentSalon();
+  const { refreshSalon, profile, user } = useCurrentSalon();
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
@@ -59,6 +60,10 @@ export default function BillingSettingsPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [smsDisabled, setSmsDisabled] = useState(false);
   const [emailOnly, setEmailOnly] = useState(false);
+  const [prefsDirty, setPrefsDirty] = useState(false);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const [prefsSaveError, setPrefsSaveError] = useState<string | null>(null);
+  const [prefsSavedAt, setPrefsSavedAt] = useState<number | null>(null);
   const [smsUsage, setSmsUsage] = useState<SmsUsageSummaryMetrics | null>(null);
   const [smsUsageLoading, setSmsUsageLoading] = useState(false);
   /** Plan has SMS_NOTIFICATIONS in admin plan features — otherwise the whole SMS block is hidden. */
@@ -70,6 +75,17 @@ export default function BillingSettingsPage() {
   const [smsUsageMessage, setSmsUsageMessage] = useState<string | null>(null);
   const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
   const pendingSetupIntentIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const billingPrefs = (
+      (profile as { user_preferences?: { billingNotifications?: { smsDisabled?: boolean; emailOnly?: boolean } } | null } | null)
+        ?.user_preferences?.billingNotifications
+    ) ?? null;
+    setSmsDisabled(Boolean(billingPrefs?.smsDisabled));
+    setEmailOnly(Boolean(billingPrefs?.emailOnly));
+    setPrefsDirty(false);
+    setPrefsSaveError(null);
+  }, [profile]);
 
   const plans = getPlans({
     planStarter: t.planStarter,
@@ -164,6 +180,35 @@ export default function BillingSettingsPage() {
       setPaymentFormType("payment_method");
       setShowPaymentForm(true);
     }
+  };
+
+  const handleSaveBillingNotificationPrefs = async () => {
+    if (!user?.id) {
+      setPrefsSaveError("Not logged in");
+      return;
+    }
+    setPrefsSaving(true);
+    setPrefsSaveError(null);
+    const currentPrefs =
+      (profile as { user_preferences?: Record<string, unknown> | null } | null)?.user_preferences ?? {};
+    const nextPrefs = {
+      ...currentPrefs,
+      billingNotifications: {
+        smsDisabled,
+        emailOnly,
+      },
+    };
+    const { error: saveError } = await supabase
+      .from("profiles")
+      .update({ user_preferences: nextPrefs })
+      .eq("id", user.id);
+    setPrefsSaving(false);
+    if (saveError) {
+      setPrefsSaveError(saveError.message);
+      return;
+    }
+    setPrefsDirty(false);
+    setPrefsSavedAt(Date.now());
   };
 
   const estimate = useMemo(() => {
@@ -402,7 +447,10 @@ export default function BillingSettingsPage() {
               <Checkbox
                 id="sms-disabled"
                 checked={smsDisabled}
-                onCheckedChange={(checked) => setSmsDisabled(Boolean(checked))}
+                onCheckedChange={(checked) => {
+                  setSmsDisabled(Boolean(checked));
+                  setPrefsDirty(true);
+                }}
               />
               <Label htmlFor="sms-disabled">{t.billingSmsDisableSending}</Label>
             </div>
@@ -410,10 +458,33 @@ export default function BillingSettingsPage() {
               <Checkbox
                 id="email-only"
                 checked={emailOnly}
-                onCheckedChange={(checked) => setEmailOnly(Boolean(checked))}
+                onCheckedChange={(checked) => {
+                  setEmailOnly(Boolean(checked));
+                  setPrefsDirty(true);
+                }}
               />
               <Label htmlFor="email-only">{t.billingSmsEmailOnlyFallback}</Label>
             </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSaveBillingNotificationPrefs}
+                disabled={!prefsDirty || prefsSaving}
+              >
+                {prefsSaving ? "Saving..." : "Save notification policy"}
+              </Button>
+              {prefsSavedAt ? (
+                <span className="text-xs text-muted-foreground">
+                  Saved {new Date(prefsSavedAt).toLocaleTimeString()}
+                </span>
+              ) : null}
+            </div>
+            {prefsSaveError ? (
+              <div className="rounded-md border border-red-300 bg-red-50 p-2 text-xs text-red-900">
+                {prefsSaveError}
+              </div>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               {t.billingSmsTogglesHint}
             </p>

@@ -12,6 +12,7 @@ import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 import type { Booking } from "@/lib/types";
 import { UUID_REGEX, type SendCancellationBody } from "../_shared/types";
 import { prepareBookingForNotification, notifySalonStaffCancellation } from "../_shared/notify-staff";
+import { getBillingNotificationPolicy } from "../_shared/notification-policy";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
@@ -170,6 +171,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting: 10 requests per minute per user
     const userId = authResult.user.id;
+    const notificationPolicy = await getBillingNotificationPolicy(request, response, requestId, userId);
     const rateLimitResult = await checkRateLimit(
       userId,
       "booking-cancellation",
@@ -257,7 +259,7 @@ export async function POST(request: NextRequest) {
       salonId,
       recipientUserId: null,
       recipientEmail: customerEmail,
-      recipientPhone: customerPhoneFromRow,
+      recipientPhone: notificationPolicy.smsDisabled ? null : customerPhoneFromRow,
       language,
       cancellationReason: cancellationReason ?? undefined,
     }).catch((emailError) => {
@@ -276,7 +278,11 @@ export async function POST(request: NextRequest) {
       logInfo("No customer email for cancellation notification", { bookingId: booking.id });
     }
 
-    results.salonInApp = await notifySalonStaffCancellation(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
+    if (!notificationPolicy.emailOnly) {
+      results.salonInApp = await notifySalonStaffCancellation(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
+    } else {
+      results.salonInApp = { success: true, sent: 0, total: 0 };
+    }
 
     const jsonResponse = NextResponse.json(results);
     

@@ -49,6 +49,7 @@ export default function CalendarPage() {
     setSelectedDate,
     bookingsForDayByEmployee,
     hasBookingsForDay,
+    dataTruncated,
     refreshBookings,
   } = useCalendar({
     translations: {
@@ -107,6 +108,11 @@ export default function CalendarPage() {
 
         {salonError && (
           <ErrorMessage message={salonError} variant="destructive" className="mb-4" />
+        )}
+        {dataTruncated && (
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Showing a limited set of bookings for performance. Narrow the date range or employee filter to view all.
+          </div>
         )}
 
         <CalendarControls

@@ -35,6 +35,9 @@ export function DataTable<T>({
   });
 
   const hasRowActions = !!(rowActions && rowActions.length > 0);
+  const pagedRows = onPageChange
+    ? dt.sortedData.slice(page * pageSize, page * pageSize + pageSize)
+    : dt.sortedData;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -134,7 +137,7 @@ export function DataTable<T>({
                   </TableCell>
                 </TableRow>
               ) : (
-                dt.sortedData.map((row) => {
+                pagedRows.map((row) => {
                   const key = rowKey(row);
                   const isSelected = dt.selectedKeys.has(key);
                   return (

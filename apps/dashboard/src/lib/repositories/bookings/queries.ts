@@ -37,12 +37,12 @@ export async function getBookingsForCurrentSalon(
 export async function getBookingsForCalendar(
   salonId: string,
   options?: { page?: number; pageSize?: number; startDate?: string; endDate?: string }
-): Promise<{ data: CalendarBooking[] | null; error: string | null; total?: number }> {
+): Promise<{ data: CalendarBooking[] | null; error: string | null; total?: number; truncated?: boolean }> {
   try {
+    const explicitPage = typeof options?.page === "number" || typeof options?.pageSize === "number";
     const page = options?.page ?? 0;
     const pageSize = options?.pageSize ?? 100;
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
+    const maxRows = 5000;
 
     let query = supabase
       .from("bookings")
@@ -55,12 +55,39 @@ export async function getBookingsForCalendar(
     if (options?.startDate) query = query.gte("start_time", options.startDate);
     if (options?.endDate) query = query.lte("start_time", options.endDate);
 
-    const { data, error, count } = await query
-      .order("start_time", { ascending: true })
-      .range(from, to);
+    if (explicitPage) {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error, count } = await query
+        .order("start_time", { ascending: true })
+        .range(from, to);
 
-    if (error) return { data: null, error: error.message };
-    return { data: data as unknown as CalendarBooking[], error: null, total: count ?? undefined };
+      if (error) return { data: null, error: error.message };
+      return { data: data as unknown as CalendarBooking[], error: null, total: count ?? undefined, truncated: false };
+    }
+
+    const allRows: CalendarBooking[] = [];
+    let totalCount: number | undefined;
+    let truncated = false;
+    for (let currentPage = 0; currentPage * pageSize < maxRows; currentPage += 1) {
+      const from = currentPage * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error, count } = await query
+        .order("start_time", { ascending: true })
+        .range(from, to);
+
+      if (error) return { data: null, error: error.message };
+      if (typeof count === "number") totalCount = count;
+      const chunk = (data ?? []) as unknown as CalendarBooking[];
+      allRows.push(...chunk);
+      if (chunk.length < pageSize) break;
+      if (allRows.length >= maxRows) {
+        truncated = true;
+        break;
+      }
+    }
+
+    return { data: allRows.slice(0, maxRows), error: null, total: totalCount, truncated };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Unknown error" };
   }

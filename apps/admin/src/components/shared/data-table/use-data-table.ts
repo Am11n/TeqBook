@@ -65,6 +65,7 @@ export function useDataTable<T>({
 
   const total = totalCount ?? data.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const clientFilteringEnabled = totalCount === undefined || totalCount === data.length;
 
   const allKeys = useMemo(() => new Set(data.map((row) => rowKey(row))), [data, rowKey]);
   const allSelected = allKeys.size > 0 && [...allKeys].every((k) => selectedKeys.has(k));
@@ -97,10 +98,23 @@ export function useDataTable<T>({
     [sortColumn, sortDirection, onSortChange],
   );
 
+  const filteredData = useMemo(() => {
+    if (!clientFilteringEnabled) return data;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return data;
+    return data.filter((row) => {
+      return columns.some((col) => {
+        const raw = col.getValue ? col.getValue(row) : (row as Record<string, unknown>)[col.id];
+        if (raw == null) return false;
+        return String(raw).toLowerCase().includes(query);
+      });
+    });
+  }, [clientFilteringEnabled, searchQuery, data, columns]);
+
   const sortedData = useMemo(() => {
-    if (!sortColumn) return data;
+    if (!sortColumn) return filteredData;
     const col = columns.find((c) => c.id === sortColumn);
-    return [...data].sort((a, b) => {
+    return [...filteredData].sort((a, b) => {
       const aVal = col?.getValue ? col.getValue(a) : (a as Record<string, unknown>)[sortColumn];
       const bVal = col?.getValue ? col.getValue(b) : (b as Record<string, unknown>)[sortColumn];
       if (aVal == null && bVal == null) return 0;
@@ -126,7 +140,10 @@ export function useDataTable<T>({
       }
       return sortDirection === "desc" ? -cmp : cmp;
     });
-  }, [data, sortColumn, sortDirection, columns]);
+  }, [filteredData, data, sortColumn, sortDirection, columns]);
+
+  const effectiveTotal = clientFilteringEnabled ? filteredData.length : total;
+  const effectiveTotalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
 
   const handleSaveView = useCallback(() => {
     if (!storageKey || !newViewName.trim()) return;
@@ -178,6 +195,7 @@ export function useDataTable<T>({
     columnVisibility, setColumnVisibility, visibleColumns,
     selectedKeys, setSelectedKeys, allSelected, someSelected, toggleAll, toggleRow,
     savedViews, newViewName, setNewViewName, handleSaveView, handleApplyView, handleDeleteView,
-    total, totalPages,
+    total: effectiveTotal,
+    totalPages: effectiveTotalPages,
   };
 }

@@ -25,6 +25,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
   const [density, setDensity] = useState<CalendarDensity>("comfortable");
   const [filterEmployeeId, setFilterEmployeeId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(() => getTodayLocal());
+  const [dataTruncated, setDataTruncated] = useState(false);
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -95,7 +96,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
         endOfPeriod.setHours(23, 59, 59, 999);
       }
 
-      const { data: bookingsData, error: bookingsError } = await getBookingsForCalendar(salon.id, {
+      const { data: bookingsData, error: bookingsError, truncated } = await getBookingsForCalendar(salon.id, {
         startDate: startOfPeriod.toISOString(),
         endDate: endOfPeriod.toISOString(),
       });
@@ -107,6 +108,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
       }
 
       setBookings(bookingsData ?? []);
+      setDataTruncated(Boolean(truncated));
       setLoading(false);
     }
 
@@ -165,7 +167,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
       endOfPeriod.setHours(23, 59, 59, 999);
     }
 
-    const { data: bookingsData, error: bookingsError } = await getBookingsForCalendar(salon.id, {
+    const { data: bookingsData, error: bookingsError, truncated } = await getBookingsForCalendar(salon.id, {
       startDate: startOfPeriod.toISOString(),
       endDate: endOfPeriod.toISOString(),
     });
@@ -177,6 +179,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     }
 
     setBookings(bookingsData ?? []);
+    setDataTruncated(Boolean(truncated));
     setLoading(false);
   };
 
@@ -195,6 +198,7 @@ export function useCalendar({ translations }: UseCalendarOptions) {
     setSelectedDate,
     bookingsForDayByEmployee,
     hasBookingsForDay,
+    dataTruncated,
     refreshBookings,
   };
 }

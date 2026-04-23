@@ -100,15 +100,23 @@ function BookingsContent() {
 
   const handleConfirmBooking = useCallback(async (booking: Booking) => {
     if (!salon?.id) return;
-    await updateBookingStatus(salon.id, booking.id, "confirmed");
+    const { error: updateError } = await updateBookingStatus(salon.id, booking.id, "confirmed");
+    if (updateError) {
+      setError(updateError);
+      return;
+    }
     await loadBookings();
-  }, [salon?.id, loadBookings]);
+  }, [salon?.id, loadBookings, setError]);
 
   const handleCompleteBooking = useCallback(async (booking: Booking) => {
     if (!salon?.id) return;
-    await updateBookingStatus(salon.id, booking.id, "completed");
+    const { error: updateError } = await updateBookingStatus(salon.id, booking.id, "completed");
+    if (updateError) {
+      setError(updateError);
+      return;
+    }
     await loadBookings();
-  }, [salon?.id, loadBookings]);
+  }, [salon?.id, loadBookings, setError]);
 
   useTabActions(
     <Button

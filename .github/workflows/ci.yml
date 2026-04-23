@@ -57,7 +57,6 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -130,7 +129,6 @@ jobs:
   coverage-extended:
     name: Coverage Extended (Public/Admin)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -142,6 +140,9 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Coverage public/admin
         run: pnpm run test:coverage:public && pnpm run test:coverage:admin
+      - name: Enforce public/admin minimum coverage
+        run: |
+          node -e "const fs=require('fs'); const checks=[['apps/public/coverage/coverage-summary.json','public'],['apps/admin/coverage/coverage-summary.json','admin']]; const min=40; for(const [path,name] of checks){ if(!fs.existsSync(path)){ console.error(name+': missing coverage summary at '+path); process.exit(1);} const json=JSON.parse(fs.readFileSync(path,'utf8')); const lines=json.total?.lines?.pct ?? 0; const statements=json.total?.statements?.pct ?? 0; const functions=json.total?.functions?.pct ?? 0; const branches=json.total?.branches?.pct ?? 0; if(lines<min||statements<min||functions<min||branches<min){ console.error(name+': coverage below minimum '+min+'% -> lines='+lines+', statements='+statements+', functions='+functions+', branches='+branches); process.exit(1);} console.log(name+': coverage gate passed'); }"
       - name: Upload extended coverage
         uses: actions/upload-artifact@v4
         with:
@@ -210,6 +211,12 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E critical tests
         run: pnpm run test:e2e:critical
+        env:
+          CI: "true"
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - name: E2E journey safety checks
+        run: pnpm exec playwright test tests/e2e/booking-flow.spec.ts tests/e2e/billing-flow.spec.ts tests/e2e/admin-operations.spec.ts
         env:
           CI: "true"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

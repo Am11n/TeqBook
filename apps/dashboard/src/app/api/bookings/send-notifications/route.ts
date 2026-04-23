@@ -13,6 +13,7 @@ import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 import type { Booking } from "@/lib/types";
 import { UUID_REGEX, type SendNotificationsBody } from "../_shared/types";
 import { prepareBookingForNotification, notifySalonStaff } from "../_shared/notify-staff";
+import { getBillingNotificationPolicy } from "../_shared/notification-policy";
 
 export async function POST(request: NextRequest) {
   const response = NextResponse.next();
@@ -206,6 +207,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting: 10 requests per minute per user
     const userId = authResult.user.id;
+    const notificationPolicy = await getBillingNotificationPolicy(request, response, requestId, userId);
     const rateLimitResult = await checkRateLimit(
       userId,
       "booking-notifications",
@@ -274,7 +276,7 @@ export async function POST(request: NextRequest) {
       salonId,
       recipientUserId: null,
       recipientEmail: customerEmail,
-      recipientPhone: customerPhoneFromRow,
+      recipientPhone: notificationPolicy.smsDisabled ? null : customerPhoneFromRow,
       language,
     }).catch((err) => {
       logWarn("Failed to send booking confirmation via unified notification service", {
@@ -305,7 +307,11 @@ export async function POST(request: NextRequest) {
 
     results.reminders = reminderResult;
 
-    results.inApp = await notifySalonStaff(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
+    if (!notificationPolicy.emailOnly) {
+      results.inApp = await notifySalonStaff(request, response, bookingForNotification, salonId, salon?.timezone || "UTC");
+    } else {
+      results.inApp = { success: true, sent: 0 };
+    }
 
     const jsonResponse = NextResponse.json(results);
     

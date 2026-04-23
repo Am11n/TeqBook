@@ -10,7 +10,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { authenticateRequest } from "../_shared/auth.ts";
+import { authenticateRequest, authorizeSalonAccess } from "../_shared/auth.ts";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
 
 function extractIdentifier(
@@ -129,7 +129,7 @@ serve(async (req) => {
 
     const { data: salon, error: salonError } = await supabaseUser
       .from("salons")
-      .select("id, owner_id, billing_customer_id")
+      .select("id, billing_customer_id")
       .eq("id", salon_id)
       .single();
 
@@ -140,7 +140,14 @@ serve(async (req) => {
       });
     }
 
-    if (salon.owner_id !== user.id) {
+    const authz = await authorizeSalonAccess(
+      user.id,
+      salon_id,
+      supabaseUrl,
+      supabaseServiceKey
+    );
+
+    if (!authz.allowed) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
