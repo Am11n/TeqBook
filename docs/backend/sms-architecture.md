@@ -97,7 +97,11 @@ Behavior:
 - Uses service role to update `sms_log` by `provider_message_id`
 
 Current authorization model:
-- Checks `x-twilio-signature` header against `TWILIO_STATUS_WEBHOOK_TOKEN` shared secret.
+- Verifies Twilio HMAC signature (`x-twilio-signature`) using `TWILIO_AUTH_TOKEN`.
+- Optional canonical URL support via `TWILIO_STATUS_WEBHOOK_URL` for proxy environments.
+- Replay protection:
+  - Rejects stale callbacks when `x-twilio-request-timestamp` is outside 5-minute skew window.
+  - Ignores status regressions (e.g., replay of older state after terminal update).
 
 ## Overage Preview (No Charging Yet)
 
@@ -133,7 +137,8 @@ Dashboard app runtime:
 Supabase Edge Function secrets:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `TWILIO_STATUS_WEBHOOK_TOKEN`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_STATUS_WEBHOOK_URL` (optional but recommended in production)
 - `SMS_OVERAGE_PREVIEW_TOKEN`
 
 See:

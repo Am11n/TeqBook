@@ -86,7 +86,8 @@ Edge functions have their own environment variables set in Supabase Dashboard:
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key (NEVER expose to client)
 - `RESEND_API_KEY` - For sending emails from edge functions
-- `TWILIO_STATUS_WEBHOOK_TOKEN` - Shared token checked by `sms-status-webhook`
+- `TWILIO_AUTH_TOKEN` - Used to verify Twilio webhook signatures (`sms-status-webhook`)
+- `TWILIO_STATUS_WEBHOOK_URL` - Optional canonical webhook URL used in signature validation
 - `SMS_OVERAGE_PREVIEW_TOKEN` - Bearer token for `billing-sms-overage-preview`
 
 **Optional:**

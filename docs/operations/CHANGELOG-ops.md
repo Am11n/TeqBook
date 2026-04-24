@@ -11,6 +11,12 @@
 
 ---
 
+## 2026-04-24
+
+- [kode/edge] Hardnet `sms-status-webhook` med ekte Twilio-signaturverifisering (HMAC med `TWILIO_AUTH_TOKEN`) + optional canonical URL (`TWILIO_STATUS_WEBHOOK_URL`) og replay-vern (timestamp-skjevhet + status-regresjonssperre). Filer: `supabase/supabase/functions/sms-status-webhook/index.ts` og speilet `supabase/functions/sms-status-webhook/index.ts`.
+- [test] La til webhook-sikkerhetstester (`index.test.ts`) som verifiserer spoofed-signature reject og gyldig signatur-aksept.
+- [docs] Oppdatert env-/integrasjonsdokumentasjon fra gammel `TWILIO_STATUS_WEBHOOK_TOKEN`-modell til faktisk signaturmodell.
+
 ## 2026-04-22
 
 - [remote] `supabase db push`: opprettet `user-assets` storage-bucket + avatar-policies for `INSERT/SELECT/DELETE` på `storage.objects` (sti `avatars/{userId}/{filename}`). Fikser profilbilde-opplasting som feilet med «Bucket not found». Migrasjon: `20260422092000_create_user_assets_bucket.sql`.

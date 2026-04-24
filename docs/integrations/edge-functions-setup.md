@@ -52,7 +52,7 @@ Siden Supabase Editor ikke støtter mapper, har vi inlinet auth-koden i hver fun
 
 **Merk:**
 - Denne funksjonen er satt opp med `verify_jwt = false` i `supabase/config.toml`.
-- Per nå validerer funksjonen `x-twilio-signature` mot en delt secret `TWILIO_STATUS_WEBHOOK_TOKEN`.
+- Funksjonen validerer `x-twilio-signature` med Twilio HMAC (`TWILIO_AUTH_TOKEN`), og kan bruke `TWILIO_STATUS_WEBHOOK_URL` som canonical URL i signaturverifisering.
 
 ---
 
@@ -92,7 +92,8 @@ STRIPE_PRICE_STARTER=price_xxxxx
 STRIPE_PRICE_PRO=price_xxxxx
 STRIPE_PRICE_BUSINESS=price_xxxxx
 STRIPE_WEBHOOK_SECRET=whsec_xxxxx
-TWILIO_STATUS_WEBHOOK_TOKEN=xxxxx
+TWILIO_AUTH_TOKEN=xxxxx
+TWILIO_STATUS_WEBHOOK_URL=https://<project-ref>.supabase.co/functions/v1/sms-status-webhook
 SMS_OVERAGE_PREVIEW_TOKEN=xxxxx
 ```
 

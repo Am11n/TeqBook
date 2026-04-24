@@ -148,13 +148,17 @@ Coverage and quality enforcement needed clearer structure across apps without br
 
 ### Change
 
-- Coverage policy split into:
+- Coverage policy was originally split into:
   - required `coverage` job (dashboard baseline)
   - non-blocking `coverage-extended` job for public/admin (progressive hardening)
 - Added `test:coverage:public` and `test:coverage:admin` scripts.
 - Added Vitest coverage setup for public/admin with baseline thresholds.
 - Added explicit thresholds to dashboard coverage config.
 - Build now depends on `format-check` and `coverage`.
+- **Status 2026-04-24:** This section is historical; CI is now stricter than described here:
+  - `security-scan` is blocking (no `continue-on-error`)
+  - `coverage-extended` is blocking with minimum gate for public/admin coverage summary
+  - `e2e` includes explicit booking/billing/admin critical journeys
 
 ### Files
 

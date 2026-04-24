@@ -12,7 +12,7 @@ Protected API endpoints require authentication via Supabase JWT token.
 Public booking/contact endpoints can be unauthenticated, but are rate-limited.
 
 Webhook/service exceptions:
-- `sms-status-webhook` uses `verify_jwt = false` and checks `x-twilio-signature` against `TWILIO_STATUS_WEBHOOK_TOKEN`.
+- `sms-status-webhook` uses `verify_jwt = false` and validates Twilio HMAC (`x-twilio-signature`) with `TWILIO_AUTH_TOKEN` (+ optional `TWILIO_STATUS_WEBHOOK_URL` for canonical URL matching).
 - `billing-sms-overage-preview` uses bearer token auth (`SMS_OVERAGE_PREVIEW_TOKEN`).
 
 ```typescript

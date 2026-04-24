@@ -148,6 +148,11 @@ function BookingsContent() {
     colEmployee: t.colEmployee, colCustomer: t.colCustomer,
     colStatus: t.colStatus, colType: t.colType, colNotes: t.colNotes,
     cancelButton: t.cancelButton,
+    actionConfirm: t.statusConfirmed,
+    actionComplete: t.statusCompleted,
+    actionCancel: t.cancelButton,
+    employeeUnavailableAria: t.colEmployee,
+    emptyMessage: t.emptyTitle,
   };
 
   const sortedBookingsForSidebar = useMemo(() => {

@@ -41,15 +41,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const navigationItems = useMemo(
     () =>
       buildNavigationItems({
-        goToDashboard: dashboardT.overview || "Go to dashboard",
-        goToCalendar: dashboardT.calendar || "Go to calendar",
-        newBooking: bookingsT.newBookingButton || "New booking",
-        newCustomer: homeT.addNewCustomer || "New customer",
-        manageEmployees: dashboardT.employees || "Manage employees",
-        manageServices: dashboardT.services || "Manage services",
-        manageCustomers: dashboardT.customers || "Manage customers",
-        manageShifts: dashboardT.shifts || "Manage shifts",
-        settings: dashboardT.settings || "Settings",
+        goToDashboard: dashboardT.overview ?? "",
+        goToCalendar: dashboardT.calendar ?? "",
+        newBooking: bookingsT.newBookingButton ?? "",
+        newCustomer: homeT.addNewCustomer ?? "",
+        manageEmployees: dashboardT.employees ?? "",
+        manageServices: dashboardT.services ?? "",
+        manageCustomers: dashboardT.customers ?? "",
+        manageShifts: dashboardT.shifts ?? "",
+        settings: dashboardT.settings ?? "",
       }),
     [dashboardT, bookingsT, homeT],
   );
@@ -198,6 +198,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <button
               onClick={onClose}
               className="rounded-lg p-1 hover:bg-slate-100"
+              aria-label={dashboardT.menu}
             >
               <X className="h-4 w-4 text-slate-400" />
             </button>
@@ -261,7 +262,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                             isSelected ? "text-white/60" : "text-slate-400"
                           }`}
                         >
-                          {dashboardT.menu || "Navigation"}
+                          {dashboardT.menu}
                         </span>
                       )}
                       <ArrowRight

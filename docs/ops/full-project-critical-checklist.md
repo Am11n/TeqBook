@@ -538,11 +538,80 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ## P2 Checklist (Viktig kvalitetsgjeld)
 
+### P2 Arbeidslogg (detaljert)
+
+##### 2026-04-24 - P2.12 i18n/a11y konsistens (lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **P2-referanse:** 12
+- **Mål:** Fjerne hardkodede strenger i sentrale dashboard-komponenter og forbedre lokalisering av aria/tooltip-tekst.
+- **Utført arbeid (detaljert):**
+  - `apps/dashboard/src/components/command-palette.tsx`:
+    - Fjernet engelske fallback-strenger i navigasjonslabels.
+    - Lokaliserte "navigation"-etikett i resultatrader via eksisterende `dashboardT.menu`.
+    - La til lokaliserbar `aria-label` for close-knapp.
+  - `apps/dashboard/src/components/bookings/BookingsTable.tsx`:
+    - Fjernet hardkodede tekster for confirm/complete/cancel tooltip.
+    - La til lokaliserbare action-labels + aria-labels for ikonknapper.
+    - Fjernet hardkodet employee-warning-tekst og knyttet til lokaliserbar tekst.
+    - Gjorde empty-state tekst lokaliserbar via `translations.emptyMessage`.
+  - `apps/dashboard/src/components/layout/dashboard/DashboardHeader.tsx`:
+    - Fjernet hardkodet `aria-label/title="Language"` og gjenbrukte `languageLabel` prop.
+  - `apps/dashboard/src/app/bookings/page.tsx`:
+    - Sender lokaliserte labels videre til `BookingsTable`.
+- **Verifikasjon/evidens:**
+  - `pnpm --filter @teqbook/dashboard type-check` passerte.
+  - `pnpm --filter @teqbook/dashboard lint` passerte.
+  - `pnpm --filter @teqbook/dashboard test:i18n` passerte (5 tester).
+- **Resultat:** Bestått.
+- **Neste steg:** P2.13.
+
+##### 2026-04-24 - P2.13 Twilio webhook hardening (lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **P2-referanse:** 13
+- **Mål:** Erstatte svak header-match med korrekt Twilio-signaturvalidering + replay-beskyttelse.
+- **Utført arbeid (detaljert):**
+  - Oppdaterte webhook i:
+    - `supabase/supabase/functions/sms-status-webhook/index.ts`
+    - `supabase/functions/sms-status-webhook/index.ts`
+  - Endringer:
+    - HMAC-SHA1 signaturvalidering av Twilio payload (`x-twilio-signature`) med `TWILIO_AUTH_TOKEN`.
+    - Støtte for canonical URL via `TWILIO_STATUS_WEBHOOK_URL`.
+    - Timestamp replay-guard (`x-twilio-request-timestamp`, 5 min vindu når header finnes).
+    - Status-regresjonssperre (avviser replay av eldre statuser etter nyere status).
+    - Bevarer idempotent respons for samme status.
+  - Refaktorerte til `handleSmsStatusWebhook(...)` + `import.meta.main` guard for testbarhet.
+  - La til testfil: `supabase/supabase/functions/sms-status-webhook/index.test.ts`.
+- **Verifikasjon/evidens:**
+  - `pnpm dlx deno-bin test --no-check supabase/supabase/functions/sms-status-webhook/index.test.ts` passerte (4 tester), inkludert spoofed-signature reject.
+- **Resultat:** Bestått.
+- **Neste steg:** P2.14.
+
+##### 2026-04-24 - P2.14 Dokumentasjon/gates synk (lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **P2-referanse:** 14
+- **Mål:** Synkronisere dokumentasjon med faktisk CI/gate-nivå og tydeliggjøre historiske "ready"-påstander.
+- **Utført arbeid (detaljert):**
+  - Oppdaterte gate-status i:
+    - `docs/ops/phase-b-implementation.md` (markerer historisk "non-blocking" og beskriver nåværende blocking gates).
+  - Markerte historisk status i:
+    - `docs/security/phase3-implementation-status.md` (presiserer at dokumentet er snapshot, ikke eneste source-of-truth for nåværende readiness).
+  - Oppdaterte Twilio-webhook docs til nytt auth-regime:
+    - `docs/backend/sms-architecture.md`
+    - `docs/api/README.md`
+    - `docs/env/environment-variables.md`
+    - `docs/integrations/edge-functions-setup.md`
+- **Verifikasjon/evidens:**
+  - Dokumenter oppdatert med konkrete gate- og secret-navn i tråd med implementert kode.
+- **Resultat:** Bestått.
+
 ### 12) i18n/a11y inkonsistens i sentrale UI-komponenter
 
-- [ ] Flytt hardkodede strenger til locale-map.
-- [ ] Lokaliser `aria-label` og annen skjermlesertekst.
-- [ ] Verifiser språkparitet for kjernekomponenter.
+- [x] Flytt hardkodede strenger til locale-map.
+- [x] Lokaliser `aria-label` og annen skjermlesertekst.
+- [x] Verifiser språkparitet for kjernekomponenter.
 
 **Eksempler**
 - `apps/dashboard/src/components/command-palette.tsx`
@@ -553,9 +622,9 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ### 13) Twilio webhook-verifisering bør hardnes
 
-- [ ] Implementer korrekt request-signaturverifisering (ikke kun statisk header-match).
-- [ ] Legg inn replay-beskyttelse og tydelig avvisning av ugyldige callbacks.
-- [ ] Test spoofed payload og forventet reject.
+- [x] Implementer korrekt request-signaturverifisering (ikke kun statisk header-match).
+- [x] Legg inn replay-beskyttelse og tydelig avvisning av ugyldige callbacks.
+- [x] Test spoofed payload og forventet reject.
 
 **Berørt fil**
 - `supabase/supabase/functions/sms-status-webhook/index.ts`
@@ -564,9 +633,9 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ### 14) Dokumentasjon vs faktiske gates må synkroniseres
 
-- [ ] Oppdater ops-dokumenter slik at de reflekterer ekte CI/testing nivå.
-- [ ] Fjern eller merk utdaterte "ready" påstander.
-- [ ] Link alltid til konkret evidens (job ID, rapport, logg).
+- [x] Oppdater ops-dokumenter slik at de reflekterer ekte CI/testing nivå.
+- [x] Fjern eller merk utdaterte "ready" påstander.
+- [x] Link alltid til konkret evidens (job ID, rapport, logg).
 
 ---
 

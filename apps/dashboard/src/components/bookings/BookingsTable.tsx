@@ -42,6 +42,11 @@ interface BookingsTableProps {
     statusCancelled: string;
     statusScheduled: string;
     cancelButton?: string;
+    actionConfirm?: string;
+    actionComplete?: string;
+    actionCancel?: string;
+    employeeUnavailableAria?: string;
+    emptyMessage?: string;
   };
   locale: string;
   hideDateColumn?: boolean;
@@ -80,8 +85,6 @@ export function BookingsTable({
   const timezone = salon?.timezone || "UTC";
   const hour12 = salon?.time_format === "12h" ? true : undefined;
   const fmtPrice = (cents: number) => formatPrice(cents, appLocale, salonCurrency);
-
-  const isNb = locale === "nb";
 
   const dateCol: ColumnDef<Booking> = {
     id: "date",
@@ -134,7 +137,11 @@ export function BookingsTable({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {booking.employees?.full_name ?? translations.unknownEmployee}
           {!hasEmployeeAvailable(booking, employees, shifts) && (
-            <span className="text-destructive" title="Employee not available at this time">
+            <span
+              className="text-destructive"
+              title={translations.employeeUnavailableAria ?? translations.colEmployee}
+              aria-label={translations.employeeUnavailableAria ?? translations.colEmployee}
+            >
               ⚠️
             </span>
           )}
@@ -174,11 +181,12 @@ export function BookingsTable({
                       size="icon"
                       className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                       onClick={() => onConfirmBooking(booking)}
+                      aria-label={translations.actionConfirm ?? translations.statusConfirmed}
                     >
                       <CheckCircle className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{isNb ? "Bekreft" : "Confirm"}</TooltipContent>
+                  <TooltipContent>{translations.actionConfirm ?? translations.statusConfirmed}</TooltipContent>
                 </Tooltip>
               )}
               {s === "confirmed" && onCompleteBooking && (
@@ -189,11 +197,12 @@ export function BookingsTable({
                       size="icon"
                       className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       onClick={() => onCompleteBooking(booking)}
+                      aria-label={translations.actionComplete ?? translations.statusCompleted}
                     >
                       <CheckCheck className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{isNb ? "Fullfør" : "Complete"}</TooltipContent>
+                  <TooltipContent>{translations.actionComplete ?? translations.statusCompleted}</TooltipContent>
                 </Tooltip>
               )}
               <Tooltip>
@@ -203,11 +212,12 @@ export function BookingsTable({
                     size="icon"
                     className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
                     onClick={() => onCancelBooking(booking)}
+                    aria-label={translations.actionCancel ?? translations.cancelButton}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{isNb ? "Avbryt" : "Cancel"}</TooltipContent>
+                <TooltipContent>{translations.actionCancel ?? translations.cancelButton}</TooltipContent>
               </Tooltip>
             </div>
           </TooltipProvider>
@@ -279,7 +289,7 @@ export function BookingsTable({
         getRowClassName={getRowClassName}
         storageKey="dashboard-bookings"
         density="compact"
-        emptyMessage="No bookings available"
+        emptyMessage={translations.emptyMessage ?? "-"}
         toolbarEndContent={filterContent}
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}

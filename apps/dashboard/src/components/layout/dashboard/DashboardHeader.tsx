@@ -229,8 +229,8 @@ function LanguageSelector({
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-              aria-label="Language"
-              title="Language"
+              aria-label={languageLabel}
+              title={languageLabel}
             >
               <span className="text-base leading-none">
                 {languageMap[currentLocale] || "🌐"}
