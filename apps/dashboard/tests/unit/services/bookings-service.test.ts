@@ -20,7 +20,7 @@ describe("Bookings Service", () => {
         customer_full_name: "John Doe",
       });
 
-      expect(result.error).toBe("All required fields must be provided");
+      expect(result.error).toBe("TB|BOOKING_REQUIRED_FIELDS");
       expect(result.data).toBeNull();
     });
 

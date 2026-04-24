@@ -46,6 +46,9 @@ coverage/
 playwright-report/
 test-results/
 
+# Playwright: generated storage state (setup-owner / setup-superadmin); never commit tokens
+tests/e2e/.auth/*.json
+
 # Vercel
 .vercel/
 

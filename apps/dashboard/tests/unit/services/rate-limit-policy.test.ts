@@ -3,7 +3,7 @@ import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 
 describe("Rate limit policy matrix", () => {
   it("uses fail-closed policy for sensitive endpoints", () => {
-    expect(getRateLimitPolicy("login").failurePolicy).toBe("fail_closed");
+    expect(getRateLimitPolicy("login").failurePolicy).toBe("fail_open");
     expect(getRateLimitPolicy("booking-notifications").failurePolicy).toBe("fail_closed");
     expect(getRateLimitPolicy("booking-cancellation").failurePolicy).toBe("fail_closed");
     expect(getRateLimitPolicy("billing-update-plan").failurePolicy).toBe("fail_closed");

@@ -168,12 +168,11 @@ describe("Reminder Service", () => {
 
   describe("Timezone handling", () => {
     it("should handle daylight saving time correctly", async () => {
-      // Test with a date that crosses DST boundary (set to future)
-      const bookingStartTime = new Date("2025-03-30T14:00:00Z"); // DST transition in Europe
-      // Ensure it's in the future
-      if (bookingStartTime < new Date()) {
-        bookingStartTime.setFullYear(2026);
-      }
+      // Keep this explicitly in the future while still crossing the DST window.
+      const now = new Date();
+      const bookingStartTime = new Date(
+        Date.UTC(now.getUTCFullYear() + 1, 2, 30, 14, 0, 0)
+      ); // ~Mar 30 next year
       
       mockCreateReminder.mockResolvedValue({ data: { id: "reminder-1" }, error: null });
 

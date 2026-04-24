@@ -18,6 +18,7 @@ const mockEventUpdate = vi.fn(() => ({
     eq: (...args: unknown[]) => mockEventUpdateEq(...args),
   })),
 }));
+const mockVerifyPublicBookingActionToken = vi.fn();
 const mockAdminFrom = vi.fn((table: string) => {
   if (table === "bookings") {
     return {
@@ -74,6 +75,10 @@ vi.mock("@/lib/supabase/admin", () => ({
   }),
 }));
 
+vi.mock("@/lib/security/public-booking-action-token", () => ({
+  verifyPublicBookingActionToken: (...args: unknown[]) => mockVerifyPublicBookingActionToken(...args),
+}));
+
 vi.mock("@/lib/services/logger", () => ({
   logInfo: vi.fn(),
   logWarn: vi.fn(),
@@ -83,6 +88,7 @@ vi.mock("@/lib/services/logger", () => ({
 describe("Public bookings/send-notifications rate limiting", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockVerifyPublicBookingActionToken.mockReturnValue({ valid: true });
   });
 
   it("returns 429 with headers when blocked", async () => {
@@ -100,6 +106,7 @@ describe("Public bookings/send-notifications rate limiting", () => {
         bookingId: "booking-1",
         salonId: "salon-1",
         customerEmail: "customer@example.com",
+        actionToken: "token-1",
       }),
       headers: { "content-type": "application/json" },
     });
@@ -165,6 +172,7 @@ describe("Public bookings/send-notifications rate limiting", () => {
         bookingId: "booking-1",
         salonId: "salon-1",
         customerEmail: "customer@example.com",
+        actionToken: "token-1",
       }),
       headers: { "content-type": "application/json" },
     });
@@ -226,6 +234,7 @@ describe("Public bookings/send-notifications rate limiting", () => {
         bookingId: "booking-1",
         salonId: "salon-1",
         customerPhone: "+4799999999",
+        actionToken: "token-1",
       }),
       headers: { "content-type": "application/json" },
     });

@@ -24,6 +24,8 @@ pnpm exec playwright test --project=public
 - **Owner** (dashboard): `auth.owner.setup.ts` logs in at `/login` on dashboard (3002), saves state to `.auth/owner.json`.
 - **Superadmin** (admin): `auth.superadmin.setup.ts` logs in at `/login` on admin (3003), saves state to `.auth/superadmin.json`.
 
+These JSON files are generated locally and in CI; they are listed in `.gitignore` and must not be committed (they contain session material).
+
 E2E users must exist (e.g. run `scripts/create-e2e-users.ts` from `web/` or equivalent in monorepo).
 
 ## Config

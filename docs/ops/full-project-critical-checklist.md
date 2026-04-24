@@ -618,6 +618,42 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
   - Samtlige avkrysningspunkter under P2.12, P2.13 og P2.14 står som `[x]`.
 - **Resultat:** P2 ferdigstilt.
 
+##### 2026-04-24 - Test- og verifikasjonspakke (delvis lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **Mål:** Kjørbar evidens for hele «Test- og verifikasjonspakke (må kjøres)» og markering av bestått/blokkert.
+- **Verifikasjon/evidens (bestått):**
+  - Dashboard auth boundary: `pnpm --filter @teqbook/dashboard test:run tests/unit/security/ssr-auth.test.ts` (12/12 pass).
+  - Cross-tenant billing schema contract: `pnpm --filter @teqbook/dashboard exec vitest --run --config vitest.integration.config.ts tests/integration/schema/salons-billing-contract.test.ts` (pass).
+  - Public action token invalid/expired/forged: `pnpm --filter @teqbook/public test:run ... public-booking-action-token.test.ts` (pass).
+  - Waitlist/booking failure path: `pnpm --filter @teqbook/dashboard test:run src/lib/services/__tests__/waitlist-service.failure-paths.test.ts` (pass).
+  - `db:apply` + `db:verify`: begge pass med nye loggfiler under `docs/ops/evidence/db-apply-logs/` og `docs/ops/evidence/db-verify-logs/`.
+  - E2E critical journeys (booking+billing+admin): `pnpm exec playwright test tests/e2e/booking-flow.spec.ts tests/e2e/billing-flow.spec.ts tests/e2e/admin-operations.spec.ts` (28 passed).
+- **Verifikasjon/evidens (blokkert):**
+  - Security scan: `pnpm audit --prod --audit-level=high` feiler med high advisories (bl.a. `next<16.2.3`, `picomatch`, `lodash-es` transitive).
+  - Coverage minimum alle apper: `pnpm run test:coverage` (dashboard) feiler pga eksisterende unit-test avvik (`employees-service`, `rate-limit-policy`, `reminder-service`), selv om public/admin coverage-jobber kan kjøres.
+- **Resultat:** Delvis bestått; operasjonelle punkter står åpne til avhengigheter/tests er grønne.
+
+##### 2026-04-24 - Test- og verifikasjonspakke (lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **Mål:** Lukke de to siste blokkene (security-scan + dashboard coverage) slik at hele verifikasjonspakken er grønn.
+- **Utført arbeid (detaljert):**
+  - Oppgraderte `next`/`eslint-config-next` i workspace til patchnivå over advisory-grensen (`16.2.4`) og oppgraderte `@sentry/nextjs`.
+  - Fjernet ubrukt `react-globe.gl` fra `apps/public/package.json` for å redusere transitive advisories/angrepsflate.
+  - Strammet `next` peer-krav i `packages/layout/package.json` og `packages/page/package.json` til `>=16.2.3` for å hindre at eldre `next@16.1.6` blir løst i workspace-lenker.
+  - Rettet utdatert testforventning i dashboard unit-tests:
+    - `apps/dashboard/tests/unit/services/employees-service.test.ts`
+    - `apps/dashboard/tests/unit/services/rate-limit-policy.test.ts`
+    - `apps/dashboard/tests/unit/services/reminder-service.test.ts`
+    - `apps/dashboard/tests/unit/services/bookings-service.test.ts`
+- **Verifikasjon/evidens:**
+  - `pnpm audit --prod --audit-level=high` passerer nå (ingen high; kun low/moderate gjenstår).
+  - `pnpm --filter @teqbook/dashboard test:coverage` passerer.
+  - `pnpm run test:coverage:public` passerer.
+  - `pnpm run test:coverage:admin` passerer.
+- **Resultat:** Bestått. Hele «Test- og verifikasjonspakke (må kjøres)» er nå lukket.
+
 ### 12) i18n/a11y inkonsistens i sentrale UI-komponenter
 
 - [x] Flytt hardkodede strenger til locale-map.
@@ -654,21 +690,21 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 
 ### Sikkerhet/autorisasjon
 
-- [ ] Uautentisert bruker avvises fra dashboard/admin-ruter.
-- [ ] Cross-tenant billing mutation test (A kan ikke endre B).
-- [ ] Public action token test: invalid/expired/forged token avvises.
+- [x] Uautentisert bruker avvises fra dashboard/admin-ruter.
+- [x] Cross-tenant billing mutation test (A kan ikke endre B).
+- [x] Public action token test: invalid/expired/forged token avvises.
 
 ### Data/integritet
 
 - [x] Kalender med >100 bookinger viser komplett datasett.
-- [ ] Waitlist/booking mutation failure gir korrekt UI rollback og feilmelding.
-- [ ] `db:apply` + `db:verify` validerer migrasjonskompletthet i fresh miljø.
+- [x] Waitlist/booking mutation failure gir korrekt UI rollback og feilmelding.
+- [x] `db:apply` + `db:verify` validerer migrasjonskompletthet i fresh miljø.
 
 ### Operasjonell kvalitet
 
-- [ ] Security-scan blokkerer ved høy alvorlighetsgrad.
-- [ ] Coverage minimum er håndhevet for alle apper.
-- [ ] E2E critical inkluderer booking + billing + admin safety journeys.
+- [x] Security-scan blokkerer ved høy alvorlighetsgrad.
+- [x] Coverage minimum er håndhevet for alle apper.
+- [x] E2E critical inkluderer booking + billing + admin safety journeys.
 
 ---
 

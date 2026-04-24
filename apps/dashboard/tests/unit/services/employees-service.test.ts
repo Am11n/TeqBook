@@ -28,7 +28,7 @@ describe("Employees Service", () => {
         email: "invalid-email",
       });
 
-      expect(result.error).toBe("Invalid email format");
+      expect(result.error).toBe("TB|INVALID_EMAIL");
       expect(result.data).toBeNull();
     });
 
@@ -75,7 +75,7 @@ describe("Employees Service", () => {
         email: "invalid-email",
       });
 
-      expect(result.error).toBe("Invalid email format");
+      expect(result.error).toBe("TB|INVALID_EMAIL");
       expect(result.data).toBeNull();
     });
 
