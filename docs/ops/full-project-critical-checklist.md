@@ -607,6 +607,17 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
   - Dokumenter oppdatert med konkrete gate- og secret-navn i tråd med implementert kode.
 - **Resultat:** Bestått.
 
+##### 2026-04-24 - P2 sluttverifisering (lukket)
+
+- **Tidspunkt:** 2026-04-24
+- **Mål:** Bekrefte at alle P2-delpunkter (12-14) er implementert og markert ferdig i checklist.
+- **Verifikasjon/evidens:**
+  - P2.12: type-check + lint + i18n-paritetstest passert.
+  - P2.13: webhook-signatur/replay-hardening implementert + spoofed-signature test passert.
+  - P2.14: oppdaterte ops/security/env/integrasjonsdokumenter reflekterer faktisk gate-nivå.
+  - Samtlige avkrysningspunkter under P2.12, P2.13 og P2.14 står som `[x]`.
+- **Resultat:** P2 ferdigstilt.
+
 ### 12) i18n/a11y inkonsistens i sentrale UI-komponenter
 
 - [x] Flytt hardkodede strenger til locale-map.
