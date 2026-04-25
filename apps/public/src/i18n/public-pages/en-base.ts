@@ -197,6 +197,12 @@ export const enBase: PublicPageNamespaces = {
     loadBookingDetailsError: "Could not load booking details.",
     bookingFromAnotherSalonError: "Booking belongs to another salon.",
     cancelFailed: "Failed to cancel booking",
+    statusConfirmed: "Confirmed",
+    statusCancelled: "Cancelled",
+    statusPending: "Pending",
+    statusCompleted: "Completed",
+    statusScheduled: "Scheduled",
+    statusNoShow: "No-show",
   },
   notFoundPage: {
     description: "This page could not be found. Here are some useful links:",

@@ -15,9 +15,31 @@ import { buildPublicBookingTokens, computeEffectiveBranding } from "@/components
 import { trackPublicEvent } from "@/components/public-booking/publicBookingTelemetry";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
+import type { BookingConfirmationMessages } from "@/i18n/translation-types";
+import { resolvePublicBookingUiLocale } from "@/components/public-booking/resolvePublicBookingUiLocale";
+
+function labelBookingStatus(status: string | undefined, t: BookingConfirmationMessages): string {
+  const raw = (status ?? "confirmed").toLowerCase().replace(/\s+/g, "-");
+  switch (raw) {
+    case "confirmed":
+      return t.statusConfirmed;
+    case "cancelled":
+      return t.statusCancelled;
+    case "pending":
+      return t.statusPending;
+    case "completed":
+      return t.statusCompleted;
+    case "scheduled":
+      return t.statusScheduled;
+    case "no-show":
+      return t.statusNoShow;
+    default:
+      return status ?? t.statusConfirmed;
+  }
+}
 
 export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug: string }) {
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
   const appLocale = normalizeLocale(locale);
   const t = getPublicPageTranslations(appLocale).bookingConfirmation;
   const router = useRouter();
@@ -50,11 +72,17 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           setLoading(false);
           return;
         }
+        const uiLocale = resolvePublicBookingUiLocale(salonData);
+        if (uiLocale) setLocale(uiLocale);
+
         setSalon({
           id: salonData.id,
           name: salonData.name,
           plan: salonData.plan || "starter",
           whatsapp_number: salonData.whatsapp_number || null,
+          supported_languages: salonData.supported_languages ?? null,
+          default_language: salonData.default_language ?? null,
+          preferred_language: salonData.preferred_language ?? null,
           timezone: salonData.timezone || null,
           theme: salonData.theme || null,
           theme_pack_id: salonData.theme_pack_id || null,
@@ -90,7 +118,8 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     }
 
     loadData();
-  }, [actionToken, bookingId, slug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- omit `t` to avoid refetch when locale updates after salon load
+  }, [actionToken, bookingId, setLocale, slug]);
 
   useEffect(() => {
     if (!salon?.id || !bookingId) return;
@@ -312,7 +341,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
                       : ""
                 }`}
               >
-                {booking?.status ?? "confirmed"}
+                {labelBookingStatus(booking?.status, t)}
               </Badge>
             </div>
           </div>

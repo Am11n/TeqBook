@@ -5,6 +5,9 @@ export type Salon = {
   name: string;
   plan?: "starter" | "pro" | "business" | null;
   whatsapp_number?: string | null;
+  supported_languages?: string[] | null;
+  default_language?: string | null;
+  preferred_language?: string | null;
   timezone?: string | null;
   theme?: {
     primary?: string;

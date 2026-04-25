@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { AppLocale } from "@/i18n/translations";
+import { resolvePublicBookingUiLocale } from "./resolvePublicBookingUiLocale";
 import { getLocalIsoDate, isValidIsoDate } from "./publicBookingUtils";
 import { trackPublicEvent } from "./publicBookingTelemetry";
 import { ANY_EMPLOYEE_VALUE } from "./types";
@@ -12,17 +13,6 @@ function normalizePlan(rawPlan: unknown): "starter" | "pro" | "business" {
   if (normalized === "business" || normalized.startsWith("business")) return "business";
   if (normalized === "pro" || normalized.startsWith("pro")) return "pro";
   return "starter";
-}
-
-function resolveInitialLocale(salon: Salon): AppLocale | null {
-  if (typeof window === "undefined") return null;
-
-  const storedLocale = localStorage.getItem(`booking-locale-${salon.id}`);
-  const supported = salon.supported_languages ?? [];
-  const fallback = (salon.default_language || salon.preferred_language || "en") as AppLocale;
-  const preferred = storedLocale && supported.includes(storedLocale) ? (storedLocale as AppLocale) : fallback;
-
-  return supported.includes(preferred) ? preferred : null;
 }
 
 async function resolveInitialBookingData(
@@ -194,7 +184,7 @@ export function useInitialBookingLoad(params: {
       setEmployeeServiceMap(initialData.employeeServiceMap);
       setError(null);
 
-      const initialLocale = resolveInitialLocale(initialData.salon);
+      const initialLocale = resolvePublicBookingUiLocale(initialData.salon);
       if (initialLocale) setLocale(initialLocale);
       setLoading(false);
     }

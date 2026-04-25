@@ -69,6 +69,13 @@ export type BookingConfirmationMessages = {
   loadBookingDetailsError: string;
   bookingFromAnotherSalonError: string;
   cancelFailed: string;
+  /** Localized labels for booking.status (DB uses English enum values). */
+  statusConfirmed: string;
+  statusCancelled: string;
+  statusPending: string;
+  statusCompleted: string;
+  statusScheduled: string;
+  statusNoShow: string;
 };
 
 export type NotFoundMessages = {

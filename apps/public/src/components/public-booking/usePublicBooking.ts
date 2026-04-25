@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { translations } from "@/i18n/translations";
 import type {
@@ -41,6 +42,7 @@ function isSlotConflict(errorCode?: string, errorMessage?: string | null): boole
 }
 
 export function usePublicBooking(slug: string) {
+  const router = useRouter();
   const { locale, setLocale } = useLocale();
   const t = translations[locale].publicBooking;
 
@@ -393,7 +395,8 @@ export function usePublicBooking(slug: string) {
       if (bookingResult.actionToken) {
         query.set("actionToken", bookingResult.actionToken);
       }
-      window.location.href = `/book/${slug}/confirmation?${query.toString()}`;
+      setSaving(false);
+      router.push(`/book/${slug}/confirmation?${query.toString()}`);
     } catch {
       setSlotConflictActive(false);
       setError(t.createError);
