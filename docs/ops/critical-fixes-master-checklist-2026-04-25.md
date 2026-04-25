@@ -56,7 +56,7 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
 **Sjekkliste:**
 
 - [x] Etter action-token + autoritative booking reads: kall `getAdminClient().rpc(...)` (service role) i stedet for bruker-scope client — align med resten av handleren som allerede bruker admin-klient.
-- [ ] Verifiser i staging at in-app staff notification faktisk fungerer for anonym public booking.
+- [x] Verifiser i staging at in-app staff notification faktisk fungerer for anonym public booking. *(Manuelt verifisert av bruker 2026-04-25.)*
 - [x] Legg integrasjonstest (eller scriptet verifikasjon) som forventer `notifiedCount > 0` når booking finnes. *(Public unit-test oppdatert: `bookings-send-notifications-rate-limit.test.ts` assert `inApp.success=true` og `inApp.sent=1`.)*
 
 **Akseptkriterier:**
@@ -251,7 +251,7 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
 - [x] `pnpm dlx deno-bin test --no-check` for alle `supabase/supabase/functions/**/*.test.ts`
 - [x] `pnpm run db:manifest:verify`
 - [ ] `pnpm run db:apply && pnpm run db:verify` mot sikker DB-target (etter CI-fix) *(`db:apply` kjørte OK; `db:verify` feilet på eksisterende data-kvalitet: `orphan bookings found (1)` i `02_data_quality.sql`).*
-- [ ] Manuell: anonym public booking → staff in-app notification faktisk dukker opp
+- [x] Manuell: anonym public booking → staff in-app notification faktisk dukker opp *(Manuelt verifisert av bruker 2026-04-25.)*
 - [ ] Manuell: simuler Stripe webhook retry etter `failed` rad (etter webhook-fix)
 
 ---

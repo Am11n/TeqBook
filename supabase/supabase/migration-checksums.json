@@ -19,6 +19,10 @@
     {
       "file": "supabase/supabase/migrations/20260425120000_harden_notify_salon_staff_rpc.sql",
       "sha256": "628b6fdf1b720c42ca493d372a651e7223b32fa2aa74238abae2317c1ae2557c"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260425213000_fix_schedule_segments_weekday_mapping.sql",
+      "sha256": "f9545da7331905840bd4ae1bb494fdd51ce5eca6a9a51e33256070e07e3364e2"
     }
   ]
 }
