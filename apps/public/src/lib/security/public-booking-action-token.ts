@@ -1,6 +1,12 @@
 import { createHmac, timingSafeEqual, randomUUID } from "crypto";
 
-type PublicBookingActionPurpose = "confirmation" | "cancel" | "notify" | "manage";
+export type PublicBookingActionPurpose = "confirmation" | "cancel" | "notify";
+
+export const PUBLIC_BOOKING_ACTION_TOKEN_TTL_SECONDS: Record<PublicBookingActionPurpose, number> = {
+  confirmation: 30 * 60,
+  notify: 15 * 60,
+  cancel: 10 * 60,
+};
 
 type ActionTokenPayload = {
   booking_id: string;
@@ -12,6 +18,7 @@ type ActionTokenPayload = {
 type IssueTokenInput = {
   bookingId: string;
   purpose: PublicBookingActionPurpose;
+  /** Defaults to purpose-specific TTL from PUBLIC_BOOKING_ACTION_TOKEN_TTL_SECONDS */
   ttlSeconds?: number;
 };
 
@@ -22,13 +29,24 @@ type VerifyTokenInput = {
 };
 
 function getTokenSecret() {
-  const secret =
-    process.env.PUBLIC_BOOKING_ACTION_TOKEN_SECRET ??
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) {
-    throw new Error("Missing PUBLIC_BOOKING_ACTION_TOKEN_SECRET or SUPABASE_SERVICE_ROLE_KEY");
+  const dedicated = process.env.PUBLIC_BOOKING_ACTION_TOKEN_SECRET?.trim();
+  if (dedicated) return dedicated;
+
+  const isProd =
+    process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+  if (isProd) {
+    throw new Error(
+      "PUBLIC_BOOKING_ACTION_TOKEN_SECRET is required in production for public booking action tokens",
+    );
   }
-  return secret;
+
+  const fallback = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!fallback) {
+    throw new Error(
+      "Set PUBLIC_BOOKING_ACTION_TOKEN_SECRET (recommended) or SUPABASE_SERVICE_ROLE_KEY (local dev only) for signing public booking action tokens",
+    );
+  }
+  return fallback;
 }
 
 function encodeBase64Url(value: string) {
@@ -55,7 +73,7 @@ function safeEqual(a: string, b: string) {
 export function issuePublicBookingActionToken({
   bookingId,
   purpose,
-  ttlSeconds = 15 * 60,
+  ttlSeconds = PUBLIC_BOOKING_ACTION_TOKEN_TTL_SECONDS[purpose],
 }: IssueTokenInput) {
   const payload: ActionTokenPayload = {
     booking_id: bookingId,

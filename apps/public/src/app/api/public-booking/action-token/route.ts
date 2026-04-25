@@ -1,25 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { issuePublicBookingActionToken } from "@/lib/security/public-booking-action-token";
+import {
+  issuePublicBookingActionToken,
+  type PublicBookingActionPurpose,
+  PUBLIC_BOOKING_ACTION_TOKEN_TTL_SECONDS,
+} from "@/lib/security/public-booking-action-token";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+
+const VALID_PURPOSES = new Set<PublicBookingActionPurpose>(["confirmation", "notify", "cancel"]);
 
 type ActionTokenRequest = {
   bookingId: string;
   salonId: string;
   customerEmail: string;
+  purposes: PublicBookingActionPurpose[];
 };
+
+function normalizePurposes(raw: unknown): PublicBookingActionPurpose[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const out: PublicBookingActionPurpose[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry !== "string" || !VALID_PURPOSES.has(entry as PublicBookingActionPurpose)) {
+      return null;
+    }
+    const p = entry as PublicBookingActionPurpose;
+    if (seen.has(p)) continue;
+    seen.add(p);
+    out.push(p);
+  }
+  return out.length ? out : null;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as ActionTokenRequest;
+    const body = (await request.json()) as Partial<ActionTokenRequest>;
     const bookingId = body.bookingId?.trim();
     const salonId = body.salonId?.trim();
     const customerEmail = body.customerEmail?.trim().toLowerCase() ?? "";
+    const purposes = normalizePurposes(body.purposes);
 
     if (!bookingId || !salonId || !customerEmail) {
       return NextResponse.json(
         { error: "bookingId, salonId and customerEmail are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!purposes) {
+      return NextResponse.json(
+        {
+          error:
+            "purposes must be a non-empty array of unique values: confirmation, notify, cancel",
+        },
         { status: 400 }
       );
     }
@@ -82,13 +116,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Customer ownership mismatch" }, { status: 403 });
     }
 
-    const actionToken = issuePublicBookingActionToken({
-      bookingId,
-      purpose: "manage",
-      ttlSeconds: 15 * 60,
-    });
+    const tokens: Partial<Record<PublicBookingActionPurpose, string>> = {};
+    for (const purpose of purposes) {
+      tokens[purpose] = issuePublicBookingActionToken({
+        bookingId,
+        purpose,
+        ttlSeconds: PUBLIC_BOOKING_ACTION_TOKEN_TTL_SECONDS[purpose],
+      });
+    }
 
-    return NextResponse.json({ actionToken }, { status: 200 });
+    return NextResponse.json({ tokens }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

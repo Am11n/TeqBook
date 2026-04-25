@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const tokenCheck = verifyPublicBookingActionToken({
       token: actionToken,
       bookingId,
-      allowedPurposes: ["cancel", "manage"],
+      allowedPurposes: ["cancel"],
     });
     if (!tokenCheck.valid) {
       return NextResponse.json({ error: "Invalid or expired action token" }, { status: 403 });

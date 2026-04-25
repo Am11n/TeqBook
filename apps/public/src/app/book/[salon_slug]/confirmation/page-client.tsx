@@ -117,12 +117,45 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         step: "confirmation",
       });
 
+      const bookingCustomers = booking.customers as
+        | { full_name?: string | null; email?: string | null }
+        | null
+        | undefined;
+      const customerEmail = bookingCustomers?.email?.trim().toLowerCase();
+      if (!customerEmail) {
+        setError(t.loadBookingDetailsError);
+        setCancelling(false);
+        return;
+      }
+
+      const mintResponse = await fetch("/api/public-booking/action-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          salonId: salon.id,
+          customerEmail,
+          purposes: ["cancel"],
+        }),
+      });
+      const mintPayload = (await mintResponse.json().catch(() => null)) as
+        | { tokens?: { cancel?: string }; error?: string }
+        | null;
+      const cancelToken = mintPayload?.tokens?.cancel;
+      if (!mintResponse.ok || !cancelToken) {
+        setError(mintPayload?.error || t.cancelFailed);
+        setCancelling(false);
+        return;
+      }
+
       const { error: cancelError } = await cancelBooking(
         salon.id,
         booking.id,
         cancellationReason || null,
         {
-          actionToken: actionToken ?? undefined,
+          actionToken: cancelToken,
+          customerEmail,
+          booking,
         },
       );
       

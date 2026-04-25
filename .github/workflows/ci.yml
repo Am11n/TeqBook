@@ -34,6 +34,14 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Fetch base ref for migration manifest coverage
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=200 origin ${{ github.base_ref }}
+      - name: Check changed migrations are in manifest
+        if: github.event_name == 'pull_request'
+        run: pnpm run db:migrations:manifest-coverage
+        env:
+          MIGRATION_COVERAGE_BASE_REF: origin/${{ github.base_ref }}
       - name: Lint
         run: pnpm run lint
       - name: File length gate

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   const tokenCheck = verifyPublicBookingActionToken({
     token: actionToken,
     bookingId,
-    allowedPurposes: ["confirmation", "manage"],
+    allowedPurposes: ["confirmation"],
   });
   if (!tokenCheck.valid) {
     return NextResponse.json({ error: "Invalid or expired action token" }, { status: 401 });
@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
 
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
-      .select("id, salon_id, start_time, end_time, status, is_walk_in, notes, employee_id, service_id")
+      .select(
+        "id, salon_id, start_time, end_time, status, is_walk_in, notes, employee_id, service_id, customers(email, full_name)"
+      )
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -77,8 +79,23 @@ export async function GET(request: NextRequest) {
         : Promise.resolve({ data: null, error: null }),
     ]);
 
+    const customersRaw = (booking as { customers?: unknown }).customers;
+    const customerRow = Array.isArray(customersRaw) ? customersRaw[0] : customersRaw;
+    const customers =
+      customerRow && typeof customerRow === "object"
+        ? {
+            full_name: (customerRow as { full_name?: string | null }).full_name ?? null,
+            email: (customerRow as { email?: string | null }).email ?? null,
+          }
+        : null;
+
+    const { customers: _omitCustomers, ...bookingRest } = booking as typeof booking & {
+      customers?: unknown;
+    };
+
     const bookingPayload = {
-      ...booking,
+      ...bookingRest,
+      customers,
       employees: employeeResponse?.data ? { full_name: employeeResponse.data.full_name } : null,
       services: serviceResponse?.data ? { name: serviceResponse.data.name } : null,
     };

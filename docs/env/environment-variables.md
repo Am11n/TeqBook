@@ -28,6 +28,11 @@ These variables are used across multiple apps:
 - `EMAIL_REPLY_TO`, `EMAIL_UNSUBSCRIBE`
 - `TWILIO_*` / `SMS_PROVIDER` - if SMS is sent from the public notification route
 
+**Required in production (public booking action tokens):**
+- `PUBLIC_BOOKING_ACTION_TOKEN_SECRET` - Dedicated secret (long random string) used to sign HMAC tokens for public booking flows (`confirmation`, `notify`, `cancel`). In production and on Vercel production, the app **fails closed** if this is missing (no fallback to the Supabase service role key). In local/test, `SUPABASE_SERVICE_ROLE_KEY` may still be used as a dev-only fallback when this variable is unset.
+
+**Rotation:** Deploy a new secret value alongside the old one only after invalidating old tokens is acceptable (tokens are short-lived, typically 10–30 minutes). Prefer rotating at low traffic: set the new `PUBLIC_BOOKING_ACTION_TOKEN_SECRET`, redeploy; outstanding URLs with old tokens expire naturally by TTL.
+
 **Security Notes:**
 - No session cookies needed (public app)
 - No Stripe keys needed

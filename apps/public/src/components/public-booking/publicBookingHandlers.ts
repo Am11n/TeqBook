@@ -214,24 +214,28 @@ export async function submitBooking(params: {
   }
 
   let actionToken: string | null = null;
-  try {
-    const tokenResponse = await fetch("/api/public-booking/action-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bookingId: bookingData.id,
-        salonId: salon.id,
-        customerEmail: customerEmail || null,
-      }),
-    });
-    if (tokenResponse.ok) {
-      const tokenPayload = (await tokenResponse.json().catch(() => null)) as
-        | { actionToken?: string }
-        | null;
-      actionToken = tokenPayload?.actionToken ?? null;
+  const emailForToken = customerEmail.trim().toLowerCase();
+  if (emailForToken) {
+    try {
+      const tokenResponse = await fetch("/api/public-booking/action-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: bookingData.id,
+          salonId: salon.id,
+          customerEmail: emailForToken,
+          purposes: ["confirmation"],
+        }),
+      });
+      if (tokenResponse.ok) {
+        const tokenPayload = (await tokenResponse.json().catch(() => null)) as
+          | { tokens?: { confirmation?: string } }
+          | null;
+        actionToken = tokenPayload?.tokens?.confirmation ?? null;
+      }
+    } catch {
+      actionToken = null;
     }
-  } catch {
-    actionToken = null;
   }
 
   return { bookingId: bookingData.id, actionToken, error: null, errorCode: undefined };

@@ -1,5 +1,7 @@
 # TeqBook prosjektanalyse (2026-04-25)
 
+**Sist verifisert (innhold/CI-paritet):** 2026-04-25 (oppdatert etter purpose-split for action tokens, prod-secret-policy, manifest-diff-gate i CI).
+
 Dette dokumentet er et **datert helhetsbilde** av repoet slik det fremstår i kode og CI per 2026-04-25, med en **lukkelogg** for tiltak som ble implementert samme dag. Målet er å peke på **hva som fungerer bra**, **hva som bør forbedres**, og **hvilke tiltak som gir mest risikoreduksjon per krone**.
 
 Relatert operativ sjekkliste: [`full-project-critical-checklist.md`](./full-project-critical-checklist.md).
@@ -34,6 +36,8 @@ Monorepo med tynne app-skall og delte pakker:
 - `POST /api/public-booking/action-token` krever `bookingId`, `salonId` og `customerEmail`.
 - Utstedelse avvises hvis booking mangler kunde-e-post i DB, eller hvis oppgitt e-post ikke matcher den autoritative e-posten på bookingens kunde.
 - **Rate limiting** er innført på samme mønster som øvrige public API-ruter (`checkRateLimit` / `incrementRateLimit`), med egen policy `public-booking-action-token` i `packages/shared-core/src/rate-limit/policy.ts`.
+- **Purpose-split:** `POST /api/public-booking/action-token` tar `purposes: ["confirmation"|"notify"|"cancel"]` (unike) og returnerer `tokens` per formål. Verifiseringsruter tillater **kun** matchende enkelt-formål. TTL per formål: bekreftelse 30 min, varsling 15 min, kansellering 10 min. Kansellering fra bekreftelsessiden minter et eget `cancel`-token rett før `send-cancellation`.
+- **Prod-secret:** I produksjon (`NODE_ENV`/`VERCEL_ENV` production) kreves `PUBLIC_BOOKING_ACTION_TOKEN_SECRET`; ingen fallback til service role. Lokalt/test kan fortsatt bruke `SUPABASE_SERVICE_ROLE_KEY` hvis dedikert secret mangler. Se `docs/env/environment-variables.md`.
 - Se `apps/public/src/app/api/public-booking/action-token/route.ts`.
 
 **Gjenstående forbedringsbehov (fortsatt reelt):**
@@ -41,20 +45,13 @@ Monorepo med tynne app-skall og delte pakker:
 1. **Eierskap er fortsatt “kjenner e-post”**  
    Alle som kjenner booking-ID, salon-ID og kundens e-post kan be om token. Det er bedre enn åpen tilgang og nå begrenset av rate limit, men ikke på nivå med OTP, magisk lenke-signatur, eller engangskode til innboks/SMS.
 
-2. **`manage` er et bredt formål**  
-   Samme token aksepteres i flere sensitive ruter (`confirmation`, `notify`, `cancel`). Det øker skadeomfanget ved lekkasje/intercept. Vurder purpose-split og kortere TTL per operasjon.
-
-3. **Nonce er ikke engangs**  
+2. **Nonce er ikke engangs**  
    `nonce` genereres, men det finnes ingen persistert “brukt nonce”/replay-cache i verifiseringen. Token er dermed **gjeldig og gjenbrukbar innenfor TTL** hvis den avlyttes.  
    Se `apps/public/src/lib/security/public-booking-action-token.ts`.
 
-4. **Hemmelighetskobling**  
-   Token-signering faller tilbake til `SUPABASE_SERVICE_ROLE_KEY` hvis `PUBLIC_BOOKING_ACTION_TOKEN_SECRET` mangler. Det kobler token-integritet til en svært sensitiv hemmelighet og bør unngås i produksjon.
-
 **Anbefalte tiltak (prioritert, gjenstående):**
 
-- P0/P1: Innfør **OTP eller signert e-postlenke** (kortlivet) før token utstedes, eller begrens token til **smalere purpose** per operasjon.
-- P2: Dedikert `PUBLIC_BOOKING_ACTION_TOKEN_SECRET` i alle miljøer; fjern fallback i prod.
+- P0/P1: Innfør **OTP eller signert e-postlenke** (kortlivet) før token utstedes (e-post alene som bevis er fortsatt begrenset; se must-fix P0.1).
 - P2: Vurder **engangsbruk** av token (nonce store med TTL) for høyrisiko-operasjoner.
 
 ---
@@ -100,6 +97,7 @@ Monorepo med tynne app-skall og delte pakker:
 
 - `db:apply` er **manifest-styrt** (baseline + `postBaseline`). Katalogen `supabase/supabase/migrations/` inneholder også historisk/legacy SQL som **ikke** nødvendigvis skal inn i manifest-modellen uten eksplisitt beslutning.
 - En “fail hvis *enhver* `.sql` i `migrations/` mangler i manifest”-gate er derfor **ikke** riktig modell for dette repoet slik det står i dag; risikoen håndteres ved at **nye** endringer som skal deployes via `db:apply` må inn i manifest + checksum-lock.
+- **PR-diff-gate (2026-04-25):** `pnpm run db:migrations:manifest-coverage` (`scripts/check-migration-manifest-coverage.ts`) kjøres i **lint**-jobben på `pull_request` og feiler hvis en endret migrasjonsfil under `supabase/supabase/migrations/` ikke er listet i `postBaseline`.
 
 ### 3.2 `db:apply` og CI
 

@@ -132,7 +132,8 @@ async function sendBookingNotifications(
     };
 
     let actionToken: string | null = null;
-    if (typeof window !== "undefined") {
+    const customerEmailTrimmed = input.customer_email?.trim().toLowerCase();
+    if (typeof window !== "undefined" && customerEmailTrimmed) {
       try {
         const tokenResponse = await fetch("/api/public-booking/action-token", {
           method: "POST",
@@ -140,14 +141,15 @@ async function sendBookingNotifications(
           body: JSON.stringify({
             bookingId: booking.id,
             salonId: input.salon_id,
-            customerEmail: input.customer_email || null,
+            customerEmail: customerEmailTrimmed,
+            purposes: ["notify"],
           }),
         });
         if (tokenResponse.ok) {
           const tokenPayload = (await tokenResponse.json().catch(() => null)) as
-            | { actionToken?: string }
+            | { tokens?: { notify?: string } }
             | null;
-          actionToken = tokenPayload?.actionToken ?? null;
+          actionToken = tokenPayload?.tokens?.notify ?? null;
         }
       } catch (tokenError) {
         logWarn("Failed to issue public booking action token", {

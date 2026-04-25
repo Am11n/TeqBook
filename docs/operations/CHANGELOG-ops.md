@@ -13,11 +13,13 @@
 
 ## 2026-04-25
 
-- [kode/public] Strammet `POST /api/public-booking/action-token`: obligatorisk `customerEmail`, mismatch mot bookingens kunde-e-post gir avvisning; lagt inn rate limit policy `public-booking-action-token` og bruk i route. Filer: `apps/public/src/app/api/public-booking/action-token/route.ts`, `packages/shared-core/src/rate-limit/policy.ts`.
+- [kode/public] Action tokens: fjernet `manage`; mint krever `purposes` og returnerer `tokens` per `confirmation` / `notify` / `cancel` med egne TTL (30m / 15m / 10m); verifiseringsruter tillater kun matchende purpose; fortsatt obligatorisk `customerEmail` med mismatch-avvisning og rate limit `public-booking-action-token`. Kansellering fra bekreftelsessiden minter `cancel`-token før `send-cancellation`. Bekreftelses-API returnerer `customers.email` for mint. Prod krever `PUBLIC_BOOKING_ACTION_TOKEN_SECRET` (ingen fallback til service role). Filer: `action-token/route.ts`, `public-booking-action-token.ts`, `confirmation/route.ts`, `send-notifications/route.ts`, `send-cancellation/route.ts`, `bookings/create.ts`, `publicBookingHandlers.ts`, `confirmation/page-client.tsx`, `apps/public/tests/setup.ts`, `packages/shared-core/src/rate-limit/policy.ts`.
 - [kode/edge] Billing: innført delt Stripe/salon-binding (`validateBillingBinding`) i relevante billing edge-funksjoner; alignet `billing-sync-addon-usage` med `authorizeSalonAccess` + customer-binding mot Stripe-subscription. Filer: `supabase/supabase/functions/_shared/billing-binding.ts`, `billing-*` edge functions, `billing-sync-addon-usage/index.ts`.
 - [test/edge] Deno-tester for binding-helper (`_shared/billing-binding.test.ts`).
 - [ci] Utvidet `build.needs` til å inkludere `security-scan`, `migration-integrity`, `edge-functions`, `coverage-extended`; edge-test-steg bruker `find` for portabilitet. Fil: `.github/workflows/ci.yml`.
 - [docs] Fullført og lukket dokumentasjon i `docs/ops/project-analysis-2026-04-25.md` (inkl. lukkelogg).
+- [ci/scripts] `pnpm run db:migrations:manifest-coverage` + lint-steg på pull_request (endrede `migrations/*.sql` må være i `migration-manifest.json`). Filer: `scripts/check-migration-manifest-coverage.ts`, `.github/workflows/ci.yml`, `package.json`.
+- [docs] `docs/env/environment-variables.md`: `PUBLIC_BOOKING_ACTION_TOKEN_SECRET` + rotasjon; `docs/ops/must-fix-checklist-2026-04-25.md` oppdatert med status og beslutningslogg.
 
 ## 2026-04-24
 

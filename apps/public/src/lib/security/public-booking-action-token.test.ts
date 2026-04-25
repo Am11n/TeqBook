@@ -11,7 +11,7 @@ describe("public booking action token security", () => {
     const result = verifyPublicBookingActionToken({
       token: "not.a.valid.token",
       bookingId,
-      allowedPurposes: ["manage"],
+      allowedPurposes: ["confirmation"],
     });
     expect(result.valid).toBe(false);
   });
@@ -19,13 +19,13 @@ describe("public booking action token security", () => {
   it("rejects expired token", () => {
     const token = issuePublicBookingActionToken({
       bookingId,
-      purpose: "manage",
+      purpose: "confirmation",
       ttlSeconds: -1,
     });
     const result = verifyPublicBookingActionToken({
       token,
       bookingId,
-      allowedPurposes: ["manage"],
+      allowedPurposes: ["confirmation"],
     });
     expect(result.valid).toBe(false);
   });
@@ -33,14 +33,28 @@ describe("public booking action token security", () => {
   it("accepts valid token with allowed purpose", () => {
     const token = issuePublicBookingActionToken({
       bookingId,
-      purpose: "manage",
+      purpose: "confirmation",
       ttlSeconds: 60,
     });
     const result = verifyPublicBookingActionToken({
       token,
       bookingId,
-      allowedPurposes: ["manage"],
+      allowedPurposes: ["confirmation"],
     });
     expect(result.valid).toBe(true);
+  });
+
+  it("rejects token when purpose does not match route", () => {
+    const token = issuePublicBookingActionToken({
+      bookingId,
+      purpose: "notify",
+      ttlSeconds: 60,
+    });
+    const result = verifyPublicBookingActionToken({
+      token,
+      bookingId,
+      allowedPurposes: ["confirmation"],
+    });
+    expect(result.valid).toBe(false);
   });
 });
