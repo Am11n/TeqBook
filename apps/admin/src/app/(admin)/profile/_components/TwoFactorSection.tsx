@@ -31,6 +31,9 @@ export function TwoFactorSection({
   const [verifying, setVerifying] = useState(false);
   const [disabling, setDisabling] = useState(false);
   const [confirmDisable, setConfirmDisable] = useState(false);
+  const [disableChallengeId, setDisableChallengeId] = useState<string | null>(null);
+  const [disableCode, setDisableCode] = useState("");
+  const [disableChallengeLoading, setDisableChallengeLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
 
   async function handleStartEnroll() {
@@ -83,21 +86,75 @@ export function TwoFactorSection({
     setInlineError(null);
   }
 
-  async function handleDisable() {
-    if (!mfaFactors || mfaFactors.length === 0) return;
-    setDisabling(true);
+  function resetDisableFlow() {
+    setConfirmDisable(false);
+    setDisableChallengeId(null);
+    setDisableCode("");
+    setDisableChallengeLoading(false);
     setInlineError(null);
+  }
+
+  async function beginDisableFlow() {
+    if (!mfaFactors || mfaFactors.length === 0) return;
+    setInlineError(null);
+    setConfirmDisable(true);
+    setDisableCode("");
+    setDisableChallengeId(null);
+    setDisableChallengeLoading(true);
 
     const firstFactor = mfaFactors[0];
-    const { error } = await unenrollTOTP(firstFactor.id);
-    setDisabling(false);
-    setConfirmDisable(false);
+    const { data: challengeData, error: challengeError } = await challengeTOTP(firstFactor.id);
+    setDisableChallengeLoading(false);
 
-    if (error) {
-      onError(error);
+    if (challengeError || !challengeData?.challengeId) {
+      setInlineError(challengeError || "Could not start verification. Try again.");
+      setConfirmDisable(false);
       return;
     }
 
+    setDisableChallengeId(challengeData.challengeId);
+  }
+
+  async function handleConfirmDisable() {
+    if (!mfaFactors || mfaFactors.length === 0) return;
+    const firstFactor = mfaFactors[0];
+    if (!disableChallengeId || !/^\d{6}$/.test(disableCode.trim())) {
+      setInlineError("Enter the 6-digit code from your authenticator app.");
+      return;
+    }
+
+    setDisabling(true);
+    setInlineError(null);
+
+    const { error: verifyError } = await verifyTOTPChallenge(
+      firstFactor.id,
+      disableChallengeId,
+      disableCode.trim(),
+    );
+
+    if (verifyError) {
+      setInlineError(verifyError);
+      const { data: nextChallenge, error: chError } = await challengeTOTP(firstFactor.id);
+      if (chError || !nextChallenge?.challengeId) {
+        setInlineError(chError || "Could not refresh verification. Try again.");
+        setDisabling(false);
+        return;
+      }
+      setDisableChallengeId(nextChallenge.challengeId);
+      setDisableCode("");
+      setDisabling(false);
+      return;
+    }
+
+    const { error: unenrollError } = await unenrollTOTP(firstFactor.id);
+    setDisabling(false);
+
+    if (unenrollError) {
+      onError(unenrollError);
+      return;
+    }
+
+    resetDisableFlow();
     onSuccess("Two-factor authentication disabled");
     await onRefresh();
   }
@@ -170,7 +227,7 @@ export function TwoFactorSection({
           variant="outline"
           size="sm"
           className="w-full justify-start text-destructive hover:text-destructive"
-          onClick={() => setConfirmDisable(true)}
+          onClick={() => void beginDisableFlow()}
         >
           <Smartphone className="mr-2 h-4 w-4" />
           Disable 2FA
@@ -178,18 +235,50 @@ export function TwoFactorSection({
       )}
 
       {confirmDisable && (
-        <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+        <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
           <p className="text-xs text-destructive">
-            Are you sure? This will remove two-factor authentication from your account.
+            This removes two-factor authentication from your account. Enter the 6-digit code from your authenticator app
+            to confirm.
           </p>
-          <div className="flex gap-2">
-            <Button size="sm" variant="destructive" onClick={handleDisable} disabled={disabling}>
-              {disabling ? "Disabling..." : "Yes, disable 2FA"}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setConfirmDisable(false)} disabled={disabling}>
-              Cancel
-            </Button>
-          </div>
+          {disableChallengeLoading ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Preparing verification…
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1.5">
+                <label htmlFor="admin-disable-mfa-code" className="text-xs font-medium text-foreground">
+                  Authentication code
+                </label>
+                <Input
+                  id="admin-disable-mfa-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={disableCode}
+                  onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ""))}
+                  disabled={!disableChallengeId || disabling}
+                  className="font-mono tracking-widest text-center"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => void handleConfirmDisable()}
+                  disabled={disabling || disableCode.length !== 6 || !disableChallengeId}
+                >
+                  {disabling ? "Disabling…" : "Verify and disable 2FA"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={resetDisableFlow} disabled={disabling}>
+                  Cancel
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

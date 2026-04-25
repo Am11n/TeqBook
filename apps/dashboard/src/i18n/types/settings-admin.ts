@@ -390,4 +390,13 @@ export type SettingsMessages = {
   twoFactorRecommendShort?: string;
   twoFactorDisableButton?: string;
   twoFactorConfirmDisable?: string;
+  twoFactorDisableDialogTitle?: string;
+  twoFactorDisableDialogDescription?: string;
+  twoFactorDisableCodeLabel?: string;
+  twoFactorDisableSubmit?: string;
+  twoFactorDisableSubmitting?: string;
+  twoFactorDisableCancel?: string;
+  twoFactorDisableChallengeFailed?: string;
+  twoFactorDisablePreparing?: string;
+  twoFactorDisableEnterCode?: string;
 };

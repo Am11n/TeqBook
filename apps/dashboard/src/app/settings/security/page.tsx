@@ -58,6 +58,15 @@ export default function SecurityPage() {
     recommendShort: t.twoFactorRecommendShort,
     disableButton: t.twoFactorDisableButton,
     confirmDisable: t.twoFactorConfirmDisable,
+    disableDialogTitle: t.twoFactorDisableDialogTitle,
+    disableDialogDescription: t.twoFactorDisableDialogDescription,
+    disableCodeLabel: t.twoFactorDisableCodeLabel,
+    disableSubmit: t.twoFactorDisableSubmit,
+    disableSubmitting: t.twoFactorDisableSubmitting,
+    disableCancel: t.twoFactorDisableCancel,
+    disableChallengeFailed: t.twoFactorDisableChallengeFailed,
+    disablePreparing: t.twoFactorDisablePreparing,
+    disableEnterCode: t.twoFactorDisableEnterCode,
   };
 
   return (

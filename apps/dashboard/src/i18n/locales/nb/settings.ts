@@ -332,6 +332,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "Deaktiver",
     twoFactorConfirmDisable:
       "Er du sikker på at du vil deaktivere 2FA? Kontoen blir mindre sikker.",
+    twoFactorDisableDialogTitle: "Deaktiver tofaktorautentisering",
+    twoFactorDisableDialogDescription:
+      "Skriv inn den 6-sifrede koden fra autentiseringsappen for å bekrefte. Dette fjerner 2FA fra kontoen din og svekker sikkerheten.",
+    twoFactorDisableCodeLabel: "Autentiseringskode",
+    twoFactorDisableSubmit: "Deaktiver 2FA",
+    twoFactorDisableSubmitting: "Deaktiverer…",
+    twoFactorDisableCancel: "Avbryt",
+    twoFactorDisableChallengeFailed: "Kunne ikke starte verifisering. Lukk og prøv igjen.",
+    twoFactorDisablePreparing: "Forbereder verifisering…",
+    twoFactorDisableEnterCode: "Skriv inn en gyldig 6-sifret kode.",
   };
 
 export const settings: TranslationNamespaces["settings"] = {

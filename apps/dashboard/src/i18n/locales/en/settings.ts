@@ -311,6 +311,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "Disable",
     twoFactorConfirmDisable:
       "Are you sure you want to disable 2FA? This will make your account less secure.",
+    twoFactorDisableDialogTitle: "Disable two-factor authentication",
+    twoFactorDisableDialogDescription:
+      "Enter the 6-digit code from your authenticator app to confirm. This removes 2FA from your account and reduces security.",
+    twoFactorDisableCodeLabel: "Authentication code",
+    twoFactorDisableSubmit: "Disable 2FA",
+    twoFactorDisableSubmitting: "Disabling…",
+    twoFactorDisableCancel: "Cancel",
+    twoFactorDisableChallengeFailed: "Could not start verification. Close and try again.",
+    twoFactorDisablePreparing: "Preparing verification…",
+    twoFactorDisableEnterCode: "Please enter a valid 6-digit code.",
   };
 
 export const settings: TranslationNamespaces["settings"] = {
