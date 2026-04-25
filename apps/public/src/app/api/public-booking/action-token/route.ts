@@ -7,6 +7,7 @@ import {
 } from "@/lib/security/public-booking-action-token";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { getTrustedClientIp } from "@/lib/http/trusted-client-ip";
 
 const VALID_PURPOSES = new Set<PublicBookingActionPurpose>(["confirmation", "notify", "cancel"]);
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const rateLimitPolicy = getRateLimitPolicy("public-booking-action-token");
-    const ipIdentifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ipIdentifier = getTrustedClientIp(request);
     const rateLimitIdentifier = `${ipIdentifier}:${salonId}:${bookingId}`;
     const rateLimitResult = await checkRateLimit(rateLimitIdentifier, "public-booking-action-token", {
       identifierType: "ip",

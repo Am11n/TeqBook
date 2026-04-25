@@ -1,0 +1,327 @@
+{
+  "version": "4",
+  "redirects": {
+    "https://esm.sh/@supabase/phoenix@^0.4.0?target=denonext": "https://esm.sh/@supabase/phoenix@0.4.0?target=denonext",
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.104.1",
+    "https://esm.sh/iceberg-js@^0.8.1?target=denonext": "https://esm.sh/iceberg-js@0.8.1?target=denonext"
+  },
+  "remote": {
+    "https://deno.land/std@0.168.0/async/abortable.ts": "80b2ac399f142cc528f95a037a7d0e653296352d95c681e284533765961de409",
+    "https://deno.land/std@0.168.0/async/deadline.ts": "2c2deb53c7c28ca1dda7a3ad81e70508b1ebc25db52559de6b8636c9278fd41f",
+    "https://deno.land/std@0.168.0/async/debounce.ts": "60301ffb37e730cd2d6f9dadfd0ecb2a38857681bd7aaf6b0a106b06e5210a98",
+    "https://deno.land/std@0.168.0/async/deferred.ts": "77d3f84255c3627f1cc88699d8472b664d7635990d5358c4351623e098e917d6",
+    "https://deno.land/std@0.168.0/async/delay.ts": "5a9bfba8de38840308a7a33786a0155a7f6c1f7a859558ddcec5fe06e16daf57",
+    "https://deno.land/std@0.168.0/async/mod.ts": "7809ad4bb223e40f5fdc043e5c7ca04e0e25eed35c32c3c32e28697c553fa6d9",
+    "https://deno.land/std@0.168.0/async/mux_async_iterator.ts": "770a0ff26c59f8bbbda6b703a2235f04e379f73238e8d66a087edc68c2a2c35f",
+    "https://deno.land/std@0.168.0/async/pool.ts": "6854d8cd675a74c73391c82005cbbe4cc58183bddcd1fbbd7c2bcda42b61cf69",
+    "https://deno.land/std@0.168.0/async/retry.ts": "e8e5173623915bbc0ddc537698fa418cf875456c347eda1ed453528645b42e67",
+    "https://deno.land/std@0.168.0/async/tee.ts": "3a47cc4e9a940904fd4341f0224907e199121c80b831faa5ec2b054c6d2eff5e",
+    "https://deno.land/std@0.168.0/http/server.ts": "e99c1bee8a3f6571ee4cdeb2966efad465b8f6fe62bec1bdb59c1f007cc4d155",
+    "https://esm.sh/@supabase/auth-js@2.104.1/denonext/auth-js.mjs": "ed9f6d02a5885883291659fb1c23e0e263dd991bb1857b58fd6a818702a8ad16",
+    "https://esm.sh/@supabase/functions-js@2.104.1/denonext/functions-js.mjs": "e2526f175d7256933eb973721c6feb02ee0bfbd50a743663652f79995c6e120c",
+    "https://esm.sh/@supabase/phoenix@0.4.0/denonext/phoenix.mjs": "d9187057b2e3276d1110b9d814f737d4f8eff7f8b2765c4aa6bf7c7c30d070c9",
+    "https://esm.sh/@supabase/phoenix@0.4.0?target=denonext": "c1df3cfcdcf13e9cfddf86181efbdd8d4099b9a2682188b74106596277a69d16",
+    "https://esm.sh/@supabase/postgrest-js@2.104.1/denonext/postgrest-js.mjs": "f968232d2d22950299afe0712a8073f6a03e80e1b53ff3411763328394bbe976",
+    "https://esm.sh/@supabase/realtime-js@2.104.1/denonext/realtime-js.mjs": "61b3266d1bfa729a91bf5f804970a2d9612303d11acad20e82342103e9b5b691",
+    "https://esm.sh/@supabase/storage-js@2.104.1/denonext/storage-js.mjs": "8783d810ec64743721155f4e45dc5ce8547f250fb6c3b0097603ea0661f8c9ba",
+    "https://esm.sh/@supabase/supabase-js@2.104.1": "bad73bfa9aac8a6d896e7a1d4449c7c2ece9a01bccca9e9569f1ed0fc76b5222",
+    "https://esm.sh/@supabase/supabase-js@2.104.1/denonext/supabase-js.mjs": "dd594d5874d2da69f6e8d844b3a899b799f86d00f61e0cac43c215e3f31b4a04",
+    "https://esm.sh/iceberg-js@0.8.1/denonext/iceberg-js.mjs": "d839d81a2e3966500ca2cdd0c1cb458e9608bacfc91f7bb67a69b2e878dcdb4f",
+    "https://esm.sh/iceberg-js@0.8.1?target=denonext": "58c849d7fe2bf4eca4a84eb501e83c161a7d8c34ca1bec15a962b3bec3062633",
+    "https://esm.sh/tslib@2.8.1/denonext/tslib.mjs": "c38da5dd6da6281964435002ce204cd586634fe3bdfb24a0ee116f48cf3292e9"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@playwright/test@^1.48.0",
+        "npm:dotenv@^16.4.7",
+        "npm:glob@11",
+        "npm:pg@^8.20.0",
+        "npm:prettier@^3.4.2",
+        "npm:tsx@^4.19.2",
+        "npm:typescript@5"
+      ]
+    },
+    "members": {
+      "apps/admin": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@emotion/is-prop-valid@^1.4.0",
+            "npm:@radix-ui/react-avatar@^1.1.11",
+            "npm:@radix-ui/react-checkbox@^1.3.3",
+            "npm:@radix-ui/react-dialog@^1.1.15",
+            "npm:@radix-ui/react-dropdown-menu@^2.1.16",
+            "npm:@radix-ui/react-label@^2.1.8",
+            "npm:@radix-ui/react-popover@^1.1.15",
+            "npm:@radix-ui/react-select@^2.2.6",
+            "npm:@radix-ui/react-slot@^1.2.4",
+            "npm:@radix-ui/react-tabs@^1.1.13",
+            "npm:@radix-ui/react-tooltip@^1.2.8",
+            "npm:@sentry/nextjs@^10.50.0",
+            "npm:@stripe/stripe-js@^8.6.4",
+            "npm:@supabase/ssr@~0.5.2",
+            "npm:@supabase/supabase-js@^2.85.0",
+            "npm:@tailwindcss/postcss@4",
+            "npm:@testing-library/jest-dom@^6.6.3",
+            "npm:@testing-library/react@^16.1.0",
+            "npm:@types/node@20",
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@vitejs/plugin-react@^5.1.2",
+            "npm:@vitest/coverage-v8@^2.1.8",
+            "npm:class-variance-authority@~0.7.1",
+            "npm:clsx@^2.1.1",
+            "npm:date-fns@^4.1.0",
+            "npm:eslint-config-next@^16.2.4",
+            "npm:eslint@9",
+            "npm:framer-motion@^12.23.24",
+            "npm:jsdom@^25.0.1",
+            "npm:lucide-react@0.555",
+            "npm:next@^16.2.4",
+            "npm:prettier@^3.4.2",
+            "npm:react-dom@19.2.0",
+            "npm:react@19.2.0",
+            "npm:resend@^6.9.1",
+            "npm:tailwind-merge@^3.4.0",
+            "npm:tailwindcss@4",
+            "npm:tw-animate-css@^1.4.0",
+            "npm:typescript@5",
+            "npm:vitest@^2.1.8"
+          ]
+        }
+      },
+      "apps/dashboard": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@emotion/is-prop-valid@^1.4.0",
+            "npm:@radix-ui/react-avatar@^1.1.11",
+            "npm:@radix-ui/react-checkbox@^1.3.3",
+            "npm:@radix-ui/react-dialog@^1.1.15",
+            "npm:@radix-ui/react-dropdown-menu@^2.1.16",
+            "npm:@radix-ui/react-label@^2.1.8",
+            "npm:@radix-ui/react-popover@^1.1.15",
+            "npm:@radix-ui/react-select@^2.2.6",
+            "npm:@radix-ui/react-slot@^1.2.4",
+            "npm:@radix-ui/react-tabs@^1.1.13",
+            "npm:@radix-ui/react-tooltip@^1.2.8",
+            "npm:@react-email/render@^2.0.1",
+            "npm:@sentry/nextjs@^10.50.0",
+            "npm:@stripe/react-stripe-js@^5.5.0",
+            "npm:@stripe/stripe-js@^8.6.4",
+            "npm:@supabase/ssr@~0.5.2",
+            "npm:@supabase/supabase-js@^2.85.0",
+            "npm:@tailwindcss/postcss@4",
+            "npm:@testing-library/jest-dom@^6.6.3",
+            "npm:@testing-library/react@^16.1.0",
+            "npm:@types/node@20",
+            "npm:@types/papaparse@^5.5.2",
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@vitejs/plugin-react@^5.1.2",
+            "npm:@vitest/coverage-v8@^2.1.8",
+            "npm:class-variance-authority@~0.7.1",
+            "npm:clsx@^2.1.1",
+            "npm:date-fns@^4.1.0",
+            "npm:dotenv@^16.4.7",
+            "npm:eslint-config-next@^16.2.4",
+            "npm:eslint@9",
+            "npm:framer-motion@^12.23.24",
+            "npm:jsdom@^25.0.1",
+            "npm:lucide-react@0.555",
+            "npm:next@^16.2.4",
+            "npm:papaparse@^5.5.3",
+            "npm:prettier@^3.4.2",
+            "npm:react-dom@19.2.0",
+            "npm:react@19.2.0",
+            "npm:resend@^6.9.1",
+            "npm:server-only@^0.0.1",
+            "npm:stripe@^14.21.0",
+            "npm:tailwind-merge@^3.4.0",
+            "npm:tailwindcss@4",
+            "npm:tw-animate-css@^1.4.0",
+            "npm:typescript@5",
+            "npm:vitest@^2.1.8",
+            "npm:yaml@^2.8.2"
+          ]
+        }
+      },
+      "apps/public": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@emotion/is-prop-valid@^1.4.0",
+            "npm:@radix-ui/react-avatar@^1.1.11",
+            "npm:@radix-ui/react-checkbox@^1.3.3",
+            "npm:@radix-ui/react-dialog@^1.1.15",
+            "npm:@radix-ui/react-dropdown-menu@^2.1.16",
+            "npm:@radix-ui/react-label@^2.1.8",
+            "npm:@radix-ui/react-popover@^1.1.15",
+            "npm:@radix-ui/react-select@^2.2.6",
+            "npm:@radix-ui/react-slot@^1.2.4",
+            "npm:@radix-ui/react-tabs@^1.1.13",
+            "npm:@radix-ui/react-tooltip@^1.2.8",
+            "npm:@react-email/render@^2.0.1",
+            "npm:@sentry/nextjs@^10.50.0",
+            "npm:@supabase/ssr@~0.5.2",
+            "npm:@supabase/supabase-js@^2.85.0",
+            "npm:@tailwindcss/postcss@4",
+            "npm:@testing-library/jest-dom@^6.6.3",
+            "npm:@types/node@20",
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@types/three@0.181",
+            "npm:@vitejs/plugin-react@^5.1.2",
+            "npm:@vitest/coverage-v8@^2.1.8",
+            "npm:class-variance-authority@~0.7.1",
+            "npm:clsx@^2.1.1",
+            "npm:date-fns@^4.1.0",
+            "npm:eslint-config-next@^16.2.4",
+            "npm:eslint@9",
+            "npm:framer-motion@^12.23.24",
+            "npm:jsdom@^25.0.1",
+            "npm:lucide-react@0.555",
+            "npm:next@^16.2.4",
+            "npm:prettier@^3.4.2",
+            "npm:react-dom@19.2.0",
+            "npm:react@19.2.0",
+            "npm:resend@^6.9.1",
+            "npm:server-only@^0.0.1",
+            "npm:tailwind-merge@^3.4.0",
+            "npm:tailwindcss@4",
+            "npm:three@~0.181.2",
+            "npm:tw-animate-css@^1.4.0",
+            "npm:typescript@5",
+            "npm:vitest@^2.1.8"
+          ]
+        }
+      },
+      "packages/data-table": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:lucide-react@0.555",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/feedback": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:lucide-react@0.555",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/layout": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:lucide-react@0.555",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/page": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:lucide-react@0.555",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/shared": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/ssr@~0.5.2",
+            "npm:@supabase/supabase-js@^2.85.0",
+            "npm:@types/node@20",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:next@^16.2.4",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5",
+            "npm:zod@^3.23.8"
+          ]
+        }
+      },
+      "packages/shared-core": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/node@20",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/shared-data": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/ssr@~0.5.2",
+            "npm:@supabase/supabase-js@^2.85.0",
+            "npm:@types/node@20",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:eslint@9",
+            "npm:next@^16.2.4",
+            "npm:prettier@^3.4.2",
+            "npm:typescript@5"
+          ]
+        }
+      },
+      "packages/ui": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@radix-ui/react-avatar@^1.1.11",
+            "npm:@radix-ui/react-checkbox@^1.3.3",
+            "npm:@radix-ui/react-dialog@^1.1.15",
+            "npm:@radix-ui/react-dropdown-menu@^2.1.16",
+            "npm:@radix-ui/react-label@^2.1.8",
+            "npm:@radix-ui/react-popover@^1.1.15",
+            "npm:@radix-ui/react-select@^2.2.6",
+            "npm:@radix-ui/react-slot@^1.2.4",
+            "npm:@radix-ui/react-tabs@^1.1.13",
+            "npm:@radix-ui/react-tooltip@^1.2.8",
+            "npm:@types/react-dom@19",
+            "npm:@types/react@19",
+            "npm:@typescript-eslint/eslint-plugin@^8.54.0",
+            "npm:@typescript-eslint/parser@^8.54.0",
+            "npm:class-variance-authority@~0.7.1",
+            "npm:clsx@^2.1.1",
+            "npm:eslint@9",
+            "npm:lucide-react@0.555",
+            "npm:prettier@^3.4.2",
+            "npm:react-dom@19.2.0",
+            "npm:react@19.2.0",
+            "npm:tailwind-merge@^3.4.0",
+            "npm:typescript@5"
+          ]
+        }
+      }
+    }
+  }
+}

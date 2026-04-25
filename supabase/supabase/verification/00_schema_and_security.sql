@@ -79,6 +79,31 @@ BEGIN
     missing_count := missing_count + 1;
   END IF;
 
+  -- Staff notify RPCs must include booking/salon binding guard (see migration 20260425120000)
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'notify_salon_staff_new_booking'
+      AND pg_get_functiondef(p.oid) LIKE '%salon mismatch%'
+  ) THEN
+    RAISE NOTICE 'notify_salon_staff_new_booking missing expected hardening (salon mismatch guard)';
+    missing_count := missing_count + 1;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'notify_salon_staff_booking_cancelled'
+      AND pg_get_functiondef(p.oid) LIKE '%salon mismatch%'
+  ) THEN
+    RAISE NOTICE 'notify_salon_staff_booking_cancelled missing expected hardening (salon mismatch guard)';
+    missing_count := missing_count + 1;
+  END IF;
+
   IF missing_count > 0 THEN
     RAISE EXCEPTION 'Schema/security verification failed. Missing checks: %', missing_count;
   END IF;

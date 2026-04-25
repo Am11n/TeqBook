@@ -30,7 +30,7 @@ async function executeClaim(action: ClaimAction, token: string, channel: "sms_li
   });
 
   if (error) {
-    return { ok: false, message: error.message, status: "error" };
+    return { ok: false, message: "Could not process request", status: "error" };
   }
   const row = data?.[0] as
     | {

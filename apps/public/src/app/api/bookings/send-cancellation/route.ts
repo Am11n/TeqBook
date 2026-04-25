@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendBookingCancellation } from "@/lib/services/email-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logError, logWarn, logInfo } from "@/lib/services/logger";
-import { createClientForRouteHandler } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
@@ -283,8 +282,7 @@ export async function POST(request: NextRequest) {
           bookingTime,
         });
 
-        const supabase = createClientForRouteHandler(request, response, requestId);
-        const { data: notifiedCount, error: notifyError } = await supabase.rpc(
+        const { data: notifiedCount, error: notifyError } = await admin.rpc(
           "notify_salon_staff_booking_cancelled",
           {
             p_salon_id: salonId,
@@ -415,7 +413,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logError("Exception in public send-cancellation API route", error, {});
     const errorResponse = NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal server error" },
       { status: 500 },
     );
     errorResponse.headers.set(REQUEST_ID_HEADER, requestId);

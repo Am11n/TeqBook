@@ -8,6 +8,7 @@ const mockGetSalonById = vi.fn();
 const mockSendBookingConfirmation = vi.fn();
 const mockScheduleReminders = vi.fn();
 const mockRpc = vi.fn();
+const mockAdminRpc = vi.fn();
 const mockAdminMaybeSingle = vi.fn();
 const mockEventMaybeSingle = vi.fn();
 const mockEventUpsert = vi.fn();
@@ -72,6 +73,7 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/supabase/admin", () => ({
   getAdminClient: () => ({
     from: (table: string) => mockAdminFrom(table),
+    rpc: (...args: unknown[]) => mockAdminRpc(...args),
   }),
 }));
 
@@ -156,7 +158,7 @@ describe("Public bookings/send-notifications rate limiting", () => {
     });
     mockSendBookingConfirmation.mockResolvedValue({ data: { id: "email-1" }, error: null });
     mockScheduleReminders.mockResolvedValue({ error: null });
-    mockRpc.mockResolvedValue({ data: 1, error: null });
+    mockAdminRpc.mockResolvedValue({ data: 1, error: null });
     mockEventMaybeSingle.mockResolvedValue({ data: null, error: null });
     mockEventUpsert.mockReturnValue({
       select: () => ({
@@ -182,6 +184,8 @@ describe("Public bookings/send-notifications rate limiting", () => {
 
     expect(res.status).toBe(200);
     expect(body.email).toBeDefined();
+    expect(body.inApp?.success).toBe(true);
+    expect(body.inApp?.sent).toBe(1);
     expect(mockIncrementRateLimit).toHaveBeenCalledOnce();
     expect(mockSendBookingConfirmation).toHaveBeenCalledOnce();
   });
@@ -218,7 +222,7 @@ describe("Public bookings/send-notifications rate limiting", () => {
       error: null,
     });
     mockScheduleReminders.mockResolvedValue({ error: null });
-    mockRpc.mockResolvedValue({ data: 1, error: null });
+    mockAdminRpc.mockResolvedValue({ data: 1, error: null });
     mockEventMaybeSingle.mockResolvedValue({ data: null, error: null });
     mockEventUpsert.mockReturnValue({
       select: () => ({

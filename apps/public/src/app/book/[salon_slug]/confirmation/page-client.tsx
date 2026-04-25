@@ -64,10 +64,11 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
           theme_overrides: salonData.theme_overrides || null,
         });
 
-        const confirmationResponse = await fetch(
-          `/api/public-booking/confirmation?slug=${encodeURIComponent(slug)}&bookingId=${encodeURIComponent(bookingId)}&actionToken=${encodeURIComponent(actionToken)}`,
-          { method: "GET", headers: { Accept: "application/json" } }
-        );
+        const confirmationResponse = await fetch("/api/public-booking/confirmation", {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify({ slug, bookingId, actionToken }),
+        });
         const confirmationPayload = await confirmationResponse.json().catch(() => null) as
           | { booking?: (Booking & { salon_id: string }) | null; error?: string }
           | null;

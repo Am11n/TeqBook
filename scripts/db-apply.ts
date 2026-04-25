@@ -214,7 +214,7 @@ async function main() {
 
   const dbUrl = process.env.SUPABASE_DB_URL;
   if (!dbUrl) {
-    throw new Error("SUPABASE_DB_URL must be set in .env.local for db:apply");
+    throw new Error("SUPABASE_DB_URL must be set for db:apply");
   }
 
   const manifest = readJsonFile<Manifest>(MANIFEST_PATH);

@@ -15,6 +15,10 @@
     {
       "file": "supabase/supabase/migrations/20260326101000_fix_announcements_table_grants.sql",
       "sha256": "23ad70ce7df57d1a56cd4e33e62ec9ef4cf5475706eb3ffb69d07cd6d6136bd9"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260425120000_harden_notify_salon_staff_rpc.sql",
+      "sha256": "628b6fdf1b720c42ca493d372a651e7223b32fa2aa74238abae2317c1ae2557c"
     }
   ]
 }

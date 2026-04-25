@@ -138,8 +138,11 @@ jobs:
       - name: Apply and verify migrations
         run: pnpm run db:apply && pnpm run db:verify
         env:
+          TEQBOOK_DB_USE_PROCESS_ENV: "1"
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION: ${{ secrets.NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION }}
+          TEQBOOK_ENV_TARGET: pilot-production
           TEQBOOK_SUPABASE_TARGET: pilot-production
 
   edge-functions:
@@ -154,6 +157,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Check duplicate Edge Function trees stay in sync
+        run: pnpm run check:supabase-functions-drift
       - name: Run Deno edge-function tests
         run: |
           files=$(find supabase/supabase/functions -name "*.test.ts" -type f | sort)

@@ -163,7 +163,7 @@ async function main() {
 
   const dbUrl = process.env.SUPABASE_DB_URL;
   if (!dbUrl) {
-    throw new Error("SUPABASE_DB_URL must be set in .env.local for db:verify");
+    throw new Error("SUPABASE_DB_URL must be set for db:verify");
   }
 
   mkdirSync(resolve(process.cwd(), LOG_DIR), { recursive: true });

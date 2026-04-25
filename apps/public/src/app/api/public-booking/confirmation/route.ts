@@ -18,14 +18,12 @@ function getAdminClient() {
   });
 }
 
-export async function GET(request: NextRequest) {
-  const slug = request.nextUrl.searchParams.get("slug")?.trim();
-  const bookingId = request.nextUrl.searchParams.get("bookingId")?.trim();
-  const actionToken = request.nextUrl.searchParams.get("actionToken")?.trim();
-
-  if (!slug || !bookingId || !actionToken) {
-    return NextResponse.json({ error: "slug, bookingId and actionToken are required" }, { status: 400 });
-  }
+async function loadConfirmationForToken(params: {
+  slug: string;
+  bookingId: string;
+  actionToken: string;
+}): Promise<NextResponse> {
+  const { slug, bookingId, actionToken } = params;
 
   const tokenCheck = verifyPublicBookingActionToken({
     token: actionToken,
@@ -59,7 +57,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (bookingError) {
-      return NextResponse.json({ error: bookingError.message }, { status: 500 });
+      return NextResponse.json({ error: "Failed to load booking" }, { status: 500 });
     }
 
     if (!booking) {
@@ -106,3 +104,43 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function GET(request: NextRequest) {
+  const slug = request.nextUrl.searchParams.get("slug")?.trim();
+  const bookingId = request.nextUrl.searchParams.get("bookingId")?.trim();
+  const actionToken = request.nextUrl.searchParams.get("actionToken")?.trim();
+
+  if (!slug || !bookingId || !actionToken) {
+    return NextResponse.json({ error: "slug, bookingId and actionToken are required" }, { status: 400 });
+  }
+
+  return loadConfirmationForToken({ slug, bookingId, actionToken });
+}
+
+type ConfirmationPostBody = {
+  slug?: string;
+  bookingId?: string;
+  actionToken?: string;
+};
+
+/** Preferred: token in JSON body (not in query string / server logs). GET retained for backward compatibility. */
+export async function POST(request: NextRequest) {
+  let body: ConfirmationPostBody;
+  try {
+    body = (await request.json()) as ConfirmationPostBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const slug = body.slug?.trim();
+  const bookingId = body.bookingId?.trim();
+  const actionToken = body.actionToken?.trim();
+
+  if (!slug || !bookingId || !actionToken) {
+    return NextResponse.json(
+      { error: "slug, bookingId and actionToken are required in JSON body" },
+      { status: 400 }
+    );
+  }
+
+  return loadConfirmationForToken({ slug, bookingId, actionToken });
+}

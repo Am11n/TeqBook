@@ -66,7 +66,6 @@ export async function computeTwilioSignature(payload: string, authToken: string)
     false,
     ["sign"]
   );
-
   const signatureBytes = new Uint8Array(
     await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(payload))
   );
@@ -105,6 +104,7 @@ export async function handleSmsStatusWebhook(req: Request) {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
+    // Twilio replay guard: enforce freshness when timestamp header exists.
     const timestampHeader = req.headers.get("x-twilio-request-timestamp");
     if (timestampHeader) {
       const timestampSec = Number.parseInt(timestampHeader, 10);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logInfo, logWarn } from "@/lib/services/logger";
-import { createClientForRouteHandler } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 import type { Booking } from "@/lib/types";
 
 type EnrichedBooking = Booking & {
@@ -56,8 +56,8 @@ export async function notifySalonStaff(
       bookingId: booking.id, salonId, customerName, serviceName, bookingTime: booking.start_time,
     });
 
-    const supabaseForRpc = createClientForRouteHandler(request, response);
-    const { data: notifiedCount, error: notifyError } = await supabaseForRpc.rpc(
+    const admin = getAdminClient();
+    const { data: notifiedCount, error: notifyError } = await admin.rpc(
       "notify_salon_staff_new_booking",
       {
         p_salon_id: salonId,
@@ -100,8 +100,8 @@ export async function notifySalonStaffCancellation(
       bookingId: booking.id, salonId, customerName, serviceName, bookingTime: booking.start_time,
     });
 
-    const supabaseForRpc = createClientForRouteHandler(request, response);
-    const { data: notifiedCount, error: notifyError } = await supabaseForRpc.rpc(
+    const admin = getAdminClient();
+    const { data: notifiedCount, error: notifyError } = await admin.rpc(
       "notify_salon_staff_booking_cancelled",
       {
         p_salon_id: salonId, p_customer_name: customerName, p_service_name: serviceName,

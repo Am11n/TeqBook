@@ -16,6 +16,7 @@ import {
   getPlanFromPriceId,
   type BillingPlan,
 } from "../_shared/billing.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +53,51 @@ async function syncSubscriptionProjection(
   const salonId = subscription.metadata.salon_id;
   if (!salonId) {
     console.warn("Subscription missing salon_id in metadata:", subscription.id);
+    return;
+  }
+
+  const stripeCustomerId =
+    typeof subscription.customer === "string"
+      ? subscription.customer
+      : subscription.customer?.id ?? null;
+
+  const { data: salonRow, error: salonLoadError } = await supabase
+    .from("salons")
+    .select("id, billing_customer_id, billing_subscription_id")
+    .eq("id", salonId)
+    .maybeSingle();
+
+  if (salonLoadError || !salonRow) {
+    console.error("syncSubscriptionProjection: salon not found or load error", {
+      salonId,
+      subscriptionId: subscription.id,
+      error: salonLoadError?.message,
+    });
+    return;
+  }
+
+  const bindingError = validateBillingBinding({
+    stripeSubscriptionCustomerId: stripeCustomerId,
+    salonBillingCustomerId: salonRow.billing_customer_id,
+  });
+  if (bindingError) {
+    console.error("syncSubscriptionProjection: Stripe customer does not match salon binding", {
+      salonId,
+      subscriptionId: subscription.id,
+      bindingError,
+    });
+    return;
+  }
+
+  if (
+    salonRow.billing_subscription_id &&
+    salonRow.billing_subscription_id !== subscription.id
+  ) {
+    console.error("syncSubscriptionProjection: subscription id mismatch for salon", {
+      salonId,
+      expectedSubscriptionId: salonRow.billing_subscription_id,
+      stripeSubscriptionId: subscription.id,
+    });
     return;
   }
 
@@ -218,7 +264,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const priceConfig = getBillingPriceConfig();
 
-    // Idempotency gate: store event first, skip if already processed.
+    // Idempotency gate: store event first; duplicates inspect ledger status.
     const { error: insertWebhookError } = await supabase
       .from("stripe_webhook_events")
       .insert({
@@ -231,16 +277,57 @@ serve(async (req) => {
     if (insertWebhookError) {
       const duplicateEvent = insertWebhookError.code === "23505";
       if (duplicateEvent) {
-        console.log("Duplicate Stripe webhook event received, skipping:", event.id);
-        return jsonResponse(
-          { received: true, duplicate: true, event_type: event.type, request_id: requestId },
-          200,
-          requestId,
-        );
-      }
+        const { data: existing, error: existingErr } = await supabase
+          .from("stripe_webhook_events")
+          .select("processing_status, received_at")
+          .eq("event_id", event.id)
+          .maybeSingle();
 
-      console.error("Failed to persist Stripe webhook event:", insertWebhookError);
-      return jsonResponse({ error: "Failed to persist webhook event", request_id: requestId }, 500, requestId);
+        if (existingErr || !existing) {
+          console.error("Duplicate webhook but ledger row missing:", event.id, existingErr);
+          return jsonResponse(
+            { error: "Idempotency conflict", request_id: requestId },
+            500,
+            requestId,
+          );
+        }
+
+        if (existing.processing_status === "processed") {
+          console.log("Duplicate Stripe webhook (already processed):", event.id);
+          return jsonResponse(
+            { received: true, duplicate: true, event_type: event.type, request_id: requestId },
+            200,
+            requestId,
+          );
+        }
+
+        if (existing.processing_status === "processing") {
+          console.log("Duplicate Stripe webhook (still processing):", event.id);
+          return jsonResponse(
+            { received: true, duplicate_inflight: true, event_type: event.type, request_id: requestId },
+            200,
+            requestId,
+          );
+        }
+
+        // failed — allow Stripe retry to re-execute side effects
+        const { error: resetErr } = await supabase
+          .from("stripe_webhook_events")
+          .update({ processing_status: "processing", error_message: null })
+          .eq("event_id", event.id);
+        if (resetErr) {
+          console.error("Failed to reset failed webhook row for retry:", resetErr);
+          return jsonResponse(
+            { error: "Failed to reset webhook ledger for retry", request_id: requestId },
+            500,
+            requestId,
+          );
+        }
+        console.warn("Retrying Stripe webhook after prior failure:", event.id);
+      } else {
+        console.error("Failed to persist Stripe webhook event:", insertWebhookError);
+        return jsonResponse({ error: "Failed to persist webhook event", request_id: requestId }, 500, requestId);
+      }
     }
 
     let processingError: string | null = null;
@@ -255,6 +342,13 @@ serve(async (req) => {
 
         // Do not activate plan for incomplete subscriptions.
         if (subscription.status === "incomplete" || subscription.status === "incomplete_expired") {
+          if (!salonId) {
+            console.warn(
+              "Incomplete subscription webhook missing metadata.salon_id; skipping salon write",
+              { subscriptionId: subscription.id },
+            );
+            break;
+          }
           const { error: updateError } = await supabase
             .from("salons")
             .update({
@@ -525,10 +619,26 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
         if (customerId) {
+          const { data: salonRows, error: salonSelectError } = await supabase
+            .from("salons")
+            .select("id")
+            .eq("billing_customer_id", customerId);
+          if (salonSelectError) {
+            console.error("Failed to resolve salon for requires_action:", salonSelectError);
+            break;
+          }
+          if (!salonRows?.length) break;
+          if (salonRows.length > 1) {
+            console.error("Ambiguous billing_customer_id for requires_action; refusing multi-row update", {
+              customerId,
+              count: salonRows.length,
+            });
+            break;
+          }
           const { error: updateError } = await supabase
             .from("salons")
             .update({ payment_status: "requires_action" })
-            .eq("billing_customer_id", customerId);
+            .eq("id", salonRows[0].id);
           if (updateError) {
             console.error("Failed to set requires_action payment status:", updateError);
           }

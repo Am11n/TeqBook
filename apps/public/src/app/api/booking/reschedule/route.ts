@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      logWarn("respond_booking_reschedule_proposal rpc error", { message: error.message });
+      logWarn("respond_booking_reschedule_proposal rpc error", { code: error.code });
       return NextResponse.json(
-        { ok: false, message: error.message, resultStatus: "error" },
+        { ok: false, message: "Could not process request", resultStatus: "error" },
         { status: 400 },
       );
     }

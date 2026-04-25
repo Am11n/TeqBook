@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorizeSalonAccess } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,14 +64,10 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("salon_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!profile || profile.salon_id !== salonId) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
+    const authz = await authorizeSalonAccess(user.id, salonId, supabaseUrl, supabaseServiceKey);
+    if (!authz.allowed) {
+      return new Response(JSON.stringify({ error: authz.error ?? "Forbidden" }), {
+        status: authz.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -5,7 +5,7 @@
 // This is a template that needs to be configured with your WhatsApp provider
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authenticateRequest } from "../_shared/auth.ts";
+import { authenticateRequest, authorizeSalonAccess } from "../_shared/auth.ts";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
 
 function extractIdentifier(
@@ -29,7 +29,34 @@ const corsHeaders = {
 interface WhatsAppMessageRequest {
   to: string; // Phone number with country code (e.g., +4799999999)
   message: string;
-  salon_id?: string; // Optional: for logging/auditing
+  /** Required when WHATSAPP_SEND_ENABLED=true (tenant-scoped send). */
+  salon_id?: string;
+  booking_id?: string;
+}
+
+function isAllowedWhatsappApiUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return false;
+    const host = parsed.hostname.toLowerCase();
+    return (
+      host === "api.twilio.com" ||
+      host.endsWith(".twilio.com") ||
+      host === "graph.facebook.com" ||
+      host.endsWith(".facebook.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizeE164(input: string | null | undefined): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const normalized = trimmed.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  const phoneRegex = /^\+[1-9]\d{1,14}$/;
+  return phoneRegex.test(normalized) ? normalized : null;
 }
 
 serve(async (req) => {
@@ -86,6 +113,16 @@ serve(async (req) => {
       );
     }
 
+    if (Deno.env.get("WHATSAPP_SEND_ENABLED") !== "true") {
+      return new Response(
+        JSON.stringify({
+          error: "WhatsApp send is disabled",
+          hint: "Set WHATSAPP_SEND_ENABLED=true only after WHATSAPP_API_URL points to an allowed HTTPS host and salon_id is enforced.",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Parse request body
     const body: WhatsAppMessageRequest = await req.json();
 
@@ -114,8 +151,73 @@ serve(async (req) => {
       );
     }
 
-    // TODO: Integrate with your WhatsApp provider
-    // Example with generic HTTP API:
+    const salonId = typeof body.salon_id === "string" ? body.salon_id.trim() : "";
+    if (!salonId) {
+      return new Response(JSON.stringify({ error: "Missing required field: salon_id" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const authz = await authorizeSalonAccess(user.id, salonId, supabaseUrl, supabaseServiceKey);
+    if (!authz.allowed) {
+      return new Response(JSON.stringify({ error: authz.error ?? "Forbidden" }), {
+        status: authz.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const bookingId = typeof body.booking_id === "string" ? body.booking_id.trim() : "";
+    if (!bookingId) {
+      return new Response(JSON.stringify({ error: "Missing required field: booking_id" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: bookingRow, error: bookingError } = await supabase
+      .from("bookings")
+      .select("id, salon_id, customers(phone), employees(phone)")
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .maybeSingle();
+    if (bookingError || !bookingRow) {
+      return new Response(JSON.stringify({ error: "Booking not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const customerRaw = Array.isArray((bookingRow as { customers?: unknown }).customers)
+      ? (bookingRow as { customers?: Array<{ phone?: string | null }> }).customers?.[0]
+      : (bookingRow as { customers?: { phone?: string | null } | null }).customers;
+    const employeeRaw = Array.isArray((bookingRow as { employees?: unknown }).employees)
+      ? (bookingRow as { employees?: Array<{ phone?: string | null }> }).employees?.[0]
+      : (bookingRow as { employees?: { phone?: string | null } | null }).employees;
+    const allowedRecipients = new Set<string>();
+    const normalizedCustomer = normalizeE164(customerRaw?.phone ?? null);
+    const normalizedEmployee = normalizeE164(employeeRaw?.phone ?? null);
+    if (normalizedCustomer) allowedRecipients.add(normalizedCustomer);
+    if (normalizedEmployee) allowedRecipients.add(normalizedEmployee);
+    if (!allowedRecipients.has(body.to)) {
+      return new Response(
+        JSON.stringify({
+          error: "Recipient is not allowed for this salon/booking policy",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (!whatsappApiUrl || !isAllowedWhatsappApiUrl(whatsappApiUrl)) {
+      return new Response(
+        JSON.stringify({
+          error: "WHATSAPP_API_URL must be an https URL on an allowlisted host (Twilio or Meta Graph API)",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const response = await fetch(whatsappApiUrl, {
       method: "POST",
       headers: {
@@ -129,11 +231,10 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      await response.text();
       return new Response(
         JSON.stringify({
           error: "Failed to send WhatsApp message",
-          details: errorText,
         }),
         {
           status: response.status,
@@ -163,7 +264,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
       }),
       {
         status: 500,

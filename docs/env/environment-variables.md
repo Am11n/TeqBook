@@ -33,6 +33,17 @@ These variables are used across multiple apps:
 
 **Rotation:** Deploy a new secret value alongside the old one only after invalidating old tokens is acceptable (tokens are short-lived, typically 10–30 minutes). Prefer rotating at low traffic: set the new `PUBLIC_BOOKING_ACTION_TOKEN_SECRET`, redeploy; outstanding URLs with old tokens expire naturally by TTL.
 
+**CI / `db:apply` (optional, GitHub Actions):**
+- `TEQBOOK_DB_USE_PROCESS_ENV=1` — skip requiring a committed root `.env.local`; read `SUPABASE_DB_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and target from process env (see `scripts/lib/db-env.ts`).
+- `TEQBOOK_ENV_TARGET` — `staging` or `pilot-production` (alias: `TEQBOOK_SUPABASE_TARGET`).
+
+**Edge cron functions (`process-reminders`, `process-waitlist-expiry`):**
+- `TEQBOOK_CRON_SECRET` — when set, callers must send `Authorization: Bearer <TEQBOOK_CRON_SECRET>`. When unset, functions still run but log a warning (use secrets in production).
+
+**WhatsApp Edge (`whatsapp-send`):**
+- `WHATSAPP_SEND_ENABLED` — must be exactly `true` to allow sends after other env checks.
+- `WHATSAPP_API_URL` — must be `https` on an allowlisted host (Twilio or Meta Graph API domains).
+
 **Security Notes:**
 - No session cookies needed (public app)
 - No Stripe keys needed
