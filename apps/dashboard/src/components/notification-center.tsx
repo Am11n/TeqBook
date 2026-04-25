@@ -124,24 +124,26 @@ export function NotificationCenter() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 rounded-2xl bg-white/80 backdrop-blur-2xl border border-slate-100/60 p-0 shadow-2xl"
         align="end"
+        className="flex w-[min(22rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] max-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-2xl border border-slate-100/60 bg-white/80 p-0 shadow-2xl backdrop-blur-2xl sm:w-[min(24rem,calc(100vw-2rem))]"
       >
-        <div className="flex items-center justify-between border-b border-slate-100/60 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-900">{t.title}</h3>
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-slate-100/60 px-4 py-3">
+          <h3 className="min-w-0 flex-1 break-words text-sm font-semibold leading-snug text-slate-900">
+            {t.title}
+          </h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleMarkAllAsRead}
-              className="h-7 text-xs text-slate-600 hover:text-slate-900"
+              className="h-auto min-h-7 shrink-0 max-w-[48%] whitespace-normal px-2 text-right text-xs leading-snug text-slate-600 hover:text-slate-900"
             >
               {t.markAllRead}
             </Button>
           )}
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
           {isLoading ? (
             <div className="px-4 py-8 text-center">
               <Loader2 className="h-5 w-5 animate-spin mx-auto text-slate-400" />
@@ -161,28 +163,28 @@ export function NotificationCenter() {
                   <button
                     key={notification.id}
                     type="button"
-                    className={`w-full px-4 py-3 transition-colors hover:bg-slate-50/60 text-left ${
+                    className={`w-full max-w-full px-4 py-3 text-left transition-colors hover:bg-slate-50/60 ${
                       !notification.read ? "bg-blue-50/30" : ""
                     }`}
                     onClick={() => handleNotificationClick(notification)}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100/60">
+                    <div className="flex max-w-full items-start gap-3">
+                      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100/60">
                         <Icon className="h-4 w-4 text-slate-600" />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 max-w-full flex-1 overflow-hidden">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="min-w-0 flex-1 break-words text-pretty text-sm font-medium leading-snug text-slate-900">
                             {displayTitle}
                           </p>
                           {!notification.read && (
-                            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600" />
+                            <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
                           )}
                         </div>
-                        <p className="mt-1 text-xs text-slate-600 line-clamp-2">
+                        <p className="mt-1 break-words text-pretty text-xs leading-relaxed text-slate-600 [overflow-wrap:anywhere]">
                           {displayBody}
                         </p>
-                        <p className="mt-1 text-[10px] text-slate-400">
+                        <p className="mt-1.5 break-words text-[10px] leading-snug text-slate-400 [overflow-wrap:anywhere]">
                           {formatTimestamp(notification.created_at)}
                         </p>
                       </div>
@@ -195,11 +197,11 @@ export function NotificationCenter() {
         </div>
 
         {notifications.length > 0 && (
-          <div className="border-t border-slate-100/60 px-4 py-2">
+          <div className="shrink-0 border-t border-slate-100/60 px-4 py-2">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-full text-xs text-slate-600 hover:text-slate-900"
+              className="h-auto min-h-8 w-full whitespace-normal break-words px-2 py-2 text-center text-xs leading-snug text-slate-600 hover:text-slate-900"
               onClick={() => {
                 setOpen(false);
                 window.location.href = "/notifications";
