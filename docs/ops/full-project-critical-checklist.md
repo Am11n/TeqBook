@@ -718,4 +718,3 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 | Dato | Miljø | Reviewer | Resultat | Åpne risikoer | Evidenslenke |
 |---|---|---|---|---|---|
 | YYYY-MM-DD | pilot-production / production |  | GO / NO-GO |  |  |
-
