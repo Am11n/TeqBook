@@ -345,6 +345,16 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorCardTitle: "በሁለት ደረጃ ማረጋገጫ (2FA)",
     twoFactorCardDescription: "ለመለያዎ ተጨማሪ የደህንነት ንብርብር ያክሉ",
     twoFactorConfirmDisable: "2FA ማጥፋት እርግጠኛ ነዎት? መለያዎ ያነሰ ደህንነት ይኖረዋል።",
+    twoFactorDisableDialogTitle: "በሁለት ደረጃ ማረጋገጫን አጥፍ",
+    twoFactorDisableDialogDescription:
+      "ለማረጋገጥ ከማረጋገጫ መተግበሪያዎ የ6 አሃዝ ኮድ ያስገቡ። ይህ 2FA ከመለያዎ ያስወግዳል እና ደህንነቱን ይቀንሳል።",
+    twoFactorDisableCodeLabel: "የማረጋገጫ ኮድ",
+    twoFactorDisableSubmit: "2FA አጥፋ",
+    twoFactorDisableSubmitting: "በመጥፋት ላይ…",
+    twoFactorDisableCancel: "ተወው",
+    twoFactorDisableChallengeFailed: "ማረጋገጫ መጀመር አልተቻለም። ዝጋ እና እንደገና ሞክር።",
+    twoFactorDisablePreparing: "ማረጋገጫ በመዘጋጀት ላይ…",
+    twoFactorDisableEnterCode: "እባክዎ ትክክለኛ የ6 አሃዝ ኮድ ያስገቡ።",
     twoFactorDisableButton: "አጥፋ",
     twoFactorDisabledAlert: "2FA አልነቃም። መለያዎን ለመጠበቅ ያንቁ።",
     twoFactorEnabledAlert:

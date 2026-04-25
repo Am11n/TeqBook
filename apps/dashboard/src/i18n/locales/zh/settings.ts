@@ -363,6 +363,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
     twoFactorRecommendShort: "建议启用 2FA 以保护账户。",
     twoFactorDisableButton: "关闭",
     twoFactorConfirmDisable: "确定要关闭 2FA 吗？这会降低账户安全性。",
+    twoFactorDisableDialogTitle: "关闭双因素认证",
+    twoFactorDisableDialogDescription:
+        "请输入验证器应用中的 6 位数字代码以确认。此操作将从账户移除 2FA 并降低安全级别。",
+    twoFactorDisableCodeLabel: "验证码",
+    twoFactorDisableSubmit: "关闭 2FA",
+    twoFactorDisableSubmitting: "正在关闭…",
+    twoFactorDisableCancel: "取消",
+    twoFactorDisableChallengeFailed: "无法开始验证。请关闭后重试。",
+    twoFactorDisablePreparing: "正在准备验证…",
+    twoFactorDisableEnterCode: "请输入有效的 6 位数字代码。",
 };
 
 export const settings: TranslationNamespaces['settings'] = {

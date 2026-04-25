@@ -363,6 +363,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
     twoFactorRecommendShort: "اکاؤنٹ محفوظ رکھنے کے لیے 2FA کی سفارش۔",
     twoFactorDisableButton: "بند کریں",
     twoFactorConfirmDisable: "کیا واقعی 2FA بند کریں؟ یہ سیکیورٹی کم کرے گا۔",
+    twoFactorDisableDialogTitle: "دو مرحلہ تصدیق بند کریں",
+    twoFactorDisableDialogDescription:
+        "تصدیق کے لیے تصدیق کنندہ ایپ سے 6 ہندسوں کا کوڈ درج کریں۔ اس سے 2FA آپ کے اکاؤنٹ سے ہٹ جائے گا اور سیکیورٹی کم ہو جائے گی۔",
+    twoFactorDisableCodeLabel: "تصدیقی کوڈ",
+    twoFactorDisableSubmit: "2FA بند کریں",
+    twoFactorDisableSubmitting: "بند ہو رہا ہے…",
+    twoFactorDisableCancel: "منسوخ",
+    twoFactorDisableChallengeFailed: "تصدیق شروع نہیں ہو سکی۔ بند کریں اور دوبارہ کوشش کریں۔",
+    twoFactorDisablePreparing: "تصدیق تیار ہو رہی ہے…",
+    twoFactorDisableEnterCode: "براہ کرم درست 6 ہندسوں کا کوڈ درج کریں۔",
 };
 
 export const settings: TranslationNamespaces['settings'] = {

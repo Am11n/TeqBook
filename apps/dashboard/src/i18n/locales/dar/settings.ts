@@ -356,4 +356,14 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "غیرفعال‌کردن",
     twoFactorConfirmDisable:
       "آیا مطمئن هستید که ۲FA را غیرفعال می‌کنید؟ حساب شما ناامن‌تر می‌شود.",
+    twoFactorDisableDialogTitle: "غیرفعال‌کردن احراز هویت دو مرحله‌ای",
+    twoFactorDisableDialogDescription:
+      "کد ۶ رقمی برنامهٔ احراز هویت را برای تأیید وارد کنید. این کار ۲FA را از حساب شما حذف می‌کند و امنیت را کاهش می‌دهد.",
+    twoFactorDisableCodeLabel: "کد احراز هویت",
+    twoFactorDisableSubmit: "غیرفعال‌کردن ۲FA",
+    twoFactorDisableSubmitting: "در حال غیرفعال‌سازی…",
+    twoFactorDisableCancel: "لغو",
+    twoFactorDisableChallengeFailed: "شروع تأیید ممکن نشد. ببندید و دوباره امتحان کنید.",
+    twoFactorDisablePreparing: "در حال آماده‌سازی تأیید…",
+    twoFactorDisableEnterCode: "لطفاً یک کد ۶ رقمی معتبر وارد کنید.",
   };

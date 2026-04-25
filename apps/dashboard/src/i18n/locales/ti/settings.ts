@@ -356,4 +356,14 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "ዕጸው",
     twoFactorConfirmDisable:
       "2FA ክትዕጽዎ ትኽእል ዲኻ? ኣካውንትኻ ካብኡ ዝደከመ ይኸውን።",
+    twoFactorDisableDialogTitle: "ናይ ክልተ ስጉምቲ ምርግጋጽ ምዕጽው",
+    twoFactorDisableDialogDescription:
+      "ንምርግጋጽ ካብ authenticator ናይ 6 ኣሃዝ ኮድ ኣእትው። እዚ 2FA ካብ ኣካውንትኻ ይሰርሕ እዩ ደሕንነት ይዕቀር።",
+    twoFactorDisableCodeLabel: "ናይ ምርግጋጽ ኮድ",
+    twoFactorDisableSubmit: "2FA ዕጽው",
+    twoFactorDisableSubmitting: "ኣብ ምዕጽው…",
+    twoFactorDisableCancel: "ሰርዝ",
+    twoFactorDisableChallengeFailed: "ምርግጋጽ ክጀምር ኣይከኣለን። ዕጸው ድሒርካ ደጊምካ ፈትን።",
+    twoFactorDisablePreparing: "ምርግጋጽ ኣብ ምድላው…",
+    twoFactorDisableEnterCode: "ቅኑዕ 6 ኣሃዝ ኮድ ኣእትው።",
   };

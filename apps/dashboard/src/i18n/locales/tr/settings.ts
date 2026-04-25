@@ -345,6 +345,16 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorCardTitle: "İki adımlı doğrulama (2FA)",
     twoFactorCardDescription: "Hesabınıza ek güvenlik katmanı ekleyin",
     twoFactorConfirmDisable: "2FA’yı kapatmak istediğinize emin misiniz? Hesabınız daha az korunur.",
+    twoFactorDisableDialogTitle: "İki adımlı doğrulamayı kapat",
+    twoFactorDisableDialogDescription:
+      "Onaylamak için kimlik doğrulama uygulamanızdaki 6 haneli kodu girin. Bu, 2FA’yı hesaptan kaldırır ve güvenliği azaltır.",
+    twoFactorDisableCodeLabel: "Doğrulama kodu",
+    twoFactorDisableSubmit: "2FA’yı kapat",
+    twoFactorDisableSubmitting: "Kapatılıyor…",
+    twoFactorDisableCancel: "İptal",
+    twoFactorDisableChallengeFailed: "Doğrulama başlatılamadı. Kapatıp yeniden deneyin.",
+    twoFactorDisablePreparing: "Doğrulama hazırlanıyor…",
+    twoFactorDisableEnterCode: "Lütfen geçerli bir 6 haneli kod girin.",
     twoFactorDisableButton: "Kapat",
     twoFactorDisabledAlert: "2FA kapalı. Hesabınızı korumak için açın.",
     twoFactorEnabledAlert:

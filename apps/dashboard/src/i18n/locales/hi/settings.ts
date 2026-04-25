@@ -374,6 +374,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "अक्षम करें",
     twoFactorConfirmDisable:
         "क्या वाकई 2FA अक्षम करें? इससे खाता कम सुरक्षित होगा।",
+    twoFactorDisableDialogTitle: "दो‑चरणीय प्रमाणीकरण अक्षम करें",
+    twoFactorDisableDialogDescription:
+        "पुष्टि के लिए प्रमाणक ऐप से 6 अंकों का कोड दर्ज करें। इससे 2FA आपके खाते से हट जाएगा और सुरक्षा कम होगी।",
+    twoFactorDisableCodeLabel: "प्रमाणीकरण कोड",
+    twoFactorDisableSubmit: "2FA अक्षम करें",
+    twoFactorDisableSubmitting: "अक्षम किया जा रहा है…",
+    twoFactorDisableCancel: "रद्द करें",
+    twoFactorDisableChallengeFailed: "सत्यापन शुरू नहीं हो सका। बंद करें और फिर कोशिश करें।",
+    twoFactorDisablePreparing: "सत्यापन तैयार किया जा रहा है…",
+    twoFactorDisableEnterCode: "कृपया मान्य 6 अंकों का कोड दर्ज करें।",
 };
 
 export const settings: TranslationNamespaces['settings'] = {

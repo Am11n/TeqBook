@@ -326,6 +326,16 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorCardTitle: "Xaqiijinta laba-tallaabo (2FA)",
     twoFactorCardDescription: "Ku dar heer dheeraad ah oo amni ah akoonkaaga",
     twoFactorConfirmDisable: "Ma hubtaa inaad damiyo 2FA? Akoonkaagu wuu sii daciifsanaan doonaa.",
+    twoFactorDisableDialogTitle: "Dammi xaqiijinta laba-tallaabo",
+    twoFactorDisableDialogDescription:
+      "Geli koodhka 6-lambar ee barnaamijka xaqiijinta si aad u xaqiijiso. Tani waxay ka saartaa 2FA akoonkaaga waxayna yareysaa amniga.",
+    twoFactorDisableCodeLabel: "Koodhka xaqiijinta",
+    twoFactorDisableSubmit: "Dammi 2FA",
+    twoFactorDisableSubmitting: "Waa la damiyaa…",
+    twoFactorDisableCancel: "Jooji",
+    twoFactorDisableChallengeFailed: "Lama bilaabi karo xaqiijinta. Xidh oo mar kale isku day.",
+    twoFactorDisablePreparing: "Waa la diyaarinayaa xaqiijinta…",
+    twoFactorDisableEnterCode: "Fadlan geli koodh 6-lambar oo sax ah.",
     twoFactorDisableButton: "Dammi",
     twoFactorDisabledAlert:
       "2FA lama shidin. Shidi si aad u kordhiso amniga akoonkaaga.",

@@ -350,6 +350,16 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorCardTitle: "Xác thực hai lớp (2FA)",
     twoFactorCardDescription: "Thêm lớp bảo mật cho tài khoản",
     twoFactorConfirmDisable: "Bạn có chắc muốn tắt 2FA? Tài khoản sẽ kém an toàn hơn.",
+    twoFactorDisableDialogTitle: "Tắt xác thực hai lớp",
+    twoFactorDisableDialogDescription:
+      "Nhập mã 6 số từ ứng dụng xác thực để xác nhận. Thao tác này gỡ 2FA khỏi tài khoản và giảm mức bảo mật.",
+    twoFactorDisableCodeLabel: "Mã xác thực",
+    twoFactorDisableSubmit: "Tắt 2FA",
+    twoFactorDisableSubmitting: "Đang tắt…",
+    twoFactorDisableCancel: "Hủy",
+    twoFactorDisableChallengeFailed: "Không thể bắt đầu xác minh. Đóng và thử lại.",
+    twoFactorDisablePreparing: "Đang chuẩn bị xác minh…",
+    twoFactorDisableEnterCode: "Vui lòng nhập mã 6 số hợp lệ.",
     twoFactorDisableButton: "Tắt",
     twoFactorDisabledAlert:
       "2FA chưa bật. Hãy bật để tăng cường bảo mật tài khoản.",

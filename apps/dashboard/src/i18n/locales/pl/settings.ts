@@ -345,6 +345,16 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorCardTitle: "Uwierzytelnianie dwuskładnikowe (2FA)",
     twoFactorCardDescription: "Dodatkowa warstwa zabezpieczeń konta",
     twoFactorConfirmDisable: "Na pewno wyłączyć 2FA? Konto będzie mniej chronione.",
+    twoFactorDisableDialogTitle: "Wyłącz uwierzytelnianie dwuskładnikowe",
+    twoFactorDisableDialogDescription:
+      "Wpiszcie 6-cyfrowy kod z aplikacji uwierzytelniającej, aby potwierdzić. Spowoduje to usunięcie 2FA z konta i obniży poziom zabezpieczeń.",
+    twoFactorDisableCodeLabel: "Kod uwierzytelniania",
+    twoFactorDisableSubmit: "Wyłącz 2FA",
+    twoFactorDisableSubmitting: "Wyłączanie…",
+    twoFactorDisableCancel: "Anuluj",
+    twoFactorDisableChallengeFailed: "Nie udało się rozpocząć weryfikacji. Zamknijcie i spróbujcie ponownie.",
+    twoFactorDisablePreparing: "Przygotowywanie weryfikacji…",
+    twoFactorDisableEnterCode: "Wpiszcie prawidłowy 6-cyfrowy kod.",
     twoFactorDisableButton: "Wyłącz",
     twoFactorDisabledAlert: "2FA jest wyłączone. Włączcie je, aby lepiej chronić konto.",
     twoFactorEnabledAlert:

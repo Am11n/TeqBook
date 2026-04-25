@@ -356,4 +356,14 @@ export const settings: TranslationNamespaces['settings'] = {
     twoFactorDisableButton: "تعطيل",
     twoFactorConfirmDisable:
       "هل أنت متأكد من تعطيل المصادقة الثنائية؟ سيصبح حسابك أقل أمانًا.",
+    twoFactorDisableDialogTitle: "تعطيل المصادقة الثنائية",
+    twoFactorDisableDialogDescription:
+      "أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة للتأكيد. سيؤدي ذلك إلى إزالة المصادقة الثنائية من حسابك وتقليل الأمان.",
+    twoFactorDisableCodeLabel: "رمز المصادقة",
+    twoFactorDisableSubmit: "تعطيل المصادقة الثنائية",
+    twoFactorDisableSubmitting: "جارٍ التعطيل…",
+    twoFactorDisableCancel: "إلغاء",
+    twoFactorDisableChallengeFailed: "تعذر بدء التحقق. أغلق وحاول مرة أخرى.",
+    twoFactorDisablePreparing: "جارٍ تجهيز التحقق…",
+    twoFactorDisableEnterCode: "يرجى إدخال رمز مكوّن من 6 أرقام صالح.",
   };

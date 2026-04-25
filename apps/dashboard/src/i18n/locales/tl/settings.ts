@@ -384,6 +384,16 @@ const settingsCore: TranslationNamespaces['settings'] = {
   twoFactorDisableButton: "I-off",
   twoFactorConfirmDisable:
     "Sigurado ka bang i-off ang 2FA? Mas magiging hindi secure ang account.",
+  twoFactorDisableDialogTitle: "I-off ang two-factor authentication",
+  twoFactorDisableDialogDescription:
+    "Ilagay ang 6-digit na code mula sa authenticator app para kumpirmahin. Tatanggalin nito ang 2FA sa account mo at bababa ang seguridad.",
+  twoFactorDisableCodeLabel: "Authentication code",
+  twoFactorDisableSubmit: "I-off ang 2FA",
+  twoFactorDisableSubmitting: "Ini-off…",
+  twoFactorDisableCancel: "Kanselahin",
+  twoFactorDisableChallengeFailed: "Hindi makapagsimula ng verification. Isara at subukan muli.",
+  twoFactorDisablePreparing: "Inihahanda ang verification…",
+  twoFactorDisableEnterCode: "Mangyaring maglagay ng wastong 6-digit na code.",
 };
 
 export const settings: TranslationNamespaces['settings'] = {
