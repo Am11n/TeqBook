@@ -5,7 +5,7 @@ import { issuePublicBookingActionToken } from "@/lib/security/public-booking-act
 type ActionTokenRequest = {
   bookingId: string;
   salonId: string;
-  customerEmail?: string | null;
+  customerEmail: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -15,8 +15,11 @@ export async function POST(request: NextRequest) {
     const salonId = body.salonId?.trim();
     const customerEmail = body.customerEmail?.trim().toLowerCase() ?? "";
 
-    if (!bookingId || !salonId) {
-      return NextResponse.json({ error: "bookingId and salonId are required" }, { status: 400 });
+    if (!bookingId || !salonId || !customerEmail) {
+      return NextResponse.json(
+        { error: "bookingId, salonId and customerEmail are required" },
+        { status: 400 }
+      );
     }
 
     const admin = getAdminClient();
@@ -35,7 +38,11 @@ export async function POST(request: NextRequest) {
       ? bookingRow.customers[0]
       : bookingRow.customers;
     const authoritativeEmail = bookingCustomer?.email?.trim().toLowerCase() ?? "";
-    if (authoritativeEmail && customerEmail && authoritativeEmail !== customerEmail) {
+    // Ownership proof is mandatory: caller must prove the booking customer email.
+    if (!authoritativeEmail) {
+      return NextResponse.json({ error: "Booking has no customer ownership proof" }, { status: 403 });
+    }
+    if (authoritativeEmail !== customerEmail) {
       return NextResponse.json({ error: "Customer ownership mismatch" }, { status: 403 });
     }
 

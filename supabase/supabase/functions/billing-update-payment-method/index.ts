@@ -12,6 +12,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 function extractIdentifier(
   req: Request,
@@ -175,6 +176,35 @@ serve(async (req) => {
     if (!authz.allowed) {
       return new Response(
         JSON.stringify({ error: authz.error ?? "Forbidden" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: salonBinding, error: salonBindingError } = await supabase
+      .from("salons")
+      .select("id, billing_customer_id")
+      .eq("id", body.salon_id)
+      .maybeSingle();
+    if (salonBindingError || !salonBinding) {
+      return new Response(
+        JSON.stringify({ error: "Salon not found for billing binding validation" }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    const bindingError = validateBillingBinding({
+      requestedCustomerId: body.customer_id,
+      salonBillingCustomerId: salonBinding.billing_customer_id,
+    });
+    if (bindingError) {
+      return new Response(
+        JSON.stringify({ error: bindingError }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

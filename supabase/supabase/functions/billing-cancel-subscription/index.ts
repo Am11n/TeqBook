@@ -12,6 +12,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, createRateLimitErrorResponse } from "../_shared/rate-limit.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 function extractIdentifier(
   req: Request,
@@ -182,10 +183,58 @@ serve(async (req: Request) => {
       );
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: salonBinding, error: salonBindingError } = await supabase
+      .from("salons")
+      .select("id, billing_customer_id, billing_subscription_id")
+      .eq("id", body.salon_id)
+      .maybeSingle();
+    if (salonBindingError || !salonBinding) {
+      return new Response(
+        JSON.stringify({ error: "Salon not found for billing binding validation" }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    const bindingError = validateBillingBinding({
+      requestedSubscriptionId: body.subscription_id,
+      salonBillingSubscriptionId: salonBinding.billing_subscription_id,
+    });
+    if (bindingError) {
+      return new Response(
+        JSON.stringify({ error: bindingError }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2024-11-20.acacia",
     });
+
+    const stripeSubscription = await stripe.subscriptions.retrieve(body.subscription_id);
+    const stripeCustomerId =
+      typeof stripeSubscription.customer === "string"
+        ? stripeSubscription.customer
+        : stripeSubscription.customer?.id ?? null;
+    const stripeBindingError = validateBillingBinding({
+      stripeSubscriptionCustomerId: stripeCustomerId,
+      salonBillingCustomerId: salonBinding.billing_customer_id,
+    });
+    if (stripeBindingError) {
+      return new Response(
+        JSON.stringify({ error: stripeBindingError }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Cancel subscription (at period end to allow access until end of billing period)
     const canceledSubscription = await stripe.subscriptions.update(body.subscription_id, {
@@ -196,7 +245,6 @@ serve(async (req: Request) => {
     // Store current_period_end so we can show when subscription ends
     // Set billing_subscription_id to null so frontend knows subscription is cancelled
     // This allows the alert to show even though subscription still exists in Stripe until period end
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { error: updateError } = await supabase
       .from("salons")
       .update({

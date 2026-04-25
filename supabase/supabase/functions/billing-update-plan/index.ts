@@ -21,6 +21,7 @@ import {
   isValidStripePriceId,
 } from "../_shared/billing.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -205,6 +206,35 @@ serve(async (req) => {
       );
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: salonBinding, error: salonBindingError } = await supabase
+      .from("salons")
+      .select("id, billing_customer_id, billing_subscription_id, supported_languages")
+      .eq("id", body.salon_id)
+      .maybeSingle();
+    if (salonBindingError || !salonBinding) {
+      return new Response(
+        JSON.stringify({ error: "Salon not found for billing binding validation" }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    const subscriptionBindingError = validateBillingBinding({
+      requestedSubscriptionId: body.subscription_id,
+      salonBillingSubscriptionId: salonBinding.billing_subscription_id,
+    });
+    if (subscriptionBindingError) {
+      return new Response(
+        JSON.stringify({ error: subscriptionBindingError }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2024-11-20.acacia",
@@ -229,6 +259,24 @@ serve(async (req) => {
         );
       }
       throw err;
+    }
+
+    const stripeCustomerId =
+      typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer?.id ?? null;
+    const stripeBindingError = validateBillingBinding({
+      stripeSubscriptionCustomerId: stripeCustomerId,
+      salonBillingCustomerId: salonBinding.billing_customer_id,
+    });
+    if (stripeBindingError) {
+      return new Response(
+        JSON.stringify({ error: stripeBindingError }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Check if subscription has items
@@ -290,23 +338,17 @@ serve(async (req) => {
     // Option 2: Wait for payment to complete
     // For now, we'll prevent the update and suggest completing payment first
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const [{ count: activeEmployeesCount }, { data: salonRow }] = await Promise.all([
+    const [{ count: activeEmployeesCount }] = await Promise.all([
       supabase
         .from("employees")
         .select("id", { count: "exact", head: true })
         .eq("salon_id", body.salon_id)
         .eq("is_active", true),
-      supabase
-        .from("salons")
-        .select("supported_languages")
-        .eq("id", body.salon_id)
-        .maybeSingle(),
     ]);
 
     const activeEmployees = activeEmployeesCount ?? 0;
-    const activeLanguages = Array.isArray(salonRow?.supported_languages)
-      ? salonRow.supported_languages.length
+    const activeLanguages = Array.isArray(salonBinding.supported_languages)
+      ? salonBinding.supported_languages.length
       : 0;
     const baseLimits = getBaseLimits(body.new_plan);
     const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);

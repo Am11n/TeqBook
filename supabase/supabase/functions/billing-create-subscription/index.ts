@@ -18,6 +18,7 @@ import {
   isValidStripePriceId,
 } from "../_shared/billing.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 function extractIdentifier(
   req: Request,
@@ -212,6 +213,35 @@ serve(async (req) => {
       );
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: salonBinding, error: salonBindingError } = await supabase
+      .from("salons")
+      .select("id, billing_customer_id")
+      .eq("id", body.salon_id)
+      .maybeSingle();
+    if (salonBindingError || !salonBinding) {
+      return new Response(
+        JSON.stringify({ error: "Salon not found for billing binding validation" }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    const bindingError = validateBillingBinding({
+      requestedCustomerId: body.customer_id,
+      salonBillingCustomerId: salonBinding.billing_customer_id,
+    });
+    if (bindingError) {
+      return new Response(
+        JSON.stringify({ error: bindingError }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2024-11-20.acacia",
@@ -231,8 +261,6 @@ serve(async (req) => {
     } catch (customerErr) {
       console.warn("Could not retrieve customer default payment method:", customerErr);
     }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Load active usage to derive add-on quantities.
     const [{ count: activeEmployeesCount }, { data: salonRow }] = await Promise.all([

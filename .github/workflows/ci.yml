@@ -105,6 +105,56 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
+  migration-integrity:
+    name: Migration Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify migration manifest coverage
+        run: pnpm run db:manifest:verify
+      - name: Require database URL for migration verification
+        run: |
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "SUPABASE_DB_URL secret must be configured for migration-integrity gate"
+            exit 1
+          fi
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Apply and verify migrations
+        run: pnpm run db:apply && pnpm run db:verify
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION: ${{ secrets.NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION }}
+          TEQBOOK_SUPABASE_TARGET: pilot-production
+
+  edge-functions:
+    name: Edge Functions Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run Deno edge-function tests
+        run: |
+          files=$(rg --files supabase/supabase/functions -g "**/*.test.ts")
+          if [ -z "$files" ]; then
+            echo "No edge function tests found under supabase/supabase/functions"
+            exit 1
+          fi
+          pnpm dlx deno-bin test --no-check $files
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

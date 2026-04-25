@@ -7,6 +7,36 @@ Denne sjekklisten samler kritiske mangler og flyter som må verifiseres før try
 - Område: `dashboard`, `admin`, `public`, `supabase/functions`, migrasjoner, CI/test-gates.
 - Mål: finne og lukke hull som kan gi sikkerhetsbrudd, datatap, feil booking/billing, eller falsk "grønn" release.
 
+## Re-analyse status (2026-04-25)
+
+Denne seksjonen er gjeldende status etter ny gjennomgang, og **overstyrer tidligere avhuking** i dokumentet ved konflikt.
+
+### Re-apnede funn (fikset 2026-04-25, venter full CI-evidens)
+
+- [x] **P1 (hoy): Public action-token kan utstedes uten sterk ownership proof**
+  - `apps/public/src/app/api/public-booking/action-token/route.ts`
+  - Risiko: `manage` token utstedes basert pa `bookingId + salonId`; `customerEmail` er valgfri.
+  - Konsekvens: sensitiv booking handling kan trigges uten robust verifisering av kunde-eierskap.
+
+- [x] **P1 (hoy): Billing mutasjoner mangler binding mellom Stripe-objekt og salon**
+  - `supabase/supabase/functions/billing-update-plan/index.ts` (og tilsvarende billing-mutasjoner)
+  - Risiko: authz sjekker `salon_id`, men `subscription_id/customer_id` valideres ikke tydelig mot samme tenant for Stripe-mutasjon.
+
+- [x] **P1 (hoy): Migrasjonspipeline mangler kompletthets-gate i hoved-CI**
+  - `scripts/db-apply.ts`, `supabase/supabase/migration-manifest.json`, `.github/workflows/ci.yml`
+  - Risiko: migrasjonsfiler kan bli utelatt fra standard release-path uten a blokkere PR.
+
+- [x] **P1 (hoy): Supabase edge functions er ikke tilstrekkelig blokket av CI**
+  - `.github/workflows/ci.yml` (ingen tydelig blokkerende funksjonstester for billing edge-funksjoner)
+  - Risiko: kritiske backend-regresjoner kan passere gronn CI.
+
+### Verifisert forbedret siden forrige analyse
+
+- [x] **Dashboard/Admin page-route middleware auth er pa plass**
+  - `apps/dashboard/middleware.ts`
+  - `apps/admin/middleware.ts`
+  - Merk: API-ruter er fortsatt unntatt middleware (`/api/*`), sa route-level authz ma fortsatt handheves konsekvent.
+
 ## Prioriteringsdefinisjon
 
 - **P0**: Kritisk sikkerhet/autorisasjon eller alvorlig plattformsvikt. Må fikses før release.
@@ -654,6 +684,34 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
   - `pnpm run test:coverage:admin` passerer.
 - **Resultat:** Bestått. Hele «Test- og verifikasjonspakke (må kjøres)» er nå lukket.
 
+##### 2026-04-25 - Re-apnede P1-funn (implementert)
+
+- **Tidspunkt:** 2026-04-25
+- **Mål:** Implementere fire re-apnede P1-funn: robust ownership proof for public action-token, Stripe/salon-binding i billing-mutasjoner, migrasjons-gate i hoved-CI og blokkerende edge-function test-gate.
+- **Utført arbeid (detaljert):**
+  - Strammet `apps/public/src/app/api/public-booking/action-token/route.ts`:
+    - `customerEmail` er nå obligatorisk input.
+    - Token-utstedelse krever eksplisitt match mot bookingens autoritative kunde-epost.
+    - Forespørsler uten ownership proof avvises (`403`).
+  - Innførte binding-validering for billing i edge-funksjoner via ny delt helper:
+    - Ny fil: `supabase/supabase/functions/_shared/billing-binding.ts`
+    - Brukt i:
+      - `billing-create-subscription/index.ts`
+      - `billing-update-plan/index.ts`
+      - `billing-cancel-subscription/index.ts`
+      - `billing-update-payment-method/index.ts`
+    - Validerer at request-`customer_id`/`subscription_id` matcher salonens lagrede billing-binding, og at Stripe-subscriptionens customer matcher samme salon.
+  - Hardnet CI-gates i `.github/workflows/ci.yml`:
+    - Ny jobb `migration-integrity` (`db:manifest:verify` + blokkerende `db:apply` + `db:verify` med secrets).
+    - Ny jobb `edge-functions` som kjører Deno-tester for edge-funksjoner.
+  - La til Deno-test for billing-binding:
+    - `supabase/supabase/functions/_shared/billing-binding.test.ts`
+- **Verifikasjon/evidens:**
+  - `pnpm --filter @teqbook/public type-check` pass.
+  - `pnpm --filter @teqbook/public test:run src/lib/security/public-booking-action-token.test.ts` pass.
+  - `pnpm dlx deno-bin test --no-check supabase/supabase/functions/_shared/billing-binding.test.ts supabase/supabase/functions/sms-status-webhook/index.test.ts` pass (8/8).
+- **Resultat:** Implementert lokalt; full lukking avhenger av grønn kjøring i oppdatert CI-pipeline.
+
 ### 12) i18n/a11y inkonsistens i sentrale UI-komponenter
 
 - [x] Flytt hardkodede strenger til locale-map.
@@ -711,10 +769,11 @@ Bruk denne loggen fortløpende mens P0-punktene lukkes. Hver aktivitet skal besk
 ## Release Go/No-Go
 
 - [ ] **GO**: Alle P0 lukket + P1 lukket eller eksplisitt risikogodkjent med mitigering.
-- [ ] **NO-GO**: Minst én P0 åpen, eller P1 med høy blast radius uten mitigering.
+- [x] **NO-GO**: Minst én P0 åpen, eller P1 med høy blast radius uten mitigering.
 
 ## Beslutningslogg
 
 | Dato | Miljø | Reviewer | Resultat | Åpne risikoer | Evidenslenke |
 |---|---|---|---|---|---|
+| 2026-04-25 | pilot-production / production |  | NO-GO (foreløpig) | Public action-token ownership, billing Stripe-object binding, migration/CI gate-gap | `docs/ops/full-project-critical-checklist.md` |
 | YYYY-MM-DD | pilot-production / production |  | GO / NO-GO |  |  |
