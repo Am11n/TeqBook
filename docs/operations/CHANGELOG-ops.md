@@ -11,6 +11,14 @@
 
 ---
 
+## 2026-04-25
+
+- [kode/public] Strammet `POST /api/public-booking/action-token`: obligatorisk `customerEmail`, mismatch mot bookingens kunde-e-post gir avvisning; lagt inn rate limit policy `public-booking-action-token` og bruk i route. Filer: `apps/public/src/app/api/public-booking/action-token/route.ts`, `packages/shared-core/src/rate-limit/policy.ts`.
+- [kode/edge] Billing: innført delt Stripe/salon-binding (`validateBillingBinding`) i relevante billing edge-funksjoner; alignet `billing-sync-addon-usage` med `authorizeSalonAccess` + customer-binding mot Stripe-subscription. Filer: `supabase/supabase/functions/_shared/billing-binding.ts`, `billing-*` edge functions, `billing-sync-addon-usage/index.ts`.
+- [test/edge] Deno-tester for binding-helper (`_shared/billing-binding.test.ts`).
+- [ci] Utvidet `build.needs` til å inkludere `security-scan`, `migration-integrity`, `edge-functions`, `coverage-extended`; edge-test-steg bruker `find` for portabilitet. Fil: `.github/workflows/ci.yml`.
+- [docs] Fullført og lukket dokumentasjon i `docs/ops/project-analysis-2026-04-25.md` (inkl. lukkelogg).
+
 ## 2026-04-24
 
 - [kode/edge] Hardnet `sms-status-webhook` med ekte Twilio-signaturverifisering (HMAC med `TWILIO_AUTH_TOKEN`) + optional canonical URL (`TWILIO_STATUS_WEBHOOK_URL`) og replay-vern (timestamp-skjevhet + status-regresjonssperre). Filer: `supabase/supabase/functions/sms-status-webhook/index.ts` og speilet `supabase/functions/sms-status-webhook/index.ts`.

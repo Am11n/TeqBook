@@ -82,6 +82,14 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "public-booking-action-token": {
+    endpointType: "public-booking-action-token",
+    identifierType: "ip",
+    maxAttempts: 30,
+    windowMs: ONE_MINUTE_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "public-contact": {
     endpointType: "public-contact",
     identifierType: "ip",

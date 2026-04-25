@@ -7,6 +7,8 @@ import {
   getBillingPriceConfig,
   isValidStripePriceId,
 } from "../_shared/billing.ts";
+import { authorizeSalonAccess } from "../_shared/auth.ts";
+import { validateBillingBinding } from "../_shared/billing-binding.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,21 +67,17 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("salon_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!profile || profile.salon_id !== body.salon_id) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
+    const authz = await authorizeSalonAccess(user.id, body.salon_id, supabaseUrl, supabaseServiceKey);
+    if (!authz.allowed) {
+      return new Response(JSON.stringify({ error: authz.error ?? "Forbidden" }), {
+        status: authz.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { data: salon } = await supabase
       .from("salons")
-      .select("plan, billing_subscription_id, supported_languages")
+      .select("plan, billing_subscription_id, supported_languages, billing_customer_id")
       .eq("id", body.salon_id)
       .maybeSingle();
     if (!salon?.billing_subscription_id || !salon.plan) {
@@ -105,6 +103,20 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-11-20.acacia" });
     const subscription = await stripe.subscriptions.retrieve(salon.billing_subscription_id);
+    const stripeCustomerId =
+      typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer?.id ?? null;
+    const stripeBindingError = validateBillingBinding({
+      stripeSubscriptionCustomerId: stripeCustomerId,
+      salonBillingCustomerId: salon.billing_customer_id,
+    });
+    if (stripeBindingError) {
+      return new Response(JSON.stringify({ error: stripeBindingError }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const priceConfig = getBillingPriceConfig();
     const itemsByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
     const updates: Stripe.SubscriptionUpdateParams.Item[] = [];
