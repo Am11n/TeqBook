@@ -100,6 +100,12 @@ export const viOverrides: Partial<PublicPageNamespaces> = {
     status: "Trạng thái",
     cancelBooking: "Hủy lịch hẹn",
     bookAnother: "Đặt lịch khác",
+    statusConfirmed: "Đã xác nhận",
+    statusCancelled: "Đã hủy",
+    statusPending: "Đang chờ",
+    statusCompleted: "Đã hoàn thành",
+    statusScheduled: "Đã lên lịch",
+    statusNoShow: "Không đến",
   },
 };
 export const zhOverrides: Partial<PublicPageNamespaces> = {
@@ -197,5 +203,11 @@ export const zhOverrides: Partial<PublicPageNamespaces> = {
     status: "状态",
     cancelBooking: "取消预约",
     bookAnother: "再次预约",
+    statusConfirmed: "已确认",
+    statusCancelled: "已取消",
+    statusPending: "待处理",
+    statusCompleted: "已完成",
+    statusScheduled: "已排期",
+    statusNoShow: "未到店",
   },
 };

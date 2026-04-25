@@ -99,6 +99,12 @@ export const trOverrides: Partial<PublicPageNamespaces> = {
     status: "Durum",
     cancelBooking: "Randevuyu iptal et",
     bookAnother: "Yeni randevu al",
+    statusConfirmed: "Onaylandı",
+    statusCancelled: "İptal edildi",
+    statusPending: "Beklemede",
+    statusCompleted: "Tamamlandı",
+    statusScheduled: "Planlandı",
+    statusNoShow: "Gelmedi",
   },
 };
 export const plOverrides: Partial<PublicPageNamespaces> = {
@@ -199,5 +205,11 @@ export const plOverrides: Partial<PublicPageNamespaces> = {
     status: "Status",
     cancelBooking: "Anuluj rezerwację",
     bookAnother: "Zarezerwuj kolejną",
+    statusConfirmed: "Potwierdzona",
+    statusCancelled: "Anulowana",
+    statusPending: "Oczekująca",
+    statusCompleted: "Zakończona",
+    statusScheduled: "Zaplanowana",
+    statusNoShow: "Niepojawienie się",
   },
 };

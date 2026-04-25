@@ -101,6 +101,12 @@ export const tlOverrides: Partial<PublicPageNamespaces> = {
     status: "Status",
     cancelBooking: "Kanselahin ang booking",
     bookAnother: "Mag-book ulit",
+    statusConfirmed: "Nakumpirma",
+    statusCancelled: "Nakansela",
+    statusPending: "Nakabinbin",
+    statusCompleted: "Nakumpleto",
+    statusScheduled: "Nakaiskedyul",
+    statusNoShow: "Hindi dumalo",
   },
 };
 export const darOverrides: Partial<PublicPageNamespaces> = {
@@ -205,6 +211,12 @@ export const darOverrides: Partial<PublicPageNamespaces> = {
     status: "وضعیت",
     cancelBooking: "لغو رزرو",
     bookAnother: "رزرو جدید",
+    statusConfirmed: "تأیید شده",
+    statusCancelled: "لغو شده",
+    statusPending: "در انتظار",
+    statusCompleted: "تکمیل شده",
+    statusScheduled: "زمان‌بندی شده",
+    statusNoShow: "حاضر نشد",
   },
 };
 export const hiOverrides: Partial<PublicPageNamespaces> = {
@@ -305,5 +317,11 @@ export const hiOverrides: Partial<PublicPageNamespaces> = {
     status: "स्थिति",
     cancelBooking: "बुकिंग रद्द करें",
     bookAnother: "एक और बुक करें",
+    statusConfirmed: "पुष्टि की गई",
+    statusCancelled: "रद्द की गई",
+    statusPending: "लंबित",
+    statusCompleted: "पूर्ण",
+    statusScheduled: "निर्धारित",
+    statusNoShow: "अनुपस्थित",
   },
 };

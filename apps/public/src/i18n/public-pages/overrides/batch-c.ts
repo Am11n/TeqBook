@@ -90,6 +90,12 @@ export const soOverrides: Partial<PublicPageNamespaces> = {
     status: "Xaalad",
     cancelBooking: "Jooji ballanta",
     bookAnother: "Samee ballan kale",
+    statusConfirmed: "La xaqiijiyay",
+    statusCancelled: "La joojiyay",
+    statusPending: "Sugaysa",
+    statusCompleted: "La dhammeeyay",
+    statusScheduled: "La jadwaliyay",
+    statusNoShow: "Ma iman",
   },
   notFoundPage: {
     ...enBase.notFoundPage,
@@ -150,6 +156,12 @@ export const tiOverrides: Partial<PublicPageNamespaces> = {
     status: "ኩነታት",
     cancelBooking: "ምዝገባ ሰርዝ",
     bookAnother: "ካልእ ምዝገባ",
+    statusConfirmed: "ተረጋጊጹ",
+    statusCancelled: "ተሰሪዙ",
+    statusPending: "ኣብ ምጽባጽ",
+    statusCompleted: "ተዛዚሙ",
+    statusScheduled: "ተመደበ",
+    statusNoShow: "ኣይመጽአን",
   },
 };
 export const amOverrides: Partial<PublicPageNamespaces> = {
@@ -201,5 +213,11 @@ export const amOverrides: Partial<PublicPageNamespaces> = {
     status: "ሁኔታ",
     cancelBooking: "ቀጠሮ ሰርዝ",
     bookAnother: "ሌላ ቀጠሮ ያዝ",
+    statusConfirmed: "ተረጋግጿል",
+    statusCancelled: "ተሰርዟል",
+    statusPending: "በመጠባበቅ ላይ",
+    statusCompleted: "ተጠናቋል",
+    statusScheduled: "ተቀጠረ",
+    statusNoShow: "አልመጣም",
   },
 };
