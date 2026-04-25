@@ -23,6 +23,10 @@
     {
       "file": "supabase/supabase/migrations/20260425213000_fix_schedule_segments_weekday_mapping.sql",
       "sha256": "f9545da7331905840bd4ae1bb494fdd51ce5eca6a9a51e33256070e07e3364e2"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260425234500_notify_staff_notification_i18n_metadata.sql",
+      "sha256": "1c182a352929e3a5400b938ded4dcc15dc3ad73c593a07b6378ab3e147336f04"
     }
   ]
 }

@@ -13,6 +13,7 @@
 
 ## 2026-04-25
 
+- [kode/db+dashboard] Varsler til staff (`notify_salon_staff_*`): `metadata` inkluderer nå `customer_name`, `service_name`, `start_time`, `timezone` + `event_type` slik at dashboard kan vise tittel/tekst på valgt språk. Dashboard: fikset `{placeholder}`-interpolasjon i `renderNotificationTemplate`, delt `intlLocaleTag`, og re-render i `NotificationCenter` via `getLocalizedInAppNotificationCopy`. Migrasjon: `20260425234500_notify_staff_notification_i18n_metadata.sql`.
 - [kode/db] Fikset weekday-regresjon i `get_schedule_segments`: `p_date` ble tidligere timezone-shiftet ved DOW-beregning, som kunne gjøre mandag→søndag i positive tidssoner (f.eks. Europe/Oslo). SHIFTS-path bruker nå `v_dow_pg` (0=Sun..6=Sat), opening-hours fallback bruker `v_dow_oh` (0=Mon..6=Sun). Migrasjon: `20260425213000_fix_schedule_segments_weekday_mapping.sql` (applied til pilot med `db:apply`).
 - [kode/db] Hardening av `notify_salon_staff_new_booking` / `notify_salon_staff_booking_cancelled`: booking må tilhøre `p_salon_id`; kaller må være `service_role` eller salon-profil (owner/manager/staff). Migrasjon: `20260425120000_harden_notify_salon_staff_rpc.sql`; verifikasjon i `supabase/supabase/verification/00_schema_and_security.sql`.
 - [kode/public+dashboard] Staff-varsler: RPC kalles med `getAdminClient().rpc` (service role) fra public `send-notifications` / `send-cancellation` og dashboard `notify-staff.ts`.

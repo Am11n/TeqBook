@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bell, Calendar, Users, Settings, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +11,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/lib/hooks/notifications/useNotifications";
 import type { InAppNotification } from "@/lib/types/notifications";
+import { useLocale } from "@/components/locale-provider";
+import { intlLocaleTag } from "@/i18n/intlLocaleTag";
+import { translations, type AppLocale } from "@/i18n/translations";
+import { getLocalizedInAppNotificationCopy } from "@/lib/notifications/getLocalizedInAppNotificationCopy";
 
 export function NotificationCenter() {
+  const { locale } = useLocale();
+  const t = translations[locale].notifications;
+
   const {
     notifications,
     unreadCount,
@@ -58,27 +65,29 @@ export function NotificationCenter() {
     await markAllAsRead();
   };
 
-  // Format timestamp relative to now
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  const formatTimestamp = useCallback(
+    (timestamp: string) => {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+      if (diffMins < 1) return t.justNow;
+      if (diffMins < 60) return t.minutesAgo.replace("{count}", String(diffMins));
+      if (diffHours < 24) return t.hoursAgo.replace("{count}", String(diffHours));
+      if (diffDays < 7) return t.daysAgo.replace("{count}", String(diffDays));
 
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
+      return date.toLocaleDateString(intlLocaleTag(locale), {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    },
+    [locale, t],
+  );
 
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
@@ -88,7 +97,7 @@ export function NotificationCenter() {
         variant="ghost"
         size="icon"
         className="relative h-9 w-9 rounded-lg transition-all hover:scale-105 hover:bg-slate-100/60 flex items-center justify-center"
-        aria-label="Notifications"
+        aria-label={t.ariaLabel}
         disabled
       >
         <Bell className="h-5 w-5 text-blue-700" />
@@ -104,7 +113,7 @@ export function NotificationCenter() {
           variant="ghost"
           size="icon"
           className="relative h-9 w-9 rounded-lg transition-all hover:scale-105 hover:bg-slate-100/60 flex items-center justify-center"
-          aria-label="Notifications"
+          aria-label={t.ariaLabel}
         >
           <Bell className="h-5 w-5 text-blue-700" />
           {unreadCount > 0 && (
@@ -119,7 +128,7 @@ export function NotificationCenter() {
         align="end"
       >
         <div className="flex items-center justify-between border-b border-slate-100/60 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-900">Notifications</h3>
+          <h3 className="text-sm font-semibold text-slate-900">{t.title}</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -127,7 +136,7 @@ export function NotificationCenter() {
               onClick={handleMarkAllAsRead}
               className="h-7 text-xs text-slate-600 hover:text-slate-900"
             >
-              Mark all read
+              {t.markAllRead}
             </Button>
           )}
         </div>
@@ -136,16 +145,18 @@ export function NotificationCenter() {
           {isLoading ? (
             <div className="px-4 py-8 text-center">
               <Loader2 className="h-5 w-5 animate-spin mx-auto text-slate-400" />
-              <p className="mt-2 text-sm text-slate-500">Loading...</p>
+              <p className="mt-2 text-sm text-slate-500">{t.loading}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-slate-500">
-              No notifications
+              {t.noNotifications}
             </div>
           ) : (
             <div className="divide-y divide-slate-100/60">
               {notifications.map((notification) => {
                 const Icon = getIcon(notification.type);
+                const { title: displayTitle, body: displayBody } =
+                  getLocalizedInAppNotificationCopy(notification, locale);
                 return (
                   <button
                     key={notification.id}
@@ -162,14 +173,14 @@ export function NotificationCenter() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm font-medium text-slate-900">
-                            {notification.title}
+                            {displayTitle}
                           </p>
                           {!notification.read && (
                             <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600" />
                           )}
                         </div>
                         <p className="mt-1 text-xs text-slate-600 line-clamp-2">
-                          {notification.body}
+                          {displayBody}
                         </p>
                         <p className="mt-1 text-[10px] text-slate-400">
                           {formatTimestamp(notification.created_at)}
@@ -194,7 +205,7 @@ export function NotificationCenter() {
                 window.location.href = "/notifications";
               }}
             >
-              View all notifications
+              {t.viewAll}
             </Button>
           </div>
         )}

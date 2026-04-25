@@ -24,6 +24,9 @@ export type ProductsMessages = {
 
 export type NotificationsMessages = {
   title: string;
+  /** Bell / popover trigger for screen readers */
+  ariaLabel: string;
+  loading: string;
   noNotifications: string;
   markAllRead: string;
   viewAll: string;

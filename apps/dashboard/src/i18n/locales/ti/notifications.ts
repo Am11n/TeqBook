@@ -21,4 +21,6 @@ export const notifications: TranslationNamespaces['notifications'] = {
     reminder2hTitle: "ቆጸራ ቀረባ",
     title: "ምልክታታት",
     viewAll: "ኩሎም ምልክታታት ርአይ",
+    ariaLabel: "ምልክታታት",
+    loading: "ይጫን ኣሎ...",
   };

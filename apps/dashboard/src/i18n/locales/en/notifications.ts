@@ -2,6 +2,8 @@ import type { TranslationNamespaces } from '../../types';
 
 export const notifications: TranslationNamespaces['notifications'] = {
     title: "Notifications",
+    ariaLabel: "Notifications",
+    loading: "Loading...",
     noNotifications: "No notifications",
     markAllRead: "Mark all read",
     viewAll: "View all notifications",

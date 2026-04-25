@@ -132,26 +132,30 @@ async function sendInAppNotificationForEvent(
   }
 
   try {
-    const bookingData = data as BookingNotificationData;
-    const language = normalizeLocale(bookingData.language || "en");
+    const booking = data.booking;
+    const language = normalizeLocale(data.language || "en");
 
     // Render template for this event type
     // Use salon timezone if available, otherwise default to UTC
-    const timezone = bookingData.booking.salon?.timezone || "UTC";
-    
-    const { title, body } = renderNotificationTemplate(eventType, {
-      customerName: bookingData.booking.customer_full_name,
-      serviceName: bookingData.booking.service?.name || "Service",
-      employeeName: bookingData.booking.employee?.name || "Staff",
-      salonName: bookingData.booking.salon?.name || "Salon",
-      startTime: bookingData.booking.start_time,
-      endTime: bookingData.booking.end_time,
-      timezone: timezone,
-    }, language);
+    const timezone = booking.salon?.timezone || "UTC";
+
+    const { title, body } = renderNotificationTemplate(
+      eventType,
+      {
+        customerName: booking.customer_full_name,
+        serviceName: booking.service?.name || "Service",
+        employeeName: booking.employee?.name || "Staff",
+        salonName: booking.salon?.name || "Salon",
+        startTime: booking.start_time,
+        endTime: booking.end_time,
+        timezone: timezone,
+      },
+      language,
+    );
 
     // Determine action URL
     const actionUrl = eventType.startsWith("booking")
-      ? `/bookings?id=${bookingData.booking.id}`
+      ? `/bookings?id=${booking.id}`
       : "/bookings";
 
     // Create in-app notification
@@ -162,9 +166,15 @@ async function sendInAppNotificationForEvent(
       title,
       body,
       metadata: {
-        booking_id: bookingData.booking.id,
+        booking_id: booking.id,
         event_type: eventType,
         correlation_id: correlationId,
+        customer_name: booking.customer_full_name,
+        service_name: booking.service?.name || "",
+        employee_name: booking.employee?.name || "",
+        salon_name: booking.salon?.name || "",
+        start_time: booking.start_time,
+        timezone,
       },
       action_url: actionUrl,
     });

@@ -21,4 +21,6 @@ export const notifications: TranslationNamespaces['notifications'] = {
     reminder2hTitle: "Ballan dhow",
     title: "Ogeysiisyada",
     viewAll: "Arag dhammaan ogeysiisyada",
+    ariaLabel: "Ogeysiisyada",
+    loading: "Soo rogaya...",
   };

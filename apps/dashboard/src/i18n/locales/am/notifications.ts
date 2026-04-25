@@ -21,4 +21,6 @@ export const notifications: TranslationNamespaces['notifications'] = {
     reminder2hTitle: "ቀጠሮ በቅርቡ",
     title: "ማስታወቂያዎች",
     viewAll: "ሁሉንም ማስታወቂያዎች ይመልከቱ",
+    ariaLabel: "ማስታወቂያዎች",
+    loading: "በመጫን ላይ...",
   };

@@ -4,6 +4,8 @@
 // Template renderer for in-app notifications with i18n support
 
 import { normalizeLocale } from "@/i18n/normalizeLocale";
+import { intlLocaleTag } from "@/i18n/intlLocaleTag";
+import type { AppLocale } from "@/i18n/translations";
 import type { NotificationEventType } from "@/lib/types/notifications";
 import { formatDateTimeInTimezone } from "@/lib/utils/timezone";
 
@@ -63,23 +65,27 @@ const EVENT_TO_NOTIFICATION_KEYS: Record<
 // =====================================================
 
 /**
- * Interpolate variables in a template string
+ * Interpolate variables in a template string (`{name}` and `{{name}}`).
  */
 function interpolate(template: string, variables: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => variables[key] || `{{${key}}}`);
+  let result = template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => variables[key] ?? `{{${key}}}`);
+  result = result.replace(/\{(\w+)\}/g, (_, key: string) => variables[key] ?? `{${key}}`);
+  return result;
 }
 
 /**
  * Format date and time from ISO string in salon timezone
  */
-function formatDateTime(isoString: string, locale: string, timezone?: string | null): { date: string; time: string } {
+function formatDateTime(
+  isoString: string,
+  locale: AppLocale,
+  timezone?: string | null,
+): { date: string; time: string } {
   const timezoneToUse = timezone || "UTC";
-  const localeToUse = locale === "nb" ? "nb-NO" : "en-US";
-  
-  // Use timezone utility function
-  const { date: dateStr, time: timeStr } = formatDateTimeInTimezone(isoString, timezoneToUse, localeToUse);
-  
-  // Format date with weekday and full month name
+  const localeToUse = intlLocaleTag(locale);
+
+  const { time: timeStr } = formatDateTimeInTimezone(isoString, timezoneToUse, localeToUse);
+
   const date = new Date(isoString);
   const formattedDate = new Intl.DateTimeFormat(localeToUse, {
     weekday: "long",
@@ -88,7 +94,7 @@ function formatDateTime(isoString: string, locale: string, timezone?: string | n
     day: "numeric",
     timeZone: timezoneToUse,
   }).format(date);
-  
+
   return { date: formattedDate, time: timeStr };
 }
 
@@ -100,7 +106,7 @@ export function renderNotificationTemplate(
   data: NotificationTemplateData,
   language: string = "en"
 ): RenderedTemplate {
-  const locale = normalizeLocale(language);
+  const locale: AppLocale = normalizeLocale(language);
   const localeMessages = translations[locale].notifications;
   const englishMessages = translations.en.notifications;
   const eventKeys = EVENT_TO_NOTIFICATION_KEYS[eventType];

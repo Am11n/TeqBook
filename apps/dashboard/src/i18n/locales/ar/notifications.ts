@@ -21,4 +21,6 @@ export const notifications: TranslationNamespaces['notifications'] = {
     reminder2hTitle: "موعد قريباً",
     title: "الإشعارات",
     viewAll: "عرض جميع الإشعارات",
+    ariaLabel: "الإشعارات",
+    loading: "جارٍ التحميل...",
   };
