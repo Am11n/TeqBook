@@ -73,7 +73,8 @@ export function useLoginForm() {
     const { data: signInData, error: signInError } = await signInWithPassword(email, password);
 
     if (signInData?.requiresMFA && signInData.factorId) {
-      router.push(`/login-2fa?factorId=${signInData.factorId}`);
+      setStatus("idle");
+      router.push(`/login-2fa?factorId=${encodeURIComponent(signInData.factorId)}`);
       return;
     }
 
@@ -143,7 +144,8 @@ export function useLoginForm() {
     }
 
     if (signInData.requiresMFA && signInData.factorId) {
-      router.push(`/login-2fa?factorId=${signInData.factorId}`);
+      setStatus("idle");
+      router.push(`/login-2fa?factorId=${encodeURIComponent(signInData.factorId)}`);
       return;
     }
 

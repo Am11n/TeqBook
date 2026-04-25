@@ -109,10 +109,6 @@ export function TwoFactorEnrollment({
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, "");
               setVerificationCode(value);
-              // Auto-submit when 6 digits entered
-              if (value.length === 6 && factorId) {
-                handleVerifyEnrollment();
-              }
             }}
             className="text-center text-lg tracking-widest"
           />

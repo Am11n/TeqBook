@@ -11,6 +11,7 @@ import { getAdminAppSignInUrl } from "@/lib/admin-app-url";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const DASHBOARD_LOGIN_PATH = "/login";
+const DASHBOARD_LOGIN_2FA_PATH = "/login-2fa";
 const PUBLIC_PATHS = new Set([DASHBOARD_LOGIN_PATH]);
 
 export async function middleware(request: NextRequest) {
@@ -93,6 +94,26 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (user && pathname !== DASHBOARD_LOGIN_2FA_PATH) {
+      const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (!aalError && aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+        const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+        if (!listError) {
+          const factorId = factors?.totp?.[0]?.id;
+          if (factorId) {
+            const mfaUrl = new URL(DASHBOARD_LOGIN_2FA_PATH, request.url);
+            mfaUrl.searchParams.set("factorId", factorId);
+            if (pathname !== DASHBOARD_LOGIN_PATH) {
+              mfaUrl.searchParams.set("redirectTo", pathname);
+            }
+            const redirect = NextResponse.redirect(mfaUrl);
+            redirect.headers.set(REQUEST_ID_HEADER, requestId);
+            return redirect;
+          }
+        }
+      }
+    }
+
     if (!user && !isPublicPath) {
       const loginUrl = new URL(DASHBOARD_LOGIN_PATH, request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
@@ -102,6 +123,19 @@ export async function middleware(request: NextRequest) {
     }
 
     if (user && isPublicPath) {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const needsMfa = aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2";
+      if (needsMfa && pathname === DASHBOARD_LOGIN_PATH) {
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const factorId = factors?.totp?.[0]?.id;
+        if (factorId) {
+          const mfaUrl = new URL(DASHBOARD_LOGIN_2FA_PATH, request.url);
+          mfaUrl.searchParams.set("factorId", factorId);
+          const redirect = NextResponse.redirect(mfaUrl);
+          redirect.headers.set(REQUEST_ID_HEADER, requestId);
+          return redirect;
+        }
+      }
       const redirect = NextResponse.redirect(new URL("/", request.url));
       redirect.headers.set(REQUEST_ID_HEADER, requestId);
       return redirect;

@@ -67,6 +67,14 @@ export default function AdminLoginPage() {
       return;
     }
 
+    if (signInData.requiresMFA && signInData.factorId) {
+      setStatus("idle");
+      router.push(
+        `/login-2fa?${new URLSearchParams({ factorId: signInData.factorId }).toString()}`,
+      );
+      return;
+    }
+
     initSession(false);
 
     const { data: profile, error: profileError } = await getProfileForUser(

@@ -16,6 +16,27 @@ export async function getCurrentUser(): Promise<{ data: User | null; error: stri
   }
 }
 
+/**
+ * After password sign-in, Supabase may leave the session at AAL1 while a verified TOTP factor exists (AAL2 as next level).
+ * @see https://supabase.com/docs/guides/auth/auth-mfa/totp
+ */
+async function getPendingTotpFactorIdAfterPasswordSignIn(): Promise<string | null> {
+  const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aalError) {
+    logError("MFA assurance level check failed after sign-in", aalError);
+    return null;
+  }
+  if (!aal || aal.nextLevel !== "aal2" || aal.currentLevel === "aal2") {
+    return null;
+  }
+  const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+  if (listError) {
+    logError("MFA listFactors failed after sign-in", listError);
+    return null;
+  }
+  return factors?.totp?.[0]?.id ?? null;
+}
+
 export async function signInWithPassword(
   email: string,
   password: string
@@ -29,6 +50,12 @@ export async function signInWithPassword(
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { data: null, error: error.message };
+    if (!data.user) return { data: null, error: "Login failed" };
+
+    const factorId = await getPendingTotpFactorIdAfterPasswordSignIn();
+    if (factorId) {
+      return { data: { user: data.user, requiresMFA: true, factorId }, error: null };
+    }
     return { data: { user: data.user }, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Unknown error" };

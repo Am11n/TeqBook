@@ -56,6 +56,14 @@ export default function DashboardLoginPage() {
       return;
     }
 
+    if (signInData.requiresMFA && signInData.factorId) {
+      const q = new URLSearchParams({ factorId: signInData.factorId });
+      if (safeRedirectTo !== "/") q.set("redirectTo", safeRedirectTo);
+      router.push(`/login-2fa?${q.toString()}`);
+      setStatus("idle");
+      return;
+    }
+
     initSession(false);
 
     const { data: profile } = await getProfileForUser(signInData.user.id);

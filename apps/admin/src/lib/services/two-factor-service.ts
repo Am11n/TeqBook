@@ -6,6 +6,14 @@
 import { supabase } from "@/lib/supabase-client";
 import { logSecurity, logError } from "@/lib/services/logger";
 
+/** Supabase enroll returns SVG markup; `<img src>` needs a URL. */
+function totpEnrollmentQrToSrc(raw: string): string {
+  const t = raw.trim();
+  if (!t) return "";
+  if (t.startsWith("data:") || t.startsWith("http://") || t.startsWith("https://")) return t;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}`;
+}
+
 /**
  * Generate a TOTP secret for a user
  * This should be called when user enables 2FA
@@ -44,7 +52,7 @@ export async function generateTOTPSecret(): Promise<{
     return {
       data: {
         secret,
-        qrCode: totpData.qr_code || "",
+        qrCode: totpEnrollmentQrToSrc(totpData.qr_code || ""),
         factorId: data.id || "",
       },
       error: null,
@@ -59,20 +67,41 @@ export async function generateTOTPSecret(): Promise<{
 }
 
 /**
- * Verify TOTP code during enrollment
- * Note: Supabase requires challengeId even for enrollment verification
- * We'll use type assertion to work around TypeScript type limitations
+ * Verify TOTP code during enrollment.
+ * Supabase requires `mfa.challenge({ factorId })` first, then `mfa.verify({ factorId, challengeId, code })`.
  */
 export async function verifyTOTPEnrollment(
   factorId: string,
   code: string
 ): Promise<{ data: boolean | null; error: string | null }> {
   try {
-    // JUSTIFIED ANY: Supabase MFA verify types require challengeId, but enrollment
-    // verification works with factorId alone. This is a known SDK type limitation.
-    const { data, error } = await (supabase.auth.mfa.verify as unknown as (params: { factorId: string; code: string }) => Promise<{ data: unknown; error: Error | null }>)({
+    const normalizedCode = code.trim();
+    if (!/^\d{6}$/.test(normalizedCode)) {
+      return { data: null, error: "Please enter a valid 6-digit code" };
+    }
+
+    if (!factorId.trim()) {
+      return { data: null, error: "Missing MFA factor. Please start enrollment again." };
+    }
+
+    const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
       factorId,
-      code,
+    });
+
+    if (challengeError) {
+      logError("Failed to create MFA challenge for TOTP enrollment", challengeError);
+      return { data: null, error: challengeError.message };
+    }
+
+    const challengeId = challengeData?.id;
+    if (!challengeId) {
+      return { data: null, error: "Failed to create MFA challenge" };
+    }
+
+    const { error } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code: normalizedCode,
     });
 
     if (error) {

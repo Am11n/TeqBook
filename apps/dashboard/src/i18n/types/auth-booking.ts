@@ -60,6 +60,19 @@ export type LoginMessages = {
   dashboardDirectLoginSubtitle?: string;
   /** When session returns no user after sign-in */
   loginGenericFailure?: string;
+  /** Dashboard /login-2fa (TOTP after password) */
+  twoFactorTitle?: string;
+  twoFactorDescription?: string;
+  twoFactorCodeLabel?: string;
+  twoFactorPlaceholder?: string;
+  twoFactorVerify?: string;
+  twoFactorVerifying?: string;
+  twoFactorBackToLogin?: string;
+  twoFactorChallengeFailed?: string;
+  twoFactorMissingFactor?: string;
+  twoFactorEnterCode?: string;
+  twoFactorInvalidCode?: string;
+  twoFactorUserLoadFailed?: string;
 };
 
 export type SignUpMessages = {

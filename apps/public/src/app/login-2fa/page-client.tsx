@@ -61,7 +61,7 @@ export default function Login2FAPageClient() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!challengeId || !code) {
+    if (!factorId || !challengeId || !code) {
       setError(t.enterCode);
       return;
     }
@@ -69,7 +69,7 @@ export default function Login2FAPageClient() {
     setStatus("loading");
     setError(null);
 
-    const { data: verified, error: verifyError } = await verifyTOTPChallenge(challengeId, code);
+    const { data: verified, error: verifyError } = await verifyTOTPChallenge(factorId, challengeId, code);
 
     if (verifyError || !verified) {
       logSecurity("Failed 2FA verification", { challengeId });
