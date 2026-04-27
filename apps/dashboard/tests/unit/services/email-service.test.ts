@@ -4,6 +4,7 @@
 // Tests for email sending, template rendering, delivery status, and error handling
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { SendBookingConfirmationInput, SendBookingReminderInput } from "@/lib/services/email/types";
 
 // Mock email provider (we'll use Resend)
 const mockResend = {
@@ -32,6 +33,9 @@ vi.mock("@/lib/repositories/email-log", () => ({
   updateEmailLogStatus: (...args: unknown[]) => mockUpdateEmailLogStatus(...args),
   getEmailLogsForSalon: (...args: unknown[]) => mockGetEmailLogsForSalon(...args),
 }));
+
+type BookingConfirmationFixture = SendBookingConfirmationInput["booking"];
+type BookingReminderFixture = SendBookingReminderInput["booking"];
 
   describe("Email Service", () => {
   beforeEach(() => {
@@ -141,7 +145,7 @@ vi.mock("@/lib/repositories/email-log", () => ({
         error: null,
       });
 
-      const booking: any = {
+      const booking: BookingConfirmationFixture = {
         id: "booking-123",
         customer_full_name: "John Doe",
         start_time: new Date("2025-01-15T10:00:00Z").toISOString(),
@@ -182,7 +186,7 @@ vi.mock("@/lib/repositories/email-log", () => ({
         error: null,
       });
 
-      const booking: any = {
+      const booking: BookingReminderFixture = {
         id: "booking-123",
         start_time: new Date("2025-01-15T10:00:00Z").toISOString(),
         end_time: new Date("2025-01-15T11:00:00Z").toISOString(),

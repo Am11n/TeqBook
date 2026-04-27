@@ -10,6 +10,7 @@ import { authenticateUser, verifySalonAccess, authenticateAndVerifySalon } from 
 // Dashboard uses createClientForRouteHandler from @/lib/supabase/server
 const mockGetUser = vi.fn();
 const mockFrom = vi.fn();
+type VerifySalonSupabase = Parameters<typeof verifySalonAccess>[2];
 
 vi.mock("@/lib/supabase/server", () => ({
   createClientForRouteHandler: () => ({
@@ -186,7 +187,7 @@ describe("API Authentication", () => {
 
       const mockSupabase = {
         from: mockFrom,
-      } as any;
+      } as unknown as VerifySalonSupabase;
 
       const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
@@ -222,7 +223,7 @@ describe("API Authentication", () => {
 
       const mockSupabase = {
         from: mockFrom,
-      } as any;
+      } as unknown as VerifySalonSupabase;
 
       const result = await verifySalonAccess(userId, salonId, mockSupabase);
 
@@ -260,7 +261,7 @@ describe("API Authentication", () => {
 
       const mockSupabase = {
         from: mockFrom,
-      } as any;
+      } as unknown as VerifySalonSupabase;
 
       const result = await verifySalonAccess(userId, salonId, mockSupabase);
 

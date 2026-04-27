@@ -14,6 +14,10 @@ vi.mock("@/lib/services/email-service");
 vi.mock("@/lib/services/audit-log-service");
 vi.mock("@/lib/services/logger");
 
+const supabaseFromMock = supabase.from as unknown as {
+  mockReturnValue: (value: unknown) => unknown;
+};
+
 describe("Billing Service - Payment Failure Handling", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,7 +32,7 @@ describe("Billing Service - Payment Failure Handling", () => {
       };
 
       // Mock Supabase response
-      (supabase.from as any).mockReturnValue({
+      supabaseFromMock.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             single: vi.fn().mockResolvedValue({
@@ -66,7 +70,7 @@ describe("Billing Service - Payment Failure Handling", () => {
         last_payment_failure_at: new Date().toISOString(),
       };
 
-      (supabase.from as any).mockReturnValue({
+      supabaseFromMock.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             single: vi.fn().mockResolvedValue({
@@ -95,7 +99,7 @@ describe("Billing Service - Payment Failure Handling", () => {
         last_payment_failure_at: new Date().toISOString(),
       };
 
-      (supabase.from as any).mockReturnValue({
+      supabaseFromMock.mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             single: vi.fn().mockResolvedValue({

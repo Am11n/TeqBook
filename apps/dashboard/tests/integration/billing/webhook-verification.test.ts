@@ -16,14 +16,15 @@ import crypto from "crypto";
 const TEST_SECRET_BYTES = Buffer.from("test_secret_key_32_bytes_long!!");
 const TEST_WEBHOOK_SECRET = "whsec_" + TEST_SECRET_BYTES.toString("base64");
 const TEST_STRIPE_SECRET_KEY = "sk_test_1234567890abcdef1234567890abcdef";
+const TEST_API_VERSION = "2024-11-20.acacia" as Stripe.LatestApiVersion;
 
 // Sample webhook event payload
 // Using Partial<Stripe.Event> and type assertion to allow flexible event creation for testing
-const createTestEvent = (type: string, data: any): Stripe.Event => {
+const createTestEvent = (type: string, data: unknown): Stripe.Event => {
   return {
     id: `evt_test_${Date.now()}`,
     object: "event",
-    api_version: "2024-11-20.acacia" as any, // Type assertion needed as Stripe types may not include all API versions
+    api_version: TEST_API_VERSION,
     created: Math.floor(Date.now() / 1000),
     data: {
       object: data,
@@ -78,10 +79,11 @@ const generateStripeSignature = (
 ): string => {
   // Try to use Stripe SDK's generateTestHeaderString if available (newer versions)
   try {
-    if (
-      typeof (stripe.webhooks as any).generateTestHeaderString === "function"
-    ) {
-      return (stripe.webhooks as any).generateTestHeaderString({
+    const webhooks = stripe.webhooks as unknown as {
+      generateTestHeaderString?: (params: { payload: string; secret: string; timestamp: number }) => string;
+    };
+    if (typeof webhooks.generateTestHeaderString === "function") {
+      return webhooks.generateTestHeaderString({
         payload,
         secret,
         timestamp,
@@ -100,7 +102,7 @@ describe("Webhook Signature Verification", () => {
 
   beforeEach(() => {
     stripe = new Stripe(TEST_STRIPE_SECRET_KEY, {
-      apiVersion: "2024-11-20.acacia" as any, // Type assertion needed as Stripe types may not include all API versions
+      apiVersion: TEST_API_VERSION,
     });
   });
 

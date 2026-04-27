@@ -26,6 +26,7 @@ const mockSentry = {
   captureMessage: vi.fn(),
   captureException: vi.fn(),
 };
+type TestGlobalWithWindow = typeof globalThis & { window?: Record<string, unknown> };
 
 vi.mock("@sentry/nextjs", () => ({
   default: mockSentry,
@@ -46,7 +47,7 @@ describe("Logger Service", () => {
     setNodeEnv("development");
     process.env.NEXT_PUBLIC_SENTRY_DSN = undefined;
     // Mock window for browser environment tests
-    (global as any).window = {} as any;
+    (globalThis as TestGlobalWithWindow).window = {};
   });
 
   afterEach(() => {
@@ -228,7 +229,7 @@ describe("Logger Service", () => {
   describe("Sentry Integration", () => {
     beforeEach(() => {
       // Mock window object for browser environment
-      (global as any).window = {} as any;
+      (globalThis as TestGlobalWithWindow).window = {};
       process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/test";
       // Reset Sentry mocks
       mockSentry.captureMessage.mockClear();

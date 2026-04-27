@@ -123,8 +123,11 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
       includeCreatedAt: true,
     });
 
+    // getCustomersForSalon may return a narrower Customer type; includeCreatedAt extends rows at runtime.
+    const customersWithCreatedAt = (allCustomers || []) as CustomerWithCreatedAt[];
+
     // Filter new customers created in the period
-    const newCustomers = (allCustomers || []).filter((customer: CustomerWithCreatedAt) => {
+    const newCustomers = customersWithCreatedAt.filter((customer) => {
       if (!customer.created_at) return false;
       const createdDate = new Date(customer.created_at);
       return createdDate >= startDate && createdDate <= endDate;
