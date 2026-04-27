@@ -16,8 +16,8 @@ vi.mock("@/lib/supabase-client", () => ({
 }));
 
 type RpcResponse = {
-  data: unknown;
-  error: unknown;
+  data: any;
+  error: { message: string; code: string; details: null; hint: null; name: string } | null;
   count: number | null;
   status: number;
   statusText: string;
@@ -58,7 +58,7 @@ describe("Booking Conflict Prevention", () => {
 
       // Mock: RPC returns conflict error
       vi.mocked(supabase.rpc).mockResolvedValue(
-        conflictRpcResponse("Time slot is already booked. Please select another time.")
+        conflictRpcResponse("Time slot is already booked. Please select another time.") as any
       );
 
       const result = await createBooking(mockInput);
@@ -183,7 +183,7 @@ describe("Booking Conflict Prevention", () => {
         })
         // Second call fails due to conflict (FOR UPDATE lock prevents it)
         .mockResolvedValueOnce(
-          conflictRpcResponse("Time slot is already booked. Please select another time.")
+          conflictRpcResponse("Time slot is already booked. Please select another time.") as any
         );
 
       const result1 = await createBooking(mockInput);
@@ -213,7 +213,7 @@ describe("Booking Conflict Prevention", () => {
       };
 
       vi.mocked(supabase.rpc).mockResolvedValue(
-        conflictRpcResponse("Time slot is already booked. Please select another time.")
+        conflictRpcResponse("Time slot is already booked. Please select another time.") as any
       );
 
       const result = await createBooking(mockInput);
@@ -235,7 +235,7 @@ describe("Booking Conflict Prevention", () => {
       };
 
       vi.mocked(supabase.rpc).mockResolvedValue(
-        conflictRpcResponse("Service not found or does not belong to salon")
+        conflictRpcResponse("Service not found or does not belong to salon") as any
       );
 
       const result = await createBooking(mockInput);

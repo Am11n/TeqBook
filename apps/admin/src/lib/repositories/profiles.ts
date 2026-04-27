@@ -10,6 +10,27 @@ import type { Profile } from "@/lib/types";
 // Re-export Profile for backward compatibility
 export type { Profile };
 
+type UserPreferences = {
+  sidebarCollapsed?: boolean;
+  notifications?: {
+    email?: {
+      bookingConfirmation?: boolean;
+      bookingReminder?: boolean;
+      bookingCancellation?: boolean;
+      newBooking?: boolean;
+    };
+    inApp?: {
+      bookingConfirmation?: boolean;
+      bookingReminder?: boolean;
+      bookingCancellation?: boolean;
+      newBooking?: boolean;
+      systemAnnouncements?: boolean;
+    };
+  };
+  // Allow feature-specific preferences (e.g., tableViews) to coexist safely.
+  [key: string]: unknown;
+};
+
 /**
  * Get profile by user ID
  * Note: Handles both old schema (without first_name, last_name, avatar_url) and new schema
@@ -85,24 +106,7 @@ export async function getUserPreferences(
  */
 export async function updateUserPreferences(
   userId: string,
-  preferences: {
-    sidebarCollapsed?: boolean;
-    notifications?: {
-      email?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-        newBooking?: boolean;
-      };
-      inApp?: {
-        bookingConfirmation?: boolean;
-        bookingReminder?: boolean;
-        bookingCancellation?: boolean;
-        newBooking?: boolean;
-        systemAnnouncements?: boolean;
-      };
-    };
-  }
+  preferences: UserPreferences
 ): Promise<{ error: string | null }> {
   try {
     // Get current preferences to merge
@@ -112,7 +116,7 @@ export async function updateUserPreferences(
       .eq("user_id", userId)
       .maybeSingle();
 
-    const currentPreferences = (currentProfile?.user_preferences as typeof preferences) || {};
+    const currentPreferences = (currentProfile?.user_preferences as UserPreferences) || {};
     
     // Merge new preferences with existing ones
     const mergedPreferences = {

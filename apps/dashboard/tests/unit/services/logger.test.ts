@@ -47,7 +47,7 @@ describe("Logger Service", () => {
     setNodeEnv("development");
     process.env.NEXT_PUBLIC_SENTRY_DSN = undefined;
     // Mock window for browser environment tests
-    (globalThis as TestGlobalWithWindow).window = {};
+    (globalThis as TestGlobalWithWindow).window = {} as unknown as Window & typeof globalThis & Record<string, unknown>;
   });
 
   afterEach(() => {
@@ -229,7 +229,7 @@ describe("Logger Service", () => {
   describe("Sentry Integration", () => {
     beforeEach(() => {
       // Mock window object for browser environment
-      (globalThis as TestGlobalWithWindow).window = {};
+      (globalThis as TestGlobalWithWindow).window = {} as unknown as Window & typeof globalThis & Record<string, unknown>;
       process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/test";
       // Reset Sentry mocks
       mockSentry.captureMessage.mockClear();
