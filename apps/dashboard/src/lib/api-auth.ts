@@ -16,6 +16,11 @@ export type AuthResult = {
   error: string | null;
 };
 
+export type AuthSecurityOptions = {
+  requireAal2?: boolean;
+  action?: string;
+};
+
 /**
  * Authenticate user from Next.js API route request
  * Checks for user session via cookies or Authorization header
@@ -150,7 +155,8 @@ export async function verifySalonAccess(
 export async function authenticateAndVerifySalon(
   request: NextRequest,
   salonId: string,
-  response?: NextResponse
+  response?: NextResponse,
+  securityOptions?: AuthSecurityOptions
 ): Promise<{
   user: { id: string; email?: string } | null;
   hasAccess: boolean;
@@ -169,6 +175,27 @@ export async function authenticateAndVerifySalon(
   // Create SSR client for database queries
   const responseForAuth = response || NextResponse.next();
   const supabase = createClientForRouteHandler(request, responseForAuth);
+
+  if (securityOptions?.requireAal2) {
+    const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError) {
+      return {
+        user: null,
+        hasAccess: false,
+        error: "Could not verify security level. Please sign in again.",
+      };
+    }
+    const needsMfa = aalData?.nextLevel === "aal2" && aalData.currentLevel !== "aal2";
+    if (needsMfa) {
+      return {
+        user: authResult.user,
+        hasAccess: false,
+        error:
+          `Two-factor verification is required before '${securityOptions.action || "this action"}'.`,
+      };
+    }
+  }
+
   const accessResult = await verifySalonAccess(authResult.user.id, salonId, supabase);
 
   return {

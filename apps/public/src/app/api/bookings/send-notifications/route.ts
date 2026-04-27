@@ -8,6 +8,7 @@ import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-se
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { REQUEST_ID_HEADER, getRequestIdFromHeaders } from "@teqbook/shared";
 import { verifyPublicBookingActionToken } from "@/lib/security/public-booking-action-token";
+import type { SendBookingConfirmationInput } from "@/lib/services/email/types";
 
 type BookingNotificationPayload = {
   bookingId: string;
@@ -299,7 +300,7 @@ export async function POST(request: NextRequest) {
     const timezone = salon?.timezone || "UTC";
     const effectiveLanguage = language || salon?.preferred_language || "nb";
 
-    const bookingForEmail = {
+    const bookingForEmail: SendBookingConfirmationInput["booking"] = {
       id: bookingRow.id,
       start_time: bookingRow.start_time,
       end_time: bookingRow.end_time ?? bookingRow.start_time,
@@ -313,7 +314,7 @@ export async function POST(request: NextRequest) {
       service: bookingService?.name ? { name: bookingService.name } : null,
       employee: bookingEmployee?.full_name ? { name: bookingEmployee.full_name } : null,
       salon: salon ? { name: salon.name, time_format: salon.time_format ?? null } : null,
-    } as any;
+    };
 
     // Send confirmation email when the booking has a customer email (do not fail the request if email fails)
     logInfo("Public booking confirmation email", {

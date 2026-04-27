@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "salonId and entryId are required" }, { status: 400 });
     }
 
-    const auth = await authenticateAndVerifySalon(request, salonId, response);
+    const auth = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "waitlist_convert_to_booking",
+    });
     if (auth.error || !auth.user || !auth.hasAccess) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }

@@ -532,7 +532,7 @@ serve(async (req) => {
               : new Date(Date.now() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
             // Update salon with payment failure
-            const updateData: any = {
+            const updateData: Record<string, unknown> = {
               payment_failure_count: currentFailureCount,
               last_payment_retry_at: now,
             };

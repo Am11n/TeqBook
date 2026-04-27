@@ -112,7 +112,10 @@ export async function POST(request: NextRequest) {
     }
 
     const salonId = bodySalonId || bookingRow.salon_id;
-    const authResult = await authenticateAndVerifySalon(request, salonId, response);
+    const authResult = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "send_reschedule_proposal",
+    });
     if (authResult.error || !authResult.user || !authResult.hasAccess) {
       const statusCode = !authResult.user ? 401 : 403;
       return NextResponse.json({ error: authResult.error || "Unauthorized" }, { status: statusCode });

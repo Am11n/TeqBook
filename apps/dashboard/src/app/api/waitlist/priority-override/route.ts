@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "reason is required when setting override" }, { status: 400 });
     }
 
-    const auth = await authenticateAndVerifySalon(request, salonId, response);
+    const auth = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "waitlist_priority_override",
+    });
     if (auth.error || !auth.user || !auth.hasAccess) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }

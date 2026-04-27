@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
     })();
 
     // Authenticate user and verify salon access
-    const authResult = await authenticateAndVerifySalon(request, salonId, response);
+    const authResult = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "send_booking_cancellation_notifications",
+    });
     
     if (authResult.error || !authResult.user || !authResult.hasAccess) {
       const statusCode = !authResult.user ? 401 : 403;

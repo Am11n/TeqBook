@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const authResult = await authenticateAndVerifySalon(request, salonId, response);
+    const authResult = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "send_test_notification",
+    });
 
     if (authResult.error || !authResult.user || !authResult.hasAccess) {
       const statusCode = !authResult.user ? 401 : 403;

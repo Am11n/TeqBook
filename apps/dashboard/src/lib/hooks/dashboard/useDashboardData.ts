@@ -5,6 +5,9 @@ import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getCustomersForSalon } from "@/lib/services/customers-service";
 import type { DashboardBooking as Booking, DashboardEmployee as Employee, PerformanceData, TimeRange } from "./dashboard-types";
 
+type CustomerWithCreatedAt = { created_at?: string | null };
+type BookingWithCustomerId = { customer_id?: string | null };
+
 export function useDashboardData(timeRange: TimeRange = "weekly") {
   const { salon, isReady, user, profile } = useCurrentSalon();
   const [mounted, setMounted] = useState(false);
@@ -121,7 +124,7 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
     });
 
     // Filter new customers created in the period
-    const newCustomers = (allCustomers || []).filter((customer: any) => {
+    const newCustomers = (allCustomers || []).filter((customer: CustomerWithCreatedAt) => {
       if (!customer.created_at) return false;
       const createdDate = new Date(customer.created_at);
       return createdDate >= startDate && createdDate <= endDate;
@@ -130,7 +133,7 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
     // Calculate returning customers (customers who had bookings before the period AND in the period)
     const customerIdsInPeriod = new Set(
       (periodBookings || [])
-        .map((booking: any) => booking.customer_id)
+        .map((booking: BookingWithCustomerId) => booking.customer_id)
         .filter(Boolean)
     );
 
@@ -143,7 +146,7 @@ export function useDashboardData(timeRange: TimeRange = "weekly") {
 
     const customerIdsBeforePeriod = new Set(
       (previousBookings || [])
-        .map((booking: any) => booking.customer_id)
+        .map((booking: BookingWithCustomerId) => booking.customer_id)
         .filter(Boolean)
     );
 

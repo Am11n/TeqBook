@@ -6,6 +6,35 @@ import type { InAppNotification, InAppNotificationType } from "@/lib/types/notif
 import type { UseNotificationsOptions, UseNotificationsReturn } from "./useNotifications-types";
 export type { UseNotificationsOptions, UseNotificationsReturn };
 
+type NotificationRealtimeRow = {
+  id: string;
+  user_id: string;
+  salon_id: string | null;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  metadata: InAppNotification["metadata"];
+  action_url: string | null;
+  created_at: string;
+};
+
+function isNotificationRealtimeRow(value: unknown): value is NotificationRealtimeRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string"
+    && typeof row.user_id === "string"
+    && (typeof row.salon_id === "string" || row.salon_id === null)
+    && typeof row.type === "string"
+    && typeof row.title === "string"
+    && typeof row.body === "string"
+    && typeof row.read === "boolean"
+    && (typeof row.action_url === "string" || row.action_url === null)
+    && typeof row.created_at === "string"
+  );
+}
+
 export function useNotifications(
   options: UseNotificationsOptions = {}
 ): UseNotificationsReturn {
@@ -165,7 +194,10 @@ export function useNotifications(
         },
         (payload) => {
           console.log("Realtime notification received:", payload);
-          const newRow = payload.new as any;
+          const newRow = payload.new;
+          if (!isNotificationRealtimeRow(newRow)) {
+            return;
+          }
           // Map to InAppNotification type
           const newNotification: InAppNotification = {
             id: newRow.id,

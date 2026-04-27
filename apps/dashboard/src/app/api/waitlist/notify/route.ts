@@ -37,7 +37,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const auth = await authenticateAndVerifySalon(request, salonId, response);
+    const auth = await authenticateAndVerifySalon(request, salonId, response, {
+      requireAal2: true,
+      action: "waitlist_notify_customer",
+    });
     if (auth.error || !auth.user || !auth.hasAccess) {
       return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: !auth.user ? 401 : 403 });
     }

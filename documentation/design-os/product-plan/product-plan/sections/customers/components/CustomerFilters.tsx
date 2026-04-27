@@ -30,6 +30,8 @@ export function CustomerFilters({ customers, onFilter }: CustomerFiltersProps) {
     marketingOptIn?: 'email' | 'sms' | 'both' | 'none' | 'all'
   }>({})
   const [searchValue, setSearchValue] = useState('')
+  type FilterState = typeof filters
+  type FilterValue = FilterState[keyof FilterState]
 
   // Extract unique tags from all customers
   const allTags = Array.from(new Set(customers.flatMap((c) => c.tags))).sort()
@@ -39,8 +41,9 @@ export function CustomerFilters({ customers, onFilter }: CustomerFiltersProps) {
     return v && v !== 'all'
   }).length
 
-  const handleFilterChange = (key: string, value: any) => {
-    const newFilters = { ...filters, [key]: value === 'all' ? undefined : value }
+  const handleFilterChange = <K extends keyof FilterState>(key: K, value: FilterValue) => {
+    const nextValue = value === 'all' ? undefined : value
+    const newFilters = { ...filters, [key]: nextValue }
     setFilters(newFilters)
     onFilter(newFilters)
   }
