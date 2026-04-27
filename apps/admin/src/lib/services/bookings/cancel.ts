@@ -7,6 +7,12 @@ import { cancelReminders } from "@/lib/services/reminder-service";
 import { getSalonById } from "@/lib/repositories/salons";
 import { logBookingEvent } from "@/lib/services/audit-trail-service";
 
+type BookingNotificationShape = Booking & {
+  customer_full_name?: string | null;
+  service?: { name?: string | null } | null;
+  employee?: { name?: string | null } | null;
+};
+
 /**
  * Cancel a booking (with optional reason)
  */
@@ -85,6 +91,7 @@ async function sendCancellationNotifications(
   logContext: Record<string, unknown>
 ) {
   try {
+    const notificationBooking = options?.booking as BookingNotificationShape | undefined;
     const salonResult = await getSalonById(salonId);
     const salon = salonResult.data;
 
@@ -104,16 +111,25 @@ async function sendCancellationNotifications(
         salonId,
         language: options?.language || salon?.preferred_language || "en",
         cancelledBy: "salon",
-        bookingData: options?.booking ? {
-          id: options.booking.id,
+        bookingData: notificationBooking ? {
+          id: notificationBooking.id,
           salon_id: salonId,
-          start_time: options.booking.start_time,
-          end_time: options.booking.end_time,
-          status: options.booking.status,
-          is_walk_in: options.booking.is_walk_in,
-          customer_full_name: (options.booking as any).customer_full_name || options.booking.customers?.full_name || "Customer",
-          service_name: (options.booking as any).service?.name || (options.booking as any).services?.name || options.booking.services?.name || undefined,
-          employee_name: (options.booking as any).employee?.name || (options.booking as any).employees?.full_name || options.booking.employees?.full_name || undefined,
+          start_time: notificationBooking.start_time,
+          end_time: notificationBooking.end_time,
+          status: notificationBooking.status,
+          is_walk_in: notificationBooking.is_walk_in,
+          customer_full_name:
+            notificationBooking.customer_full_name
+            || notificationBooking.customers?.full_name
+            || "Customer",
+          service_name:
+            notificationBooking.service?.name
+            || notificationBooking.services?.name
+            || undefined,
+          employee_name:
+            notificationBooking.employee?.name
+            || notificationBooking.employees?.full_name
+            || undefined,
         } : undefined,
       }),
     })

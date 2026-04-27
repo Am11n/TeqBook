@@ -37,6 +37,29 @@ async function getPendingTotpFactorIdAfterPasswordSignIn(): Promise<string | nul
   return factors?.totp?.[0]?.id ?? null;
 }
 
+async function enforceAal2IfConfiguredForUser(
+  action: string
+): Promise<{ allowed: boolean; error: string | null }> {
+  try {
+    const { data: aal, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error) {
+      logError("Failed to read authenticator assurance level", error, { action });
+      return { allowed: false, error: "Could not verify security level. Please sign in again." };
+    }
+    const needsMfa = aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2";
+    if (!needsMfa) {
+      return { allowed: true, error: null };
+    }
+    return {
+      allowed: false,
+      error: "Please complete two-factor verification before performing this action.",
+    };
+  } catch (err) {
+    logError("Exception while checking AAL for sensitive action", err, { action });
+    return { allowed: false, error: "Could not verify security level. Please sign in again." };
+  }
+}
+
 export async function signInWithPassword(
   email: string,
   password: string
@@ -125,6 +148,9 @@ export async function updatePassword(
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) return { error: "User not found" };
+
+    const aalGate = await enforceAal2IfConfiguredForUser("update_password");
+    if (!aalGate.allowed) return { error: aalGate.error };
 
     const { error: verifyError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword });
     if (verifyError) return { error: "Current password is incorrect" };

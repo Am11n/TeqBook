@@ -12,9 +12,14 @@ import { updateUserPreferences, getUserPreferences } from "@/lib/repositories/pr
 export type TableView = {
   id: string;
   name: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   sort?: { column: string; direction: "asc" | "desc" };
   columnVisibility?: Record<string, boolean>;
+};
+
+type TableViewsPreferences = {
+  tableViews?: Record<string, TableView[]>;
+  [key: string]: unknown;
 };
 
 export type UseTableViewsOptions = {
@@ -50,7 +55,7 @@ export function useTableViews({ tableId, defaultColumnVisibility = {} }: UseTabl
     const loadViews = async () => {
       try {
         const { data: profile } = await getUserPreferences(userId);
-        const preferences = (profile?.user_preferences as any) || {};
+        const preferences = (profile?.user_preferences ?? {}) as TableViewsPreferences;
         const tableViews = preferences.tableViews?.[tableId] || [];
         
         setViews(tableViews);
@@ -78,7 +83,7 @@ export function useTableViews({ tableId, defaultColumnVisibility = {} }: UseTabl
 
       try {
         const { data: profile } = await getUserPreferences(userId);
-        const preferences = (profile?.user_preferences as any) || {};
+        const preferences = (profile?.user_preferences ?? {}) as TableViewsPreferences;
         
         const updatedPreferences = {
           ...preferences,
@@ -88,7 +93,7 @@ export function useTableViews({ tableId, defaultColumnVisibility = {} }: UseTabl
           },
         };
 
-        await updateUserPreferences(userId, updatedPreferences as any);
+        await updateUserPreferences(userId, updatedPreferences);
         setViews(newViews);
       } catch (error) {
         console.error("Error saving table views:", error);

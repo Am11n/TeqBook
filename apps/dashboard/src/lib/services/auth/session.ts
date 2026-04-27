@@ -1,6 +1,30 @@
 import { supabase } from "@/lib/supabase-client";
 import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { logSecurity, logError } from "@/lib/services/logger";
+import { logSecurityEvent } from "@/lib/services/audit-log-service";
+
+async function enforceAal2IfConfiguredForUser(
+  action: string
+): Promise<{ allowed: boolean; error: string | null }> {
+  try {
+    const { data: aal, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error) {
+      logError("Failed to read authenticator assurance level", error, { action });
+      return { allowed: false, error: "Could not verify security level. Please sign in again." };
+    }
+    const needsMfa = aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2";
+    if (!needsMfa) {
+      return { allowed: true, error: null };
+    }
+    return {
+      allowed: false,
+      error: "Please complete two-factor verification before performing this action.",
+    };
+  } catch (err) {
+    logError("Exception while checking AAL for sensitive action", err, { action });
+    return { allowed: false, error: "Could not verify security level. Please sign in again." };
+  }
+}
 
 export async function getSession(): Promise<{ data: { access_token: string; refresh_token: string; user: unknown } | null; error: string | null }> {
   try {
@@ -44,12 +68,22 @@ export async function resendEmailVerification(): Promise<{ error: string | null 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user?.email) return { error: "User not found" };
 
+    const aalGate = await enforceAal2IfConfiguredForUser("resend_email_verification");
+    if (!aalGate.allowed) return { error: aalGate.error };
+
     const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
     if (error) {
       logError("Failed to resend verification email", error);
       return { error: error.message };
     }
     logSecurity("Verification email resent", { userId: user.id });
+    await logSecurityEvent({
+      userId: user.id,
+      action: "email_verification_resent",
+      metadata: {},
+      ipAddress: null,
+      userAgent: null,
+    }).catch(() => {});
     return { error: null };
   } catch (err) {
     logError("Exception resending verification email", err);
@@ -73,6 +107,9 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
     if (sessionError) return { error: sessionError.message };
     if (!session) return { error: "No active session" };
 
+    const aalGate = await enforceAal2IfConfiguredForUser("sign_out_other_sessions");
+    if (!aalGate.allowed) return { error: aalGate.error };
+
     const { error } = await supabase.auth.signOut({ scope: "others" });
     if (error) {
       logError("Failed to sign out other sessions", error);
@@ -80,6 +117,13 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
     }
 
     logSecurity("Signed out other sessions", { userId: session.user.id });
+    await logSecurityEvent({
+      userId: session.user.id,
+      action: "sign_out_other_sessions",
+      metadata: {},
+      ipAddress: null,
+      userAgent: null,
+    }).catch(() => {});
     return { error: null };
   } catch (err) {
     logError("Exception signing out other sessions", err);

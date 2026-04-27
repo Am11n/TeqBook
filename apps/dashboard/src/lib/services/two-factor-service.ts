@@ -5,6 +5,7 @@
 
 import { supabase } from "@/lib/supabase-client";
 import { logSecurity, logError } from "@/lib/services/logger";
+import { logSecurityEvent } from "@/lib/services/audit-log-service";
 
 /** Supabase enroll returns SVG markup; `<img src>` needs a URL. */
 function totpEnrollmentQrToSrc(raw: string): string {
@@ -109,6 +110,16 @@ export async function verifyTOTPEnrollment(
       return { data: null, error: error.message };
     }
 
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user) {
+      await logSecurityEvent({
+        userId: userData.user.id,
+        action: "mfa_enabled",
+        metadata: { factorId },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {});
+    }
     return { data: true, error: null };
   } catch (err) {
     logError("Exception verifying TOTP enrollment", err);
@@ -178,10 +189,30 @@ export async function verifyTOTPChallenge(
     if (error) {
       logSecurity("Failed TOTP verification", { challengeId });
       logError("Failed to verify TOTP challenge", error);
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await logSecurityEvent({
+          userId: userData.user.id,
+          action: "mfa_verification_failed",
+          metadata: { challengeId, factorId },
+          ipAddress: null,
+          userAgent: null,
+        }).catch(() => {});
+      }
       return { data: null, error: error.message };
     }
 
     logSecurity("Successful TOTP verification", { challengeId });
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user) {
+      await logSecurityEvent({
+        userId: userData.user.id,
+        action: "mfa_verification_succeeded",
+        metadata: { challengeId, factorId },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {});
+    }
     return { data: true, error: null };
   } catch (err) {
     logError("Exception verifying TOTP challenge", err);
@@ -241,10 +272,30 @@ export async function unenrollTOTP(
 
     if (error) {
       logError("Failed to unenroll TOTP", error);
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await logSecurityEvent({
+          userId: userData.user.id,
+          action: "mfa_disable_failed",
+          metadata: { factorId },
+          ipAddress: null,
+          userAgent: null,
+        }).catch(() => {});
+      }
       return { data: null, error: error.message };
     }
 
     logSecurity("TOTP factor unenrolled", { factorId });
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user) {
+      await logSecurityEvent({
+        userId: userData.user.id,
+        action: "mfa_disabled",
+        metadata: { factorId },
+        ipAddress: null,
+        userAgent: null,
+      }).catch(() => {});
+    }
     return { data: true, error: null };
   } catch (err) {
     logError("Exception unenrolling TOTP", err);
