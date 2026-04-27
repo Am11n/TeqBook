@@ -399,4 +399,39 @@ export type SettingsMessages = {
   twoFactorDisableChallengeFailed?: string;
   twoFactorDisablePreparing?: string;
   twoFactorDisableEnterCode?: string;
+  // Security — 2FA enrollment
+  twoFactorEnrollFailedToGenerateSecret?: string;
+  twoFactorEnrollEnterVerificationCode?: string;
+  twoFactorEnrollInvalidVerificationCode?: string;
+  twoFactorEnrollScanQrTitle?: string;
+  twoFactorEnrollManualSecretLabel?: string;
+  twoFactorEnrollCodeFieldLabel?: string;
+  twoFactorEnrollCodePlaceholder?: string;
+  twoFactorEnrollCancel?: string;
+  twoFactorEnrollVerifyAndEnable?: string;
+  twoFactorEnrollVerifying?: string;
+  twoFactorEnrollEnableButton?: string;
+  twoFactorEnrollGeneratingButton?: string;
+  // Security — Email verification card
+  emailCardTitle?: string;
+  emailCardDescription?: string;
+  emailCardStatusLabel?: string;
+  emailCardStatusVerified?: string;
+  emailCardStatusNotVerified?: string;
+  emailCardResendButton?: string;
+  emailCardResendingButton?: string;
+  emailCardResendSuccess?: string;
+  emailCardWarning?: string;
+  // Security — Sessions card
+  sessionsCardTitle?: string;
+  sessionsCardDescription?: string;
+  sessionsCardStatusLabel?: string;
+  sessionsCardStatusValueCurrentOnly?: string;
+  sessionsCardCurrentDevicePrefix?: string;
+  sessionsCardSignOutOthersButton?: string;
+  sessionsCardSigningOutButton?: string;
+  sessionsCardSignOutOthersConfirm?: string;
+  sessionsCardSignOutOthersSuccess?: string;
+  sessionsCardNoOtherSessionsHint?: string;
+  sessionsCardCountDisclaimer?: string;
 };

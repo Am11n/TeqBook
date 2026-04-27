@@ -11,9 +11,20 @@ import { resendEmailVerification } from "@/lib/services/auth-service";
 
 interface EmailVerificationCardProps {
   emailVerified: boolean;
+  copy: {
+    title: string;
+    description: string;
+    statusLabel: string;
+    statusVerified: string;
+    statusNotVerified: string;
+    resendButton: string;
+    resendingButton: string;
+    resendSuccess: string;
+    warning: string;
+  };
 }
 
-export function EmailVerificationCard({ emailVerified }: EmailVerificationCardProps) {
+export function EmailVerificationCard({ emailVerified, copy }: EmailVerificationCardProps) {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -28,7 +39,7 @@ export function EmailVerificationCard({ emailVerified }: EmailVerificationCardPr
       return;
     }
 
-    setSuccess("Verification email sent. Please check your inbox.");
+    setSuccess(copy.resendSuccess);
     setResendingEmail(false);
     setTimeout(() => setSuccess(null), 5000);
   }
@@ -38,9 +49,9 @@ export function EmailVerificationCard({ emailVerified }: EmailVerificationCardPr
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
-          Email Verification
+          {copy.title}
         </CardTitle>
-        <CardDescription>Verify your email address</CardDescription>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {success && (
@@ -50,18 +61,18 @@ export function EmailVerificationCard({ emailVerified }: EmailVerificationCardPr
         )}
 
         <InfoRow
-          label="Status"
+          label={copy.statusLabel}
           value={
             emailVerified ? (
-              <StatusPill status="verified" label="Verified" />
+              <StatusPill status="verified" label={copy.statusVerified} />
             ) : (
-              <StatusPill status="unverified" label="Not verified" />
+              <StatusPill status="unverified" label={copy.statusNotVerified} />
             )
           }
           action={
             !emailVerified ? (
               <Button variant="outline" size="sm" onClick={handleResendVerification} disabled={resendingEmail}>
-                {resendingEmail ? "Sending..." : "Resend Verification"}
+                {resendingEmail ? copy.resendingButton : copy.resendButton}
               </Button>
             ) : null
           }
@@ -70,7 +81,7 @@ export function EmailVerificationCard({ emailVerified }: EmailVerificationCardPr
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Your email address is not verified. Please check your inbox for a verification email.
+              {copy.warning}
             </AlertDescription>
           </Alert>
         )}

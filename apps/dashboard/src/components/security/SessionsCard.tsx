@@ -10,6 +10,19 @@ import { signOutOtherSessions } from "@/lib/services/auth-service";
 interface SessionsCardProps {
   sessionsCount: number;
   onReload: () => Promise<void>;
+  copy: {
+    title: string;
+    description: string;
+    statusLabel: string;
+    statusValueCurrentOnly: string;
+    currentDevicePrefix: string;
+    signOutOthersButton: string;
+    signingOut: string;
+    signOutOthersConfirm: string;
+    signOutOthersSuccess: string;
+    noOtherSessionsHint: string;
+    countDisclaimer: string;
+  };
 }
 
 function getBasicDeviceInfo(): string {
@@ -32,7 +45,7 @@ function getBasicDeviceInfo(): string {
   return `${browser} on ${os}`;
 }
 
-export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
+export function SessionsCard({ sessionsCount, onReload, copy }: SessionsCardProps) {
   const [signingOut, setSigningOut] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const deviceInfo = useMemo(() => getBasicDeviceInfo(), []);
@@ -40,7 +53,7 @@ export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
   async function handleSignOutOtherSessions() {
     if (
       !confirm(
-        "Are you sure you want to sign out of all other sessions? You will remain signed in on this device."
+        copy.signOutOthersConfirm
       )
     ) {
       return;
@@ -59,7 +72,7 @@ export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
     // Reload sessions count
     await onReload();
     setSigningOut(false);
-    setSuccess("All other sessions have been signed out");
+    setSuccess(copy.signOutOthersSuccess);
     setTimeout(() => setSuccess(null), 5000);
   }
 
@@ -68,9 +81,9 @@ export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Monitor className="h-5 w-5" />
-          Active Sessions
+          {copy.title}
         </CardTitle>
-        <CardDescription>Manage your active sessions across devices</CardDescription>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {success && (
@@ -80,25 +93,28 @@ export function SessionsCard({ sessionsCount, onReload }: SessionsCardProps) {
         )}
 
         <InfoRow
-          label="Active Sessions"
-          value={`${sessionsCount} active session${sessionsCount !== 1 ? "s" : ""}`}
+          label={copy.statusLabel}
+          value={copy.statusValueCurrentOnly}
         />
 
         <p className="text-xs text-muted-foreground">
-          Current: {deviceInfo}
+          {copy.currentDevicePrefix}: {deviceInfo}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {copy.countDisclaimer}
         </p>
 
         <Button
           variant="outline"
           size="sm"
           onClick={handleSignOutOtherSessions}
-          disabled={signingOut || sessionsCount <= 1}
+          disabled={signingOut || sessionsCount <= 0}
         >
-          {signingOut ? "Signing out..." : "Log out all other sessions"}
+          {signingOut ? copy.signingOut : copy.signOutOthersButton}
         </Button>
 
-        {sessionsCount <= 1 && (
-          <p className="text-xs text-muted-foreground">You are only signed in on this device.</p>
+        {sessionsCount <= 0 && (
+          <p className="text-xs text-muted-foreground">{copy.noOtherSessionsHint}</p>
         )}
       </CardContent>
     </Card>

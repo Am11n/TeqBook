@@ -17,6 +17,20 @@ interface TwoFactorEnrollmentProps {
   onEnrollmentStart?: (qrCode: string, secret: string, factorId: string) => void;
   onEnrollmentComplete?: () => Promise<void>;
   onCancel?: () => void;
+  copy?: {
+    failedToGenerateSecret: string;
+    enterVerificationCode: string;
+    invalidVerificationCode: string;
+    scanQrTitle: string;
+    manualSecretLabel: string;
+    codeFieldLabel: string;
+    codePlaceholder: string;
+    cancel: string;
+    verifyAndEnable: string;
+    verifying: string;
+    enable2FA: string;
+    generating: string;
+  };
 }
 
 export function TwoFactorEnrollment({
@@ -28,10 +42,26 @@ export function TwoFactorEnrollment({
   onEnrollmentStart,
   onEnrollmentComplete,
   onCancel,
+  copy,
 }: TwoFactorEnrollmentProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
+
+  const ui = {
+    failedToGenerateSecret: copy?.failedToGenerateSecret ?? "Failed to generate 2FA secret",
+    enterVerificationCode: copy?.enterVerificationCode ?? "Please enter the verification code",
+    invalidVerificationCode: copy?.invalidVerificationCode ?? "Invalid verification code",
+    scanQrTitle: copy?.scanQrTitle ?? "Scan this QR code with your authenticator app:",
+    manualSecretLabel: copy?.manualSecretLabel ?? "Or enter this secret manually:",
+    codeFieldLabel: copy?.codeFieldLabel ?? "Enter the 6-digit code from your authenticator app:",
+    codePlaceholder: copy?.codePlaceholder ?? "000000",
+    cancel: copy?.cancel ?? "Cancel",
+    verifyAndEnable: copy?.verifyAndEnable ?? "Verify and Enable",
+    verifying: copy?.verifying ?? "Verifying...",
+    enable2FA: copy?.enable2FA ?? "Enable 2FA",
+    generating: copy?.generating ?? "Generating...",
+  };
 
   async function handleEnable2FA() {
     if (!setEnrolling) return;
@@ -42,7 +72,7 @@ export function TwoFactorEnrollment({
     const { data: totpData, error: totpError } = await generateTOTPSecret();
 
     if (totpError || !totpData) {
-      setError(totpError || "Failed to generate 2FA secret");
+      setError(totpError || ui.failedToGenerateSecret);
       setEnrolling(false);
       return;
     }
@@ -55,7 +85,7 @@ export function TwoFactorEnrollment({
 
   async function handleVerifyEnrollment() {
     if (!factorId || !verificationCode) {
-      setError("Please enter the verification code");
+      setError(ui.enterVerificationCode);
       return;
     }
 
@@ -68,7 +98,7 @@ export function TwoFactorEnrollment({
     );
 
     if (verifyError || !verified) {
-      setError(verifyError || "Invalid verification code");
+      setError(verifyError || ui.invalidVerificationCode);
       setLoading(false);
       return;
     }
@@ -84,12 +114,12 @@ export function TwoFactorEnrollment({
     return (
       <div className="space-y-4">
         <div className="p-4 border rounded-lg bg-muted/50">
-          <p className="text-sm font-medium mb-2">Scan this QR code with your authenticator app:</p>
+          <p className="text-sm font-medium mb-2">{ui.scanQrTitle}</p>
           <div className="flex items-center justify-center p-4 bg-white rounded-lg">
             <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
           </div>
           <div className="mt-4">
-            <p className="text-xs text-muted-foreground mb-1">Or enter this secret manually:</p>
+            <p className="text-xs text-muted-foreground mb-1">{ui.manualSecretLabel}</p>
             <code className="text-xs bg-background px-2 py-1 rounded border">{secret}</code>
           </div>
         </div>
@@ -100,10 +130,10 @@ export function TwoFactorEnrollment({
           </Alert>
         )}
 
-        <Field label="Enter the 6-digit code from your authenticator app:">
+        <Field label={ui.codeFieldLabel}>
           <Input
             type="text"
-            placeholder="000000"
+            placeholder={ui.codePlaceholder}
             maxLength={6}
             value={verificationCode}
             onChange={(e) => {
@@ -116,7 +146,7 @@ export function TwoFactorEnrollment({
         <div className="flex gap-2">
           {onCancel && (
             <Button variant="outline" onClick={onCancel} className="flex-1">
-              Cancel
+              {ui.cancel}
             </Button>
           )}
           <Button
@@ -124,7 +154,7 @@ export function TwoFactorEnrollment({
             disabled={loading || verificationCode.length !== 6 || !factorId}
             className="flex-1"
           >
-            {loading ? "Verifying..." : "Verify and Enable"}
+            {loading ? ui.verifying : ui.verifyAndEnable}
           </Button>
         </div>
       </div>
@@ -133,7 +163,7 @@ export function TwoFactorEnrollment({
 
   return (
     <Button onClick={handleEnable2FA} disabled={enrolling || loading}>
-      {enrolling ? "Generating..." : "Enable 2FA"}
+      {enrolling ? ui.generating : ui.enable2FA}
     </Button>
   );
 }

@@ -73,13 +73,13 @@ export async function signOutOtherSessions(): Promise<{ error: string | null }> 
     if (sessionError) return { error: sessionError.message };
     if (!session) return { error: "No active session" };
 
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "others" });
     if (error) {
       logError("Failed to sign out other sessions", error);
       return { error: error.message };
     }
 
-    logSecurity("Signed out all sessions", { userId: session.user.id });
+    logSecurity("Signed out other sessions", { userId: session.user.id });
     return { error: null };
   } catch (err) {
     logError("Exception signing out other sessions", err);

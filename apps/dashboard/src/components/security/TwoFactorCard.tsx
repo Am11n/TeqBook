@@ -40,6 +40,20 @@ export type TwoFactorCardCopy = {
   disableChallengeFailed?: string;
   disablePreparing?: string;
   disableEnterCode?: string;
+  enrollment?: {
+    failedToGenerateSecret: string;
+    enterVerificationCode: string;
+    invalidVerificationCode: string;
+    scanQrTitle: string;
+    manualSecretLabel: string;
+    codeFieldLabel: string;
+    codePlaceholder: string;
+    cancel: string;
+    verifyAndEnable: string;
+    verifying: string;
+    enable2FA: string;
+    generating: string;
+  };
 };
 
 interface TwoFactorCardProps {
@@ -203,6 +217,7 @@ export function TwoFactorCard({ factors, loading, onReload, copy }: TwoFactorCar
 
             {!qrCode ? (
               <TwoFactorEnrollment
+                copy={copy.enrollment}
                 onEnrollmentStart={(qr, sec, fid) => {
                   setQrCode(qr);
                   setSecret(sec);
@@ -213,6 +228,7 @@ export function TwoFactorCard({ factors, loading, onReload, copy }: TwoFactorCar
               />
             ) : (
               <TwoFactorEnrollment
+                copy={copy.enrollment}
                 qrCode={qrCode}
                 secret={secret}
                 factorId={factorId}
