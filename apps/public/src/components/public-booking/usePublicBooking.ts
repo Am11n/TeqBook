@@ -395,6 +395,16 @@ export function usePublicBooking(slug: string) {
       if (bookingResult.actionToken) {
         query.set("actionToken", bookingResult.actionToken);
       }
+      if (normalizedEmail) {
+        try {
+          sessionStorage.setItem(
+            `teqbook-pending-booking-email-${bookingResult.bookingId}`,
+            normalizedEmail,
+          );
+        } catch {
+          /* ignore quota / privacy mode */
+        }
+      }
       setSaving(false);
       router.push(`/book/${slug}/confirmation?${query.toString()}`);
     } catch {

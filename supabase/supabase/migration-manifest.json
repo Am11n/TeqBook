@@ -7,7 +7,8 @@
     "supabase/supabase/migrations/20260326101000_fix_announcements_table_grants.sql",
     "supabase/supabase/migrations/20260425120000_harden_notify_salon_staff_rpc.sql",
     "supabase/supabase/migrations/20260425213000_fix_schedule_segments_weekday_mapping.sql",
-    "supabase/supabase/migrations/20260425234500_notify_staff_notification_i18n_metadata.sql"
+    "supabase/supabase/migrations/20260425234500_notify_staff_notification_i18n_metadata.sql",
+    "supabase/supabase/migrations/20260429120000_public_booking_action_proofs.sql"
   ]
 }
 

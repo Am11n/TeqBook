@@ -213,30 +213,36 @@ export async function submitBooking(params: {
     };
   }
 
-  let actionToken: string | null = null;
-  const emailForToken = customerEmail.trim().toLowerCase();
-  if (emailForToken) {
+  const emailForProof = customerEmail.trim().toLowerCase();
+  if (emailForProof) {
     try {
-      const tokenResponse = await fetch("/api/public-booking/action-token", {
+      const proofResponse = await fetch("/api/public-booking/request-proof", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bookingId: bookingData.id,
           salonId: salon.id,
-          customerEmail: emailForToken,
-          purposes: ["confirmation"],
+          customerEmail: emailForProof,
         }),
       });
-      if (tokenResponse.ok) {
-        const tokenPayload = (await tokenResponse.json().catch(() => null)) as
-          | { tokens?: { confirmation?: string } }
-          | null;
-        actionToken = tokenPayload?.tokens?.confirmation ?? null;
+      if (!proofResponse.ok) {
+        const payload = (await proofResponse.json().catch(() => null)) as { error?: string } | null;
+        return {
+          bookingId: null,
+          actionToken: null,
+          error: payload?.error || "Could not send verification email. Please try again.",
+          errorCode: undefined,
+        };
       }
     } catch {
-      actionToken = null;
+      return {
+        bookingId: null,
+        actionToken: null,
+        error: "Could not send verification email. Please try again.",
+        errorCode: undefined,
+      };
     }
   }
 
-  return { bookingId: bookingData.id, actionToken, error: null, errorCode: undefined };
+  return { bookingId: bookingData.id, actionToken: null, error: null, errorCode: undefined };
 }

@@ -1,0 +1,130 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
+import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
+import { getTrustedClientIp } from "@/lib/http/trusted-client-ip";
+import { sendEmail } from "@/lib/services/email/core";
+import {
+  PUBLIC_BOOKING_PROOF_TTL_MS,
+  generatePublicBookingProofCode,
+  hashPublicBookingProofCode,
+  resolvePublicBookingProofCodeForRequest,
+} from "@/lib/security/public-booking-proof";
+
+type RequestProofBody = {
+  bookingId?: string;
+  salonId?: string;
+  customerEmail?: string;
+};
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = (await request.json()) as RequestProofBody;
+    const bookingId = body.bookingId?.trim();
+    const salonId = body.salonId?.trim();
+    const customerEmail = body.customerEmail?.trim().toLowerCase() ?? "";
+
+    if (!bookingId || !salonId || !customerEmail) {
+      return NextResponse.json(
+        { error: "bookingId, salonId and customerEmail are required" },
+        { status: 400 },
+      );
+    }
+
+    const rateLimitPolicy = getRateLimitPolicy("public-booking-request-proof");
+    const ipIdentifier = getTrustedClientIp(request);
+    const rateLimitIdentifier = `${ipIdentifier}:${salonId}:${bookingId}`;
+    const rateLimitResult = await checkRateLimit(rateLimitIdentifier, "public-booking-request-proof", {
+      identifierType: "ip",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitPolicy.maxAttempts.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remainingAttempts.toString(),
+            "X-RateLimit-Reset": rateLimitResult.resetTime
+              ? Math.ceil(rateLimitResult.resetTime / 1000).toString()
+              : Math.ceil((Date.now() + rateLimitPolicy.windowMs) / 1000).toString(),
+            "Retry-After": rateLimitResult.resetTime
+              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              : Math.ceil(rateLimitPolicy.windowMs / 1000).toString(),
+          },
+        },
+      );
+    }
+
+    await incrementRateLimit(rateLimitIdentifier, "public-booking-request-proof", {
+      identifierType: "ip",
+      failurePolicy: rateLimitPolicy.failurePolicy,
+    });
+
+    const admin = getAdminClient();
+    const { data: bookingRow, error: bookingError } = await admin
+      .from("bookings")
+      .select("id, salon_id, customers(email)")
+      .eq("id", bookingId)
+      .eq("salon_id", salonId)
+      .maybeSingle();
+
+    if (bookingError || !bookingRow) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    const bookingCustomer = Array.isArray(bookingRow.customers)
+      ? bookingRow.customers[0]
+      : bookingRow.customers;
+    const authoritativeEmail = bookingCustomer?.email?.trim().toLowerCase() ?? "";
+    if (!authoritativeEmail) {
+      return NextResponse.json({ error: "Booking has no customer ownership proof" }, { status: 403 });
+    }
+    if (authoritativeEmail !== customerEmail) {
+      return NextResponse.json({ error: "Customer ownership mismatch" }, { status: 403 });
+    }
+
+    const testCode = resolvePublicBookingProofCodeForRequest();
+    const code = testCode ?? generatePublicBookingProofCode();
+    const codeHash = hashPublicBookingProofCode({ bookingId, code });
+    const expiresAt = new Date(Date.now() + PUBLIC_BOOKING_PROOF_TTL_MS).toISOString();
+
+    const { error: upsertError } = await admin.from("public_booking_action_proofs").upsert(
+      {
+        booking_id: bookingId,
+        code_hash: codeHash,
+        expires_at: expiresAt,
+        failed_attempts: 0,
+      },
+      { onConflict: "booking_id" },
+    );
+
+    if (upsertError) {
+      return NextResponse.json({ error: "Could not store verification code" }, { status: 500 });
+    }
+
+    const subject = "Your booking verification code";
+    const html = `
+      <p>Your verification code is:</p>
+      <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
+      <p>This code expires in 15 minutes. If you did not request this, you can ignore this email.</p>
+    `;
+
+    await sendEmail({
+      to: customerEmail,
+      subject,
+      html,
+      emailType: "booking_action_verification",
+      salonId,
+      metadata: { bookingId, kind: "public_booking_action_proof" },
+    });
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

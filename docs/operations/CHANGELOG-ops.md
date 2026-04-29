@@ -11,6 +11,11 @@
 
 ---
 
+## 2026-04-29
+
+- [kode/db] Tabell `public_booking_action_proofs` lagrer hash + utløp for e-post-OTP før utstedelse av public booking action tokens (kun service role). Migrasjon: `20260429120000_public_booking_action_proofs.sql`; oppdatert `migration-manifest.json` + checksums via `pnpm run db:manifest:lock`.
+- [kode/public] Nye ruter: `POST /api/public-booking/request-proof` (e-post med 6-sifret kode), `POST /api/public-booking/action-token` krever nå `proofCode`. Bekreftelsessiden: OTP-gate, `sessionStorage` for e-post etter booking, avbestilling uten forhånds-utstedt cancel-token ber om ny kode. `POST /api/bookings/send-notifications` godtar enten `actionToken` (notify) eller `confirmationActionToken` (legacy dyp lenke). Rate limit: `public-booking-request-proof` i `packages/shared-core`. E-posttype: `booking_action_verification`.
+
 ## 2026-04-25
 
 - [kode/db+dashboard] Varsler til staff (`notify_salon_staff_*`): `metadata` inkluderer nå `customer_name`, `service_name`, `start_time`, `timezone` + `event_type` slik at dashboard kan vise tittel/tekst på valgt språk. Dashboard: fikset `{placeholder}`-interpolasjon i `renderNotificationTemplate`, delt `intlLocaleTag`, og re-render i `NotificationCenter` via `getLocalizedInAppNotificationCopy`. Migrasjon: `20260425234500_notify_staff_notification_i18n_metadata.sql`.

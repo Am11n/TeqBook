@@ -24,6 +24,7 @@ export type EmailType =
   | "booking_confirmation"
   | "booking_reminder"
   | "booking_cancellation"
+  | "booking_action_verification"
   | "payment_failure"
   | "payment_retry"
   | "access_restriction_warning"

@@ -90,6 +90,14 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
     blockDurationMs: THIRTY_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "public-booking-request-proof": {
+    endpointType: "public-booking-request-proof",
+    identifierType: "ip",
+    maxAttempts: 10,
+    windowMs: FIFTEEN_MINUTES_MS,
+    blockDurationMs: THIRTY_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "public-contact": {
     endpointType: "public-contact",
     identifierType: "ip",

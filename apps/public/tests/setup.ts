@@ -10,6 +10,8 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key";
 process.env.PUBLIC_BOOKING_ACTION_TOKEN_SECRET =
   process.env.PUBLIC_BOOKING_ACTION_TOKEN_SECRET || "test-public-booking-action-token-secret";
+process.env.TEQBOOK_PUBLIC_BOOKING_PROOF_TEST_CODE =
+  process.env.TEQBOOK_PUBLIC_BOOKING_PROOF_TEST_CODE || "424242";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn() }),

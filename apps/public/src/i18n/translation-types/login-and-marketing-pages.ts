@@ -76,6 +76,18 @@ export type BookingConfirmationMessages = {
   statusCompleted: string;
   statusScheduled: string;
   statusNoShow: string;
+  verifyTitle: string;
+  verifyDescription: string;
+  verifyCodeLabel: string;
+  verifyCodePlaceholder: string;
+  verifySubmit: string;
+  verifySubmitting: string;
+  verifyResend: string;
+  verifyResendSending: string;
+  verifyInvalidOrExpired: string;
+  verifyMissingEmailSession: string;
+  verifyCancelCodeHint: string;
+  verifyCancelCodeLabel: string;
 };
 
 export type NotFoundMessages = {

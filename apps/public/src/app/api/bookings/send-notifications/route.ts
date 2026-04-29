@@ -15,7 +15,10 @@ type BookingNotificationPayload = {
   salonId: string;
   customerEmail?: string;
   language?: string;
+  /** Issued after email OTP (notify purpose). */
   actionToken?: string;
+  /** Legacy deep link: confirmation JWT from URL (confirmation purpose). */
+  confirmationActionToken?: string;
 };
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = (await request.json()) as BookingNotificationPayload;
-    const { bookingId, salonId, customerEmail, language, actionToken } = body;
+    const { bookingId, salonId, customerEmail, language, actionToken, confirmationActionToken } = body;
 
     const logContext = {
       requestId,
@@ -95,20 +98,33 @@ export async function POST(request: NextRequest) {
 
     logInfo("Public send-notifications API route called", logContext);
 
-    if (!bookingId || !salonId || !actionToken) {
+    if (!bookingId || !salonId || (!actionToken && !confirmationActionToken)) {
       logWarn("Missing required fields in public send-notifications API route", logContext);
       return NextResponse.json(
-        { error: "Missing required fields: bookingId, salonId and actionToken are required" },
+        {
+          error:
+            "Missing required fields: bookingId, salonId and either actionToken or confirmationActionToken are required",
+        },
         { status: 400 },
       );
     }
 
-    const tokenCheck = verifyPublicBookingActionToken({
-      token: actionToken,
-      bookingId,
-      allowedPurposes: ["notify"],
-    });
-    if (!tokenCheck.valid) {
+    const notifyTokenCheck = actionToken
+      ? verifyPublicBookingActionToken({
+          token: actionToken,
+          bookingId,
+          allowedPurposes: ["notify"],
+        })
+      : { valid: false as const };
+    const confirmationTokenCheck = confirmationActionToken
+      ? verifyPublicBookingActionToken({
+          token: confirmationActionToken,
+          bookingId,
+          allowedPurposes: ["confirmation"],
+        })
+      : { valid: false as const };
+
+    if (!notifyTokenCheck.valid && !confirmationTokenCheck.valid) {
       return NextResponse.json({ error: "Invalid or expired action token" }, { status: 403 });
     }
 
