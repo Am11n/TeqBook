@@ -1,6 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Booking Flow", () => {
+  test("@critical dashboard send-notifications rejects unauthenticated or CSRF", async ({ request }) => {
+    const res = await request.post("/api/bookings/send-notifications", {
+      headers: { "Content-Type": "application/json" },
+      data: JSON.stringify({
+        bookingId: "00000000-0000-4000-8000-000000000001",
+        salonId: "00000000-0000-4000-8000-000000000002",
+      }),
+    });
+    expect([400, 401, 403]).toContain(res.status());
+  });
+
   test.beforeEach(async ({ page }) => {
     // Navigate to a public booking page
     await page.goto("/book/test-salon");

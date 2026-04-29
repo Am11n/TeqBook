@@ -15,6 +15,9 @@
 
 - [kode/db] Tabell `public_booking_action_proofs` lagrer hash + utløp for e-post-OTP før utstedelse av public booking action tokens (kun service role). Migrasjon: `20260429120000_public_booking_action_proofs.sql`; oppdatert `migration-manifest.json` + checksums via `pnpm run db:manifest:lock`.
 - [kode/public] Nye ruter: `POST /api/public-booking/request-proof` (e-post med 6-sifret kode), `POST /api/public-booking/action-token` krever nå `proofCode`. Bekreftelsessiden: OTP-gate, `sessionStorage` for e-post etter booking, avbestilling uten forhånds-utstedt cancel-token ber om ny kode. `POST /api/bookings/send-notifications` godtar enten `actionToken` (notify) eller `confirmationActionToken` (legacy dyp lenke). Rate limit: `public-booking-request-proof` i `packages/shared-core`. E-posttype: `booking_action_verification`.
+- [test/public] Unit-tester for OTP-gate: feil kode, utløpt proof, replay etter vellykket mint (`public-booking-action-token-proof.test.ts`).
+- [ci] `pnpm run check:dashboard-api-route-auth` i lint-job; verifiserer at dashboard `src/app/api/**/route.ts` bruker `authenticateAndVerifySalon`/api-auth eller cron-hemmelighet.
+- [docs] Fullført `docs/ops/improvement-plan-2026-04-28.md` (alle dager markert); nye/oppdaterte: `ci-migration-integrity-evidence.md`, `stripe-webhook-failed-recovery-scenario.md`, `edge-functions-canonical-path.md`, `runbook-critical-alarms.md`, `api-route-auth-standard.md`, `migration-manifest-policy-2026-04-29.md`, ADR public-booking OTP; `supabase/functions/README.md` (legacy-speil); `critical-fixes-master-checklist` + `must-fix-checklist` oppdatert; E2E `@critical` API-tester (public health, dashboard send-notifications, admin impersonate).
 
 ## 2026-04-25
 

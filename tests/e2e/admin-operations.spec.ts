@@ -1,6 +1,15 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Admin Operations", () => {
+  test("@critical impersonate API rejects unauthenticated caller", async ({ request }) => {
+    const salonId = "00000000-0000-4000-8000-000000000001";
+    const res = await request.get(
+      `/api/impersonate?salon_id=${encodeURIComponent(salonId)}&reason=e2e_security_check_minimum_len`,
+      { headers: { "x-admin-confirmation-token": `impersonate:${salonId}` } },
+    );
+    expect([401, 403, 412]).toContain(res.status());
+  });
+
   test.beforeEach(async ({ page }) => {
     // Navigate to admin dashboard
     await page.goto("/admin");

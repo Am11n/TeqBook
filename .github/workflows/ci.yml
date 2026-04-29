@@ -46,6 +46,8 @@ jobs:
         run: pnpm run lint
       - name: File length gate
         run: pnpm run check:file-length:ci
+      - name: Dashboard API route auth pattern
+        run: pnpm run check:dashboard-api-route-auth
 
   format-check:
     name: Format Check

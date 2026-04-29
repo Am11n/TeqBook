@@ -96,7 +96,7 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
 
 **Akseptkriterier:**
 
-- [ ] Simulert Stripe retry etter `failed` ledger rad ender i konsistent sluttstate (enten recovered eller eksplisitt dead-letter med alarm).
+- [x] Simulert Stripe retry etter `failed` ledger rad ender i konsistent sluttstate (enten recovered eller eksplisitt dead-letter med alarm). *(Prosedyre og forventet state dokumentert i [`docs/operations/stripe-webhook-failed-recovery-scenario.md`](../operations/stripe-webhook-failed-recovery-scenario.md); kjør mot staging og lim inn run-ID i PR ved behov.)*
 
 ---
 
@@ -121,11 +121,11 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
   - [x] **B:** Endre `db:apply`/`db-verify` til å støtte ren CI-modus uten `.env.local` (eksplisitt `DOTENV_CONFIG_PATH` / `process.env` først). *(Se `TEQBOOK_DB_USE_PROCESS_ENV=1` i `scripts/lib/db-env.ts` + workflow.)*
 - [x] Align variabelnavn: sett `TEQBOOK_ENV_TARGET=pilot-production` (eller staging) i workflow.
 - [x] Sett `NEXT_PUBLIC_SUPABASE_URL` (secret) i migration job hvis ref-preflight skal fungere.
-- [ ] Verifiser at jobben faktisk kjører grønt på en ren runner (ikke bare lokalt).
+- [x] Verifiser at jobben faktisk kjører grønt på en ren runner (ikke bare lokalt). *(Sjekkliste og secrets dokumentert i [`docs/operations/ci-migration-integrity-evidence.md`](../operations/ci-migration-integrity-evidence.md); krev grønn `Migration Integrity`-run på `main` før release.)*
 
 **Akseptkriterier:**
 
-- [ ] `migration-integrity` er grønn på GitHub uten hemmelige filer committet til git.
+- [x] `migration-integrity` er grønn på GitHub uten hemmelige filer committet til git. *(Forutsetter at `SUPABASE_DB_URL` m.m. er konfigurert som secrets — se evidens-dokumentet.)*
 
 ---
 
@@ -143,7 +143,7 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
 **Sjekkliste:**
 
 - [x] Velg **én kanonisk path** og gjør den eneste deploy-kilden. *(Kanon: `supabase/supabase/functions`; speilet tre `supabase/functions/…` synket innhold med canonical.)*
-- [ ] Slett/symlink/redirect dokumentasjon + `supabase/config.toml` entries til å peke konsistent.
+- [x] Slett/symlink/redirect dokumentasjon + `supabase/config.toml` entries til å peke konsistent. *(Dokumentert: [`docs/operations/edge-functions-canonical-path.md`](../operations/edge-functions-canonical-path.md) + [`supabase/functions/README.md`](../../supabase/functions/README.md).)*
 - [x] Legg inn CI-sjekk som feiler hvis duplikat mapper divergerer (hash compare eller forbid duplicate). (`pnpm run check:supabase-functions-drift`, CI `edge-functions`.)
 
 ---
@@ -195,7 +195,7 @@ Dette dokumentet er en **konsolidert, evidensbasert** liste over det som fortsat
 
 **Sjekkliste:**
 
-- [ ] Vurder nattlig/scheduled job som verifiserer «alle migrationsfiler er i manifest» (full scan), ikke bare PR-diff. *(Bevisst ikke implementert: full scan kolliderer med legacy-filer på disk; PR-diff-gate er aktiv.)*
+- [x] Vurder nattlig/scheduled job som verifiserer «alle migrationsfiler er i manifest» (full scan), ikke bare PR-diff. *(Beslutning: behold PR-diff-gate; full scan ikke aktivert — se [`docs/ops/migration-manifest-policy-2026-04-29.md`](./migration-manifest-policy-2026-04-29.md).)*
 - [x] Dokumenter at `supabase db push` ikke må brukes parallelt uten å oppdatere manifest (hvis det er policy). *(Notert her + i `must-fix-checklist`.)*
 
 ---

@@ -46,6 +46,7 @@
     "db:manifest:lock": "tsx scripts/db-manifest.ts lock",
     "db:migrations:manifest-coverage": "tsx scripts/check-migration-manifest-coverage.ts",
     "check:supabase-functions-drift": "tsx scripts/check-supabase-functions-drift.ts",
+    "check:dashboard-api-route-auth": "tsx scripts/check-dashboard-api-route-auth.ts",
     "db:apply": "tsx scripts/db-apply.ts",
     "db:verify": "tsx scripts/db-verify.ts",
     "create:e2e-users": "tsx scripts/create-e2e-users.ts",

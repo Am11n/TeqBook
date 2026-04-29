@@ -16,12 +16,12 @@ Relatert bakgrunn:
 **Mål:** Kun reell kunde (eller innehaver av booking-intent) kan få token som åpner sensitive operasjoner.
 
 - [x] Velg og dokumenter trusselmodell (hvem kan kjenne `bookingId` + `salonId` + kundens e-post i praksis?).
-- [ ] Implementer **sekundært bevis** i tillegg til e-post-match, for eksempel én av:
-  - [ ] OTP til kundens e-post eller SMS (engangskode, kort TTL).
-  - [ ] Signert «magisk lenke» i e-post etter booking (HMAC/JWT med `booking_id`, `exp`, `purpose`).
-  - [ ] Engangstoken utstedt kun server-side etter vellykket booking-opprettelse i samme session, uten egen offentlig mint-endpoint (dersom produktmessig mulig).
-- [ ] Oppdater klientflyt til å bruke nytt bevis (ingen «kun gjett ID-er»-sti).
-- [ ] Legg inn **misbruks- og negative tester** (feil OTP, utløpt lenke, replay).
+- [x] Implementer **sekundært bevis** i tillegg til e-post-match, for eksempel én av:
+  - [x] OTP til kundens e-post eller SMS (engangskode, kort TTL). *(E-post OTP, 2026-04-29.)*
+  - [ ] Signert «magisk lenke» i e-post etter booking (HMAC/JWT med `booking_id`, `exp`, `purpose`). *(Ikke valgt.)*
+  - [ ] Engangstoken utstedt kun server-side etter vellykket booking-opprettelse i samme session, uten egen offentlig mint-endpoint (dersom produktmessig mulig). *(Ikke valgt.)*
+- [x] Oppdater klientflyt til å bruke nytt bevis (ingen «kun gjett ID-er»-sti).
+- [x] Legg inn **misbruks- og negative tester** (feil OTP, utløpt lenke, replay). — `public-booking-action-token-proof.test.ts`
 
 **Berørte filer (utgangspunkt):**
 
@@ -29,12 +29,12 @@ Relatert bakgrunn:
 - [`apps/public/src/lib/security/public-booking-action-token.ts`](../../apps/public/src/lib/security/public-booking-action-token.ts)
 - Klientkode under [`apps/public/src/components/public-booking/`](../../apps/public/src/components/public-booking/)
 
-**Trusselmodell (kort, 2026-04-25):** En aktør som kjenner `bookingId`, `salonId` og kundens e-post (f.eks. lekkasje, gjetting, eller observasjon) kan innenfor rate limit utstede tokens via mint-endepunktet. Dagens modell er **e-post-match + server-side booking-oppslag**; den erstatter ikke OTP/magisk lenke (gjenstår under).
+**Trusselmodell (oppdatert 2026-04-29):** Mint krever gyldig **OTP** (hash lagret server-side, kort TTL) i tillegg til e-post-match. Se ADR [`docs/architecture/adr-2026-04-29-public-booking-otp.md`](../architecture/adr-2026-04-29-public-booking-otp.md).
 
 **Akseptkriterier:**
 
-- [ ] Uten gyldig sekundærbevis: ingen token (kun `400/401/403`, ikke «soft fail»).
-- [ ] Eksisterende booking-e-post alene er **ikke** tilstrekkelig hvis det er valgt modell.
+- [x] Uten gyldig sekundærbevis: ingen token (kun `400/401/403`, ikke «soft fail»).
+- [x] Eksisterende booking-e-post alene er **ikke** tilstrekkelig.
 
 ---
 
