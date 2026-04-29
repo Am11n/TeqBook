@@ -9,10 +9,11 @@ Grunnlag: `docs/ops/critical-fixes-master-checklist-2026-04-25.md`, `docs/ops/mu
 - Billing binding-hardening i sentrale edge-funksjoner, inkl. `billing-sync-addon-usage`.
 - CI styrket med `migration-integrity`, `edge-functions`, coverage-krav og strengere `build.needs`.
 - Notify-RPC hardening i DB og public route-endringer til service-role der implementert.
+- **2026-04-29 — Sekundært bevis (OTP) for public booking:** tabell `public_booking_action_proofs`, `POST /api/public-booking/request-proof`, `POST /api/public-booking/action-token` med obligatorisk `proofCode`, bekreftelsesside med OTP-gate, `send-notifications` støtter `confirmationActionToken` for legacy lenker, rate limit `public-booking-request-proof`. Se `CHANGELOG-ops.md` (2026-04-29).
 
 ## Gjenstaende kritiske gap (prioritert)
 
-1. **P0:** Sekundaert kunde-bevis i public booking (OTP/magisk lenke) mangler fortsatt.
+1. ~~**P0:** Sekundaert kunde-bevis i public booking (OTP/magisk lenke) mangler fortsatt.~~ **Lukket i kode (2026-04-29).** Gjenstår: utvide negative/API-tester (se Dag 3-5) og eventuell formell ADR.
 2. **P0:** Webhook-recovery mangler manuell/verifisert retry-test for `failed` ledger-scenario.
 3. **P0:** `migration-integrity` er oppdatert i kode, men mangler bekreftet groenn kjøring paa ren GitHub-runner.
 4. **P1:** Dobbel edge-function struktur er ikke fullt ryddet (`supabase/functions` vs `supabase/supabase/functions`).
@@ -38,14 +39,14 @@ Grunnlag: `docs/ops/critical-fixes-master-checklist-2026-04-25.md`, `docs/ops/mu
 
 ### Dag 3-5: Public booking sikkerhetsloft (sekundaert bevis)
 
-- [ ] Velg modell: OTP vs magisk lenke (beslutning i ADR/notat).
-- [ ] Implementer valgt flow i `apps/public` token-minting.
-- [ ] Legg negative tester: feil kode, utloept token, replay.
-- [ ] Oppdater brukerflyt i confirmation/cancel slik at nytt bevis faktisk kreves.
+- [x] Velg modell: OTP vs magisk lenke (beslutning i ADR/notat). — **OTP valgt og implementert (2026-04-29); formell ADR/notat mangler fortsatt.**
+- [x] Implementer valgt flow i `apps/public` token-minting.
+- [ ] Legg negative tester: feil kode, utloept token, replay. — **Delvis:** enhetstest for proof-hash finnes; API/route-tester for de tre scenariene mangler.
+- [x] Oppdater brukerflyt i confirmation/cancel slik at nytt bevis faktisk kreves.
 
 **Definition of done**
-- E-postmatch alene er ikke nok for action-token.
-- Testsuite dekker minst 3 misbruksscenarier.
+- [x] E-postmatch alene er ikke nok for action-token.
+- [ ] Testsuite dekker minst 3 misbruksscenarier. *(Ikke oppfylt ennå.)*
 
 ---
 
