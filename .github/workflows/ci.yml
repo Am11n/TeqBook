@@ -138,7 +138,9 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       - name: Apply and verify migrations
-        run: pnpm run db:apply && pnpm run db:verify
+        run: |
+          pnpm run db:apply 2>&1 | tee migration-integrity-db-apply.log
+          pnpm run db:verify 2>&1 | tee migration-integrity-db-verify.log
         env:
           TEQBOOK_DB_USE_PROCESS_ENV: "1"
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -146,6 +148,15 @@ jobs:
           NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION: ${{ secrets.NEXT_PUBLIC_SUPABASE_PROJECT_REF_PILOT_PRODUCTION }}
           TEQBOOK_ENV_TARGET: pilot-production
           TEQBOOK_SUPABASE_TARGET: pilot-production
+      - name: Upload migration-integrity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-integrity-evidence
+          path: |
+            migration-integrity-db-apply.log
+            migration-integrity-db-verify.log
+          if-no-files-found: warn
 
   edge-functions:
     name: Edge Functions Tests
@@ -292,7 +303,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - name: E2E journey safety checks
-        run: pnpm exec playwright test tests/e2e/booking-flow.spec.ts tests/e2e/billing-flow.spec.ts tests/e2e/admin-operations.spec.ts
+        run: pnpm exec playwright test tests/e2e/public-booking.spec.ts tests/e2e/booking-flow.spec.ts tests/e2e/billing-flow.spec.ts tests/e2e/admin-operations.spec.ts
         env:
           CI: "true"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

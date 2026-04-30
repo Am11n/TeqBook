@@ -11,6 +11,7 @@ const mockAdminMaybeSingle = vi.fn();
 const mockEventMaybeSingle = vi.fn();
 const mockEventUpsert = vi.fn();
 const mockAttemptInsert = vi.fn();
+const mockNonceInsert = vi.fn();
 const mockEventUpdateEq = vi.fn();
 const mockEventUpdate = vi.fn(() => ({
   eq: vi.fn(() => ({
@@ -30,6 +31,16 @@ const mockAdminFrom = vi.fn((table: string) => {
       }),
     };
   }
+  if (table === "public_booking_used_action_token_nonces") {
+    return {
+      insert: (...args: unknown[]) => mockNonceInsert(...args),
+    };
+  }
+  if (table === "notification_attempts") {
+    return {
+      insert: (...args: unknown[]) => mockAttemptInsert(...args),
+    };
+  }
 
   return {
     select: () => ({
@@ -40,7 +51,6 @@ const mockAdminFrom = vi.fn((table: string) => {
       }),
     }),
     upsert: (...args: unknown[]) => mockEventUpsert(...args),
-    insert: (...args: unknown[]) => mockAttemptInsert(...args),
     update: () => mockEventUpdate(),
   };
 });
@@ -83,7 +93,16 @@ vi.mock("@/lib/services/logger", () => ({
 describe("Public bookings/send-cancellation rate limiting", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockVerifyPublicBookingActionToken.mockReturnValue({ valid: true });
+    mockVerifyPublicBookingActionToken.mockReturnValue({
+      valid: true,
+      payload: {
+        booking_id: "booking-1",
+        purpose: "cancel",
+        exp: Math.floor(Date.now() / 1000) + 600,
+        nonce: "11111111-1111-4111-8111-111111111111",
+      },
+    });
+    mockNonceInsert.mockResolvedValue({ error: null });
   });
 
   it("returns 429 with headers when blocked", async () => {
@@ -178,5 +197,40 @@ describe("Public bookings/send-cancellation rate limiting", () => {
     expect(body.customerEmail).toBeDefined();
     expect(mockIncrementRateLimit).toHaveBeenCalledOnce();
     expect(mockSendBookingCancellation).toHaveBeenCalledOnce();
+  });
+
+  it("returns 403 when cancel token nonce is replayed", async () => {
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 19,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
+    mockIncrementRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingAttempts: 18,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
+    mockNonceInsert.mockResolvedValue({
+      error: { code: "23505", message: "duplicate key value violates unique constraint" },
+    });
+
+    const req = new NextRequest("http://localhost/api/bookings/send-cancellation", {
+      method: "POST",
+      body: JSON.stringify({
+        bookingId: "booking-1",
+        salonId: "salon-1",
+        customerEmail: "customer@example.com",
+        actionToken: "token-1",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    const body = await res.json();
+    expect(res.status).toBe(403);
+    expect(body.error).toBe("Action token has already been used");
+    expect(mockSendBookingCancellation).not.toHaveBeenCalled();
   });
 });

@@ -4,7 +4,10 @@
 
 ## 1. Stripe webhook-feil (`stripe_webhook_events`)
 
-**Betingelse:** Rader med `processing_status = 'failed'` øker, eller andel `failed` / time over terskel.
+**Betingelse (SLO terskler):**
+
+- **P1-page:** `failed` >= 5 hendelser per 15 min **eller** `failed_ratio` >= 5% siste 15 min.
+- **P2-ticket:** `failed` >= 2 hendelser per 15 min **eller** `failed_ratio` >= 2% siste 15 min.
 
 **Supabase / SQL-eksempel (tilpass skemanavn):**
 
@@ -26,10 +29,13 @@ group by 1;
 
 ## 2. Public booking: proof / action-token misbruk eller rate limit
 
-**Betingelse:** Spike i HTTP **429** eller **403** på:
+**Betingelse (SLO terskler):** Spike i HTTP **429** eller **403** på:
 
 - `/api/public-booking/request-proof`
 - `/api/public-booking/action-token`
+
+- **P1-page:** `429_rate` >= 15% i 15 min **eller** `403_invalid_proof_rate` >= 20% i 15 min.
+- **P2-ticket:** `429_rate` >= 8% i 15 min **eller** `403_invalid_proof_rate` >= 12% i 15 min.
 
 **Respons:**
 
@@ -41,3 +47,9 @@ group by 1;
 ## Verifikasjon
 
 Etter at alarmer er konfigurert: trigge en kontrollert test (f.eks. kjent `failed` replay i staging) og bekreft at varslet kommer frem og at runbook-steg stemmer.
+
+## Dashboard minimumspaneler
+
+- `stripe_webhook_events`: total, failed, failed_ratio (15m rolling).
+- Public proof/token: 2xx/4xx/429 for de to rutene over, med 15m rolling rater.
+- Link paneler til denne runbooken for on-call-handover.

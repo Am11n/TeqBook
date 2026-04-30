@@ -7,11 +7,14 @@ import {
 } from "@/lib/security/public-booking-action-token";
 import {
   PUBLIC_BOOKING_PROOF_MAX_FAILED_ATTEMPTS,
+  PUBLIC_BOOKING_PROOF_RESEND_COOLDOWN_MS,
   verifyPublicBookingProofCode,
+  toSecondsCeil,
 } from "@/lib/security/public-booking-proof";
 import { checkRateLimit, incrementRateLimit } from "@/lib/services/rate-limit-service";
 import { getRateLimitPolicy } from "@teqbook/shared/services/rate-limit";
 import { getTrustedClientIp } from "@/lib/http/trusted-client-ip";
+import { logInfo, logWarn } from "@/lib/services/logger";
 
 const VALID_PURPOSES = new Set<PublicBookingActionPurpose>(["confirmation", "notify", "cancel"]);
 
@@ -47,6 +50,12 @@ export async function POST(request: NextRequest) {
     const customerEmail = body.customerEmail?.trim().toLowerCase() ?? "";
     const purposes = normalizePurposes(body.purposes);
     const proofCode = body.proofCode?.trim() ?? "";
+    const requestLogContext = {
+      bookingId,
+      salonId,
+      customerEmail,
+      purposes,
+    };
 
     if (!bookingId || !salonId || !customerEmail) {
       return NextResponse.json(
@@ -77,10 +86,18 @@ export async function POST(request: NextRequest) {
       failurePolicy: rateLimitPolicy.failurePolicy,
     });
     if (!rateLimitResult.allowed) {
+      const retryAfterSec = rateLimitResult.resetTime
+        ? toSecondsCeil(rateLimitResult.resetTime - Date.now())
+        : toSecondsCeil(rateLimitPolicy.windowMs);
+      logWarn("Public booking action token blocked by rate limit", {
+        ...requestLogContext,
+        retryAfterSec,
+      });
       return NextResponse.json(
         {
           error: "Rate limit exceeded",
           message: "Too many requests. Please try again later.",
+          retryAfterSec,
         },
         {
           status: 429,
@@ -90,9 +107,7 @@ export async function POST(request: NextRequest) {
             "X-RateLimit-Reset": rateLimitResult.resetTime
               ? Math.ceil(rateLimitResult.resetTime / 1000).toString()
               : Math.ceil((Date.now() + rateLimitPolicy.windowMs) / 1000).toString(),
-            "Retry-After": rateLimitResult.resetTime
-              ? Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-              : Math.ceil(rateLimitPolicy.windowMs / 1000).toString(),
+            "Retry-After": retryAfterSec.toString(),
           },
         },
       );
@@ -128,6 +143,10 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (proofSelectError) {
+      logWarn("Public booking action token proof lookup failed", {
+        ...requestLogContext,
+        reason: proofSelectError.message,
+      });
       return NextResponse.json({ error: "Verification lookup failed" }, { status: 500 });
     }
     if (!proofRow) {
@@ -139,6 +158,7 @@ export async function POST(request: NextRequest) {
 
     if (new Date(proofRow.expires_at).getTime() <= Date.now()) {
       await admin.from("public_booking_action_proofs").delete().eq("booking_id", bookingId);
+      logWarn("Public booking proof expired before token mint", requestLogContext);
       return NextResponse.json({ error: "Verification code expired" }, { status: 403 });
     }
 
@@ -150,10 +170,16 @@ export async function POST(request: NextRequest) {
       })
     ) {
       const nextFails = (proofRow.failed_attempts ?? 0) + 1;
+      const remainingAttempts = Math.max(PUBLIC_BOOKING_PROOF_MAX_FAILED_ATTEMPTS - nextFails, 0);
       if (nextFails >= PUBLIC_BOOKING_PROOF_MAX_FAILED_ATTEMPTS) {
         await admin.from("public_booking_action_proofs").delete().eq("booking_id", bookingId);
+        logWarn("Public booking proof locked out after max attempts", requestLogContext);
         return NextResponse.json(
-          { error: "Too many incorrect attempts. Request a new verification code." },
+          {
+            error: "Too many incorrect attempts. Request a new verification code.",
+            remainingAttempts: 0,
+            lockedUntil: new Date(Date.now() + PUBLIC_BOOKING_PROOF_RESEND_COOLDOWN_MS).toISOString(),
+          },
           { status: 403 },
         );
       }
@@ -161,7 +187,17 @@ export async function POST(request: NextRequest) {
         .from("public_booking_action_proofs")
         .update({ failed_attempts: nextFails })
         .eq("booking_id", bookingId);
-      return NextResponse.json({ error: "Invalid verification code" }, { status: 403 });
+      logWarn("Public booking proof verification failed", {
+        ...requestLogContext,
+        remainingAttempts,
+      });
+      return NextResponse.json(
+        {
+          error: "Invalid verification code",
+          remainingAttempts,
+        },
+        { status: 403 },
+      );
     }
 
     await admin.from("public_booking_action_proofs").delete().eq("booking_id", bookingId);
@@ -180,6 +216,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    logInfo("Public booking action token minted", {
+      ...requestLogContext,
+      mintedPurposes: Object.keys(tokens),
+    });
     return NextResponse.json({ tokens }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

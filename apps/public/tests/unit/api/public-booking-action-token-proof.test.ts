@@ -112,8 +112,9 @@ describe("public-booking action-token proof gate", () => {
       }),
     );
     expect(res.status).toBe(403);
-    const body = (await res.json()) as { error?: string };
+    const body = (await res.json()) as { error?: string; remainingAttempts?: number };
     expect(body.error).toMatch(/Invalid verification code/i);
+    expect(body.remainingAttempts).toBe(7);
   });
 
   it("returns 403 when proof is expired", async () => {

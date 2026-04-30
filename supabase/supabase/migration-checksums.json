@@ -31,6 +31,10 @@
     {
       "file": "supabase/supabase/migrations/20260429120000_public_booking_action_proofs.sql",
       "sha256": "58f3bf6219d953e03fac99ceb83f72193a836e94fa3127ce0ec99add2a4d1bd0"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260430153000_public_booking_used_action_token_nonces.sql",
+      "sha256": "baaf2419d613f3537a6c2cde39930a5688b300bc2b1956c3cc32996bd9688fc7"
     }
   ]
 }

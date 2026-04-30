@@ -110,6 +110,29 @@ export async function POST(request: NextRequest) {
     );
 
     const admin = getAdminClient();
+    const consumeNonce = await admin
+      .from("public_booking_used_action_token_nonces")
+      .insert({
+        booking_id: bookingId,
+        purpose: "cancel",
+        token_nonce: tokenCheck.payload.nonce,
+      });
+    if (consumeNonce.error) {
+      if (consumeNonce.error.code === "23505") {
+        logWarn("Cancel action token replay rejected", {
+          ...logContext,
+          nonce: tokenCheck.payload.nonce,
+        });
+        return NextResponse.json({ error: "Action token has already been used" }, { status: 403 });
+      }
+      logWarn("Failed to consume cancel action token nonce", {
+        ...logContext,
+        nonce: tokenCheck.payload.nonce,
+        reason: consumeNonce.error.message,
+      });
+      return NextResponse.json({ error: "Could not validate action token state" }, { status: 500 });
+    }
+
     const { data: bookingRow, error: bookingError } = await admin
       .from("bookings")
       .select(

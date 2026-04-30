@@ -19,6 +19,13 @@ import { getPublicPageTranslations } from "@/i18n/public-pages/translations";
 import type { BookingConfirmationMessages } from "@/i18n/translation-types";
 import { resolvePublicBookingUiLocale } from "@/components/public-booking/resolvePublicBookingUiLocale";
 
+function formatTemplate(template: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (out, [key, value]) => out.replaceAll(`{{${key}}}`, String(value)),
+    template,
+  );
+}
+
 function pendingBookingEmailKey(bookingId: string) {
   return `teqbook-pending-booking-email-${bookingId}`;
 }
@@ -77,9 +84,19 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
   const [proofSubmitting, setProofSubmitting] = useState(false);
   const [proofError, setProofError] = useState<string | null>(null);
   const [resendBusy, setResendBusy] = useState(false);
+  const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
 
   const [cancelProofCode, setCancelProofCode] = useState("");
   const notificationsSentRef = useRef(false);
+
+  useEffect(() => {
+    if (resendCooldownSeconds <= 0) return;
+    const id = window.setInterval(() => {
+      setResendCooldownSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [resendCooldownSeconds]);
 
   useEffect(() => {
     if (urlActionToken) {
@@ -242,15 +259,29 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     if (!salon || !bookingId) return;
     setResendBusy(true);
     setProofError(null);
+    setRemainingAttempts(null);
     try {
       const res = await fetch("/api/public-booking/request-proof", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId, salonId: salon.id, customerEmail: email }),
       });
+      const body = (await res.json().catch(() => null)) as
+        | { error?: string; retryAfterSec?: number; resendAvailableInSec?: number }
+        | null;
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        setProofError(body?.error || t.verifyInvalidOrExpired);
+        const retryAfterHeader = Number.parseInt(res.headers.get("Retry-After") ?? "", 10);
+        const retryAfterSec = body?.retryAfterSec ?? (Number.isFinite(retryAfterHeader) ? retryAfterHeader : 0);
+        if (retryAfterSec > 0) {
+          setResendCooldownSeconds(retryAfterSec);
+          setProofError(formatTemplate(t.verifyRetryInSeconds, { seconds: retryAfterSec }));
+        } else {
+          setProofError(body?.error || t.verifyInvalidOrExpired);
+        }
+        return;
+      }
+      if (body?.resendAvailableInSec && body.resendAvailableInSec > 0) {
+        setResendCooldownSeconds(body.resendAvailableInSec);
       }
     } catch {
       setProofError(t.verifyInvalidOrExpired);
@@ -269,6 +300,7 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
     }
     setProofSubmitting(true);
     setProofError(null);
+    setRemainingAttempts(null);
     try {
       const mintResponse = await fetch("/api/public-booking/action-token", {
         method: "POST",
@@ -285,13 +317,26 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
         | {
             tokens?: { confirmation?: string; notify?: string; cancel?: string };
             error?: string;
+            remainingAttempts?: number;
+            lockedUntil?: string;
+            retryAfterSec?: number;
           }
         | null;
       const conf = mintPayload?.tokens?.confirmation;
       const notify = mintPayload?.tokens?.notify;
       const cancel = mintPayload?.tokens?.cancel;
       if (!mintResponse.ok || !conf || !notify || !cancel) {
-        setProofError(mintPayload?.error || t.verifyInvalidOrExpired);
+        if (typeof mintPayload?.remainingAttempts === "number") {
+          setRemainingAttempts(mintPayload.remainingAttempts);
+        }
+        if (mintPayload?.lockedUntil) {
+          setProofError(t.verifyLockedRequestNewCode);
+        } else if (mintPayload?.retryAfterSec && mintPayload.retryAfterSec > 0) {
+          setResendCooldownSeconds(mintPayload.retryAfterSec);
+          setProofError(formatTemplate(t.verifyRetryInSeconds, { seconds: mintPayload.retryAfterSec }));
+        } else {
+          setProofError(mintPayload?.error || t.verifyInvalidOrExpired);
+        }
         return;
       }
       setSessionTokens({ notify, cancel });
@@ -473,6 +518,11 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
               />
             </div>
             {proofError && <p className="text-sm text-destructive">{proofError}</p>}
+            {remainingAttempts !== null && (
+              <p className="text-xs text-muted-foreground">
+                {formatTemplate(t.verifyAttemptsRemaining, { count: remainingAttempts })}
+              </p>
+            )}
             <Button
               type="submit"
               className="w-full"
@@ -485,10 +535,14 @@ export default function BookingConfirmationPageClient({ salonSlug }: { salonSlug
               type="button"
               variant="outline"
               className="w-full"
-              disabled={resendBusy}
+              disabled={resendBusy || resendCooldownSeconds > 0}
               onClick={() => void handleResendProof(pendingCustomerEmail)}
             >
-              {resendBusy ? t.verifyResendSending : t.verifyResend}
+              {resendBusy
+                ? t.verifyResendSending
+                : resendCooldownSeconds > 0
+                  ? formatTemplate(t.verifyRetryInSeconds, { seconds: resendCooldownSeconds })
+                  : t.verifyResend}
             </Button>
           </form>
         </Card>

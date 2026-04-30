@@ -85,6 +85,9 @@ export type BookingConfirmationMessages = {
   verifyResend: string;
   verifyResendSending: string;
   verifyInvalidOrExpired: string;
+  verifyRetryInSeconds: string;
+  verifyAttemptsRemaining: string;
+  verifyLockedRequestNewCode: string;
   verifyMissingEmailSession: string;
   verifyCancelCodeHint: string;
   verifyCancelCodeLabel: string;

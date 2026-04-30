@@ -69,12 +69,14 @@ Required dashboards:
 
 ## Alerts
 
-Minimum alert thresholds:
-- Error rate > 5% for 5 minutes
-- Booking API failure spike
-- Webhook processing failures
-- p95 latency > 200ms for critical APIs
-- Repeated background job lock contention/failures
+Minimum alert thresholds (15-minute rolling window):
+- Stripe webhook `failed_ratio >= 5%` or `failed_count >= 5` (P1); warn at `>=2%` or `>=2` (P2).
+- Public OTP/token abuse:
+  - `/api/public-booking/request-proof` `429_rate >= 15%` (P1), warn at `>=8%`.
+  - `/api/public-booking/action-token` `403_invalid_proof_rate >= 20%` (P1), warn at `>=12%`.
+- Critical API latency:
+  - p95 `> 600ms` (P1), warn at `> 400ms`.
+- Repeated background-job lock contention/failures (warn after 3 consecutive intervals).
 
 ## SLI/SLO Governance
 

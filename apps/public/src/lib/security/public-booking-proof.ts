@@ -2,6 +2,7 @@ import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 
 export const PUBLIC_BOOKING_PROOF_TTL_MS = 15 * 60 * 1000;
 export const PUBLIC_BOOKING_PROOF_MAX_FAILED_ATTEMPTS = 8;
+export const PUBLIC_BOOKING_PROOF_RESEND_COOLDOWN_MS = 60 * 1000;
 
 export function getPublicBookingProofPepper(): string {
   const explicit = process.env.TEQBOOK_PUBLIC_BOOKING_PROOF_SECRET?.trim();
@@ -45,4 +46,9 @@ export function resolvePublicBookingProofCodeForRequest(): string | null {
     return testCode;
   }
   return null;
+}
+
+export function toSecondsCeil(ms: number): number {
+  if (ms <= 0) return 0;
+  return Math.ceil(ms / 1000);
 }

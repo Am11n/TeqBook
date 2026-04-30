@@ -212,6 +212,9 @@ export const enBase: PublicPageNamespaces = {
     verifyResend: "Resend code",
     verifyResendSending: "Sending...",
     verifyInvalidOrExpired: "That code is invalid or expired. Try again or request a new code.",
+    verifyRetryInSeconds: "Please wait {{seconds}} seconds before trying again.",
+    verifyAttemptsRemaining: "Attempts remaining: {{count}}",
+    verifyLockedRequestNewCode: "Too many failed attempts. Request a new code and try again.",
     verifyMissingEmailSession:
       "Open this page from the same device you used to book, or use the link from your confirmation email.",
     verifyCancelCodeHint: "We sent a code to your email to confirm cancellation.",

@@ -20,6 +20,25 @@ Operationalize reliability targets and error-budget policy as a release governan
 - notification delivery success >= 99.0%
 - uptime >= 99.95%
 
+## Alert math (operational thresholds)
+
+These thresholds drive paging and must be reflected in dashboards/runbooks:
+
+- **Stripe webhook failed ratio (15m):**
+  - P1: `failed / total >= 0.05` OR `failed_count >= 5`
+  - P2: `failed / total >= 0.02` OR `failed_count >= 2`
+- **Public booking OTP/token abuse (15m):**
+  - P1: `429_rate >= 0.15` OR `invalid_proof_403_rate >= 0.20`
+  - P2: `429_rate >= 0.08` OR `invalid_proof_403_rate >= 0.12`
+- **Critical API latency (15m):**
+  - P1: `p95 > 600ms`
+  - P2: `p95 > 400ms`
+
+Every threshold change requires updates in:
+- `docs/operations/runbook-critical-alarms.md`
+- `docs/ops/observability.md`
+- relevant CI/load gate notes
+
 ## Error Budget Policy
 
 - Budget consumption is evaluated monthly.

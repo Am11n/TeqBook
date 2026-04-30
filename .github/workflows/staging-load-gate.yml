@@ -1,4 +1,5 @@
 name: Staging Load Gate
+# Threshold references align with docs/ops/observability.md and docs/ops/slo-sli-governance.md.
 
 on:
   workflow_dispatch:
