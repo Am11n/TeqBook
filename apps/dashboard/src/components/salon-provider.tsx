@@ -12,6 +12,8 @@ import {
 import { getCurrentUser, subscribeToAuthChanges, type User } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { getSalonByIdForUser } from "@/lib/services/salons-service";
+import { mapSalonOwnershipRoleToProfileRole } from "@/lib/services/effective-salon-service";
+import { getPrimarySalonOwnershipForUser } from "@/lib/repositories/salon-ownerships";
 import { setErrorContext, clearErrorContext } from "@/lib/services/error-tracking-service";
 import { useLocale } from "@/components/locale-provider";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -95,14 +97,29 @@ export function SalonProvider({ children }: SalonProviderProps) {
         return;
       }
 
-      if (!profile.salon_id) {
+      let salonId = profile.salon_id ?? null;
+      let ownershipRole: string | null = null;
+      if (!salonId) {
+        const { data: ownership } = await getPrimarySalonOwnershipForUser(user.id);
+        if (ownership?.salon_id) {
+          salonId = ownership.salon_id;
+          ownershipRole = ownership.role;
+        }
+      }
+
+      if (!salonId) {
         setState({ status: "no-salon" });
         return;
       }
 
+      const roleForContext = ownershipRole
+        ? mapSalonOwnershipRoleToProfileRole(ownershipRole)
+        : (profile.role ?? "owner");
+      const profileForContext = { ...profile, salon_id: salonId, role: roleForContext };
+
       let salon = null;
       try {
-        const { data: salonData, error: salonError } = await getSalonByIdForUser(profile.salon_id);
+        const { data: salonData, error: salonError } = await getSalonByIdForUser(salonId);
 
         if (salonError) {
           console.warn("Error loading salon data:", salonError);
@@ -130,7 +147,7 @@ export function SalonProvider({ children }: SalonProviderProps) {
           "hi",
         ];
 
-        const userLocale = profile?.preferred_language;
+        const userLocale = profileForContext?.preferred_language;
         const salonLocale = salon?.preferred_language;
 
         if (userLocale && validLocales.includes(userLocale as AppLocale)) {
@@ -149,13 +166,13 @@ export function SalonProvider({ children }: SalonProviderProps) {
         userEmail: user.email,
         salonId: salon?.id || null,
         salonName: salon?.name || null,
-        userRole: profile.role || "owner",
+        userRole: profileForContext.role || "owner",
       });
 
       setState({
         status: "ready",
         user,
-        profile,
+        profile: profileForContext,
         salon,
       });
     } catch (err) {

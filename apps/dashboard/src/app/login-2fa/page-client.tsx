@@ -8,6 +8,7 @@ import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { challengeTOTP, verifyTOTPChallenge } from "@/lib/services/two-factor-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
+import { getEffectiveSalonIdForUser } from "@/lib/services/effective-salon-service";
 import { getCurrentUser } from "@/lib/services/auth-service";
 import { initSession } from "@/lib/services/session-service";
 import { logSecurity } from "@/lib/services/logger";
@@ -91,7 +92,8 @@ export default function Login2FAPageClient() {
       router.push("/onboarding");
       return;
     }
-    if (profile.salon_id) {
+    const salonId = await getEffectiveSalonIdForUser(user.id, profile.salon_id);
+    if (salonId) {
       router.push(safeRedirectTo);
       return;
     }

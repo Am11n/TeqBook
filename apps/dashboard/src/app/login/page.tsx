@@ -8,6 +8,7 @@ import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { signInWithPassword } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
+import { getEffectiveSalonIdForUser } from "@/lib/services/effective-salon-service";
 import { initSession } from "@/lib/services/session-service";
 
 /**
@@ -73,7 +74,8 @@ export default function DashboardLoginPage() {
       return;
     }
 
-    if (profile.salon_id) {
+    const salonId = await getEffectiveSalonIdForUser(signInData.user.id, profile.salon_id);
+    if (salonId) {
       router.push(safeRedirectTo);
       return;
     }

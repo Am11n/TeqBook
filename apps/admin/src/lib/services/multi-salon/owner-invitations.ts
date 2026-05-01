@@ -98,6 +98,20 @@ export async function acceptInvitation(
       return { success: false, error: ownerError.message };
     }
 
+    const profileRole = invitation.role === "manager" ? "manager" : "owner";
+    const { error: profileLinkError } = await supabase
+      .from("profiles")
+      .update({ salon_id: invitation.salon_id, role: profileRole })
+      .eq("user_id", user.id)
+      .is("salon_id", null);
+
+    if (profileLinkError) {
+      logError("Invitation accepted but profiles.salon_id link failed", profileLinkError, {
+        userId: user.id,
+        invitationId,
+      });
+    }
+
     // Mark invitation as accepted
     await supabase
       .from("owner_invitations")
