@@ -19,6 +19,8 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeeUpdateServicesFailed: "Shaqaale waa la cusbooneysiiyay laakiin adeegyada lama cusbooneysiin karin.",
     employeesLoadFailed: "Lama soo gelin karin shaqaalaha.",
     failedToLoadEmployees: "Lama soo gelin karin shaqaalaha.",
+    addonUsageRequiresUpgrade:
+      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
     giftCardNotFound: "Kaarka hadiyadda lama helin.",
     importChunkFailed: "Soo dejintu way fashilantay markii la kaydiyayay safyada.",
     importCreateBatchFailed: "Lama abuuri karin kooxda soo dejinta.",

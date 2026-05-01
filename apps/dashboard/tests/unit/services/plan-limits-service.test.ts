@@ -154,7 +154,7 @@ describe("Plan Limits Service", () => {
         canAdd: false,
         currentCount: 5,
         limit: 5,
-        error: null,
+        error: "TB|ADDON_USAGE_REQUIRES_UPGRADE",
       });
     });
 
@@ -234,7 +234,7 @@ describe("Plan Limits Service", () => {
         canAdd: false,
         currentCount: 6,
         limit: 5,
-        error: null,
+        error: "TB|ADDON_USAGE_REQUIRES_UPGRADE",
       });
     });
 

@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "Invalid email format.",
   phoneTooShort: "Phone number must be at least 8 characters.",
   failedToLoadEmployees: "Could not load employees.",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

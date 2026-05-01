@@ -13,6 +13,7 @@ import {
 } from "../_shared/rate-limit.ts";
 import { authenticateRequest, authorizeSalonAccess } from "../_shared/auth.ts";
 import { validateBillingBinding } from "../_shared/billing-binding.ts";
+import { getBillingPriceConfig } from "../_shared/billing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -154,12 +155,24 @@ serve(async (req) => {
     });
 
     const currency = (upcoming.currency ?? "usd").toUpperCase();
-    const lines =
-      upcoming.lines?.data?.map((line) => ({
-        description: line.description ?? line.price?.nickname ?? "Line item",
-        amount_minor: line.amount,
-        quantity: line.quantity ?? null,
-      })) ?? [];
+    const rawLines = upcoming.lines?.data ?? [];
+    const priceCfg = getBillingPriceConfig();
+    const addonPriceIds = new Set(
+      [priceCfg.addonPriceIds.extra_staff, priceCfg.addonPriceIds.extra_languages].filter(Boolean),
+    );
+    let addons_minor = 0;
+    for (const line of rawLines) {
+      const pid = line.price?.id;
+      if (pid && addonPriceIds.has(pid)) {
+        addons_minor += line.amount ?? 0;
+      }
+    }
+    const subscription_minor = Math.max(0, (upcoming.total ?? 0) - addons_minor);
+    const lines = rawLines.map((line) => ({
+      description: line.description ?? line.price?.nickname ?? "Line item",
+      amount_minor: line.amount,
+      quantity: line.quantity ?? null,
+    }));
 
     return new Response(
       JSON.stringify({
@@ -167,6 +180,10 @@ serve(async (req) => {
         currency,
         total_minor: upcoming.total,
         amount_due_minor: upcoming.amount_due,
+        summary: {
+          subscription_minor,
+          addons_minor,
+        },
         lines,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

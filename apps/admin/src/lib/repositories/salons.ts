@@ -5,6 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 export type SalonTheme = {
   primary?: string;
@@ -157,10 +158,33 @@ export async function updateSalon(
   }
 ): Promise<{ error: string | null }> {
   try {
-    const { error } = await supabase
-      .from("salons")
-      .update(updates)
-      .eq("id", salonId);
+    const { supported_languages, ...rest } = updates;
+    const restKeys = Object.keys(rest).filter((k) => (rest as Record<string, unknown>)[k] !== undefined);
+
+    if (supported_languages !== undefined) {
+      const { error: rpcError } = await supabase.rpc("dashboard_update_salon_supported_languages", {
+        p_salon_id: salonId,
+        p_languages: supported_languages ?? [],
+      });
+      if (rpcError) {
+        const msg = rpcError.message ?? "";
+        if (msg.includes("addon_usage_requires_upgrade") || rpcError.code === "P0001") {
+          return { error: tb("ADDON_USAGE_REQUIRES_UPGRADE") };
+        }
+        return { error: msg };
+      }
+    }
+
+    if (restKeys.length === 0) {
+      return { error: null };
+    }
+
+    const patch: Record<string, unknown> = {};
+    for (const k of restKeys) {
+      patch[k] = (rest as Record<string, unknown>)[k];
+    }
+
+    const { error } = await supabase.from("salons").update(patch).eq("id", salonId);
 
     if (error) {
       return { error: error.message };

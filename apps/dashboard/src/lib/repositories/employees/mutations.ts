@@ -6,34 +6,34 @@ export async function createEmployee(
   input: CreateEmployeeInput
 ): Promise<{ data: Employee | null; error: string | null }> {
   try {
-    const { data: employeeData, error: insertError } = await supabase
-      .from("employees")
-      .insert({
-        salon_id: input.salon_id, full_name: input.full_name.trim(),
-        email: input.email?.trim() || null, phone: input.phone?.trim() || null,
-        role: input.role?.trim() || null, preferred_language: input.preferred_language || "nb",
-        public_profile_visible: input.public_profile_visible ?? true,
-        public_title: input.public_title?.trim() || null,
-        bio: input.bio?.trim() || null,
-        profile_image_url: input.profile_image_url?.trim() || null,
-        specialties: input.specialties ?? [],
-        public_sort_order: input.public_sort_order ?? null,
-      })
-      .select("id, full_name, email, phone, role, preferred_language, is_active, deleted_at, public_profile_visible, public_title, bio, profile_image_url, specialties, public_sort_order")
-      .maybeSingle();
-    if (insertError || !employeeData) return { data: null, error: insertError?.message ?? tb("EMPLOYEE_CREATE_FAILED") };
+    const { data: employeeData, error: rpcError } = await supabase.rpc("dashboard_create_salon_employee", {
+      p_salon_id: input.salon_id,
+      p_full_name: input.full_name.trim(),
+      p_email: input.email?.trim() || null,
+      p_phone: input.phone?.trim() || null,
+      p_role: input.role?.trim() || null,
+      p_preferred_language: input.preferred_language || "nb",
+      p_public_profile_visible: input.public_profile_visible ?? true,
+      p_public_title: input.public_title?.trim() || null,
+      p_bio: input.bio?.trim() || null,
+      p_profile_image_url: input.profile_image_url?.trim() || null,
+      p_specialties: input.specialties ?? [],
+      p_public_sort_order: input.public_sort_order ?? null,
+      p_service_ids: input.service_ids?.length ? input.service_ids : [],
+    });
 
-    if (input.service_ids && input.service_ids.length > 0) {
-      const employeeServices = input.service_ids.map((serviceId) => ({
-        employee_id: employeeData.id, service_id: serviceId, salon_id: input.salon_id,
-      }));
-      const { error: servicesError } = await supabase.from("employee_services").insert(employeeServices);
-      if (servicesError)
-        return {
-          data: employeeData as Employee,
-          error: servicesError.message || tb("EMPLOYEE_LINK_SERVICES_FAILED"),
-        };
+    if (rpcError) {
+      const msg = rpcError.message ?? "";
+      if (msg.includes("addon_usage_requires_upgrade") || rpcError.code === "P0001") {
+        return { data: null, error: tb("ADDON_USAGE_REQUIRES_UPGRADE") };
+      }
+      return { data: null, error: msg || tb("EMPLOYEE_CREATE_FAILED") };
     }
+
+    if (!employeeData) {
+      return { data: null, error: tb("EMPLOYEE_CREATE_FAILED") };
+    }
+
     return { data: employeeData as Employee, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : tb("UNKNOWN") };

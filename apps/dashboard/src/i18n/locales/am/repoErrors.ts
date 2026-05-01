@@ -19,6 +19,8 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeeUpdateServicesFailed: "ሰራተኛ ተዘምኗል ግን አገልግሎቶች ማዘመን አልተቻለም።",
     employeesLoadFailed: "ሰራተኞች መጫን አልተቻለም።",
     failedToLoadEmployees: "ሰራተኞች መጫን አልተቻለም።",
+    addonUsageRequiresUpgrade:
+      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
     giftCardNotFound: "የስጦታ ካርድ አልተገኘም።",
     importChunkFailed: "ረድፎች በማስቀመጥ ላይ መግቢያ አልተሳካም።",
     importCreateBatchFailed: "የመግቢያ ቡድን መፍጠር አልተቻለም።",

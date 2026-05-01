@@ -8,6 +8,7 @@ import { getSalonBySlug, getSalonById, updateSalon as updateSalonRepo } from "@/
 import type { Salon } from "@/lib/repositories/salons";
 import { canAddLanguage } from "./plan-limits-service";
 import type { PlanType } from "@/lib/types";
+import { tb } from "@/lib/i18n/repo-error-codes";
 
 /**
  * Get salon by slug (for public booking pages)
@@ -73,23 +74,24 @@ export async function updateSalonSettings(
     return { error: "Salon name cannot be empty" };
   }
 
-  // Check language limits if supported_languages is being updated and plan is provided
-  if (updates.supported_languages !== undefined && salonPlan !== undefined) {
-    const { canAdd, currentCount, limit, error: limitError } = await canAddLanguage(
-      salonId,
-      salonPlan,
-      updates.supported_languages || []
-    );
-
-    if (limitError) {
-      return { error: limitError };
+  if (updates.supported_languages !== undefined) {
+    let plan: PlanType | null | undefined = salonPlan;
+    if (plan === undefined || plan === null) {
+      const { data: salonRow } = await getSalonById(salonId);
+      plan = (salonRow?.plan ?? null) as PlanType | null;
     }
-
-    if (!canAdd && limit !== null) {
-      return {
-        error: `Language limit reached. Current: ${currentCount}/${limit}. Please upgrade your plan or add more language seats.`,
-        limitReached: true,
-      };
+    if (plan != null) {
+      const { canAdd, error: limitError } = await canAddLanguage(
+        salonId,
+        plan,
+        updates.supported_languages || [],
+      );
+      if (limitError) {
+        return { error: limitError };
+      }
+      if (!canAdd) {
+        return { error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
+      }
     }
   }
 

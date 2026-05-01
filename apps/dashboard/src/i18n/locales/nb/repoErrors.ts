@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "Ugyldig e-postformat.",
   phoneTooShort: "Telefonnummer må være minst 8 tegn.",
   failedToLoadEmployees: "Kunne ikke laste ansatte.",
+  addonUsageRequiresUpgrade:
+    "Endringen overstiger planen og kjøpte tillegg. Oppgrader eller kjøp plasser under Fakturering, og prøv igjen.",
 };

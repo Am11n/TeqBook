@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "Geçersiz e-posta biçimi.",
   phoneTooShort: "Telefon numarası en az 8 karakter olmalıdır.",
   failedToLoadEmployees: "Çalışanlar yüklenemedi.",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

@@ -17,6 +17,28 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonUsagePendingStripe:
     "Tillegg synkroniseres med Stripe. Vi viser ikke dollartall som «neste faktura» før synk er ferdig.",
   billingAddonImpactHiddenUntilSync: "Månedlig $-påvirkning skjules til Stripe har bekreftet tilleggskvanta.",
+  billingAddonBlockPlanIncludes: "Planen inkluderer",
+  billingAddonBlockYouUse: "Du bruker",
+  billingAddonBlockExtraPaid: "Ekstra (betalt)",
+  billingAddonExtraPaidLineStaff: "+{count} ansatte · {price}",
+  billingAddonExtraPaidLineLang: "+{count} språk · {price}",
+  billingAddonExtraPaidNone: "Ingen",
+  billingAddonLimitAtCapacity:
+    "Du er ved dagens abonnementskapasitet for dette punktet. Oppgrader eller kjøp plasser under Fakturering.",
+  billingAddonLimitPressureHigh:
+    "Du nærmer deg abonnementsgrensen ({percent}% av gjeldende tak). Vurder oppgradering.",
+  billingAddonLimitPressureMedium:
+    "Du bruker en stor del av kapasiteten ({percent}% av gjeldende tak).",
+  billingInvoiceProrationFootnote:
+    "Endringer midt i perioden kan gi små prorerte linjer på den endelige fakturaen. Totalen under er fortsatt beste Stripe-forhåndsvisning.",
+  billingInvoiceShowStripeDetails: "Vis linjedetaljer",
+  billingInvoiceHideStripeDetails: "Skjul linjedetaljer",
+  billingInvoiceDetailRecurringHeading: "Abonnement og faste tillegg",
+  billingInvoiceDetailProrationHeading: "Prorering og tidsjusteringer",
+  billingInvoiceDetailProrationLead:
+    "Stripe legger til disse når plasser eller språk endres midt i perioden. Totalen over er fortsatt det beste svaret på «hva kommer neste gang».",
+  billingInvoiceProrationNetLabel: "Prorering netto (alle justeringer)",
+  billingInvoiceProrationDetailsSummary: "Vis {count} proreringslinjer fra Stripe",
   billingInvoicePreviewStripeTitle: "Neste faktura (Stripe-forhåndsvisning)",
   billingInvoicePreviewStripeHint:
     "Beløp hentes fra Stripes kommende faktura etter at tillegg er synket. De kan fortsatt endre seg før fakturaen ferdigstilles.",

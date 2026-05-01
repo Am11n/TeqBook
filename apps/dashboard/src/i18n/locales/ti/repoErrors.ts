@@ -19,6 +19,8 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeeUpdateServicesFailed: "ሰራሕተኛ ተሓዲሱ ግን ኣገልግሎታት ምሕዳስ ኣይተኽእለን።",
     employeesLoadFailed: "ሰራሕተኛታት ምጽዓን ኣይተኽእለን።",
     failedToLoadEmployees: "ሰራሕተኛታት ምጽዓን ኣይተኽእለን።",
+    addonUsageRequiresUpgrade:
+      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
     giftCardNotFound: "ናይ ህያብ ካርድ ኣይተረኽበን።",
     importChunkFailed: "ረድፍታት ክእስር እንከሎ ምእታው ኣይተሳነነን።",
     importCreateBatchFailed: "ናይ ምእታው ባቸ ምፍጣር ኣይተኽእለን።",

@@ -135,30 +135,28 @@ describe("Salons Service", () => {
       expect(vi.mocked(salonsRepo.updateSalon)).not.toHaveBeenCalled();
     });
 
-    it("should allow supported_languages beyond included limit (soft allow; billed as add-ons)", async () => {
+    it("should block supported_languages when add-on invariant would be violated", async () => {
       vi.mocked(planLimitsService.canAddLanguage).mockResolvedValue({
         canAdd: false,
-        currentCount: 5,
+        currentCount: 6,
         limit: 5,
-        error: null,
+        error: "TB|ADDON_USAGE_REQUIRES_UPGRADE",
       });
-
-      vi.mocked(salonsRepo.updateSalon).mockResolvedValue({ error: null });
 
       const result = await updateSalonSettings(
         "salon-1",
         { supported_languages: ["en", "nb", "ar", "so", "ti", "am"] },
-        "starter"
+        "starter",
       );
 
-      expect(result.error).toBeNull();
-      expect(result.limitReached).toBeUndefined();
+      expect(result.error).toBe("TB|ADDON_USAGE_REQUIRES_UPGRADE");
+      expect(result.limitReached).toBe(true);
       expect(vi.mocked(planLimitsService.canAddLanguage)).toHaveBeenCalledWith(
         "salon-1",
         "starter",
-        ["en", "nb", "ar", "so", "ti", "am"]
+        ["en", "nb", "ar", "so", "ti", "am"],
       );
-      expect(vi.mocked(salonsRepo.updateSalon)).toHaveBeenCalled();
+      expect(vi.mocked(salonsRepo.updateSalon)).not.toHaveBeenCalled();
     });
 
     it("should return limit error if canAddLanguage returns error", async () => {

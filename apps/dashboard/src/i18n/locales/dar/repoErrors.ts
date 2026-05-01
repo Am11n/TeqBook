@@ -19,6 +19,8 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeeUpdateServicesFailed: "کارمند به‌روز شد اما خدمات به‌روز نشد.",
     employeesLoadFailed: "بارگذاری کارمندان ممکن نشد.",
     failedToLoadEmployees: "بارگذاری کارمندان ممکن نشد.",
+    addonUsageRequiresUpgrade:
+      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
     giftCardNotFound: "کارت هدیه یافت نشد.",
     importChunkFailed: "وارد کردن هنگام ذخیره ردیف‌ها شکست خورد.",
     importCreateBatchFailed: "ایجاد گروه واردات ممکن نشد.",

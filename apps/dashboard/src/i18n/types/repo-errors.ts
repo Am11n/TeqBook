@@ -43,4 +43,5 @@ export type RepoErrorsMessages = {
   invalidEmail: string;
   phoneTooShort: string;
   failedToLoadEmployees: string;
+  addonUsageRequiresUpgrade: string;
 };

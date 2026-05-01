@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "अमान्य ईमेल प्रारूप।",
   phoneTooShort: "फ़ोन नंबर कम से कम 8 अक्षरों का होना चाहिए।",
   failedToLoadEmployees: "कर्मचारी लोड नहीं हो सके।",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

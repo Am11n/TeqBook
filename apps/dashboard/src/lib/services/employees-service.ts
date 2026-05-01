@@ -12,9 +12,11 @@ import {
   updateEmployee as updateEmployeeRepo,
   deleteEmployee as deleteEmployeeRepo,
 } from "@/lib/repositories/employees";
-import { tb } from "@/lib/i18n/repo-error-codes";
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
-import { canAddEmployee, getEffectiveLimit } from "./plan-limits-service";
+import { canAddEmployee } from "./plan-limits-service";
+import { tb } from "@/lib/i18n/repo-error-codes";
+import { invariantEval } from "@teqbook/shared-core";
+import * as addonsRepo from "@/lib/repositories/addons";
 import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
 import { syncUsageDerivedAddons } from "@/lib/services/billing-service";
 
@@ -96,12 +98,13 @@ export async function createEmployee(
     return { data: null, error: tb("PHONE_TOO_SHORT") };
   }
 
-  // Soft allow: staff beyond included plan seats is billed as usage-derived add-ons.
-  // Still surface limit check errors (e.g. DB), but never hard-block creation.
   if (salonPlan !== undefined) {
-    const { error: limitError } = await canAddEmployee(input.salon_id, salonPlan);
+    const { canAdd, error: limitError } = await canAddEmployee(input.salon_id, salonPlan);
     if (limitError) {
       return { data: null, error: limitError };
+    }
+    if (!canAdd) {
+      return { data: null, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
     }
   }
 
@@ -149,14 +152,28 @@ export async function updateEmployee(
     return { data: null, error: tb("PHONE_TOO_SHORT") };
   }
 
-  // Soft allow: reactivating staff when already at included count may add billable seats.
   if (input.is_active === true && salonPlan !== undefined) {
     const { data: employeeData } = await getEmployeeWithServices(salonId, employeeId);
     const currentEmployee = employeeData?.employee;
     if (currentEmployee && currentEmployee.is_active === false) {
-      const { error: limitError } = await getEffectiveLimit(salonId, salonPlan, "employees");
-      if (limitError) {
-        return { data: null, error: limitError };
+      const { data: all, error: listErr } = await getEmployeesForCurrentSalon(salonId);
+      if (listErr) {
+        return { data: null, error: listErr };
+      }
+      const activeExcept = (all ?? []).filter((e) => e.id !== employeeId && e.is_active).length;
+      const usageAfter = activeExcept + 1;
+      const { data: addon, error: addonErr } = await addonsRepo.getAddonByType(salonId, "extra_staff");
+      if (addonErr) {
+        return { data: null, error: addonErr };
+      }
+      const inv = invariantEval({
+        usageAfter,
+        plan: salonPlan,
+        dimension: "employees",
+        addonQtyRaw: addon?.qty ?? 0,
+      });
+      if (inv.violates) {
+        return { data: null, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
       }
     }
   }

@@ -13,16 +13,37 @@ interface AddonsCardProps {
   stripeAddonUsageTrusted?: boolean;
   addons: AddonDisplay[];
   usage: {
-    employeesIncluded: number | null;
+    planIncludesEmployees: number | null;
+    planIncludesLanguages: number | null;
+    employeesAllowed: number | null;
+    languagesAllowed: number | null;
     employeesActive: number;
-    employeesExtraBilled: number;
-    languagesIncluded: number | null;
     languagesActive: number;
+    employeesExtraBilled: number;
     languagesExtraBilled: number;
   } | null;
   actionLoading?: boolean;
   onManagePlan?: () => void;
   t: ResolvedSettingsMessages;
+}
+
+function formatIncluded(n: number | null, unlimited: string): string {
+  return n === null ? unlimited : String(n);
+}
+
+function limitPressureNote(
+  current: number,
+  allowed: number | null,
+  atCap: string,
+  high: string,
+  medium: string,
+): string | null {
+  if (allowed === null || allowed <= 0) return null;
+  const pct = (current / allowed) * 100;
+  if (current >= allowed) return applyTemplate(atCap, { percent: String(Math.round(pct)) });
+  if (pct >= 90) return applyTemplate(high, { percent: String(Math.round(pct)) });
+  if (pct >= 70) return applyTemplate(medium, { percent: String(Math.round(pct)) });
+  return null;
 }
 
 export function AddonsCard({
@@ -37,47 +58,60 @@ export function AddonsCard({
   const extraStaffAddon = addonByType.get("extra_staff");
   const extraLanguagesAddon = addonByType.get("extra_languages");
 
-  // Use max so a stale addon qty of 0 does not hide usage-derived extras (?? treats 0 as valid).
-  const billedExtraStaff = Math.max(
-    extraStaffAddon?.quantity ?? 0,
-    usage?.employeesExtraBilled ?? 0,
-  );
-  const billedExtraLanguages = Math.max(
-    extraLanguagesAddon?.quantity ?? 0,
-    usage?.languagesExtraBilled ?? 0,
-  );
-  const estimatedStaffImpact = billedExtraStaff * 5;
-  const estimatedLanguageImpact = billedExtraLanguages * 10;
+  /** When Stripe sync is trusted, show subscription add-on quantities; otherwise usage-based extras only. */
+  const billableStaffUnits = stripeAddonUsageTrusted
+    ? (extraStaffAddon?.quantity ?? 0)
+    : (usage?.employeesExtraBilled ?? 0);
+  const billableLanguageUnits = stripeAddonUsageTrusted
+    ? (extraLanguagesAddon?.quantity ?? 0)
+    : (usage?.languagesExtraBilled ?? 0);
+  const estimatedStaffImpact = billableStaffUnits * 5;
+  const estimatedLanguageImpact = billableLanguageUnits * 10;
 
-  const staffIncluded =
-    usage?.employeesIncluded === null
-      ? t.billingUnlimited
-      : String(usage?.employeesIncluded ?? 0);
-  const langIncluded =
-    usage?.languagesIncluded === null
-      ? t.billingUnlimited
-      : String(usage?.languagesIncluded ?? 0);
+  const staffPlanInc = formatIncluded(usage?.planIncludesEmployees ?? null, t.billingUnlimited);
+  const langPlanInc = formatIncluded(usage?.planIncludesLanguages ?? null, t.billingUnlimited);
 
-  const staffUsageLine = applyTemplate(t.billingAddonUsageLine, {
-    included: staffIncluded,
-    active: String(usage?.employeesActive ?? 0),
-    extra: String(usage?.employeesExtraBilled ?? 0),
-  });
-  const langUsageLine = applyTemplate(t.billingAddonUsageLine, {
-    included: langIncluded,
-    active: String(usage?.languagesActive ?? 0),
-    extra: String(usage?.languagesExtraBilled ?? 0),
-  });
+  const staffExtraLine =
+    billableStaffUnits > 0
+      ? applyTemplate(t.billingAddonExtraPaidLineStaff, {
+          count: String(billableStaffUnits),
+          price: extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback,
+        })
+      : t.billingAddonExtraPaidNone;
 
-  const staffPrice = extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback;
-  const langPrice = extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback;
+  const langExtraLine =
+    billableLanguageUnits > 0
+      ? applyTemplate(t.billingAddonExtraPaidLineLang, {
+          count: String(billableLanguageUnits),
+          price: extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback,
+        })
+      : t.billingAddonExtraPaidNone;
+
+  const staffPressure = usage
+    ? limitPressureNote(
+        usage.employeesActive,
+        usage.employeesAllowed,
+        t.billingAddonLimitAtCapacity,
+        t.billingAddonLimitPressureHigh,
+        t.billingAddonLimitPressureMedium,
+      )
+    : null;
+  const langPressure = usage
+    ? limitPressureNote(
+        usage.languagesActive,
+        usage.languagesAllowed,
+        t.billingAddonLimitAtCapacity,
+        t.billingAddonLimitPressureHigh,
+        t.billingAddonLimitPressureMedium,
+      )
+    : null;
 
   const staffImpactLine = applyTemplate(t.billingAddonStaffImpactLine, {
-    price: staffPrice,
+    price: extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback,
     impact: String(estimatedStaffImpact),
   });
   const langImpactLine = applyTemplate(t.billingAddonLanguageImpactLine, {
-    price: langPrice,
+    price: extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback,
     impact: String(estimatedLanguageImpact),
   });
 
@@ -94,7 +128,7 @@ export function AddonsCard({
       <div className="space-y-3">
         <div className={cn("border rounded-lg p-4", extraStaffAddon?.active && "border-l-4 border-l-green-500")}>
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="font-medium">
                   {extraStaffAddon?.name ?? t.billingAddonExtraStaffFallbackName}
@@ -105,7 +139,23 @@ export function AddonsCard({
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mb-1">{staffUsageLine}</p>
+              <div className="grid gap-2 sm:grid-cols-3 text-sm">
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockPlanIncludes}</div>
+                  <div className="font-medium tabular-nums">{staffPlanInc}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockYouUse}</div>
+                  <div className="font-medium tabular-nums">{usage?.employeesActive ?? 0}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockExtraPaid}</div>
+                  <div className="font-medium tabular-nums">{staffExtraLine}</div>
+                </div>
+              </div>
+              {staffPressure ? (
+                <p className="text-xs text-amber-800 dark:text-amber-200">{staffPressure}</p>
+              ) : null}
               {stripeAddonUsageTrusted ? (
                 <p className="text-sm font-medium">{staffImpactLine}</p>
               ) : (
@@ -122,7 +172,7 @@ export function AddonsCard({
           className={cn("border rounded-lg p-4", extraLanguagesAddon?.active && "border-l-4 border-l-green-500")}
         >
           <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+            <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="font-medium">
                   {extraLanguagesAddon?.name ?? t.billingAddonExtraLanguagesFallbackName}
@@ -133,7 +183,23 @@ export function AddonsCard({
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mb-1">{langUsageLine}</p>
+              <div className="grid gap-2 sm:grid-cols-3 text-sm">
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockPlanIncludes}</div>
+                  <div className="font-medium tabular-nums">{langPlanInc}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockYouUse}</div>
+                  <div className="font-medium tabular-nums">{usage?.languagesActive ?? 0}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonBlockExtraPaid}</div>
+                  <div className="font-medium tabular-nums">{langExtraLine}</div>
+                </div>
+              </div>
+              {langPressure ? (
+                <p className="text-xs text-amber-800 dark:text-amber-200">{langPressure}</p>
+              ) : null}
               {stripeAddonUsageTrusted ? (
                 <p className="text-sm font-medium">{langImpactLine}</p>
               ) : (

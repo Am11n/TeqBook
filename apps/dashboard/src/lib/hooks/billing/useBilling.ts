@@ -3,7 +3,12 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { getAddonsForSalon } from "@/lib/repositories/addons";
 import { getSalonById } from "@/lib/repositories/salons";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
-import { getEffectiveLimit, invalidatePlanLimitsCache } from "@/lib/services/plan-limits-service";
+import {
+  expectedExtraPaidUnits,
+  getEffectiveLimit,
+  getPlanLimits,
+  invalidatePlanLimitsCache,
+} from "@/lib/services/plan-limits-service";
 import {
   listBillingInvoices,
   previewBillingUpcomingInvoice,
@@ -20,11 +25,16 @@ const MAX_STALE_STRIPE_REFRESH = 8;
 
 export type BillingSummaryViewModel = {
   usage: {
-    employeesIncluded: number | null;
+    /** Seats/languages included in the plan package (not add-on extended cap). */
+    planIncludesEmployees: number | null;
+    planIncludesLanguages: number | null;
+    /** Hard cap = plan includes + purchased add-on units (same as invariant `allowed`). */
+    employeesAllowed: number | null;
+    languagesAllowed: number | null;
     employeesActive: number;
-    employeesExtraBilled: number;
-    languagesIncluded: number | null;
     languagesActive: number;
+    /** Billable extras vs package: max(0, usage - planIncludes). */
+    employeesExtraBilled: number;
     languagesExtraBilled: number;
   };
   history: BillingInvoiceResponse[];
@@ -162,19 +172,20 @@ export function useBilling() {
         ? salon.supported_languages.length
         : 0;
 
-      const employeesIncluded = employeeLimitResult.limit ?? null;
-      const languagesIncluded = languageLimitResult.limit ?? null;
-      const employeesExtraBilled =
-        employeesIncluded === null ? 0 : Math.max(employeesActive - employeesIncluded, 0);
-      const languagesExtraBilled =
-        languagesIncluded === null ? 0 : Math.max(languagesActive - languagesIncluded, 0);
+      const planLimits = getPlanLimits(plan);
+      const employeesAllowed = employeeLimitResult.limit ?? null;
+      const languagesAllowed = languageLimitResult.limit ?? null;
+      const employeesExtraBilled = expectedExtraPaidUnits(employeesActive, planLimits.employees);
+      const languagesExtraBilled = expectedExtraPaidUnits(languagesActive, planLimits.languages);
 
       setSummary({
         usage: {
-          employeesIncluded,
+          planIncludesEmployees: planLimits.employees,
+          planIncludesLanguages: planLimits.languages,
+          employeesAllowed,
+          languagesAllowed,
           employeesActive,
           employeesExtraBilled,
-          languagesIncluded,
           languagesActive,
           languagesExtraBilled,
         },

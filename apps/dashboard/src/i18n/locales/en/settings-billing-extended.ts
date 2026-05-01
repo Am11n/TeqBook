@@ -18,6 +18,28 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonUsagePendingStripe:
     "Add-on line items are syncing with Stripe. Dollar estimates below are hidden until sync completes so we do not show a number that is not the next invoice.",
   billingAddonImpactHiddenUntilSync: "Monthly $ impact hidden until Stripe confirms add-on quantities.",
+  billingAddonBlockPlanIncludes: "Plan includes",
+  billingAddonBlockYouUse: "You use",
+  billingAddonBlockExtraPaid: "Extra (paid)",
+  billingAddonExtraPaidLineStaff: "+{count} staff · {price}",
+  billingAddonExtraPaidLineLang: "+{count} languages · {price}",
+  billingAddonExtraPaidNone: "None",
+  billingAddonLimitAtCapacity:
+    "You are at your current subscription capacity for this item. Upgrade or add seats in Billing.",
+  billingAddonLimitPressureHigh:
+    "You are close to your subscription capacity ({percent}% of your current limit). Consider upgrading soon.",
+  billingAddonLimitPressureMedium:
+    "You are using most of your subscription capacity ({percent}% of your current limit).",
+  billingInvoiceProrationFootnote:
+    "Mid-cycle plan or seat changes may add small proration lines on the final invoice. The total below is still the best preview Stripe provides.",
+  billingInvoiceShowStripeDetails: "Show line details",
+  billingInvoiceHideStripeDetails: "Hide line details",
+  billingInvoiceDetailRecurringHeading: "Subscription & recurring add-ons",
+  billingInvoiceDetailProrationHeading: "Proration & timing adjustments",
+  billingInvoiceDetailProrationLead:
+    "Stripe adds these when seats or languages change mid-cycle. The estimated total above is still the number to trust for “what’s next.”",
+  billingInvoiceProrationNetLabel: "Proration adjustments (net)",
+  billingInvoiceProrationDetailsSummary: "Show {count} Stripe proration line(s)",
   billingInvoicePreviewStripeTitle: "Next invoice (Stripe preview)",
   billingInvoicePreviewStripeHint:
     "Totals come from Stripe’s upcoming invoice preview after add-on usage is synced. They can still change before the invoice finalizes.",

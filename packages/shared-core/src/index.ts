@@ -54,3 +54,20 @@ export {
   type AppLocalePickerValue,
   type LocaleFlagEmojiKey,
 } from "./i18n/locale-flag-emoji";
+
+export {
+  STARTER_MAX_EXTRA_LANGUAGES_ADDON,
+  STARTER_MAX_EXTRA_STAFF_ADDON,
+  allowedUsage,
+  capAddonUnitsForPlan,
+  expectedExtraPaidUnits,
+  getIncludedInPlan,
+  type AddonDimension,
+  type BillingPlanType,
+} from "./billing/plan-addons-policy";
+
+export {
+  invariantEval,
+  type AddonUsageStatus,
+  type InvariantEvalResult,
+} from "./billing/invariant-eval";

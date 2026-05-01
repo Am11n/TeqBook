@@ -304,6 +304,32 @@ export type SettingsMessages = {
   billingAddonReviewLanguages?: string;
   billingAddonUsagePendingStripe?: string;
   billingAddonImpactHiddenUntilSync?: string;
+  billingAddonBlockPlanIncludes?: string;
+  billingAddonBlockYouUse?: string;
+  billingAddonBlockExtraPaid?: string;
+  /** e.g. "+{count} at {price}" */
+  billingAddonExtraPaidLineStaff?: string;
+  billingAddonExtraPaidLineLang?: string;
+  billingAddonExtraPaidNone?: string;
+  /** At hard cap — e.g. "You are at your plan limit ({percent}%)." */
+  billingAddonLimitAtCapacity?: string;
+  /** Strong warning — usage ~90%+ of allowed */
+  billingAddonLimitPressureHigh?: string;
+  /** Info — usage ~70%+ of allowed */
+  billingAddonLimitPressureMedium?: string;
+  billingInvoiceProrationFootnote?: string;
+  billingInvoiceShowStripeDetails?: string;
+  billingInvoiceHideStripeDetails?: string;
+  /** Detail drawer: recurring subscription + add-on lines (no proration). */
+  billingInvoiceDetailRecurringHeading?: string;
+  /** Detail drawer: Stripe proration / unused-time lines. */
+  billingInvoiceDetailProrationHeading?: string;
+  /** Short explanation under proration block. */
+  billingInvoiceDetailProrationLead?: string;
+  /** One-line label for net sum of proration lines (amount shown separately). */
+  billingInvoiceProrationNetLabel?: string;
+  /** Nested `<summary>` for expanding raw proration lines; use {count}. */
+  billingInvoiceProrationDetailsSummary?: string;
   billingInvoicePreviewStripeTitle?: string;
   billingInvoicePreviewStripeHint?: string;
   billingInvoicePreviewDegradedTitle?: string;

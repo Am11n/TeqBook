@@ -26,6 +26,18 @@ export function SettingsLimitBar({
   const percentage = Math.min((current / limit) * 100, 100);
   const isOverLimit = current > limit;
   const isAtLimit = current >= limit;
+  const stressHigh = !isAtLimit && percentage >= 90;
+  const stressMid = !isAtLimit && !stressHigh && percentage >= 70;
+
+  const barClass = isOverLimit
+    ? "bg-primary/70"
+    : isAtLimit
+      ? "bg-muted-foreground/50"
+      : stressHigh
+        ? "bg-amber-500/80"
+        : stressMid
+          ? "bg-amber-400/60"
+          : "bg-primary/40";
 
   return (
     <div className="space-y-1.5">
@@ -45,14 +57,7 @@ export function SettingsLimitBar({
       </div>
       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
         <div
-          className={cn(
-            "h-full rounded-full transition-all duration-300",
-            isOverLimit
-              ? "bg-primary/70"
-              : isAtLimit
-                ? "bg-muted-foreground/50"
-                : "bg-primary/40",
-          )}
+          className={cn("h-full rounded-full transition-all duration-300", barClass)}
           style={{ width: `${percentage}%` }}
         />
       </div>

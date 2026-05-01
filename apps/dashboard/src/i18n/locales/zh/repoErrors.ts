@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "电子邮件格式无效。",
   phoneTooShort: "电话号码至少需要 8 个字符。",
   failedToLoadEmployees: "无法加载员工。",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

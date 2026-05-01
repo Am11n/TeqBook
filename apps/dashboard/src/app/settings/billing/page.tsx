@@ -29,6 +29,10 @@ import {
   type SmsUsageSummaryMetrics,
 } from "@/lib/services/sms/load-sms-usage-summary";
 import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
+import {
+  partitionUpcomingInvoiceLines,
+  summarizeUpcomingLinesClient,
+} from "@/lib/utils/billing/upcoming-invoice-display";
 
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
@@ -87,6 +91,7 @@ export default function BillingSettingsPage() {
   const [smsUsageMessage, setSmsUsageMessage] = useState<string | null>(null);
   const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
   const pendingSetupIntentIdRef = useRef<string | null>(null);
+  const [showStripeInvoiceLines, setShowStripeInvoiceLines] = useState(false);
 
   useEffect(() => {
     const billingPrefs = (
@@ -230,6 +235,22 @@ export default function BillingSettingsPage() {
     return `${(amountMinor / 100).toFixed(2)} ${cur}`;
   };
 
+  const stripePreviewDerived = useMemo(() => {
+    if (invoicePreview?.mode !== "stripe_preview") return null;
+    const lines = invoicePreview.lines;
+    const { recurring, proration } = partitionUpcomingInvoiceLines(lines);
+    const prorationNetMinor = proration.reduce((sum, line) => sum + line.amount_minor, 0);
+    return {
+      currency: invoicePreview.currency,
+      total_minor: invoicePreview.total_minor,
+      effectiveSummary:
+        invoicePreview.summary ?? summarizeUpcomingLinesClient(lines),
+      recurring,
+      proration,
+      prorationNetMinor,
+    };
+  }, [invoicePreview]);
+
   useEffect(() => {
     const loadSmsUsage = async () => {
       if (!salon?.id) {
@@ -336,9 +357,9 @@ export default function BillingSettingsPage() {
           summary
             ? {
                 employeesActive: summary.usage.employeesActive,
-                employeesIncluded: summary.usage.employeesIncluded,
+                employeesIncluded: summary.usage.employeesAllowed,
                 languagesActive: summary.usage.languagesActive,
-                languagesIncluded: summary.usage.languagesIncluded,
+                languagesIncluded: summary.usage.languagesAllowed,
               }
             : null
         }
@@ -523,18 +544,34 @@ export default function BillingSettingsPage() {
           {invoicePreview?.mode === "stripe_preview" ? (
             <>
               <div>
-                <h3 className="text-lg font-semibold">{t.billingInvoicePreviewStripeTitle}</h3>
+                <h3 className="text-lg font-semibold">{t.billingEstimatedInvoiceTitle}</h3>
                 <p className="text-sm text-muted-foreground">{t.billingInvoicePreviewStripeHint}</p>
               </div>
               <div className="space-y-2 text-sm">
-                {invoicePreview.lines.map((line, idx) => (
-                  <div key={`${line.description}-${idx}`} className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground line-clamp-2">{line.description}</span>
-                    <span className="tabular-nums shrink-0">
-                      {formatMoneyMinor(line.amount_minor, invoicePreview.currency)}
-                    </span>
-                  </div>
-                ))}
+                {stripePreviewDerived ? (
+                  <>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-muted-foreground">{t.billingEstimatedBasePlan}</span>
+                      <span className="tabular-nums shrink-0">
+                        {formatMoneyMinor(
+                          stripePreviewDerived.effectiveSummary.subscription_minor,
+                          stripePreviewDerived.currency,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-muted-foreground">
+                        {t.billingEstimatedExtraStaff} / {t.billingEstimatedExtraLanguages}
+                      </span>
+                      <span className="tabular-nums shrink-0">
+                        {formatMoneyMinor(
+                          stripePreviewDerived.effectiveSummary.addons_minor,
+                          stripePreviewDerived.currency,
+                        )}
+                      </span>
+                    </div>
+                  </>
+                ) : null}
                 {smsMetricsTrustedForEstimate &&
                 smsUsage &&
                 !invoicePreview.lines.some((line) => /sms/i.test(line.description)) ? (
@@ -547,12 +584,95 @@ export default function BillingSettingsPage() {
                     </span>
                   </div>
                 ) : null}
+                {stripePreviewDerived && stripePreviewDerived.proration.length > 0 ? (
+                  <div className="flex items-center justify-between gap-4 pt-1">
+                    <span className="text-muted-foreground line-clamp-2">
+                      {t.billingInvoiceProrationNetLabel}
+                    </span>
+                    <span className="tabular-nums shrink-0">
+                      {formatMoneyMinor(
+                        stripePreviewDerived.prorationNetMinor,
+                        stripePreviewDerived.currency,
+                      )}
+                    </span>
+                  </div>
+                ) : null}
                 <div className="border-t pt-2 mt-2 flex items-center justify-between font-semibold">
                   <span>{t.billingEstimatedTotal}</span>
                   <span className="tabular-nums">
-                    {formatMoneyMinor(invoicePreview.total_minor, invoicePreview.currency)}
+                    {formatMoneyMinor(
+                      stripePreviewDerived?.total_minor ?? invoicePreview.total_minor,
+                      stripePreviewDerived?.currency ?? invoicePreview.currency,
+                    )}
                   </span>
                 </div>
+                {t.billingInvoiceProrationFootnote ? (
+                  <p className="text-xs text-muted-foreground pt-1">{t.billingInvoiceProrationFootnote}</p>
+                ) : null}
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline pt-2"
+                  onClick={() => setShowStripeInvoiceLines((v) => !v)}
+                >
+                  {showStripeInvoiceLines ? t.billingInvoiceHideStripeDetails : t.billingInvoiceShowStripeDetails}
+                </button>
+                {showStripeInvoiceLines && stripePreviewDerived ? (
+                  <div className="space-y-4 border rounded-md p-3 bg-muted/30 mt-2 text-sm">
+                    <div className="space-y-2">
+                      {t.billingInvoiceDetailRecurringHeading ? (
+                        <p className="text-xs font-medium text-foreground">
+                          {t.billingInvoiceDetailRecurringHeading}
+                        </p>
+                      ) : null}
+                      {stripePreviewDerived.recurring.map((line, idx) => (
+                        <div
+                          key={`rec-${line.description}-${idx}`}
+                          className="flex items-center justify-between gap-4"
+                        >
+                          <span className="text-muted-foreground line-clamp-2">{line.description}</span>
+                          <span className="tabular-nums shrink-0">
+                            {formatMoneyMinor(line.amount_minor, stripePreviewDerived.currency)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {stripePreviewDerived.proration.length > 0 ? (
+                      <details className="group/pr border-t pt-3">
+                        <summary className="cursor-pointer list-none text-xs font-medium text-primary hover:underline [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
+                          <span>
+                            {t.billingInvoiceProrationDetailsSummary
+                              ? applyTemplate(t.billingInvoiceProrationDetailsSummary, {
+                                  count: String(stripePreviewDerived.proration.length),
+                                })
+                              : t.billingInvoiceDetailProrationHeading}
+                          </span>
+                          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open/pr:rotate-180" />
+                        </summary>
+                        <div className="space-y-2 pt-3">
+                          {t.billingInvoiceDetailProrationHeading ? (
+                            <p className="text-xs font-medium text-foreground">
+                              {t.billingInvoiceDetailProrationHeading}
+                            </p>
+                          ) : null}
+                          {t.billingInvoiceDetailProrationLead ? (
+                            <p className="text-xs text-muted-foreground">{t.billingInvoiceDetailProrationLead}</p>
+                          ) : null}
+                          {stripePreviewDerived.proration.map((line, idx) => (
+                            <div
+                              key={`pro-${line.description}-${idx}`}
+                              className="flex items-center justify-between gap-4"
+                            >
+                              <span className="text-muted-foreground line-clamp-2">{line.description}</span>
+                              <span className="tabular-nums shrink-0">
+                                {formatMoneyMinor(line.amount_minor, stripePreviewDerived.currency)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </>
           ) : invoicePreview?.mode === "degraded" && invoicePreview.reason === "addon_syncing" ? (

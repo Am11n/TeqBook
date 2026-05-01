@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "قالب ایمیل نامعتبر است.",
   phoneTooShort: "شماره تلفن باید حداقل ۸ نویسه باشد.",
   failedToLoadEmployees: "بارگذاری کارمندان ممکن نشد.",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

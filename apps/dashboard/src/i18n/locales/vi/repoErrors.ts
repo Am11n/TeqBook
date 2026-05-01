@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "Định dạng email không hợp lệ.",
   phoneTooShort: "Số điện thoại phải có ít nhất 8 ký tự.",
   failedToLoadEmployees: "Không thể tải nhân viên.",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

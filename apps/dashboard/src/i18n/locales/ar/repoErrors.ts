@@ -19,6 +19,8 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeeUpdateServicesFailed: "تم تحديث الموظف لكن تعذّر تحديث الخدمات.",
     employeesLoadFailed: "تعذّر تحميل الموظفين.",
     failedToLoadEmployees: "تعذّر تحميل الموظفين.",
+    addonUsageRequiresUpgrade:
+      "سيؤدي هذا التغيير إلى تجاوز خطتك والإضافات المشتراة. قم بالترقية أو أضف مقاعد من الفوترة ثم أعد المحاولة.",
     giftCardNotFound: "بطاقة الهدية غير موجودة.",
     importChunkFailed: "فشل الاستيراد أثناء حفظ الصفوف.",
     importCreateBatchFailed: "تعذّر إنشاء دفعة الاستيراد.",

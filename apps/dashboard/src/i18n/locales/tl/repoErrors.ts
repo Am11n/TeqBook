@@ -45,4 +45,6 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   invalidEmail: "Hindi valid ang format ng email.",
   phoneTooShort: "Ang numero ng telepono ay dapat hindi bababa sa 8 character.",
   failedToLoadEmployees: "Hindi ma-load ang mga empleyado.",
+  addonUsageRequiresUpgrade:
+    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
 };

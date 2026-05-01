@@ -97,6 +97,8 @@ export function mapRepoError(
       return tr.phoneTooShort;
     case "FAILED_TO_LOAD_EMPLOYEES":
       return tr.failedToLoadEmployees;
+    case "ADDON_USAGE_REQUIRES_UPGRADE":
+      return tr.addonUsageRequiresUpgrade;
     default:
       return error;
   }

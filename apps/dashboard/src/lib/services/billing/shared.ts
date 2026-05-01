@@ -102,6 +102,11 @@ export type PreviewBillingUpcomingInvoiceResponse =
       currency: string;
       total_minor: number;
       amount_due_minor: number;
+      /** Grouped from Stripe line items (subscription vs add-on price IDs). */
+      summary?: {
+        subscription_minor: number;
+        addons_minor: number;
+      };
       lines: { description: string; amount_minor: number; quantity: number | null }[];
     };
 
