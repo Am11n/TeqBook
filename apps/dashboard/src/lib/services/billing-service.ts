@@ -6,6 +6,7 @@ export {
   getPaymentMethodSetupIntent,
   finalizeSetupIntentDefaultPaymentMethod,
   syncUsageDerivedAddons,
+  syncSalonAddonUsageImmediate,
   refreshSubscriptionProjection,
   previewBillingUpcomingInvoice,
   listBillingInvoices,

@@ -14,6 +14,18 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonLanguageImpactLine: "{price} • Estimert månedlig påvirkning: {impact}",
   billingAddonManagePlan: "Administrer plan",
   billingAddonReviewLanguages: "Se språk",
+  billingAddonUsagePendingStripe:
+    "Tillegg synkroniseres med Stripe. Vi viser ikke dollartall som «neste faktura» før synk er ferdig.",
+  billingAddonImpactHiddenUntilSync: "Månedlig $-påvirkning skjules til Stripe har bekreftet tilleggskvanta.",
+  billingInvoicePreviewStripeTitle: "Neste faktura (Stripe-forhåndsvisning)",
+  billingInvoicePreviewStripeHint:
+    "Beløp hentes fra Stripes kommende faktura etter at tillegg er synket. De kan fortsatt endre seg før fakturaen ferdigstilles.",
+  billingInvoicePreviewDegradedTitle: "Forhåndsvisning av neste faktura er ikke tilgjengelig",
+  billingInvoicePreviewDegradedBody:
+    "Vi viser ikke et estimert totalbeløp før faktureringssynk er frisk. Last siden på nytt om litt, eller kontakt support ved vedvarende problem.",
+  billingInvoicePreviewSyncingBody: "Synkroniserer tillegg med Stripe … forhåndsvisning vises når det er ferdig.",
+  billingInvoicePreviewNoSubscription: "Velg betalt plan for å se Stripe-forhåndsvisning av faktura her.",
+  billingInvoicePreviewSmsSupplement: "SMS-overskudd (bruksbasert estimat, kan mangle i Stripe-forhåndsvisningen)",
   billingSmsUsageTitle: "SMS-bruk",
   billingSmsUsageDescription:
     "Inkludert kvote kommer fra admin-planfunksjoner. Ubegrenset betyr ingen inkludert grense for denne perioden.",

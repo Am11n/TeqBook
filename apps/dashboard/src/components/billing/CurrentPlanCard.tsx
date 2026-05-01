@@ -383,7 +383,7 @@ export function CurrentPlanCard({
                 {tc.billingTrialEndsOn.replace("{date}", formatDate(trialEnd))}
               </p>
               <p className="text-sm mt-2">{tc.billingTrialBody}</p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingSubscribeNow}
               </Button>
             </AlertDescription>
@@ -398,7 +398,7 @@ export function CurrentPlanCard({
               <p className="text-sm mt-1">
                 Your access continues until <span className="font-semibold">{formatDate(periodEnd)}</span>.
               </p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingRenewSubscription}
               </Button>
             </AlertDescription>
@@ -411,7 +411,7 @@ export function CurrentPlanCard({
             <AlertTitle>{tc.billingNoSubscriptionTitle}</AlertTitle>
             <AlertDescription>
               <p className="text-sm mt-1">{tc.billingNoSubscriptionBody}</p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingSubscribeNow}
               </Button>
             </AlertDescription>
@@ -424,7 +424,7 @@ export function CurrentPlanCard({
             <AlertTitle>{tc.billingTrialEndedTitle}</AlertTitle>
             <AlertDescription>
               <p className="text-sm mt-1">{tc.billingTrialEndedBody}</p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingSubscribeNow}
               </Button>
             </AlertDescription>
@@ -438,7 +438,7 @@ export function CurrentPlanCard({
             <AlertDescription>
               <p className="text-sm mt-1">{tc.billingSubscriptionEndedBody}</p>
               <p className="text-sm font-medium mt-1">{tc.billingSubscriptionEndedHint}</p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingSubscribeNow}
               </Button>
             </AlertDescription>
@@ -451,7 +451,7 @@ export function CurrentPlanCard({
             <AlertTitle>{tc.billingInconsistentBillingTitle}</AlertTitle>
             <AlertDescription>
               <p className="text-sm mt-1">{tc.billingInconsistentBillingBody}</p>
-              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
                 {tc.billingSubscribeNow}
               </Button>
             </AlertDescription>
@@ -469,7 +469,7 @@ export function CurrentPlanCard({
                 size="sm"
                 className="mt-2"
                 onClick={onUpdatePaymentMethod}
-                disabled={actionLoading}
+                disabled={paymentBtnDisabled}
               >
                 {tc.billingRenewSubscription}
               </Button>
@@ -527,7 +527,7 @@ export function CurrentPlanCard({
                 size="sm"
                 className="mt-2"
                 onClick={onUpdatePaymentMethod}
-                disabled={actionLoading}
+                disabled={paymentBtnDisabled}
               >
                 Update payment method
               </Button>
@@ -563,10 +563,10 @@ export function CurrentPlanCard({
       {/* Action buttons: full controls only when subscription is active or past_due; other states use CTA inside alerts */}
       {showFullSubscriptionActions ? (
         <div className="mt-4 flex gap-3 flex-wrap">
-          <Button variant="outline" onClick={onShowPlanDialog} disabled={actionLoading}>
+          <Button variant="outline" onClick={onShowPlanDialog} disabled={planBtnDisabled}>
             Change Plan
           </Button>
-          <Button variant="outline" onClick={onUpdatePaymentMethod} disabled={actionLoading}>
+          <Button variant="outline" onClick={onUpdatePaymentMethod} disabled={paymentBtnDisabled}>
             <CreditCard className="h-4 w-4 mr-2" />
             Update Payment
           </Button>

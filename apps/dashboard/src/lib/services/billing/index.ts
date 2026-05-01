@@ -5,6 +5,7 @@ export {
   updateSubscriptionPlan,
   cancelSubscription,
   syncUsageDerivedAddons,
+  syncSalonAddonUsageImmediate,
   refreshSubscriptionProjection,
   previewBillingUpcomingInvoice,
   listBillingInvoices,

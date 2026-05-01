@@ -15,6 +15,18 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonLanguageImpactLine: "{price} • Estimated monthly impact: {impact}",
   billingAddonManagePlan: "Manage plan",
   billingAddonReviewLanguages: "Review languages",
+  billingAddonUsagePendingStripe:
+    "Add-on line items are syncing with Stripe. Dollar estimates below are hidden until sync completes so we do not show a number that is not the next invoice.",
+  billingAddonImpactHiddenUntilSync: "Monthly $ impact hidden until Stripe confirms add-on quantities.",
+  billingInvoicePreviewStripeTitle: "Next invoice (Stripe preview)",
+  billingInvoicePreviewStripeHint:
+    "Totals come from Stripe’s upcoming invoice preview after add-on usage is synced. They can still change before the invoice finalizes.",
+  billingInvoicePreviewDegradedTitle: "Next invoice preview unavailable",
+  billingInvoicePreviewDegradedBody:
+    "We will not show an estimated total until billing sync is healthy. Open this page again in a moment, or contact support if this persists.",
+  billingInvoicePreviewSyncingBody: "Syncing add-on usage with Stripe… preview will load when finished.",
+  billingInvoicePreviewNoSubscription: "Subscribe to a paid plan to see a Stripe invoice preview here.",
+  billingInvoicePreviewSmsSupplement: "SMS overage (usage-based estimate, may not yet appear on the Stripe preview)",
   billingSmsUsageTitle: "SMS usage",
   billingSmsUsageDescription:
     "Included quota comes from admin plan features. Unlimited means no included cap for this period.",

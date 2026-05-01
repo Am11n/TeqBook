@@ -299,7 +299,8 @@ export async function cancelSubscription(
   }
 }
 
-async function syncUsageDerivedAddonsImmediate(
+/** Direct edge call (no debounce). Prefer `syncUsageDerivedAddons` from employee/settings saves. */
+export async function syncSalonAddonUsageImmediate(
   salonId: string,
 ): Promise<{ data: SyncAddonUsageResponse | null; error: string | null }> {
   try {
@@ -359,7 +360,7 @@ export async function syncUsageDerivedAddons(
       syncAddonDebounceBySalon.delete(salonId);
       if (!e) return;
       void (async () => {
-        const result = await syncUsageDerivedAddonsImmediate(salonId);
+        const result = await syncSalonAddonUsageImmediate(salonId);
         for (const r of e.resolvers) {
           r(result);
         }

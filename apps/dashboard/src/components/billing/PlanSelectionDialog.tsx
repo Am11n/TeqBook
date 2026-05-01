@@ -30,6 +30,7 @@ interface PlanSelectionDialogProps {
   subscribeLabel: string;
   changePlanLabel: string;
   processingLabel: string;
+  confirmDisabled?: boolean;
 }
 
 export function PlanSelectionDialog({
@@ -48,6 +49,7 @@ export function PlanSelectionDialog({
   subscribeLabel,
   changePlanLabel,
   processingLabel,
+  confirmDisabled = false,
 }: PlanSelectionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,7 +101,7 @@ export function PlanSelectionDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>
-          <Button onClick={onConfirm} disabled={!selectedPlan || actionLoading}>
+          <Button onClick={onConfirm} disabled={!selectedPlan || actionLoading || confirmDisabled}>
             {actionLoading
               ? processingLabel
               : hasSubscription

@@ -302,6 +302,15 @@ export type SettingsMessages = {
   billingAddonLanguageImpactLine?: string;
   billingAddonManagePlan?: string;
   billingAddonReviewLanguages?: string;
+  billingAddonUsagePendingStripe?: string;
+  billingAddonImpactHiddenUntilSync?: string;
+  billingInvoicePreviewStripeTitle?: string;
+  billingInvoicePreviewStripeHint?: string;
+  billingInvoicePreviewDegradedTitle?: string;
+  billingInvoicePreviewDegradedBody?: string;
+  billingInvoicePreviewSyncingBody?: string;
+  billingInvoicePreviewNoSubscription?: string;
+  billingInvoicePreviewSmsSupplement?: string;
   // Billing — SMS usage
   billingSmsUsageTitle?: string;
   billingSmsUsageDescription?: string;

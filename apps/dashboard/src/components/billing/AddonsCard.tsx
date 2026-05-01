@@ -9,6 +9,8 @@ import type { ResolvedSettingsMessages } from "@/app/settings/_helpers/resolve-s
 import { applyTemplate } from "@/i18n/apply-template";
 
 interface AddonsCardProps {
+  /** When false, usage-based euro amounts are not presented as billing truth (Stripe sync pending). */
+  stripeAddonUsageTrusted?: boolean;
   addons: AddonDisplay[];
   usage: {
     employeesIncluded: number | null;
@@ -24,6 +26,7 @@ interface AddonsCardProps {
 }
 
 export function AddonsCard({
+  stripeAddonUsageTrusted = true,
   addons,
   usage,
   actionLoading = false,
@@ -82,6 +85,11 @@ export function AddonsCard({
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-2">{t.billingAddonsTitle}</h3>
       <p className="text-sm text-muted-foreground mb-4">{t.billingAddonsDescription}</p>
+      {!stripeAddonUsageTrusted && t.billingAddonUsagePendingStripe ? (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 mb-4">
+          {t.billingAddonUsagePendingStripe}
+        </div>
+      ) : null}
 
       <div className="space-y-3">
         <div className={cn("border rounded-lg p-4", extraStaffAddon?.active && "border-l-4 border-l-green-500")}>
@@ -98,7 +106,11 @@ export function AddonsCard({
                 )}
               </div>
               <p className="text-sm text-muted-foreground mb-1">{staffUsageLine}</p>
-              <p className="text-sm font-medium">{staffImpactLine}</p>
+              {stripeAddonUsageTrusted ? (
+                <p className="text-sm font-medium">{staffImpactLine}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t.billingAddonImpactHiddenUntilSync}</p>
+              )}
             </div>
             <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
               {t.billingAddonManagePlan}
@@ -122,7 +134,11 @@ export function AddonsCard({
                 )}
               </div>
               <p className="text-sm text-muted-foreground mb-1">{langUsageLine}</p>
-              <p className="text-sm font-medium">{langImpactLine}</p>
+              {stripeAddonUsageTrusted ? (
+                <p className="text-sm font-medium">{langImpactLine}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t.billingAddonImpactHiddenUntilSync}</p>
+              )}
             </div>
             <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
               {t.billingAddonReviewLanguages}

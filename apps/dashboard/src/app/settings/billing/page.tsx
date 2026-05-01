@@ -38,13 +38,24 @@ export default function BillingSettingsPage() {
     [appLocale],
   );
 
-  const { currentPlan, addons, summary, loading, refetch, billingPeriodStaleSyncFailed } = useBilling();
+  const {
+    currentPlan,
+    addons,
+    summary,
+    invoicePreview,
+    addonStripeUsageTrusted,
+    loading,
+    refetch,
+    billingPeriodStaleSyncFailed,
+  } = useBilling();
   const {
     salon,
     actionLoading,
     error,
     setError,
     hasSubscription,
+    billingPlanChangesBlocked,
+    billingPaymentMethodBlocked,
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,
@@ -214,21 +225,10 @@ export default function BillingSettingsPage() {
     setPrefsSavedAt(Date.now());
   };
 
-  const estimate = useMemo(() => {
-    const basePlan = activePlan.price.replace("$", "");
-    const basePlanMinor = Number.isNaN(Number(basePlan)) ? 0 : Number(basePlan);
-    const extraStaffMinor = (summary?.usage.employeesExtraBilled ?? 0) * 5;
-    const extraLanguagesMinor = (summary?.usage.languagesExtraBilled ?? 0) * 10;
-    const smsOverageMinor = smsMetricsTrustedForEstimate ? (smsUsage?.overageCostEstimate ?? 0) : 0;
-    const total = basePlanMinor + extraStaffMinor + extraLanguagesMinor + smsOverageMinor;
-    return { basePlanMinor, extraStaffMinor, extraLanguagesMinor, smsOverageMinor, total };
-  }, [
-    activePlan.price,
-    summary?.usage.employeesExtraBilled,
-    summary?.usage.languagesExtraBilled,
-    smsUsage?.overageCostEstimate,
-    smsMetricsTrustedForEstimate,
-  ]);
+  const formatMoneyMinor = (amountMinor: number, currency: string) => {
+    const cur = currency.toUpperCase();
+    return `${(amountMinor / 100).toFixed(2)} ${cur}`;
+  };
 
   useEffect(() => {
     const loadSmsUsage = async () => {
@@ -345,6 +345,8 @@ export default function BillingSettingsPage() {
         onShowPlanDialog={() => setShowPlanDialog(true)}
         onUpdatePaymentMethod={handleUpdatePayment}
         onShowCancelDialog={() => setShowCancelDialog(true)}
+        planChangeDisabled={billingPlanChangesBlocked}
+        paymentMethodActionDisabled={billingPaymentMethodBlocked}
         dateLocale={appLocale === "nb" ? "nb-NO" : "en-US"}
         translations={{
           billingTitle: t.billingTitle,
@@ -387,6 +389,7 @@ export default function BillingSettingsPage() {
       ) : null}
 
       <AddonsCard
+        stripeAddonUsageTrusted={addonStripeUsageTrusted}
         addons={addonDisplay}
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}
@@ -517,34 +520,66 @@ export default function BillingSettingsPage() {
 
       <Card className="p-6">
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">{t.billingEstimatedInvoiceTitle}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t.billingEstimatedInvoiceHint}
-            </p>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t.billingEstimatedBasePlan}</span>
-              <span>${estimate.basePlanMinor.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t.billingEstimatedExtraStaff}</span>
-              <span>${estimate.extraStaffMinor.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t.billingEstimatedExtraLanguages}</span>
-              <span>${estimate.extraLanguagesMinor.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t.billingEstimatedSmsOverage}</span>
-              <span>{estimate.smsOverageMinor.toFixed(2)} NOK</span>
-            </div>
-            <div className="border-t pt-2 mt-2 flex items-center justify-between font-semibold">
-              <span>{t.billingEstimatedTotal}</span>
-              <span>${estimate.total.toFixed(2)}</span>
-            </div>
-          </div>
+          {invoicePreview?.mode === "stripe_preview" ? (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold">{t.billingInvoicePreviewStripeTitle}</h3>
+                <p className="text-sm text-muted-foreground">{t.billingInvoicePreviewStripeHint}</p>
+              </div>
+              <div className="space-y-2 text-sm">
+                {invoicePreview.lines.map((line, idx) => (
+                  <div key={`${line.description}-${idx}`} className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground line-clamp-2">{line.description}</span>
+                    <span className="tabular-nums shrink-0">
+                      {formatMoneyMinor(line.amount_minor, invoicePreview.currency)}
+                    </span>
+                  </div>
+                ))}
+                {smsMetricsTrustedForEstimate &&
+                smsUsage &&
+                !invoicePreview.lines.some((line) => /sms/i.test(line.description)) ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground line-clamp-2">
+                      {t.billingInvoicePreviewSmsSupplement}
+                    </span>
+                    <span className="tabular-nums shrink-0">
+                      {(smsUsage.overageCostEstimate ?? 0).toFixed(2)} NOK
+                    </span>
+                  </div>
+                ) : null}
+                <div className="border-t pt-2 mt-2 flex items-center justify-between font-semibold">
+                  <span>{t.billingEstimatedTotal}</span>
+                  <span className="tabular-nums">
+                    {formatMoneyMinor(invoicePreview.total_minor, invoicePreview.currency)}
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : invoicePreview?.mode === "degraded" && invoicePreview.reason === "addon_syncing" ? (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold">{t.billingEstimatedInvoiceTitle}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">{t.billingInvoicePreviewSyncingBody}</p>
+            </>
+          ) : invoicePreview?.mode === "no_subscription" ? (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold">{t.billingEstimatedInvoiceTitle}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">{t.billingInvoicePreviewNoSubscription}</p>
+            </>
+          ) : (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold">{t.billingInvoicePreviewDegradedTitle}</h3>
+                <p className="text-sm text-muted-foreground">{t.billingInvoicePreviewDegradedBody}</p>
+              </div>
+              {invoicePreview && "details" in invoicePreview && invoicePreview.details ? (
+                <p className="text-xs text-muted-foreground font-mono">{invoicePreview.details}</p>
+              ) : null}
+            </>
+          )}
         </div>
       </Card>
 
@@ -621,6 +656,7 @@ export default function BillingSettingsPage() {
         onSelectPlan={(plan) => setSelectedPlan(plan)}
         onConfirm={handlePlanChange}
         actionLoading={actionLoading}
+        confirmDisabled={billingPlanChangesBlocked}
         hasSubscription={hasSubscription}
         title={t.billingPlanSelectionTitle}
         description={t.billingPlanSelectionDescription}

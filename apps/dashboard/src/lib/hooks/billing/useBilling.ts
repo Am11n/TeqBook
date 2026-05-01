@@ -8,7 +8,7 @@ import {
   listBillingInvoices,
   previewBillingUpcomingInvoice,
   refreshSubscriptionProjection,
-  syncUsageDerivedAddons,
+  syncSalonAddonUsageImmediate,
 } from "@/lib/services/billing-service";
 import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
 import type { PlanType } from "@/lib/types";
@@ -36,6 +36,7 @@ export function useBilling() {
   const [addons, setAddons] = useState<Addon[]>([]);
   const [summary, setSummary] = useState<BillingSummaryViewModel | null>(null);
   const [invoicePreview, setInvoicePreview] = useState<PreviewBillingUpcomingInvoiceResponse | null>(null);
+  const [addonStripeUsageTrusted, setAddonStripeUsageTrusted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
   const [billingPeriodStaleSyncFailed, setBillingPeriodStaleSyncFailed] = useState(false);
@@ -100,14 +101,15 @@ export function useBilling() {
 
       if (salon.billing_subscription_id) {
         if (shouldStripeRefresh || refreshToken > 0) {
-          await syncUsageDerivedAddons(salon.id);
+          await syncSalonAddonUsageImmediate(salon.id);
           invalidatePlanLimitsCache(salon.id);
         }
         const { data: freshSalon } = await getSalonById(salon.id);
-        if (
+        const trusted =
           freshSalon?.addon_billing_sync_state === "synced" &&
-          freshSalon.product_access_state !== "inconsistent_billing"
-        ) {
+          freshSalon.product_access_state !== "inconsistent_billing";
+        setAddonStripeUsageTrusted(Boolean(trusted));
+        if (trusted) {
           const { data: inv, error: invErr } = await previewBillingUpcomingInvoice(salon.id);
           if (!invErr && inv) {
             setInvoicePreview(inv);
@@ -131,7 +133,14 @@ export function useBilling() {
           setInvoicePreview({ mode: "degraded", reason: "addon_not_synced" });
         }
       } else {
+        setAddonStripeUsageTrusted(false);
         setInvoicePreview({ mode: "no_subscription" });
+      }
+
+      const didAddonSync =
+        Boolean(salon.billing_subscription_id) && (shouldStripeRefresh || refreshToken > 0);
+      if (didAddonSync) {
+        await refreshSalon({ background: true });
       }
 
       const [addonsResult, employeesResult, employeeLimitResult, languageLimitResult, invoicesResult] =
@@ -189,6 +198,7 @@ export function useBilling() {
     addons,
     summary,
     invoicePreview,
+    addonStripeUsageTrusted,
     loading,
     refetch,
     billingPeriodStaleSyncFailed,
