@@ -5,11 +5,11 @@ alwaysApply: true
 
 # Supabase migrations (agent responsibility)
 
-When you add or change files under `supabase/supabase/migrations/` (or otherwise change database schema/RPCs that require a migration):
+When you **add or change** files under `supabase/supabase/migrations/` (or otherwise change database schema/RPCs that require a migration):
 
-1. **Proactively run migrations** against the linked local or remote database using the project’s normal workflow, typically from the repo root:
-   - `supabase db push` (remote linked project), or
-   - `supabase migration up` / `supabase db reset` when the task explicitly targets local dev only.
+1. **In the same session, apply migrations** so remote/local DB never lags new `select`/RPC code (missing columns cause 400s in the dashboard). Default workflow from repo root (or `supabase/` with CLI resolving workdir):
+   - **Remote (linked project):** `supabase db push --yes` — use `--yes` so agents never block on prompts.
+   - **Local only:** `supabase migration up` or `supabase db reset` when the task explicitly targets local dev only.
 
 2. **Do not** end the task with only “run this yourself” unless:
    - the command fails because **Supabase CLI is missing**, **not logged in** (`supabase login`), or **no project link** (`supabase link`), or

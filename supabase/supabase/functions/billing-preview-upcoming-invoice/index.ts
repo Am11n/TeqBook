@@ -18,13 +18,15 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-idempotency-key",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 type Body = { salon_id?: string };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
@@ -91,9 +93,7 @@ serve(async (req) => {
 
     const { data: salon, error: salonErr } = await supabase
       .from("salons")
-      .select(
-        "billing_customer_id, billing_subscription_id, addon_billing_sync_state, product_access_state",
-      )
+      .select("*")
       .eq("id", salonId)
       .maybeSingle();
 

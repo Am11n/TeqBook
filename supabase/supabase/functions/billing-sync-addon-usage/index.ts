@@ -15,13 +15,15 @@ import { ensureStripeAddonQuantitiesMatchDb } from "../_shared/billing-addon-syn
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-idempotency-key",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 type SyncUsageBody = { salon_id: string; idempotency_key?: string };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
@@ -67,8 +69,8 @@ serve(async (req) => {
       );
     }
 
-    const body: SyncUsageBody = await req.json();
-    if (!body.salon_id) {
+    const body = (await req.json().catch(() => ({}))) as Partial<SyncUsageBody>;
+    if (!body.salon_id || typeof body.salon_id !== "string") {
       return new Response(JSON.stringify({ error: "Missing required field: salon_id" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

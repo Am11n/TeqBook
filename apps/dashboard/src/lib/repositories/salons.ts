@@ -141,55 +141,30 @@ export async function getSalonBySlug(
   }
 }
 
-/** Aligned with billing/product-access migrations; see getSalonById fallbacks when DB lags code. */
-const SALON_SELECT_BY_ID_FULL =
-  "id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, payment_status, payment_failed_at, payment_failure_count, product_access_state, billing_inconsistent_reason, addon_billing_sync_state, addon_billing_sync_snapshot, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url";
-
-const SALON_SELECT_BY_ID_NO_ADDON_SYNC =
-  "id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, payment_status, payment_failed_at, payment_failure_count, product_access_state, billing_inconsistent_reason, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url";
-
-/** Older DBs before payment / product_access columns — keep in sync with getSalonBySlug base fields. */
-const SALON_SELECT_BY_ID_LEGACY =
-  "id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url";
-
-function isRetryableSchemaSelectError(message: string): boolean {
-  return (
-    message.includes("column") &&
-    (message.includes("does not exist") || message.includes("Could not find"))
-  );
-}
-
 /**
- * Get salon by ID
+ * Get salon by ID.
+ * Uses `select('*')` so PostgREST never 400s when the remote schema lags behind code (missing new columns).
+ * Typed as Salon at the boundary; unknown keys are ignored by consumers that check optional fields.
  */
 export async function getSalonById(
   salonId: string
 ): Promise<{ data: Salon | null; error: string | null }> {
   try {
-    const variants = [SALON_SELECT_BY_ID_FULL, SALON_SELECT_BY_ID_NO_ADDON_SYNC, SALON_SELECT_BY_ID_LEGACY];
-    let lastMessage: string | null = null;
+    const { data, error } = await supabase
+      .from("salons")
+      .select("*")
+      .eq("id", salonId)
+      .maybeSingle();
 
-    for (const selectList of variants) {
-      const { data, error } = await supabase
-        .from("salons")
-        .select(selectList)
-        .eq("id", salonId)
-        .maybeSingle();
-
-      if (!error) {
-        if (!data) {
-          return { data: null, error: "Salon not found" };
-        }
-        return { data: data as unknown as Salon, error: null };
-      }
-
-      lastMessage = error.message;
-      if (!isRetryableSchemaSelectError(error.message)) {
-        return { data: null, error: error.message };
-      }
+    if (error) {
+      return { data: null, error: error.message };
     }
 
-    return { data: null, error: lastMessage ?? "Salon not found" };
+    if (!data) {
+      return { data: null, error: "Salon not found" };
+    }
+
+    return { data: data as unknown as Salon, error: null };
   } catch (err) {
     return {
       data: null,
