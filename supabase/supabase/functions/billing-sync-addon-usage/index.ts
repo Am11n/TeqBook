@@ -1,14 +1,16 @@
+// =====================================================
+// Billing: sync usage-derived add-on quantities (DB → Stripe)
+// =====================================================
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  computeExtraQuantity,
-  getBaseLimits,
-  getBillingPriceConfig,
-  isValidStripePriceId,
-} from "../_shared/billing.ts";
-import { authorizeSalonAccess } from "../_shared/auth.ts";
-import { validateBillingBinding } from "../_shared/billing-binding.ts";
+  checkRateLimit,
+  createRateLimitErrorResponse,
+} from "../_shared/rate-limit.ts";
+import { authenticateRequest, authorizeSalonAccess } from "../_shared/auth.ts";
+import { ensureStripeAddonQuantitiesMatchDb } from "../_shared/billing-addon-sync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,22 +18,6 @@ const corsHeaders = {
 };
 
 type SyncUsageBody = { salon_id: string; idempotency_key?: string };
-
-async function authenticateRequest(req: Request, supabaseUrl: string, supabaseAnonKey: string) {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return { user: null, error: "Missing or invalid Authorization header" };
-  }
-  const token = authHeader.replace("Bearer ", "");
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return { user: null, error: error?.message || "Invalid token" };
-  }
-  return { user, error: null };
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -58,6 +44,29 @@ serve(async (req) => {
       });
     }
 
+    const rateLimitResult = await checkRateLimit(
+      req,
+      {
+        endpointType: "billing-sync-addon-usage",
+        supabaseUrl,
+        supabaseServiceKey,
+      },
+      user,
+    );
+    if (!rateLimitResult.allowed) {
+      const identifier =
+        user?.id || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+      const identifierType = user?.id ? "user_id" : "ip";
+      return createRateLimitErrorResponse(
+        rateLimitResult,
+        identifier,
+        identifierType,
+        "billing-sync-addon-usage",
+        supabaseUrl,
+        supabaseServiceKey,
+      );
+    }
+
     const body: SyncUsageBody = await req.json();
     if (!body.salon_id) {
       return new Response(JSON.stringify({ error: "Missing required field: salon_id" }), {
@@ -75,106 +84,29 @@ serve(async (req) => {
       });
     }
 
-    const { data: salon } = await supabase
-      .from("salons")
-      .select("plan, billing_subscription_id, supported_languages, billing_customer_id")
-      .eq("id", body.salon_id)
-      .maybeSingle();
-    if (!salon?.billing_subscription_id || !salon.plan) {
-      return new Response(JSON.stringify({ synced: false, reason: "no_active_subscription" }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const [{ count: activeEmployeesCount }] = await Promise.all([
-      supabase
-        .from("employees")
-        .select("id", { count: "exact", head: true })
-        .eq("salon_id", body.salon_id)
-        .eq("is_active", true),
-    ]);
-    const activeEmployees = activeEmployeesCount ?? 0;
-    const activeLanguages = Array.isArray(salon.supported_languages) ? salon.supported_languages.length : 0;
-    const baseLimits = getBaseLimits(salon.plan);
-
-    const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
-    const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
-
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-11-20.acacia" });
-    const subscription = await stripe.subscriptions.retrieve(salon.billing_subscription_id);
-    const stripeCustomerId =
-      typeof subscription.customer === "string"
-        ? subscription.customer
-        : subscription.customer?.id ?? null;
-    const stripeBindingError = validateBillingBinding({
-      stripeSubscriptionCustomerId: stripeCustomerId,
-      salonBillingCustomerId: salon.billing_customer_id,
+    const result = await ensureStripeAddonQuantitiesMatchDb(supabase, stripe, body.salon_id, {
+      markSyncing: true,
+      maxRetries: 4,
     });
-    if (stripeBindingError) {
-      return new Response(JSON.stringify({ error: stripeBindingError }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const priceConfig = getBillingPriceConfig();
-    const itemsByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
-    const updates: Stripe.SubscriptionUpdateParams.Item[] = [];
 
-    const syncAddon = (priceId: string, quantity: number) => {
-      if (!isValidStripePriceId(priceId)) return;
-      const existing = itemsByPrice.get(priceId);
-      if (existing && quantity <= 0) {
-        updates.push({ id: existing.id, deleted: true });
-        return;
-      }
-      if (existing) {
-        updates.push({ id: existing.id, quantity });
-        return;
-      }
-      if (quantity > 0) {
-        updates.push({ price: priceId, quantity });
-      }
+    const payload = {
+      ok: result.ok,
+      synced: result.synced,
+      reason: result.reason,
+      state: result.state,
+      snapshot: result.snapshot,
+      stripe_subscription_id: result.stripe_subscription_id,
+      active_employees: result.active_employees,
+      active_languages: result.active_languages,
+      extra_staff_qty: result.snapshot.expected.extra_staff,
+      extra_languages_qty: result.snapshot.expected.extra_languages,
     };
 
-    syncAddon(priceConfig.addonPriceIds.extra_staff, extraStaffQty);
-    syncAddon(priceConfig.addonPriceIds.extra_languages, extraLanguagesQty);
-
-    if (updates.length > 0) {
-      const idemKey =
-        body.idempotency_key ||
-        req.headers.get("x-idempotency-key") ||
-        `sync-addon-usage:${body.salon_id}:${activeEmployees}:${activeLanguages}`;
-      await stripe.subscriptions.update(
-        salon.billing_subscription_id,
-        { items: updates },
-        { idempotencyKey: idemKey },
-      );
-    }
-
-    const addonRows = [
-      { salon_id: body.salon_id, type: "extra_staff", qty: extraStaffQty },
-      { salon_id: body.salon_id, type: "extra_languages", qty: extraLanguagesQty },
-    ];
-    const upsertRows = addonRows.filter((row) => row.qty > 0);
-    if (upsertRows.length > 0) {
-      await supabase.from("addons").upsert(upsertRows, { onConflict: "salon_id,type" });
-    }
-    const removeTypes = addonRows.filter((row) => row.qty <= 0).map((row) => row.type);
-    if (removeTypes.length > 0) {
-      await supabase.from("addons").delete().eq("salon_id", body.salon_id).in("type", removeTypes);
-    }
-
-    return new Response(
-      JSON.stringify({
-        synced: true,
-        active_employees: activeEmployees,
-        active_languages: activeLanguages,
-        extra_staff_qty: extraStaffQty,
-        extra_languages_qty: extraLanguagesQty,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     return new Response(
       JSON.stringify({

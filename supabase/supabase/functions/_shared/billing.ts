@@ -38,6 +38,21 @@ export function computeExtraQuantity(activeCount: number, included: number | nul
   return Math.max(activeCount - included, 0);
 }
 
+/** Pilot caps for Starter add-on billing (must match dashboard plan-limits). */
+export const STARTER_MAX_EXTRA_STAFF_ADDON = 20;
+export const STARTER_MAX_EXTRA_LANGUAGES_ADDON = 8;
+
+export function capStarterAddonQuantities(plan: BillingPlan | string, qty: { extra_staff: number; extra_languages: number }): {
+  extra_staff: number;
+  extra_languages: number;
+} {
+  if (plan !== "starter") return qty;
+  return {
+    extra_staff: Math.min(qty.extra_staff, STARTER_MAX_EXTRA_STAFF_ADDON),
+    extra_languages: Math.min(qty.extra_languages, STARTER_MAX_EXTRA_LANGUAGES_ADDON),
+  };
+}
+
 export function isValidStripePriceId(priceId: string): boolean {
   return typeof priceId === "string" && priceId.startsWith("price_");
 }

@@ -6,6 +6,7 @@ export {
   cancelSubscription,
   syncUsageDerivedAddons,
   refreshSubscriptionProjection,
+  previewBillingUpcomingInvoice,
   listBillingInvoices,
 } from "./subscription";
 

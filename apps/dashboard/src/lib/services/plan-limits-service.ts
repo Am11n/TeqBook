@@ -4,6 +4,10 @@
 // Business logic for checking plan limits and addons
 
 import type { PlanType } from "@/lib/types";
+import {
+  STARTER_MAX_EXTRA_LANGUAGES_ADDON,
+  STARTER_MAX_EXTRA_STAFF_ADDON,
+} from "@/lib/constants/starter-addon-caps";
 import * as addonsRepo from "@/lib/repositories/addons";
 import * as employeesRepo from "@/lib/repositories/employees";
 import { cacheGetOrSet, cacheDelete, CacheKeys, CacheTTL } from "@/lib/services/cache-service";
@@ -77,8 +81,12 @@ export async function getEffectiveLimit(
           return { limit: null as number | null, error: addonError };
         }
 
-        // Calculate effective limit
-        const addonQty = addon?.qty || 0;
+        // Calculate effective limit (Starter: cap add-on qty billed for this plan)
+        let addonQty = addon?.qty || 0;
+        if (plan === "starter") {
+          const cap = limitType === "languages" ? STARTER_MAX_EXTRA_LANGUAGES_ADDON : STARTER_MAX_EXTRA_STAFF_ADDON;
+          addonQty = Math.min(addonQty, cap);
+        }
         const effectiveLimit = baseLimit + addonQty;
 
         return { limit: effectiveLimit, error: null as string | null };

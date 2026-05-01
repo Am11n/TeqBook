@@ -11,6 +11,7 @@ import { verifyCronSecret } from "../_shared/cron-secret.ts";
 import { getBillingPriceConfig } from "../_shared/billing.ts";
 import { syncSubscriptionProjection } from "../_shared/billing-sync-subscription-projection.ts";
 import { markBillingInconsistent } from "../_shared/billing-recompute.ts";
+import { ensureStripeAddonQuantitiesMatchDb } from "../_shared/billing-addon-sync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,6 +77,10 @@ serve(async (req) => {
       try {
         const subscription = await stripe.subscriptions.retrieve(subId);
         await syncSubscriptionProjection(supabase, subscription, priceConfig);
+        await ensureStripeAddonQuantitiesMatchDb(supabase, stripe, row.id as string, {
+          markSyncing: false,
+          maxRetries: 3,
+        });
         processed += 1;
         details.push(`ok:${row.id}`);
       } catch (e) {

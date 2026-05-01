@@ -7,6 +7,10 @@ import {
   cancelSubscription,
   getPaymentMethodSetupIntent,
 } from "@/lib/services/billing-service";
+import {
+  salonBlocksPaymentMethodUpdateForBilling,
+  salonBlocksPlanChangeForBillingSync,
+} from "@/lib/utils/billing/billing-guards";
 import type { PlanType } from "@/lib/types";
 
 export type UpdatePaymentMethodSetupResult = {
@@ -37,6 +41,13 @@ export function useBillingActions() {
 
   const handleChangePlan = async (selectedPlan: PlanType): Promise<{ success: boolean; clientSecret: string | null }> => {
     if (!salon?.id) {
+      return { success: false, clientSecret: null };
+    }
+
+    if (salonBlocksPlanChangeForBillingSync(salon)) {
+      setError(
+        "Billing is syncing or needs attention before you can change plans. Open this page to finish sync, or contact support if it persists.",
+      );
       return { success: false, clientSecret: null };
     }
 
@@ -192,6 +203,13 @@ export function useBillingActions() {
   const handleUpdatePaymentMethod = async (): Promise<UpdatePaymentMethodSetupResult | null> => {
     if (!salon?.id || !salon?.billing_customer_id) return null;
 
+    if (salonBlocksPaymentMethodUpdateForBilling(salon)) {
+      setError(
+        "Billing needs attention before you can update the payment method. Resolve billing sync issues first, or contact support.",
+      );
+      return null;
+    }
+
     setActionLoading(true);
     setError(null);
 
@@ -220,6 +238,8 @@ export function useBillingActions() {
     setError,
     hasSubscription,
     hasCustomer,
+    billingPlanChangesBlocked: salonBlocksPlanChangeForBillingSync(salon),
+    billingPaymentMethodBlocked: salonBlocksPaymentMethodUpdateForBilling(salon),
     handleChangePlan,
     handleCancelSubscription,
     handleUpdatePaymentMethod,

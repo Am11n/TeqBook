@@ -5,7 +5,7 @@
 // Abstracts Supabase calls and provides type-safe API
 
 import { supabase } from "@/lib/supabase-client";
-import type { ProductAccessState, TimeFormat } from "@/lib/types/domain";
+import type { AddonBillingSyncState, ProductAccessState, TimeFormat } from "@/lib/types/domain";
 
 export type SalonTheme = {
   primary?: string;
@@ -91,6 +91,9 @@ export type Salon = {
   last_payment_retry_at?: string | null;
   payment_status?: "active" | "failed" | "grace_period" | "restricted" | "requires_action" | "incomplete" | null;
   product_access_state?: ProductAccessState | null;
+  billing_inconsistent_reason?: string | null;
+  addon_billing_sync_state?: AddonBillingSyncState | null;
+  addon_billing_sync_snapshot?: Record<string, unknown> | null;
   // General settings fields
   business_address?: string | null;
   org_number?: string | null;
@@ -147,7 +150,7 @@ export async function getSalonById(
   try {
     const { data, error } = await supabase
       .from("salons")
-      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, payment_status, payment_failed_at, payment_failure_count, product_access_state, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url")
+      .select("id, name, slug, is_public, preferred_language, salon_type, whatsapp_number, supported_languages, default_language, timezone, currency, theme, theme_pack_id, theme_pack_version, theme_pack_hash, theme_pack_snapshot, theme_overrides, plan, billing_customer_id, billing_subscription_id, current_period_end, trial_end, payment_status, payment_failed_at, payment_failure_count, product_access_state, billing_inconsistent_reason, addon_billing_sync_state, addon_billing_sync_snapshot, business_address, org_number, cancellation_hours, default_buffer_minutes, time_format, description, cover_image, instagram_url, facebook_url, twitter_url, tiktok_url, website_url")
       .eq("id", salonId)
       .maybeSingle();
 

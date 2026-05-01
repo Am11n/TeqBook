@@ -232,6 +232,8 @@ interface CurrentPlanCardProps {
   } | null;
   /** When subscription period end in DB is before “now” we sync with Stripe; surface status here */
   billingPeriodStale?: { syncing: boolean; failed: boolean } | null;
+  planChangeDisabled?: boolean;
+  paymentMethodActionDisabled?: boolean;
 }
 
 // ─── Component ──────────────────────────────────────
@@ -249,10 +251,14 @@ export function CurrentPlanCard({
   dateLocale = "en-US",
   usage,
   billingPeriodStale = null,
+  planChangeDisabled = false,
+  paymentMethodActionDisabled = false,
 }: CurrentPlanCardProps) {
   const PlanIcon = activePlan.icon;
   const state = getBillingState(hasSubscription, salon);
   const tc = mergeCopy(tIn);
+  const planBtnDisabled = actionLoading || planChangeDisabled;
+  const paymentBtnDisabled = actionLoading || paymentMethodActionDisabled;
 
   const periodEnd = salon?.current_period_end ? new Date(salon.current_period_end) : null;
   const trialEnd = salon?.trial_end ? new Date(salon.trial_end) : null;

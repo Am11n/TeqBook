@@ -7,6 +7,7 @@ export {
   finalizeSetupIntentDefaultPaymentMethod,
   syncUsageDerivedAddons,
   refreshSubscriptionProjection,
+  previewBillingUpcomingInvoice,
   listBillingInvoices,
   handlePaymentFailure,
   retryFailedPayment,

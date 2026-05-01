@@ -41,6 +41,9 @@ export type ProductAccessState =
   | "expired"
   | "inconsistent_billing";
 
+/** Postgres enum addon_billing_sync_state — Stripe add-on lines vs DB-derived expected */
+export type AddonBillingSyncState = "synced" | "syncing" | "drift_detected" | "failed";
+
 // Feature keys - must match database features.key values
 export type FeatureKey = 
   | "BOOKINGS"
@@ -204,8 +207,17 @@ export type Salon = {
   twitter_url?: string | null;
   tiktok_url?: string | null;
   website_url?: string | null;
+  plan?: "starter" | "pro" | "business" | null;
+  billing_customer_id?: string | null;
+  billing_subscription_id?: string | null;
+  current_period_end?: string | null;
+  trial_end?: string | null;
+  payment_status?: string | null;
   /** Derived billing access state; source of truth for dashboard gating */
   product_access_state?: ProductAccessState | null;
+  billing_inconsistent_reason?: string | null;
+  addon_billing_sync_state?: AddonBillingSyncState | null;
+  addon_billing_sync_snapshot?: Record<string, unknown> | null;
 };
 
 export type Profile = {

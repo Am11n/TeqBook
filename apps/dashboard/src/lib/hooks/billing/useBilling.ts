@@ -1,13 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getAddonsForSalon } from "@/lib/repositories/addons";
+import { getSalonById } from "@/lib/repositories/salons";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
-import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
-import { listBillingInvoices, refreshSubscriptionProjection } from "@/lib/services/billing-service";
+import { getEffectiveLimit, invalidatePlanLimitsCache } from "@/lib/services/plan-limits-service";
+import {
+  listBillingInvoices,
+  previewBillingUpcomingInvoice,
+  refreshSubscriptionProjection,
+  syncUsageDerivedAddons,
+} from "@/lib/services/billing-service";
 import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
 import type { PlanType } from "@/lib/types";
 import type { Addon } from "@/lib/repositories/addons";
-import type { BillingInvoiceResponse } from "@/lib/services/billing/shared";
+import type { BillingInvoiceResponse, PreviewBillingUpcomingInvoiceResponse } from "@/lib/services/billing/shared";
 import type { Employee } from "@/lib/types";
 
 const MAX_STALE_STRIPE_REFRESH = 8;
@@ -29,6 +35,7 @@ export function useBilling() {
   const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [summary, setSummary] = useState<BillingSummaryViewModel | null>(null);
+  const [invoicePreview, setInvoicePreview] = useState<PreviewBillingUpcomingInvoiceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
   const [billingPeriodStaleSyncFailed, setBillingPeriodStaleSyncFailed] = useState(false);
@@ -91,6 +98,42 @@ export function useBilling() {
         }
       }
 
+      if (salon.billing_subscription_id) {
+        if (shouldStripeRefresh || refreshToken > 0) {
+          await syncUsageDerivedAddons(salon.id);
+          invalidatePlanLimitsCache(salon.id);
+        }
+        const { data: freshSalon } = await getSalonById(salon.id);
+        if (
+          freshSalon?.addon_billing_sync_state === "synced" &&
+          freshSalon.product_access_state !== "inconsistent_billing"
+        ) {
+          const { data: inv, error: invErr } = await previewBillingUpcomingInvoice(salon.id);
+          if (!invErr && inv) {
+            setInvoicePreview(inv);
+          } else {
+            setInvoicePreview({
+              mode: "degraded",
+              reason: "preview_unavailable",
+              details: invErr ?? undefined,
+            });
+          }
+        } else if (freshSalon?.addon_billing_sync_state === "syncing") {
+          setInvoicePreview({ mode: "degraded", reason: "addon_syncing" });
+        } else if (freshSalon?.product_access_state === "inconsistent_billing") {
+          setInvoicePreview({ mode: "degraded", reason: "inconsistent_billing" });
+        } else if (freshSalon?.addon_billing_sync_state) {
+          setInvoicePreview({
+            mode: "degraded",
+            reason: `addon_state:${freshSalon.addon_billing_sync_state}`,
+          });
+        } else {
+          setInvoicePreview({ mode: "degraded", reason: "addon_not_synced" });
+        }
+      } else {
+        setInvoicePreview({ mode: "no_subscription" });
+      }
+
       const [addonsResult, employeesResult, employeeLimitResult, languageLimitResult, invoicesResult] =
         await Promise.all([
           getAddonsForSalon(salon.id),
@@ -145,6 +188,7 @@ export function useBilling() {
     currentPlan,
     addons,
     summary,
+    invoicePreview,
     loading,
     refetch,
     billingPeriodStaleSyncFailed,

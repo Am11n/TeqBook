@@ -10,7 +10,17 @@ import {
   type ListBillingInvoicesResponse,
   type SyncAddonUsageResponse,
   type RefreshSubscriptionProjectionResponse,
+  type PreviewBillingUpcomingInvoiceResponse,
 } from "./shared";
+
+const SYNC_ADDON_DEBOUNCE_MS = 650;
+
+type SyncDebounceEntry = {
+  timer: ReturnType<typeof setTimeout> | null;
+  resolvers: Array<(v: { data: SyncAddonUsageResponse | null; error: string | null }) => void>;
+};
+
+const syncAddonDebounceBySalon = new Map<string, SyncDebounceEntry>();
 
 function isRecoverableSubscriptionStateError(message: string): boolean {
   const normalized = message.toLowerCase();
@@ -289,7 +299,7 @@ export async function cancelSubscription(
   }
 }
 
-export async function syncUsageDerivedAddons(
+async function syncUsageDerivedAddonsImmediate(
   salonId: string,
 ): Promise<{ data: SyncAddonUsageResponse | null; error: string | null }> {
   try {
@@ -304,7 +314,7 @@ export async function syncUsageDerivedAddons(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-          "x-idempotency-key": `sync-addon-usage:${salonId}:${Date.now()}`,
+          "x-idempotency-key": `sync-addon-usage:${salonId}`,
         },
         body: JSON.stringify({ salon_id: salonId }),
       },
@@ -316,6 +326,7 @@ export async function syncUsageDerivedAddons(
         action: "addon_synced",
         resourceId: salonId,
         metadata: {
+          state: data.state,
           active_employees: data.active_employees,
           active_languages: data.active_languages,
           extra_staff_qty: data.extra_staff_qty,
@@ -326,6 +337,57 @@ export async function syncUsageDerivedAddons(
       }).catch(() => {});
     }
     return { data, error };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/** Debounced + coalesced per salon to avoid Stripe update races from rapid usage edits. */
+export async function syncUsageDerivedAddons(
+  salonId: string,
+): Promise<{ data: SyncAddonUsageResponse | null; error: string | null }> {
+  return new Promise((resolve) => {
+    let entry = syncAddonDebounceBySalon.get(salonId);
+    if (!entry) {
+      entry = { timer: null, resolvers: [] };
+      syncAddonDebounceBySalon.set(salonId, entry);
+    }
+    entry.resolvers.push(resolve);
+    if (entry.timer) clearTimeout(entry.timer);
+    entry.timer = setTimeout(() => {
+      const e = syncAddonDebounceBySalon.get(salonId);
+      syncAddonDebounceBySalon.delete(salonId);
+      if (!e) return;
+      void (async () => {
+        const result = await syncUsageDerivedAddonsImmediate(salonId);
+        for (const r of e.resolvers) {
+          r(result);
+        }
+      })();
+    }, SYNC_ADDON_DEBOUNCE_MS);
+  });
+}
+
+export async function previewBillingUpcomingInvoice(
+  salonId: string,
+): Promise<{ data: PreviewBillingUpcomingInvoiceResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<PreviewBillingUpcomingInvoiceResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-preview-upcoming-invoice`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-preview-upcoming:${salonId}`,
+        },
+        body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
   }

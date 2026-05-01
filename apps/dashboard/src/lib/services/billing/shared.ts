@@ -72,14 +72,38 @@ export interface ListBillingInvoicesResponse {
   invoices: BillingInvoiceResponse[];
 }
 
+export interface AddonSyncSnapshotClient {
+  expected: { extra_staff: number; extra_languages: number };
+  stripe: { extra_staff: number; extra_languages: number };
+  drift: boolean;
+  last_attempt_at: string;
+  retry_count: number;
+  last_error_code?: string;
+}
+
 export interface SyncAddonUsageResponse {
+  ok?: boolean;
   synced: boolean;
+  state?: "synced" | "syncing" | "drift_detected" | "failed";
   reason?: string;
+  snapshot?: AddonSyncSnapshotClient;
+  stripe_subscription_id?: string;
   active_employees?: number;
   active_languages?: number;
   extra_staff_qty?: number;
   extra_languages_qty?: number;
 }
+
+export type PreviewBillingUpcomingInvoiceResponse =
+  | { mode: "no_subscription"; reason?: string }
+  | { mode: "degraded"; reason: string; details?: string }
+  | {
+      mode: "stripe_preview";
+      currency: string;
+      total_minor: number;
+      amount_due_minor: number;
+      lines: { description: string; amount_minor: number; quantity: number | null }[];
+    };
 
 export interface RefreshSubscriptionProjectionResponse {
   refreshed: boolean;
