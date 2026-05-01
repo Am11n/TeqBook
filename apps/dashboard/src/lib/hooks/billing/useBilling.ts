@@ -84,7 +84,7 @@ export function useBilling() {
         }
         const { data: refreshData, error: refreshError } = await refreshSubscriptionProjection(salon.id);
         if (!refreshError && refreshData?.refreshed) {
-          await refreshSalon();
+          await refreshSalon({ background: true });
           if (allowInitialStripeRefresh) {
             stripeRefreshCompletedKey.current = stripeRefreshKey;
           }

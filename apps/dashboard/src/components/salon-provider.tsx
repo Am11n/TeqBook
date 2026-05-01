@@ -34,6 +34,14 @@ type SalonContextValue =
       salon: Salon | null;
     };
 
+export type RefreshSalonOptions = {
+  /**
+   * When true, do not set global status to "loading" (avoids full-screen LoadingScreen).
+   * Use after background syncs (e.g. Stripe projection) so nested hooks are not unmounted.
+   */
+  background?: boolean;
+};
+
 type SalonContextType = {
   salon: Salon | null;
   profile: Profile | null;
@@ -42,7 +50,7 @@ type SalonContextType = {
   error: string | null;
   isReady: boolean;
   userRole: string | null;
-  refreshSalon: () => Promise<void>;
+  refreshSalon: (options?: RefreshSalonOptions) => Promise<void>;
 };
 
 const SalonContext = createContext<SalonContextType | null>(null);
@@ -57,9 +65,11 @@ export function SalonProvider({ children }: SalonProviderProps) {
     status: "loading",
   });
 
-  const loadSalonData = useCallback(async () => {
+  const loadSalonData = useCallback(async (options?: RefreshSalonOptions) => {
     try {
-      setState({ status: "loading" });
+      if (!options?.background) {
+        setState({ status: "loading" });
+      }
 
       const { data: user, error: userError } = await getCurrentUser();
 

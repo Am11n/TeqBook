@@ -64,3 +64,5 @@ verify_jwt = false
 [functions.billing-refresh-subscription-projection]
 # Browser-triggered; preflight OPTIONS has no JWT. Bearer auth in function code.
 verify_jwt = false
+# Canonical sources live under supabase/supabase/functions; path is relative to this config file.
+entrypoint = "./supabase/functions/billing-refresh-subscription-projection/index.ts"
