@@ -231,6 +231,15 @@ export type Salon = {
   payment_failed_at?: string | null;
   last_payment_retry_at?: string | null;
   payment_status?: "active" | "failed" | "grace_period" | "restricted" | "requires_action" | "incomplete" | null;
+  product_access_state?:
+    | "legacy_exempt"
+    | "trial"
+    | "active"
+    | "grace"
+    | "suspended"
+    | "expired"
+    | "inconsistent_billing"
+    | null;
   business_address?: string | null;
   org_number?: string | null;
   cancellation_hours?: number | null;

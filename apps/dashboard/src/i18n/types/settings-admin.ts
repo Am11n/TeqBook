@@ -57,6 +57,15 @@ export type SettingsMessages = {
   billingStatePastDue?: string;
   billingSubscribeNow?: string;
   billingRenewSubscription?: string;
+  /** Shown under billing estimate; auto-renew policy */
+  billingAutoRenewFootnote?: string;
+  billingStateGrace?: string;
+  billingStateSuspended?: string;
+  billingStateInconsistentBilling?: string;
+  billingInconsistentBillingTitle?: string;
+  billingInconsistentBillingBody?: string;
+  billingSuspendedAccessTitle?: string;
+  billingSuspendedAccessBody?: string;
   currentPlan: string;
   planStarter: string;
   planPro: string;

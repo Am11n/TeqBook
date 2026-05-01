@@ -82,6 +82,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     packagesUnknownService: "نامشخص",
     personalliste: "فهرست کارکنان",
     productLockCta: "رفتن به پرداخت‌ها",
+    productLockTitleSuspended: "دسترسی متوقف شده است",
+    productLockDescriptionSuspended:
+      "مشکل پرداخت در اشتراک وجود دارد. پرداخت‌ها را باز کنید تا روش پرداخت یا پلن را به‌روز کنید.",
+    productLockTitleInconsistentBilling: "همگام‌سازی پرداخت",
+    productLockDescriptionInconsistentBilling:
+      "داده‌های پرداخت به‌روز می‌شود. پرداخت‌ها را باز کنید. اگر ادامه داشت با پشتیبانی تماس بگیرید.",
     productLockDescription: "برای ادامه استفاده از داشبورد سالون اشتراک بگیرید. از بخش پرداخت‌ها پلن را انتخاب و پرداخت را تکمیل کنید.",
     productLockTitle: "دوره آزمایشی شما پایان یافت",
     products: "محصولات",

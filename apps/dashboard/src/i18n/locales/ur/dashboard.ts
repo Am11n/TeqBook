@@ -170,6 +170,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
         "سیلون ڈیش بورڈ استعمال جاری رکھنے کے لیے سبسکرائب کریں۔ بلنگ سے پلان منتخب کریں۔",
     productLockCta: "بلنگ پر جائیں",
+    productLockTitleSuspended: "رسائی موقوف",
+    productLockDescriptionSuspended:
+      "سبسکرپشن میں بلنگ کا مسئلہ ہے۔ ادائیگی یا پلان اپ ڈیٹ کرنے کے لیے بلنگ کھولیں۔",
+    productLockTitleInconsistentBilling: "بلنگ ہم آہنگ ہو رہی ہے",
+    productLockDescriptionInconsistentBilling:
+      "ادائیگی کا ڈیٹا اپ ڈیٹ ہو رہا ہے۔ حیثیت دیکھنے کے لیے بلنگ کھولیں۔ اگر یہ طویل رہے تو سپورٹ سے رابطہ کریں۔",
     dialogSelectNoOptions: "کوئی اختیار نہیں",
     dialogSelectPlaceholderDefault: "منتخب کریں…",
     dialogMultiSelectSelected: "{count} منتخب",

@@ -179,6 +179,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "የሳሎን ዳሽቦርድዎን መጠቀም ለመቀጠል ይመዝገቡ። እቅድ ለመምረጥ እና ክፍያ ለማጠናቀቅ የክፍያ ገጽ ማየት ይችላሉ።",
     productLockCta: "ወደ ክፍያ ሂድ",
+    productLockTitleSuspended: "መዳረሻ ባለፈ ጊዜ ቆሟል",
+    productLockDescriptionSuspended:
+      "በደንበኝነትዎ ላይ የክፍያ ችግር አለ። የክፍያ ዘዴ ወይም እቅድ ለማዘመን ክፍያን ይክፈቱ።",
+    productLockTitleInconsistentBilling: "ክፍያዎን እየተመሳሰልን ነው",
+    productLockDescriptionInconsistentBilling:
+      "የክፍያ ውሂብ እየተዘመነ ነው። ለማየት ክፍያን ይክፈቱ። ለረጅም ጊዜ ከቆየ ድጋፍን ያግኙ።",
     dialogSelectNoOptions: "አማራጮች የሉም",
     dialogSelectPlaceholderDefault: "ምረጥ…",
     dialogMultiSelectSelected: "{count} ተመርጧል",

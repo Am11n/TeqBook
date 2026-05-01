@@ -82,6 +82,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     packagesUnknownService: "item-set",
     personalliste: "ዝርዝር ሰራተኞች",
     productLockCta: "ናብ ሕሳብ ምኻድ",
+    productLockTitleSuspended: "መዳረሻ ተሰናኒሉ",
+    productLockDescriptionSuspended:
+      "ናይ ምዝገባ ሕሳብ ጸገም ኣሎ። ኣገባብ ክፍሊት ወይ መደብ ንምምሕዳስ ሕሳብ ክፈት።",
+    productLockTitleInconsistentBilling: "ሕሳብ ንምምሕዳስ ንሰርሕ",
+    productLockDescriptionInconsistentBilling:
+      "ዳታ ክፍሊት ንሓድሽ ይኸይድ። ንምርካብ ሕሳብ ክፈት። ክነራረፍ እንተ ቀጸለ ሓገዝ ርከብ።",
     productLockDescription: "ነቲ ሳሎን ዳሽቦርድካ ክትጥቀመሉ ኣዘዝ ። መደብ ንምምራጽ ሕሳብ ክትከፍትን ምሉእ ክፍሊት ክትከፍትን ትኽእል ኢኻ ።",
     productLockTitle: "እቲ ፈተናኻ ተዛዚሙ",
     products: "ፍርያት",

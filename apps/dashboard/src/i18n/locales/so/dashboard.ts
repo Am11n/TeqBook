@@ -82,6 +82,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     packagesUnknownService: "Aan La Aqoon",
     personalliste: "Diiwaangelyada shaqaalaha",
     productLockCta: "Tag biilasha",
+    productLockTitleSuspended: "Helitaanka waa la joojiyay",
+    productLockDescriptionSuspended:
+      "Dhibaato biilasha ayaa jirta isdiiwaangelinta. Fur biilasha si aad u cusbooneysiiso habka lacag bixinta ama qorshaha.",
+    productLockTitleInconsistentBilling: "Waxaan isku dheellitiraynaa biilasha",
+    productLockDescriptionInconsistentBilling:
+      "Xogta lacag bixinta waa la cusbooneysiinayaa. Fur biilasha si aad u hubiso. Haddii ay sii socoto la xiriir taageerada.",
     productLockDescription: "Isdiiwaangeli si aad u sii wado isticmaalka dashboard-kaaga salon. Waxaad furi kartaa biilasha si aad u doorato qorshe iyo lacag buuxda.",
     productLockTitle: "Tijaabadaadu way dhammaatay",
     products: "Badeecadaha",

@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CreditCard, X, CheckCircle2, AlertTriangle, Clock, Ban, Sparkles } from "lucide-react";
 import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
-import type { Salon } from "@/lib/types";
+import type { ProductAccessState, Salon } from "@/lib/types";
 
 // ─── Billing state matrix ────────────────────────────
 
@@ -18,7 +18,9 @@ type BillingState =
   | "subscription_ended"
   | "trial"
   | "trial_ended"
-  | "past_due";
+  | "past_due"
+  | "inconsistent"
+  | "suspended";
 
 function ceilWholeDaysUntil(end: Date, now: Date): number {
   const ms = end.getTime() - now.getTime();
@@ -27,6 +29,32 @@ function ceilWholeDaysUntil(end: Date, now: Date): number {
 
 function getBillingState(hasSubscription: boolean, salon: Salon | null): BillingState {
   const now = new Date();
+  const pas = salon?.product_access_state as ProductAccessState | undefined | null;
+
+  if (pas === "inconsistent_billing") return "inconsistent";
+  if (pas === "grace") return "past_due";
+  if (pas === "suspended") return "suspended";
+  if (pas === "expired") {
+    return salon?.trial_end ? "trial_ended" : "subscription_ended";
+  }
+  if (pas === "trial") return "trial";
+  if (pas === "active" || pas === "legacy_exempt") {
+    if (
+      hasSubscription &&
+      salon?.payment_status &&
+      ["failed", "grace_period", "restricted"].includes(salon.payment_status)
+    ) {
+      return "past_due";
+    }
+    if (
+      hasSubscription &&
+      typeof salon?.billing_subscription_id === "string" &&
+      Boolean((salon as Salon & { cancel_at_period_end?: boolean }).cancel_at_period_end)
+    ) {
+      return "cancelling";
+    }
+    if (hasSubscription) return "active";
+  }
 
   if (
     hasSubscription &&
@@ -81,6 +109,13 @@ export type CurrentPlanCardCopy = {
   billingStateInactive?: string;
   billingStateCancelling?: string;
   billingStatePastDue?: string;
+  billingStateGrace?: string;
+  billingStateSuspended?: string;
+  billingStateInconsistentBilling?: string;
+  billingInconsistentBillingTitle?: string;
+  billingInconsistentBillingBody?: string;
+  billingSuspendedAccessTitle?: string;
+  billingSuspendedAccessBody?: string;
   billingSubscribeNow?: string;
   billingRenewSubscription?: string;
 };
@@ -105,6 +140,13 @@ const FALLBACK: Required<
     | "billingStateInactive"
     | "billingStateCancelling"
     | "billingStatePastDue"
+    | "billingStateGrace"
+    | "billingStateSuspended"
+    | "billingStateInconsistentBilling"
+    | "billingInconsistentBillingTitle"
+    | "billingInconsistentBillingBody"
+    | "billingSuspendedAccessTitle"
+    | "billingSuspendedAccessBody"
     | "billingSubscribeNow"
     | "billingRenewSubscription"
   >
@@ -128,6 +170,15 @@ const FALLBACK: Required<
   billingStateInactive: "Inactive",
   billingStateCancelling: "Cancelling",
   billingStatePastDue: "Past due",
+  billingStateGrace: "Payment grace",
+  billingStateSuspended: "Paused",
+  billingStateInconsistentBilling: "Billing sync",
+  billingInconsistentBillingTitle: "Billing needs attention",
+  billingInconsistentBillingBody:
+    "We could not confirm your subscription with our payment provider. Open billing to review, or contact support if this continues.",
+  billingSuspendedAccessTitle: "Access paused",
+  billingSuspendedAccessBody:
+    "Your subscription is not in good standing. Update your payment method in billing to restore access.",
   billingSubscribeNow: "Subscribe now",
   billingRenewSubscription: "Renew subscription",
 };
@@ -203,6 +254,8 @@ export function CurrentPlanCard({
         ? tc.billingTrialDaysLeftOne
         : tc.billingTrialDaysLeft.replace("{days}", String(trialDaysRemaining));
 
+  const pas = salon?.product_access_state ?? null;
+
   // ─── State badge ──────────────────────────────────
 
   const stateBadge = {
@@ -245,12 +298,25 @@ export function CurrentPlanCard({
     past_due: (
       <Badge variant="destructive" className="text-xs">
         <AlertTriangle className="h-3 w-3 mr-1" />
-        {tc.billingStatePastDue}
+        {pas === "grace" ? tc.billingStateGrace : tc.billingStatePastDue}
+      </Badge>
+    ),
+    inconsistent: (
+      <Badge variant="secondary" className="text-xs">
+        <AlertTriangle className="h-3 w-3 mr-1" />
+        {tc.billingStateInconsistentBilling}
+      </Badge>
+    ),
+    suspended: (
+      <Badge variant="destructive" className="text-xs">
+        <Ban className="h-3 w-3 mr-1" />
+        {tc.billingStateSuspended}
       </Badge>
     ),
   }[state];
 
-  const showFullSubscriptionActions = state === "active" || state === "past_due";
+  const showFullSubscriptionActions =
+    state === "active" || state === "past_due" || state === "inconsistent";
 
   return (
     <Card className="p-6">
@@ -346,6 +412,38 @@ export function CurrentPlanCard({
               <p className="text-sm font-medium mt-1">{tc.billingSubscriptionEndedHint}</p>
               <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
                 {tc.billingSubscribeNow}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {state === "inconsistent" && (
+          <Alert variant="default" className="mt-3 border-amber-200 bg-amber-50">
+            <AlertTriangle className="h-4 w-4 text-amber-800" />
+            <AlertTitle>{tc.billingInconsistentBillingTitle}</AlertTitle>
+            <AlertDescription>
+              <p className="text-sm mt-1">{tc.billingInconsistentBillingBody}</p>
+              <Button variant="default" size="sm" className="mt-2" onClick={onShowPlanDialog} disabled={actionLoading}>
+                {tc.billingSubscribeNow}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {state === "suspended" && (
+          <Alert variant="destructive" className="mt-3">
+            <Ban className="h-4 w-4" />
+            <AlertTitle>{tc.billingSuspendedAccessTitle}</AlertTitle>
+            <AlertDescription>
+              <p className="text-sm mt-1">{tc.billingSuspendedAccessBody}</p>
+              <Button
+                variant="default"
+                size="sm"
+                className="mt-2"
+                onClick={onUpdatePaymentMethod}
+                disabled={actionLoading}
+              >
+                {tc.billingRenewSubscription}
               </Button>
             </AlertDescription>
           </Alert>

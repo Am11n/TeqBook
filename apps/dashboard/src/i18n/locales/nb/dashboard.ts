@@ -181,6 +181,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Abonner for å fortsette å bruke dashbordet. Gå til fakturering for å velge plan og fullføre betaling.",
     productLockCta: "Gå til fakturering",
+    productLockTitleSuspended: "Tilgangen er satt på pause",
+    productLockDescriptionSuspended:
+      "Det er et faktureringsproblem med abonnementet. Åpne fakturering for å oppdatere betalingsmåte eller plan.",
+    productLockTitleInconsistentBilling: "Vi synker faktureringen din",
+    productLockDescriptionInconsistentBilling:
+      "Betalingsdata oppdateres. Åpne fakturering for å se status. Kontakt support hvis dette varer lenge.",
     dialogSelectNoOptions: "Ingen alternativer",
     dialogSelectPlaceholderDefault: "Velg…",
     dialogMultiSelectSelected: "{count} valgt",

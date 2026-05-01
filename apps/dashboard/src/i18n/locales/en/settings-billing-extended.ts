@@ -78,4 +78,15 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingPlanDialogSubscribe: "Subscribe",
   billingPlanDialogChangePlan: "Change Plan",
   billingPlanDialogProcessing: "Processing...",
+  billingAutoRenewFootnote:
+    "Paid plans renew automatically each billing period until you cancel. Cancel before the next renewal date if you do not want another period.",
+  billingStateGrace: "Payment grace",
+  billingStateSuspended: "Paused",
+  billingStateInconsistentBilling: "Billing sync",
+  billingInconsistentBillingTitle: "Billing needs attention",
+  billingInconsistentBillingBody:
+    "We could not confirm your subscription with our payment provider. Open billing to review, or contact support if this continues.",
+  billingSuspendedAccessTitle: "Access paused",
+  billingSuspendedAccessBody:
+    "Your subscription is not in good standing. Update your payment method in billing to restore access.",
 };

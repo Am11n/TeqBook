@@ -82,6 +82,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     packagesUnknownService: "غير معروف",
     personalliste: "سجل الموظفين",
     productLockCta: "الانتقال إلى الفوترة",
+    productLockTitleSuspended: "تم إيقاف الوصول مؤقتًا",
+    productLockDescriptionSuspended:
+      "هناك مشكلة في فوترة الاشتراك. افتح الفوترة لتحديث طريقة الدفع أو الخطة.",
+    productLockTitleInconsistentBilling: "جاري مزامنة الفوترة",
+    productLockDescriptionInconsistentBilling:
+      "نحدّث بيانات الدفع. افتح الفوترة للمراجعة. إذا استمرّت الرسالة، تواصل مع الدعم.",
     productLockDescription: "اشترك لمواصلة استخدام لوحة تحكُّم الصالون. يمكنك فتح الفوترة لاختيار خطة وإكمال الدفع.",
     productLockTitle: "انتهت فترتك التجريبية",
     products: "المنتجات",

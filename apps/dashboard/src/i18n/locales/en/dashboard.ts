@@ -178,6 +178,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Subscribe to keep using your salon dashboard. You can open billing to choose a plan and complete payment.",
     productLockCta: "Go to billing",
+    productLockTitleSuspended: "Your account access is paused",
+    productLockDescriptionSuspended:
+      "There is a billing issue with your subscription. Open billing to update your payment method or plan.",
+    productLockTitleInconsistentBilling: "We are syncing your billing",
+    productLockDescriptionInconsistentBilling:
+      "Your payment data is being updated. Open billing to review. If this message stays for a long time, contact support.",
     dialogSelectNoOptions: "No options",
     dialogSelectPlaceholderDefault: "Select…",
     dialogMultiSelectSelected: "{count} selected",

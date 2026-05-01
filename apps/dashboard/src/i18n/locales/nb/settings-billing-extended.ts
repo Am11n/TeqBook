@@ -53,4 +53,15 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
     "Ingen fakturaer ennå. De vises her etter første vellykkede faktureringssyklus.",
   billingSubscriptionEndingAlert: "Abonnementet avsluttes",
   openingHoursBreakDefault: "Pause",
+  billingAutoRenewFootnote:
+    "Betalte planer fornyes automatisk hver faktureringsperiode til du sier opp. Si opp før neste fornyelse hvis du ikke vil ha en ny periode.",
+  billingStateGrace: "Betalingsutsettelse",
+  billingStateSuspended: "Pauset",
+  billingStateInconsistentBilling: "Synk av fakturering",
+  billingInconsistentBillingTitle: "Fakturering trenger oppmerksomhet",
+  billingInconsistentBillingBody:
+    "Vi kunne ikke bekrefte abonnementet med betalingsleverandøren. Åpne fakturering for å se mer, eller kontakt support hvis dette vedvarer.",
+  billingSuspendedAccessTitle: "Tilgang pauset",
+  billingSuspendedAccessBody:
+    "Abonnementet er ikke i orden. Oppdater betalingsmåte under fakturering for å gjenopprette tilgang.",
 };

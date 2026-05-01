@@ -174,6 +174,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "सैलून डैशबोर्ड उपयोग जारी रखने के लिए सदस्यता लें। बिलिंग खोलकर प्लान चुनें और भुगतान पूरा करें।",
     productLockCta: "बिलिंग पर जाएँ",
+    productLockTitleSuspended: "आपकी पहुंच रोक दी गई है",
+    productLockDescriptionSuspended:
+      "आपकी सदस्यता में बिलिंग समस्या है। भुगतान विधि या प्लान अपडेट करने के लिए बिलिंग खोलें।",
+    productLockTitleInconsistentBilling: "हम आपकी बिलिंग सिंक कर रहे हैं",
+    productLockDescriptionInconsistentBilling:
+      "भुगतान डेटा अपडेट हो रहा है। स्थिति देखने के लिए बिलिंग खोलें। यदि यह लंबा रहे तो सहायता से संपर्क करें।",
     dialogSelectNoOptions: "कोई विकल्प नहीं",
     dialogSelectPlaceholderDefault: "चुनें…",
     dialogMultiSelectSelected: "{count} चयनित",

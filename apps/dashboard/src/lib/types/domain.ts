@@ -31,6 +31,16 @@ export type PlanType =
   | "pro"
   | "business";
 
+/** Persisted product access state (Postgres enum product_access_state) */
+export type ProductAccessState =
+  | "legacy_exempt"
+  | "trial"
+  | "active"
+  | "grace"
+  | "suspended"
+  | "expired"
+  | "inconsistent_billing";
+
 // Feature keys - must match database features.key values
 export type FeatureKey = 
   | "BOOKINGS"
@@ -194,6 +204,8 @@ export type Salon = {
   twitter_url?: string | null;
   tiktok_url?: string | null;
   website_url?: string | null;
+  /** Derived billing access state; source of truth for dashboard gating */
+  product_access_state?: ProductAccessState | null;
 };
 
 export type Profile = {

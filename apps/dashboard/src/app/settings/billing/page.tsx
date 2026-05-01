@@ -359,10 +359,21 @@ export default function BillingSettingsPage() {
           billingStateInactive: t.billingStateInactive,
           billingStateCancelling: t.billingStateCancelling,
           billingStatePastDue: t.billingStatePastDue,
+          billingStateGrace: t.billingStateGrace,
+          billingStateSuspended: t.billingStateSuspended,
+          billingStateInconsistentBilling: t.billingStateInconsistentBilling,
+          billingInconsistentBillingTitle: t.billingInconsistentBillingTitle,
+          billingInconsistentBillingBody: t.billingInconsistentBillingBody,
+          billingSuspendedAccessTitle: t.billingSuspendedAccessTitle,
+          billingSuspendedAccessBody: t.billingSuspendedAccessBody,
           billingSubscribeNow: t.billingSubscribeNow,
           billingRenewSubscription: t.billingRenewSubscription,
         }}
       />
+
+      {t.billingAutoRenewFootnote ? (
+        <p className="text-sm text-muted-foreground max-w-2xl">{t.billingAutoRenewFootnote}</p>
+      ) : null}
 
       <AddonsCard
         addons={addonDisplay}

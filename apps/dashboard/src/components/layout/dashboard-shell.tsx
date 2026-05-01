@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect, memo } from "react";
+import { ReactNode, useState, useEffect, memo, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "@/components/locale-provider";
 import { useCurrentSalon } from "@/components/salon-provider";
@@ -92,7 +92,40 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
     salon?.trial_end,
     salon?.billing_subscription_id,
     salon?.payment_status,
+    salon?.product_access_state,
     pathname,
+  ]);
+
+  const productLockCopy = useMemo(() => {
+    const st = salon?.product_access_state;
+    if (st === "inconsistent_billing") {
+      return {
+        title: texts.productLockTitleInconsistentBilling ?? texts.productLockTitle,
+        description: texts.productLockDescriptionInconsistentBilling ?? texts.productLockDescription,
+        cta: texts.productLockCta,
+      };
+    }
+    if (st === "suspended") {
+      return {
+        title: texts.productLockTitleSuspended ?? texts.productLockTitle,
+        description: texts.productLockDescriptionSuspended ?? texts.productLockDescription,
+        cta: texts.productLockCta,
+      };
+    }
+    return {
+      title: texts.productLockTitle,
+      description: texts.productLockDescription,
+      cta: texts.productLockCta,
+    };
+  }, [
+    salon?.product_access_state,
+    texts.productLockTitle,
+    texts.productLockDescription,
+    texts.productLockCta,
+    texts.productLockTitleInconsistentBilling,
+    texts.productLockDescriptionInconsistentBilling,
+    texts.productLockTitleSuspended,
+    texts.productLockDescriptionSuspended,
   ]);
 
   const isBillingRoute = pathname.includes("/settings/billing");
@@ -241,9 +274,9 @@ const DashboardShellContent = memo(function DashboardShellContent({ children }: 
 
       <ProductLockDialog
         open={showProductLock}
-        title={texts.productLockTitle}
-        description={texts.productLockDescription}
-        ctaLabel={texts.productLockCta}
+        title={productLockCopy.title}
+        description={productLockCopy.description}
+        ctaLabel={productLockCopy.cta}
       />
 
       {/* Mobile nav overlay */}

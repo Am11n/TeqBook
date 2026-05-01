@@ -170,6 +170,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
         "订阅以继续使用沙龙控制台。可打开账单选择方案并完成付款。",
     productLockCta: "前往账单",
+    productLockTitleSuspended: "访问已暂停",
+    productLockDescriptionSuspended:
+      "订阅存在账单问题。请打开账单页面更新付款方式或套餐。",
+    productLockTitleInconsistentBilling: "正在同步账单",
+    productLockDescriptionInconsistentBilling:
+      "正在更新付款数据。请打开账单查看状态。若长时间如此，请联系支持。",
     dialogSelectNoOptions: "无选项",
     dialogSelectPlaceholderDefault: "选择…",
     dialogMultiSelectSelected: "已选 {count} 项",

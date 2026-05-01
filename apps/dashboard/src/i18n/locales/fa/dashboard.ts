@@ -181,6 +181,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
   productLockDescription:
     'برای ادامهٔ استفاده از داشبورد سالن اشتراک بگیرید. می‌توانید به صورتحساب بروید، طرحی انتخاب کنید و پرداخت را تکمیل کنید.',
   productLockCta: 'رفتن به صورتحساب',
+  productLockTitleSuspended: 'دسترسی متوقف شده است',
+  productLockDescriptionSuspended:
+    'مشکل صورتحساب در اشتراک وجود دارد. برای به‌روزرسانی روش پرداخت یا طرح، صورتحساب را باز کنید.',
+  productLockTitleInconsistentBilling: 'همگام‌سازی صورتحساب',
+  productLockDescriptionInconsistentBilling:
+    'داده‌های پرداخت به‌روز می‌شود. صورتحساب را باز کنید. اگر ادامه داشت با پشتیبانی تماس بگیرید.',
   dialogSelectNoOptions: 'گزینه‌ای نیست',
   dialogSelectPlaceholderDefault: 'انتخاب کنید…',
   dialogMultiSelectSelected: '{count} مورد انتخاب شده',

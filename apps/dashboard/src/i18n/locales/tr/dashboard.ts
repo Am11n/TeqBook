@@ -179,6 +179,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Salon panelinizi kullanmaya devam etmek için abone olun. Plan seçmek ve ödemeyi tamamlamak için faturalama sayfasını açabilirsiniz.",
     productLockCta: "Faturalandırmaya git",
+    productLockTitleSuspended: "Erişiminiz duraklatıldı",
+    productLockDescriptionSuspended:
+      "Aboneliğinizle ilgili bir faturalandırma sorunu var. Ödeme yönteminizi veya planı güncellemek için faturalandırmayı açın.",
+    productLockTitleInconsistentBilling: "Faturalandırma eşitleniyor",
+    productLockDescriptionInconsistentBilling:
+      "Ödeme verileriniz güncelleniyor. Durumu görmek için faturalandırmayı açın. Uzun sürerse destekle iletişime geçin.",
     dialogSelectNoOptions: "Seçenek yok",
     dialogSelectPlaceholderDefault: "Seçin…",
     dialogMultiSelectSelected: "{count} seçildi",

@@ -179,6 +179,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Wykupcie subskrypcję, aby dalej korzystać z panelu salonu. Możecie przejść do rozliczeń, wybrać plan i dokończyć płatność.",
     productLockCta: "Przejdź do płatności",
+    productLockTitleSuspended: "Dostęp wstrzymany",
+    productLockDescriptionSuspended:
+      "Wystąpił problem z rozliczeniami subskrypcji. Otwórz płatności, aby zaktualizować metodę płatności lub plan.",
+    productLockTitleInconsistentBilling: "Synchronizujemy rozliczenia",
+    productLockDescriptionInconsistentBilling:
+      "Aktualizujemy dane płatności. Otwórz płatności, aby sprawdzić status. Jeśli komunikat nie zniknie, skontaktuj się z pomocą.",
     dialogSelectNoOptions: "Brak opcji",
     dialogSelectPlaceholderDefault: "Wybierz…",
     dialogMultiSelectSelected: "Wybrano: {count}",

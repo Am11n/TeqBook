@@ -179,6 +179,12 @@ export type DashboardMessages = {
   productLockTitle: string;
   productLockDescription: string;
   productLockCta: string;
+  /** Hard billing / access lock (suspended state) */
+  productLockTitleSuspended?: string;
+  productLockDescriptionSuspended?: string;
+  /** Stripe/DB mismatch — calm copy */
+  productLockTitleInconsistentBilling?: string;
+  productLockDescriptionInconsistentBilling?: string;
   /** DialogSelect / DialogMultiSelect empty list */
   dialogSelectNoOptions?: string;
   dialogSelectPlaceholderDefault?: string;

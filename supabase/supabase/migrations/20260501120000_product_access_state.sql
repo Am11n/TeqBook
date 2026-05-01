@@ -210,5 +210,4 @@ DROP TRIGGER IF EXISTS trg_log_product_access_state_transition ON public.salons;
 CREATE TRIGGER trg_log_product_access_state_transition
   AFTER UPDATE ON public.salons
   FOR EACH ROW
-  WHEN (OLD.product_access_state IS DISTINCT FROM NEW.product_access_state)
   EXECUTE FUNCTION public.log_product_access_state_transition();

@@ -180,6 +180,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
   productLockDescription:
     "Mag-subscribe para patuloy na gamitin ang salon dashboard. Puwede mong buksan ang billing para pumili ng plano at magbayad.",
   productLockCta: "Pumunta sa billing",
+  productLockTitleSuspended: "Naka-pause ang access",
+  productLockDescriptionSuspended:
+    "May isyu sa billing ng subscription. Buksan ang billing para i-update ang paraan ng bayad o plano.",
+  productLockTitleInconsistentBilling: "Sini-sync ang billing",
+  productLockDescriptionInconsistentBilling:
+    "Ina-update ang datos ng bayad. Buksan ang billing para tingnan. Kung matagal ito, kontakin ang support.",
   dialogSelectNoOptions: "Walang opsyon",
   dialogSelectPlaceholderDefault: "Pumili…",
   dialogMultiSelectSelected: "{count} ang napili",

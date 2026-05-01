@@ -11,6 +11,12 @@
 
 ---
 
+## 2026-05-01
+
+- [kode/db] `product_access_state` enum + `recompute_product_access_state`, `billing_inconsistent_reason`, enforcement trigger, `salon_product_access_granted` reads persisted state, logging trigger. Migrasjon: `20260501120000_product_access_state.sql`; manifest oppdatert. Runbook: [`docs/ops/product-access-state-machine.md`](../ops/product-access-state-machine.md).
+- [kode/edge] `billing-webhook` + `_shared/billing-recompute.ts` + `_shared/billing-sync-subscription-projection.ts`: projection sync, mismatch → inconsistent, `past_due`/`unpaid`/`paused` → `payment_status`, recompute etter relevante events. Ny `billing-reconcile-salons` (cron + `TEQBOOK_CRON_SECRET`).
+- [kode/dashboard] Fakturering og Product Lock bruker `product_access_state`; i18n (15 språk) for nye product lock- og billing-strenger der relevant; auto-fornyelse fotnote via `settings-billing-extended` (en/nb) med valgfri nøkkel.
+
 ## 2026-04-29
 
 - [kode/db] Tabell `public_booking_action_proofs` lagrer hash + utløp for e-post-OTP før utstedelse av public booking action tokens (kun service role). Migrasjon: `20260429120000_public_booking_action_proofs.sql`; oppdatert `migration-manifest.json` + checksums via `pnpm run db:manifest:lock`.

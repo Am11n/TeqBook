@@ -179,6 +179,12 @@ export const dashboard: TranslationNamespaces['dashboard'] = {
     productLockDescription:
       "Đăng ký để tiếp tục dùng bảng điều khiển salon. Bạn có thể mở trang thanh toán để chọn gói và hoàn tất thanh toán.",
     productLockCta: "Đi tới thanh toán",
+    productLockTitleSuspended: "Quyền truy cập đã tạm dừng",
+    productLockDescriptionSuspended:
+      "Có sự cố thanh toán với gói đăng ký. Mở mục thanh toán để cập nhật phương thức thanh toán hoặc gói.",
+    productLockTitleInconsistentBilling: "Đang đồng bộ thanh toán",
+    productLockDescriptionInconsistentBilling:
+      "Chúng tôi đang cập nhật dữ liệu thanh toán. Mở mục thanh toán để xem. Nếu thông báo kéo dài, hãy liên hệ hỗ trợ.",
     dialogSelectNoOptions: "Không có lựa chọn",
     dialogSelectPlaceholderDefault: "Chọn…",
     dialogMultiSelectSelected: "Đã chọn {count}",
