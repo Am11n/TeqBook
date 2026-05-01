@@ -5,6 +5,7 @@ export {
   updateSubscriptionPlan,
   cancelSubscription,
   syncUsageDerivedAddons,
+  refreshSubscriptionProjection,
   listBillingInvoices,
 } from "./subscription";
 

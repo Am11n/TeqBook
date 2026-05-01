@@ -146,6 +146,12 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "billing-refresh-subscription-projection": {
+    maxAttempts: 60,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "whatsapp-send": {
     maxAttempts: 100,
     windowMs: ONE_HOUR_MS,

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { getAddonsForSalon } from "@/lib/repositories/addons";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
-import { listBillingInvoices } from "@/lib/services/billing-service";
+import { listBillingInvoices, refreshSubscriptionProjection } from "@/lib/services/billing-service";
 import type { PlanType } from "@/lib/types";
 import type { Addon } from "@/lib/repositories/addons";
 import type { BillingInvoiceResponse } from "@/lib/services/billing/shared";
@@ -22,12 +22,14 @@ export type BillingSummaryViewModel = {
 };
 
 export function useBilling() {
-  const { salon, isReady } = useCurrentSalon();
+  const { salon, isReady, refreshSalon } = useCurrentSalon();
   const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [summary, setSummary] = useState<BillingSummaryViewModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
+  /** Avoid duplicate Stripe refresh when refreshSalon() updates context and re-runs this effect. */
+  const stripeRefreshCompletedKey = useRef<string | null>(null);
 
   const refetch = () => setRefreshToken((prev) => prev + 1);
 
@@ -38,6 +40,18 @@ export function useBilling() {
 
       const plan = (salon.plan || "starter") as PlanType;
       setCurrentPlan(plan);
+
+      const stripeRefreshKey = `${salon.id}:${refreshToken}`;
+      if (
+        salon.billing_subscription_id &&
+        stripeRefreshCompletedKey.current !== stripeRefreshKey
+      ) {
+        const { data: refreshData, error: refreshError } = await refreshSubscriptionProjection(salon.id);
+        if (!refreshError && refreshData?.refreshed) {
+          stripeRefreshCompletedKey.current = stripeRefreshKey;
+          await refreshSalon();
+        }
+      }
 
       const [addonsResult, employeesResult, employeeLimitResult, languageLimitResult, invoicesResult] =
         await Promise.all([
@@ -80,7 +94,7 @@ export function useBilling() {
       setLoading(false);
     }
     void loadData();
-  }, [isReady, salon, refreshToken]);
+  }, [isReady, salon, refreshSalon, refreshToken]);
 
   return {
     currentPlan,

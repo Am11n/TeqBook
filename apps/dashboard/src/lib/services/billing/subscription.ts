@@ -9,6 +9,7 @@ import {
   type CancelSubscriptionResponse,
   type ListBillingInvoicesResponse,
   type SyncAddonUsageResponse,
+  type RefreshSubscriptionProjectionResponse,
 } from "./shared";
 
 function isRecoverableSubscriptionStateError(message: string): boolean {
@@ -325,6 +326,34 @@ export async function syncUsageDerivedAddons(
       }).catch(() => {});
     }
     return { data, error };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/**
+ * Pull latest Stripe subscription and update salons/addons projection (same path as webhooks).
+ */
+export async function refreshSubscriptionProjection(
+  salonId: string,
+): Promise<{ data: RefreshSubscriptionProjectionResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<RefreshSubscriptionProjectionResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-refresh-subscription-projection`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `refresh-subscription-projection:${salonId}:${Date.now()}`,
+        },
+        body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
   }

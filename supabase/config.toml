@@ -60,3 +60,7 @@ verify_jwt = false
 [functions.billing-reconcile-salons]
 # Scheduled reconciliation; TEQBOOK_CRON_SECRET in Authorization header (see verifyCronSecret).
 verify_jwt = false
+
+[functions.billing-refresh-subscription-projection]
+# Browser-triggered; preflight OPTIONS has no JWT. Bearer auth in function code.
+verify_jwt = false

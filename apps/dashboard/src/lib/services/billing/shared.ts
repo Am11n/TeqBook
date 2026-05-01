@@ -81,6 +81,14 @@ export interface SyncAddonUsageResponse {
   extra_languages_qty?: number;
 }
 
+export interface RefreshSubscriptionProjectionResponse {
+  refreshed: boolean;
+  reason?: string;
+  subscription_id?: string;
+  status?: string;
+  current_period_end?: string | null;
+}
+
 export async function safeFetch<T>(
   url: string,
   options: RequestInit

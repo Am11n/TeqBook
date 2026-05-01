@@ -34,9 +34,17 @@ export function AddonsCard({
   const extraStaffAddon = addonByType.get("extra_staff");
   const extraLanguagesAddon = addonByType.get("extra_languages");
 
-  const estimatedStaffImpact = (extraStaffAddon?.quantity ?? usage?.employeesExtraBilled ?? 0) * 5;
-  const estimatedLanguageImpact =
-    (extraLanguagesAddon?.quantity ?? usage?.languagesExtraBilled ?? 0) * 10;
+  // Use max so a stale addon qty of 0 does not hide usage-derived extras (?? treats 0 as valid).
+  const billedExtraStaff = Math.max(
+    extraStaffAddon?.quantity ?? 0,
+    usage?.employeesExtraBilled ?? 0,
+  );
+  const billedExtraLanguages = Math.max(
+    extraLanguagesAddon?.quantity ?? 0,
+    usage?.languagesExtraBilled ?? 0,
+  );
+  const estimatedStaffImpact = billedExtraStaff * 5;
+  const estimatedLanguageImpact = billedExtraLanguages * 10;
 
   const staffIncluded =
     usage?.employeesIncluded === null
