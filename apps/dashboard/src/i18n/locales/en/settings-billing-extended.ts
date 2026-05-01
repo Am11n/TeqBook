@@ -16,8 +16,9 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonManagePlan: "Manage plan",
   billingAddonReviewLanguages: "Review languages",
   billingAddonUsagePendingStripe:
-    "Add-on line items are syncing with Stripe. Dollar estimates below are hidden until sync completes so we do not show a number that is not the next invoice.",
-  billingAddonImpactHiddenUntilSync: "Monthly $ impact hidden until Stripe confirms add-on quantities.",
+    "Add-on billing is still syncing. Dollar amounts stay hidden until they match your subscription so we do not show a misleading “next invoice” number.",
+  billingAddonImpactHiddenUntilSync:
+    "Monthly $ impact stays hidden until billing confirms your add-on seat counts.",
   billingAddonBlockPlanIncludes: "Plan includes",
   billingAddonBlockYouUse: "You use",
   billingAddonBlockExtraPaid: "Extra (paid)",
@@ -30,25 +31,25 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
     "You are close to your subscription capacity ({percent}% of your current limit). Consider upgrading soon.",
   billingAddonLimitPressureMedium:
     "You are using most of your subscription capacity ({percent}% of your current limit).",
+  billingInvoiceTimingAdjustmentsLabel: "Mid-cycle timing adjustments",
   billingInvoiceProrationFootnote:
-    "Mid-cycle plan or seat changes may add small proration lines on the final invoice. The total below is still the best preview Stripe provides.",
+    "The total is what the payment provider will charge on the next invoice. It equals the recurring plan and add-ons above plus any timing row when your subscription changed mid-period. Extra staff and language changes usually apply from the next bill onward. This is not an extra fee from TeqBook.",
   billingInvoiceShowStripeDetails: "Show line details",
   billingInvoiceHideStripeDetails: "Hide line details",
   billingInvoiceDetailRecurringHeading: "Subscription & recurring add-ons",
   billingInvoiceDetailProrationHeading: "Proration & timing adjustments",
   billingInvoiceDetailProrationLead:
     "Stripe adds these when seats or languages change mid-cycle. The estimated total above is still the number to trust for “what’s next.”",
-  billingInvoiceProrationNetLabel: "Proration adjustments (net)",
-  billingInvoiceProrationDetailsSummary: "Show {count} Stripe proration line(s)",
-  billingInvoicePreviewStripeTitle: "Next invoice (Stripe preview)",
+  billingInvoicePreviewStripeTitle: "Next invoice",
   billingInvoicePreviewStripeHint:
-    "Totals come from Stripe’s upcoming invoice preview after add-on usage is synced. They can still change before the invoice finalizes.",
+    "This is the best preview of what you will pay on your next bill, based on today’s plan and usage. It can still change slightly until the invoice is finalized.",
   billingInvoicePreviewDegradedTitle: "Next invoice preview unavailable",
   billingInvoicePreviewDegradedBody:
     "We will not show an estimated total until billing sync is healthy. Open this page again in a moment, or contact support if this persists.",
-  billingInvoicePreviewSyncingBody: "Syncing add-on usage with Stripe… preview will load when finished.",
-  billingInvoicePreviewNoSubscription: "Subscribe to a paid plan to see a Stripe invoice preview here.",
-  billingInvoicePreviewSmsSupplement: "SMS overage (usage-based estimate, may not yet appear on the Stripe preview)",
+  billingInvoicePreviewSyncingBody: "Syncing add-on billing… your preview will load in a moment.",
+  billingInvoicePreviewNoSubscription: "Subscribe to a paid plan to see your next invoice preview here.",
+  billingInvoicePreviewSmsSupplement:
+    "SMS overage (usage-based estimate; may not yet appear in the next-invoice preview)",
   billingSmsUsageTitle: "SMS usage",
   billingSmsUsageDescription:
     "Included quota comes from admin plan features. Unlimited means no included cap for this period.",
@@ -72,14 +73,14 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingSmsUnavailable: "SMS usage is temporarily unavailable. Please try again.",
   billingSmsStaleLine:
     "{detail} Showing last loaded values for this billing period.",
-  billingEstimatedInvoiceTitle: "Estimated next invoice",
+  billingEstimatedInvoiceTitle: "Next invoice",
   billingEstimatedInvoiceHint:
-    "This is an estimate and may change until the invoice is finalized.",
+    "Best preview of your next charge; may change slightly until the invoice finalizes.",
   billingEstimatedBasePlan: "Base plan",
   billingEstimatedExtraStaff: "Extra staff",
   billingEstimatedExtraLanguages: "Extra languages",
   billingEstimatedSmsOverage: "SMS overage",
-  billingEstimatedTotal: "Estimated total",
+  billingEstimatedTotal: "Total (next bill)",
   billingHistoryTitle: "Billing history",
   billingHistorySubtitle: "Invoice history and receipts",
   billingInvoiceOpen: "Open",

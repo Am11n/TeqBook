@@ -15,8 +15,9 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonManagePlan: "Administrer plan",
   billingAddonReviewLanguages: "Se språk",
   billingAddonUsagePendingStripe:
-    "Tillegg synkroniseres med Stripe. Vi viser ikke dollartall som «neste faktura» før synk er ferdig.",
-  billingAddonImpactHiddenUntilSync: "Månedlig $-påvirkning skjules til Stripe har bekreftet tilleggskvanta.",
+    "Tilleggsfakturering synkroniseres fortsatt. Vi viser ikke dollartall før de stemmer med abonnementet, så du ikke får et villedende «neste faktura»-tall.",
+  billingAddonImpactHiddenUntilSync:
+    "Månedlig $-påvirkning skjules til faktureringen har bekreftet antall tilleggsplasser.",
   billingAddonBlockPlanIncludes: "Planen inkluderer",
   billingAddonBlockYouUse: "Du bruker",
   billingAddonBlockExtraPaid: "Ekstra (betalt)",
@@ -29,25 +30,25 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
     "Du nærmer deg abonnementsgrensen ({percent}% av gjeldende tak). Vurder oppgradering.",
   billingAddonLimitPressureMedium:
     "Du bruker en stor del av kapasiteten ({percent}% av gjeldende tak).",
+  billingInvoiceTimingAdjustmentsLabel: "Tidsjusteringer i perioden",
   billingInvoiceProrationFootnote:
-    "Endringer midt i perioden kan gi små prorerte linjer på den endelige fakturaen. Totalen under er fortsatt beste Stripe-forhåndsvisning.",
+    "Totalen er det betalingsleverandøren faktisk tar på neste faktura. Den tilsvarer grunnplan + tillegg over pluss eventuell tidsrad når abonnementet er endret midt i en periode. Ekstra ansatte og språk trår vanligvis inn fra neste faktura. Dette er ikke en ekstra avgift fra TeqBook.",
   billingInvoiceShowStripeDetails: "Vis linjedetaljer",
   billingInvoiceHideStripeDetails: "Skjul linjedetaljer",
   billingInvoiceDetailRecurringHeading: "Abonnement og faste tillegg",
   billingInvoiceDetailProrationHeading: "Prorering og tidsjusteringer",
   billingInvoiceDetailProrationLead:
     "Stripe legger til disse når plasser eller språk endres midt i perioden. Totalen over er fortsatt det beste svaret på «hva kommer neste gang».",
-  billingInvoiceProrationNetLabel: "Prorering netto (alle justeringer)",
-  billingInvoiceProrationDetailsSummary: "Vis {count} proreringslinjer fra Stripe",
-  billingInvoicePreviewStripeTitle: "Neste faktura (Stripe-forhåndsvisning)",
+  billingInvoicePreviewStripeTitle: "Neste faktura",
   billingInvoicePreviewStripeHint:
-    "Beløp hentes fra Stripes kommende faktura etter at tillegg er synket. De kan fortsatt endre seg før fakturaen ferdigstilles.",
+    "Dette er det beste estimatet for hva du betaler på neste faktura, basert på dagens plan og bruk. Det kan fortsatt endre seg litt før fakturaen er endelig.",
   billingInvoicePreviewDegradedTitle: "Forhåndsvisning av neste faktura er ikke tilgjengelig",
   billingInvoicePreviewDegradedBody:
     "Vi viser ikke et estimert totalbeløp før faktureringssynk er frisk. Last siden på nytt om litt, eller kontakt support ved vedvarende problem.",
-  billingInvoicePreviewSyncingBody: "Synkroniserer tillegg med Stripe … forhåndsvisning vises når det er ferdig.",
-  billingInvoicePreviewNoSubscription: "Velg betalt plan for å se Stripe-forhåndsvisning av faktura her.",
-  billingInvoicePreviewSmsSupplement: "SMS-overskudd (bruksbasert estimat, kan mangle i Stripe-forhåndsvisningen)",
+  billingInvoicePreviewSyncingBody: "Synkroniserer tilleggsfakturering … forhåndsvisning vises straks.",
+  billingInvoicePreviewNoSubscription: "Velg betalt plan for å se forhåndsvisning av neste faktura her.",
+  billingInvoicePreviewSmsSupplement:
+    "SMS-overskudd (bruksbasert estimat; kan mangle i forhåndsvisningen av neste faktura)",
   billingSmsUsageTitle: "SMS-bruk",
   billingSmsUsageDescription:
     "Inkludert kvote kommer fra admin-planfunksjoner. Ubegrenset betyr ingen inkludert grense for denne perioden.",
@@ -71,14 +72,14 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingSmsUnavailable: "SMS-bruk er midlertidig utilgjengelig. Prøv igjen.",
   billingSmsStaleLine:
     "{detail} Viser sist innlastede verdier for denne faktureringsperioden.",
-  billingEstimatedInvoiceTitle: "Estimert neste faktura",
+  billingEstimatedInvoiceTitle: "Neste faktura",
   billingEstimatedInvoiceHint:
-    "Dette er et estimat og kan endre seg før fakturaen er endelig.",
+    "Beste estimat for neste trekk; kan endre seg litt før fakturaen er endelig.",
   billingEstimatedBasePlan: "Grunnplan",
   billingEstimatedExtraStaff: "Ekstra ansatte",
   billingEstimatedExtraLanguages: "Ekstra språk",
   billingEstimatedSmsOverage: "SMS overforbruk",
-  billingEstimatedTotal: "Estimert total",
+  billingEstimatedTotal: "Total (neste faktura)",
   billingHistoryTitle: "Fakturahistorikk",
   billingHistorySubtitle: "Fakturaer og kvitteringer",
   billingInvoiceOpen: "Åpne",

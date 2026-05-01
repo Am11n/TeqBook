@@ -318,6 +318,8 @@ export type SettingsMessages = {
   /** Info — usage ~70%+ of allowed */
   billingAddonLimitPressureMedium?: string;
   billingInvoiceProrationFootnote?: string;
+  /** One row label for aggregated mid-cycle timing / proration total on next invoice. */
+  billingInvoiceTimingAdjustmentsLabel?: string;
   billingInvoiceShowStripeDetails?: string;
   billingInvoiceHideStripeDetails?: string;
   /** Detail drawer: recurring subscription + add-on lines (no proration). */
@@ -326,10 +328,6 @@ export type SettingsMessages = {
   billingInvoiceDetailProrationHeading?: string;
   /** Short explanation under proration block. */
   billingInvoiceDetailProrationLead?: string;
-  /** One-line label for net sum of proration lines (amount shown separately). */
-  billingInvoiceProrationNetLabel?: string;
-  /** Nested `<summary>` for expanding raw proration lines; use {count}. */
-  billingInvoiceProrationDetailsSummary?: string;
   billingInvoicePreviewStripeTitle?: string;
   billingInvoicePreviewStripeHint?: string;
   billingInvoicePreviewDegradedTitle?: string;

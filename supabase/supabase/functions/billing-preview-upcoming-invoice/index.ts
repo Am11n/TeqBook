@@ -25,6 +25,12 @@ const corsHeaders = {
 
 type Body = { salon_id?: string };
 
+function isTimingAdjustmentLine(line: Stripe.InvoiceLineItem): boolean {
+  if (line.proration) return true;
+  const d = line.description ?? "";
+  return /remaining time|unused time|prorat/i.test(d);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -157,17 +163,27 @@ serve(async (req) => {
     const currency = (upcoming.currency ?? "usd").toUpperCase();
     const rawLines = upcoming.lines?.data ?? [];
     const priceCfg = getBillingPriceConfig();
+    const planPriceSet = new Set(Object.values(priceCfg.planPriceIds));
     const addonPriceIds = new Set(
       [priceCfg.addonPriceIds.extra_staff, priceCfg.addonPriceIds.extra_languages].filter(Boolean),
     );
+    /** Non-proration recurring lines by price; proration/credits stay in timing bucket. */
+    let subscription_minor = 0;
     let addons_minor = 0;
+    let timing_adjustments_minor = 0;
     for (const line of rawLines) {
+      const amt = line.amount ?? 0;
+      if (isTimingAdjustmentLine(line)) {
+        timing_adjustments_minor += amt;
+        continue;
+      }
       const pid = line.price?.id;
       if (pid && addonPriceIds.has(pid)) {
-        addons_minor += line.amount ?? 0;
+        addons_minor += amt;
+      } else if (pid && planPriceSet.has(pid)) {
+        subscription_minor += amt;
       }
     }
-    const subscription_minor = Math.max(0, (upcoming.total ?? 0) - addons_minor);
     const lines = rawLines.map((line) => ({
       description: line.description ?? line.price?.nickname ?? "Line item",
       amount_minor: line.amount,
@@ -183,6 +199,7 @@ serve(async (req) => {
         summary: {
           subscription_minor,
           addons_minor,
+          timing_adjustments_minor,
         },
         lines,
       }),

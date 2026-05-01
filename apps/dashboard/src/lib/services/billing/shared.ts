@@ -106,6 +106,8 @@ export type PreviewBillingUpcomingInvoiceResponse =
       summary?: {
         subscription_minor: number;
         addons_minor: number;
+        /** Proration / mid-cycle timing lines (sum); excluded from subscription/addons rows above. */
+        timing_adjustments_minor?: number;
       };
       lines: { description: string; amount_minor: number; quantity: number | null }[];
     };

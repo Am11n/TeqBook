@@ -239,15 +239,18 @@ export default function BillingSettingsPage() {
     if (invoicePreview?.mode !== "stripe_preview") return null;
     const lines = invoicePreview.lines;
     const { recurring, proration } = partitionUpcomingInvoiceLines(lines);
-    const prorationNetMinor = proration.reduce((sum, line) => sum + line.amount_minor, 0);
+    const timingFromApi = invoicePreview.summary?.timing_adjustments_minor;
+    const timingAdjustmentsMinor =
+      typeof timingFromApi === "number" && !Number.isNaN(timingFromApi)
+        ? timingFromApi
+        : proration.reduce((s, line) => s + line.amount_minor, 0);
     return {
       currency: invoicePreview.currency,
       total_minor: invoicePreview.total_minor,
       effectiveSummary:
         invoicePreview.summary ?? summarizeUpcomingLinesClient(lines),
       recurring,
-      proration,
-      prorationNetMinor,
+      timingAdjustmentsMinor,
     };
   }, [invoicePreview]);
 
@@ -572,6 +575,19 @@ export default function BillingSettingsPage() {
                     </div>
                   </>
                 ) : null}
+                {stripePreviewDerived && Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground line-clamp-2">
+                      {t.billingInvoiceTimingAdjustmentsLabel}
+                    </span>
+                    <span className="tabular-nums shrink-0">
+                      {formatMoneyMinor(
+                        stripePreviewDerived.timingAdjustmentsMinor,
+                        stripePreviewDerived.currency,
+                      )}
+                    </span>
+                  </div>
+                ) : null}
                 {smsMetricsTrustedForEstimate &&
                 smsUsage &&
                 !invoicePreview.lines.some((line) => /sms/i.test(line.description)) ? (
@@ -581,19 +597,6 @@ export default function BillingSettingsPage() {
                     </span>
                     <span className="tabular-nums shrink-0">
                       {(smsUsage.overageCostEstimate ?? 0).toFixed(2)} NOK
-                    </span>
-                  </div>
-                ) : null}
-                {stripePreviewDerived && stripePreviewDerived.proration.length > 0 ? (
-                  <div className="flex items-center justify-between gap-4 pt-1">
-                    <span className="text-muted-foreground line-clamp-2">
-                      {t.billingInvoiceProrationNetLabel}
-                    </span>
-                    <span className="tabular-nums shrink-0">
-                      {formatMoneyMinor(
-                        stripePreviewDerived.prorationNetMinor,
-                        stripePreviewDerived.currency,
-                      )}
                     </span>
                   </div>
                 ) : null}
@@ -636,41 +639,6 @@ export default function BillingSettingsPage() {
                         </div>
                       ))}
                     </div>
-                    {stripePreviewDerived.proration.length > 0 ? (
-                      <details className="group/pr border-t pt-3">
-                        <summary className="cursor-pointer list-none text-xs font-medium text-primary hover:underline [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
-                          <span>
-                            {t.billingInvoiceProrationDetailsSummary
-                              ? applyTemplate(t.billingInvoiceProrationDetailsSummary, {
-                                  count: String(stripePreviewDerived.proration.length),
-                                })
-                              : t.billingInvoiceDetailProrationHeading}
-                          </span>
-                          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open/pr:rotate-180" />
-                        </summary>
-                        <div className="space-y-2 pt-3">
-                          {t.billingInvoiceDetailProrationHeading ? (
-                            <p className="text-xs font-medium text-foreground">
-                              {t.billingInvoiceDetailProrationHeading}
-                            </p>
-                          ) : null}
-                          {t.billingInvoiceDetailProrationLead ? (
-                            <p className="text-xs text-muted-foreground">{t.billingInvoiceDetailProrationLead}</p>
-                          ) : null}
-                          {stripePreviewDerived.proration.map((line, idx) => (
-                            <div
-                              key={`pro-${line.description}-${idx}`}
-                              className="flex items-center justify-between gap-4"
-                            >
-                              <span className="text-muted-foreground line-clamp-2">{line.description}</span>
-                              <span className="tabular-nums shrink-0">
-                                {formatMoneyMinor(line.amount_minor, stripePreviewDerived.currency)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    ) : null}
                   </div>
                 ) : null}
               </div>
