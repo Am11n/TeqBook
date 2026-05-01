@@ -66,6 +66,12 @@ export type SettingsMessages = {
   billingInconsistentBillingBody?: string;
   billingSuspendedAccessTitle?: string;
   billingSuspendedAccessBody?: string;
+  /** Next billing date is in the past but subscription looks active — syncing with Stripe */
+  billingPeriodStaleSyncTitle?: string;
+  billingPeriodStaleSyncBody?: string;
+  /** Shown when automatic sync could not refresh the period (e.g. edge function or Stripe) */
+  billingPeriodStaleFailedTitle?: string;
+  billingPeriodStaleFailedBody?: string;
   currentPlan: string;
   planStarter: string;
   planPro: string;

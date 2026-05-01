@@ -89,4 +89,10 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingSuspendedAccessTitle: "Access paused",
   billingSuspendedAccessBody:
     "Your subscription is not in good standing. Update your payment method in billing to restore access.",
+  billingPeriodStaleSyncTitle: "Updating billing period",
+  billingPeriodStaleSyncBody:
+    "The next billing date shown is before today. We are syncing with the payment provider to load the renewed period.",
+  billingPeriodStaleFailedTitle: "Could not refresh billing date",
+  billingPeriodStaleFailedBody:
+    "The displayed renewal date may be out of date. Check that billing edge functions are deployed, then use refresh or contact support.",
 };

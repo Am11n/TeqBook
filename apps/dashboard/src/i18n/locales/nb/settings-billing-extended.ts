@@ -64,4 +64,10 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingSuspendedAccessTitle: "Tilgang pauset",
   billingSuspendedAccessBody:
     "Abonnementet er ikke i orden. Oppdater betalingsmåte under fakturering for å gjenopprette tilgang.",
+  billingPeriodStaleSyncTitle: "Oppdaterer faktureringsperiode",
+  billingPeriodStaleSyncBody:
+    "Neste fakturadato som vises er før dagens dato. Vi synkroniserer med betalingsleverandøren for å hente den fornyede perioden.",
+  billingPeriodStaleFailedTitle: "Kunne ikke oppdatere fakturadato",
+  billingPeriodStaleFailedBody:
+    "Den viste fornyelsesdatoen kan være utdatert. Sjekk at fakturerings-funksjoner er deployet, prøv å laste siden på nytt, eller kontakt support.",
 };

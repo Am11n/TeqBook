@@ -9,6 +9,7 @@ import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
 import type { Salon } from "@/lib/types";
 import type { ProductAccessState } from "@/lib/types/domain";
+import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
 
 // ─── Billing state matrix ────────────────────────────
 
@@ -119,6 +120,10 @@ export type CurrentPlanCardCopy = {
   billingSuspendedAccessBody?: string;
   billingSubscribeNow?: string;
   billingRenewSubscription?: string;
+  billingPeriodStaleSyncTitle?: string;
+  billingPeriodStaleSyncBody?: string;
+  billingPeriodStaleFailedTitle?: string;
+  billingPeriodStaleFailedBody?: string;
 };
 
 const FALLBACK: Required<
@@ -150,6 +155,10 @@ const FALLBACK: Required<
     | "billingSuspendedAccessBody"
     | "billingSubscribeNow"
     | "billingRenewSubscription"
+    | "billingPeriodStaleSyncTitle"
+    | "billingPeriodStaleSyncBody"
+    | "billingPeriodStaleFailedTitle"
+    | "billingPeriodStaleFailedBody"
   >
 > = {
   billingTrialBadge: "Free trial",
@@ -182,6 +191,12 @@ const FALLBACK: Required<
     "Your subscription is not in good standing. Update your payment method in billing to restore access.",
   billingSubscribeNow: "Subscribe now",
   billingRenewSubscription: "Renew subscription",
+  billingPeriodStaleSyncTitle: "Updating billing period",
+  billingPeriodStaleSyncBody:
+    "The next billing date shown is before today. We are syncing with the payment provider to load the renewed period.",
+  billingPeriodStaleFailedTitle: "Could not refresh billing date",
+  billingPeriodStaleFailedBody:
+    "The displayed renewal date may be out of date. Check that billing edge functions are deployed, then reload or contact support.",
 };
 
 function mergeCopy(t: CurrentPlanCardCopy): typeof FALLBACK {
@@ -215,6 +230,8 @@ interface CurrentPlanCardProps {
     languagesActive: number;
     languagesIncluded: number | null;
   } | null;
+  /** When subscription period end in DB is before “now” we sync with Stripe; surface status here */
+  billingPeriodStale?: { syncing: boolean; failed: boolean } | null;
 }
 
 // ─── Component ──────────────────────────────────────
@@ -231,6 +248,7 @@ export function CurrentPlanCard({
   translations: tIn,
   dateLocale = "en-US",
   usage,
+  billingPeriodStale = null,
 }: CurrentPlanCardProps) {
   const PlanIcon = activePlan.icon;
   const state = getBillingState(hasSubscription, salon);
@@ -256,6 +274,9 @@ export function CurrentPlanCard({
         : tc.billingTrialDaysLeft.replace("{days}", String(trialDaysRemaining));
 
   const pas = salon?.product_access_state ?? null;
+
+  const periodEndVersusTodayStale =
+    state === "active" && isSubscriptionBillingPeriodEndStale(salon);
 
   // ─── State badge ──────────────────────────────────
 
@@ -449,6 +470,26 @@ export function CurrentPlanCard({
             </AlertDescription>
           </Alert>
         )}
+
+        {periodEndVersusTodayStale && billingPeriodStale?.failed ? (
+          <Alert variant="destructive" className="mt-3">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>{tc.billingPeriodStaleFailedTitle}</AlertTitle>
+            <AlertDescription>
+              <p className="text-sm mt-1">{tc.billingPeriodStaleFailedBody}</p>
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        {periodEndVersusTodayStale && billingPeriodStale?.syncing ? (
+          <Alert variant="default" className="mt-3 border-primary/20 bg-primary/5">
+            <Clock className="h-4 w-4 text-primary" />
+            <AlertTitle>{tc.billingPeriodStaleSyncTitle}</AlertTitle>
+            <AlertDescription>
+              <p className="text-sm mt-1">{tc.billingPeriodStaleSyncBody}</p>
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         {state === "past_due" && (
           <Alert variant="destructive" className="mt-3">

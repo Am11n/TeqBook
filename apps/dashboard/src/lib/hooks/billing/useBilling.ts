@@ -4,10 +4,13 @@ import { getAddonsForSalon } from "@/lib/repositories/addons";
 import { getEmployeesForSalon } from "@/lib/services/employees-service";
 import { getEffectiveLimit } from "@/lib/services/plan-limits-service";
 import { listBillingInvoices, refreshSubscriptionProjection } from "@/lib/services/billing-service";
+import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
 import type { PlanType } from "@/lib/types";
 import type { Addon } from "@/lib/repositories/addons";
 import type { BillingInvoiceResponse } from "@/lib/services/billing/shared";
 import type { Employee } from "@/lib/types";
+
+const MAX_STALE_STRIPE_REFRESH = 8;
 
 export type BillingSummaryViewModel = {
   usage: {
@@ -28,28 +31,63 @@ export function useBilling() {
   const [summary, setSummary] = useState<BillingSummaryViewModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [billingPeriodStaleSyncFailed, setBillingPeriodStaleSyncFailed] = useState(false);
   /** Avoid duplicate Stripe refresh when refreshSalon() updates context and re-runs this effect. */
   const stripeRefreshCompletedKey = useRef<string | null>(null);
+  const staleStripeAttemptsRef = useRef(0);
+  const prevSalonIdRef = useRef<string | undefined>(undefined);
+  const prevRefreshTokenRef = useRef(0);
 
   const refetch = () => setRefreshToken((prev) => prev + 1);
+
+  useEffect(() => {
+    if (prevSalonIdRef.current !== salon?.id) {
+      prevSalonIdRef.current = salon?.id;
+      staleStripeAttemptsRef.current = 0;
+    }
+    if (prevRefreshTokenRef.current !== refreshToken) {
+      prevRefreshTokenRef.current = refreshToken;
+      staleStripeAttemptsRef.current = 0;
+    }
+  }, [salon?.id, refreshToken]);
 
   useEffect(() => {
     async function loadData() {
       if (!isReady || !salon?.id) return;
       setLoading(true);
 
+      const periodStaleAtStart = isSubscriptionBillingPeriodEndStale(salon);
+      if (!periodStaleAtStart) {
+        setBillingPeriodStaleSyncFailed(false);
+      }
+
       const plan = (salon.plan || "starter") as PlanType;
       setCurrentPlan(plan);
 
       const stripeRefreshKey = `${salon.id}:${refreshToken}`;
-      if (
-        salon.billing_subscription_id &&
-        stripeRefreshCompletedKey.current !== stripeRefreshKey
-      ) {
+
+      const allowInitialStripeRefresh =
+        Boolean(salon.billing_subscription_id) &&
+        !periodStaleAtStart &&
+        stripeRefreshCompletedKey.current !== stripeRefreshKey;
+
+      const allowStaleStripeRefresh =
+        Boolean(salon.billing_subscription_id) &&
+        periodStaleAtStart &&
+        staleStripeAttemptsRef.current < MAX_STALE_STRIPE_REFRESH;
+
+      const shouldStripeRefresh = allowInitialStripeRefresh || allowStaleStripeRefresh;
+
+      if (shouldStripeRefresh && salon.billing_subscription_id) {
+        if (allowStaleStripeRefresh) {
+          staleStripeAttemptsRef.current += 1;
+        }
         const { data: refreshData, error: refreshError } = await refreshSubscriptionProjection(salon.id);
         if (!refreshError && refreshData?.refreshed) {
-          stripeRefreshCompletedKey.current = stripeRefreshKey;
           await refreshSalon();
+          if (allowInitialStripeRefresh) {
+            stripeRefreshCompletedKey.current = stripeRefreshKey;
+          }
         }
       }
 
@@ -91,6 +129,13 @@ export function useBilling() {
         history: invoicesResult.data?.invoices ?? [],
       });
 
+      if (
+        periodStaleAtStart &&
+        staleStripeAttemptsRef.current >= MAX_STALE_STRIPE_REFRESH
+      ) {
+        setBillingPeriodStaleSyncFailed(true);
+      }
+
       setLoading(false);
     }
     void loadData();
@@ -102,6 +147,7 @@ export function useBilling() {
     summary,
     loading,
     refetch,
+    billingPeriodStaleSyncFailed,
   };
 }
 

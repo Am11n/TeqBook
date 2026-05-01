@@ -28,6 +28,7 @@ import {
   smsBillingWindowKey,
   type SmsUsageSummaryMetrics,
 } from "@/lib/services/sms/load-sms-usage-summary";
+import { isSubscriptionBillingPeriodEndStale } from "@/lib/utils/billing/subscription-period-stale";
 
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
@@ -37,7 +38,7 @@ export default function BillingSettingsPage() {
     [appLocale],
   );
 
-  const { currentPlan, addons, summary, loading, refetch } = useBilling();
+  const { currentPlan, addons, summary, loading, refetch, billingPeriodStaleSyncFailed } = useBilling();
   const {
     salon,
     actionLoading,
@@ -86,6 +87,8 @@ export default function BillingSettingsPage() {
     setPrefsDirty(false);
     setPrefsSaveError(null);
   }, [profile]);
+
+  const billingPeriodEndStale = isSubscriptionBillingPeriodEndStale(salon);
 
   const plans = getPlans({
     planStarter: t.planStarter,
@@ -325,6 +328,10 @@ export default function BillingSettingsPage() {
         hasSubscription={hasSubscription}
         actionLoading={actionLoading}
         error={error}
+        billingPeriodStale={{
+          syncing: loading && billingPeriodEndStale && !billingPeriodStaleSyncFailed,
+          failed: billingPeriodStaleSyncFailed && billingPeriodEndStale,
+        }}
         usage={
           summary
             ? {
@@ -368,6 +375,10 @@ export default function BillingSettingsPage() {
           billingSuspendedAccessBody: t.billingSuspendedAccessBody,
           billingSubscribeNow: t.billingSubscribeNow,
           billingRenewSubscription: t.billingRenewSubscription,
+          billingPeriodStaleSyncTitle: t.billingPeriodStaleSyncTitle,
+          billingPeriodStaleSyncBody: t.billingPeriodStaleSyncBody,
+          billingPeriodStaleFailedTitle: t.billingPeriodStaleFailedTitle,
+          billingPeriodStaleFailedBody: t.billingPeriodStaleFailedBody,
         }}
       />
 
