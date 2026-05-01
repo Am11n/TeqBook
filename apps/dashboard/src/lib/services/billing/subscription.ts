@@ -11,6 +11,7 @@ import {
   type SyncAddonUsageResponse,
   type RefreshSubscriptionProjectionResponse,
   type PreviewBillingUpcomingInvoiceResponse,
+  type SetPendingAddonsResponse,
 } from "./shared";
 
 const SYNC_ADDON_DEBOUNCE_MS = 650;
@@ -415,6 +416,36 @@ export async function refreshSubscriptionProjection(
           "x-idempotency-key": `refresh-subscription-projection:${salonId}:${Date.now()}`,
         },
         body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function setSalonPendingAddons(
+  salonId: string,
+  body: { pending_extra_staff: number; pending_extra_languages: number },
+): Promise<{ data: SetPendingAddonsResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<SetPendingAddonsResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-set-pending-addons`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-set-pending-addons:${salonId}:${Date.now()}`,
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          pending_extra_staff: body.pending_extra_staff,
+          pending_extra_languages: body.pending_extra_languages,
+        }),
       },
     );
   } catch (error) {

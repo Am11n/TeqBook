@@ -317,6 +317,19 @@ export type SettingsMessages = {
   billingAddonLimitPressureHigh?: string;
   /** Info — usage ~70%+ of allowed */
   billingAddonLimitPressureMedium?: string;
+  /** Model A — capacity already paid this period */
+  billingActiveCapacityTitle?: string;
+  billingActiveCapacityIntro?: string;
+  billingPlannedFromNextPeriodTitle?: string;
+  /** Next billing boundary — use {date} */
+  billingPlannedFromNextPeriodIntro?: string;
+  billingPendingExtraStaffLabel?: string;
+  billingPendingExtraLanguagesLabel?: string;
+  billingPendingSaveButton?: string;
+  billingPendingSaving?: string;
+  billingPendingCappedHint?: string;
+  billingPlannedNone?: string;
+  billingPendingSectionHint?: string;
   billingInvoiceProrationFootnote?: string;
   /** One row label for aggregated mid-cycle timing / proration total on next invoice. */
   billingInvoiceTimingAdjustmentsLabel?: string;

@@ -12,7 +12,8 @@
     "supabase/supabase/migrations/20260430153000_public_booking_used_action_token_nonces.sql",
     "supabase/supabase/migrations/20260501120000_product_access_state.sql",
     "supabase/supabase/migrations/20260502120000_addon_billing_sync_state.sql",
-    "supabase/supabase/migrations/20260503120000_addon_invariant_rpc_step0.sql"
+    "supabase/supabase/migrations/20260503120000_addon_invariant_rpc_step0.sql",
+    "supabase/supabase/migrations/20260504120000_model_a_pending_addons.sql"
   ]
 }
 

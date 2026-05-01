@@ -218,6 +218,10 @@ export type Salon = {
   billing_inconsistent_reason?: string | null;
   addon_billing_sync_state?: AddonBillingSyncState | null;
   addon_billing_sync_snapshot?: Record<string, unknown> | null;
+  /** Model A: add-on units scheduled for next Stripe billing boundary */
+  pending_extra_staff?: number | null;
+  pending_extra_languages?: number | null;
+  billing_subscription_period_start?: number | null;
 };
 
 export type Profile = {

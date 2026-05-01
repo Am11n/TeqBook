@@ -1,7 +1,13 @@
 // =====================================================
 // Billing: Update Subscription Plan
 // =====================================================
-// Updates a Stripe subscription plan for a salon
+// Updates a Stripe subscription plan for a salon.
+//
+// Hybrid proration (salon-friendly):
+// - Plan price change: separate update with proration_behavior "always_invoice" when active/trialing
+//   so upgrades charge immediately.
+// - Add-on line items: follow-up update with proration_behavior "none" so seat/language alignment
+//   matches usage on the next invoice. Plan changes may still adjust add-ons immediately (outside Model A mid-cycle deferral).
 //
 // Usage:
 // POST /functions/v1/billing-update-plan
@@ -83,6 +89,41 @@ interface UpdatePlanRequest {
   subscription_id: string;
   new_plan: "starter" | "pro" | "business";
   idempotency_key?: string;
+}
+
+/** Add-on line item updates only (plan line excluded). Omits no-op quantity rows. */
+function collectAddonSubscriptionItemUpdates(
+  subscription: Stripe.Subscription,
+  priceConfig: ReturnType<typeof getBillingPriceConfig>,
+  extraStaffQty: number,
+  extraLanguagesQty: number,
+): Stripe.SubscriptionUpdateParams.Item[] {
+  const itemsByPriceId = new Map(
+    subscription.items.data.map((item) => [item.price.id, item] as const),
+  );
+  const out: Stripe.SubscriptionUpdateParams.Item[] = [];
+
+  const pushAddon = (addonPriceId: string, quantity: number) => {
+    if (!isValidStripePriceId(addonPriceId)) return;
+    const existing = itemsByPriceId.get(addonPriceId);
+    if (existing && quantity <= 0) {
+      out.push({ id: existing.id, deleted: true });
+      return;
+    }
+    if (existing) {
+      const currentQty = existing.quantity ?? 1;
+      if (currentQty === quantity) return;
+      out.push({ id: existing.id, quantity });
+      return;
+    }
+    if (quantity > 0) {
+      out.push({ price: addonPriceId, quantity });
+    }
+  };
+
+  pushAddon(priceConfig.addonPriceIds.extra_staff, extraStaffQty);
+  pushAddon(priceConfig.addonPriceIds.extra_languages, extraLanguagesQty);
+  return out;
 }
 
 serve(async (req) => {
@@ -354,68 +395,84 @@ serve(async (req) => {
     const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
     const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
 
-    const extraStaffPriceId = priceConfig.addonPriceIds.extra_staff;
-    const extraLanguagesPriceId = priceConfig.addonPriceIds.extra_languages;
-
     const currentItems = subscription.items.data;
     const planPriceSet = new Set(Object.values(priceConfig.planPriceIds));
     const planItem =
       currentItems.find((item) => planPriceSet.has(item.price.id)) ??
       currentItems[0];
-    const updateItems: Stripe.SubscriptionUpdateParams.Item[] = [
-      { id: planItem.id, price: newPriceId },
-    ];
-    const itemsByPriceId = new Map(
-      currentItems
-        .map((item) => [item.price.id, item] as const)
-    );
+    const planPriceChanged = planItem.price.id !== newPriceId;
 
-    const applyAddonItem = (
-      addonPriceId: string,
-      quantity: number,
-    ) => {
-      if (!isValidStripePriceId(addonPriceId)) return;
-      const existing = itemsByPriceId.get(addonPriceId);
-      if (existing && quantity <= 0) {
-        updateItems.push({ id: existing.id, deleted: true });
-        return;
-      }
-      if (existing) {
-        updateItems.push({ id: existing.id, quantity });
-        return;
-      }
-      if (quantity > 0) {
-        updateItems.push({ price: addonPriceId, quantity });
-      }
-    };
+    const canProratePlan =
+      subscription.status === "active" || subscription.status === "trialing";
 
-    applyAddonItem(extraStaffPriceId, extraStaffQty);
-    applyAddonItem(extraLanguagesPriceId, extraLanguagesQty);
+    const baseIdempotencyKey =
+      body.idempotency_key ||
+      req.headers.get("x-idempotency-key") ||
+      `update-plan:${body.salon_id}:${body.subscription_id}:${body.new_plan}`;
 
-    // Update subscription with new price and usage-derived addons.
-    // Only use proration_behavior for active subscriptions
-    const updateParams: Stripe.SubscriptionUpdateParams = {
-      items: updateItems,
-      metadata: {
-        ...subscription.metadata,
-        plan: body.new_plan,
-      },
-    };
+    let updatedSubscription: Stripe.Subscription = subscription;
 
-    // Only add proration for active/trialing subscriptions
-    if (subscription.status === "active" || subscription.status === "trialing") {
-      updateParams.proration_behavior = "always_invoice";
-    }
-
-    let updatedSubscription: Stripe.Subscription;
     try {
-      const requestIdempotencyKey =
-        body.idempotency_key ||
-        req.headers.get("x-idempotency-key") ||
-        `update-plan:${body.salon_id}:${body.subscription_id}:${body.new_plan}`;
-      updatedSubscription = await stripe.subscriptions.update(body.subscription_id, updateParams, {
-        idempotencyKey: requestIdempotencyKey,
-      });
+      // Hybrid billing: plan price change invoices immediately; add-on quantity alignment
+      // uses a separate update with proration_behavior none so small seat/language changes
+      // do not create confusing mid-cycle proration lines (see billing-addon-sync).
+      if (planPriceChanged) {
+        const planParams: Stripe.SubscriptionUpdateParams = {
+          items: [{ id: planItem.id, price: newPriceId }],
+          metadata: {
+            ...subscription.metadata,
+            plan: body.new_plan,
+          },
+        };
+        if (canProratePlan) {
+          planParams.proration_behavior = "always_invoice";
+        }
+        updatedSubscription = await stripe.subscriptions.update(
+          body.subscription_id,
+          planParams,
+          { idempotencyKey: `${baseIdempotencyKey}:plan` },
+        );
+      }
+
+      const subForAddons = planPriceChanged
+        ? await stripe.subscriptions.retrieve(body.subscription_id)
+        : subscription;
+
+      const addonItemUpdates = collectAddonSubscriptionItemUpdates(
+        subForAddons,
+        priceConfig,
+        extraStaffQty,
+        extraLanguagesQty,
+      );
+
+      if (addonItemUpdates.length > 0) {
+        const addonParams: Stripe.SubscriptionUpdateParams = {
+          items: addonItemUpdates,
+          metadata: {
+            ...subForAddons.metadata,
+            plan: body.new_plan,
+          },
+        };
+        if (canProratePlan) {
+          addonParams.proration_behavior = "none";
+        }
+        updatedSubscription = await stripe.subscriptions.update(
+          body.subscription_id,
+          addonParams,
+          { idempotencyKey: `${baseIdempotencyKey}:addons` },
+        );
+      } else if (!planPriceChanged) {
+        return new Response(
+          JSON.stringify({
+            error: "No subscription changes",
+            details: "The selected plan and add-on quantities already match the subscription.",
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
     } catch (updateError) {
       // Handle Stripe errors, especially for canceled subscriptions
       if (updateError instanceof Stripe.errors.StripeError) {

@@ -23,6 +23,10 @@ For hver dimensjon (`employees` = aktive ansatte, `languages` = antall `supporte
 
 Etter steg-0 skal DB aldri ha `usage > allowed`. Edge fortsetter med `expected_extra = max(0, usage - included)` mot **plan-inkludert** (ikke `allowed`), i tråd med eksisterende `computeExtraQuantity` + sync.
 
+## Modell A (tillegg neste periode)
+
+Økning av tilleggskvantum i Stripe **midt i periode** skjer ikke automatisk fra brukssynk; se [`model-a-addon-scheduling.md`](./model-a-addon-scheduling.md). `addons.qty` fortsetter å speile Stripe; `salons.pending_*` styrer planlagt økning ved neste grense.
+
 ## Steg 0
 
 Migrasjonen kjører én gang: finner salonger (unntatt `business`) over grense, deaktiverer nyeste aktive ansatte ved behov, trimmer språk (bevarer `en` og `preferred_language` først), og legger inn **system**-`notifications` til alle brukere på salongen via `profiles.user_id`.

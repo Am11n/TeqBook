@@ -6,6 +6,7 @@ import {
   getBaseLimits,
   getBillingPriceConfig,
   isValidStripePriceId,
+  type BillingPlan,
   type BillingPriceConfig,
 } from "./billing.ts";
 import { validateBillingBinding } from "./billing-binding.ts";
@@ -40,6 +41,25 @@ function isRetriableStripeError(err: unknown): boolean {
   if (msg.includes("502")) return true;
   const se = err as { type?: string };
   return se.type === "StripeConnectionError";
+}
+
+function matchesAddonQty(a: AddonQty, b: AddonQty): boolean {
+  return a.extra_staff === b.extra_staff && a.extra_languages === b.extra_languages;
+}
+
+/**
+ * Model A mid-cycle Stripe target: never increase add-on line quantities from usage sync alone.
+ * Decreases (usage dropped) still push Stripe down immediately.
+ */
+export function stripeMidCycleAddonSyncTarget(usageDerived: AddonQty, stripeQty: AddonQty): AddonQty {
+  return {
+    extra_staff:
+      usageDerived.extra_staff < stripeQty.extra_staff ? usageDerived.extra_staff : stripeQty.extra_staff,
+    extra_languages:
+      usageDerived.extra_languages < stripeQty.extra_languages
+        ? usageDerived.extra_languages
+        : stripeQty.extra_languages,
+  };
 }
 
 export function readAddonQtyFromSubscription(
@@ -136,6 +156,33 @@ async function upsertProjectionRow(
   if (error) {
     console.error("upsertProjectionRow failed", { salonId, error: error.message });
   }
+}
+
+function collectStripeAddonItemUpdates(
+  subscription: Stripe.Subscription,
+  priceConfig: BillingPriceConfig,
+  target: AddonQty,
+): Stripe.SubscriptionUpdateParams.Item[] {
+  const itemsByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
+  const upd: Stripe.SubscriptionUpdateParams.Item[] = [];
+  const syncAddon = (priceId: string, quantity: number) => {
+    if (!isValidStripePriceId(priceId)) return;
+    const existing = itemsByPrice.get(priceId);
+    if (existing && quantity <= 0) {
+      upd.push({ id: existing.id, deleted: true });
+      return;
+    }
+    if (existing) {
+      upd.push({ id: existing.id, quantity });
+      return;
+    }
+    if (quantity > 0) {
+      upd.push({ price: priceId, quantity });
+    }
+  };
+  syncAddon(priceConfig.addonPriceIds.extra_staff, target.extra_staff);
+  syncAddon(priceConfig.addonPriceIds.extra_languages, target.extra_languages);
+  return upd;
 }
 
 async function upsertAddonsTable(
@@ -295,13 +342,11 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     };
   }
 
-  const matches = (a: AddonQty, b: AddonQty) =>
-    a.extra_staff === b.extra_staff && a.extra_languages === b.extra_languages;
-
   let stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
+  const stripeTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
 
-  if (matches(expected, stripeQty)) {
-    await upsertAddonsTable(supabase, salonId, expected);
+  if (matchesAddonQty(stripeTarget, stripeQty)) {
+    await upsertAddonsTable(supabase, salonId, stripeQty);
     await clearAddonBillingDriftReason(supabase, salonId);
     const snap: AddonSyncSnapshot = {
       expected,
@@ -324,35 +369,12 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     };
   }
 
-  function buildUpdates(sub: Stripe.Subscription): Stripe.SubscriptionUpdateParams.Item[] {
-    const itemsByPrice = new Map(sub.items.data.map((item) => [item.price.id, item] as const));
-    const upd: Stripe.SubscriptionUpdateParams.Item[] = [];
-    const syncAddon = (priceId: string, quantity: number) => {
-      if (!isValidStripePriceId(priceId)) return;
-      const existing = itemsByPrice.get(priceId);
-      if (existing && quantity <= 0) {
-        upd.push({ id: existing.id, deleted: true });
-        return;
-      }
-      if (existing) {
-        upd.push({ id: existing.id, quantity });
-        return;
-      }
-      if (quantity > 0) {
-        upd.push({ price: priceId, quantity });
-      }
-    };
-    syncAddon(priceConfig.addonPriceIds.extra_staff, expected.extra_staff);
-    syncAddon(priceConfig.addonPriceIds.extra_languages, expected.extra_languages);
-    return upd;
-  }
-
-  let updates = buildUpdates(subscription);
+  let updates = collectStripeAddonItemUpdates(subscription, priceConfig, stripeTarget);
   if (updates.length === 0) {
     const snap: AddonSyncSnapshot = {
       expected,
       stripe: stripeQty,
-      drift: !matches(expected, stripeQty),
+      drift: !matchesAddonQty(stripeTarget, stripeQty),
       last_attempt_at: new Date().toISOString(),
       retry_count: 0,
     };
@@ -385,8 +407,9 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     const attemptIso = new Date().toISOString();
     subscription = await stripe.subscriptions.retrieve(subId);
     stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
-    if (matches(expected, stripeQty)) {
-      await upsertAddonsTable(supabase, salonId, expected);
+    const loopTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
+    if (matchesAddonQty(loopTarget, stripeQty)) {
+      await upsertAddonsTable(supabase, salonId, stripeQty);
       await clearAddonBillingDriftReason(supabase, salonId);
       const snap: AddonSyncSnapshot = {
         expected,
@@ -408,17 +431,19 @@ export async function ensureStripeAddonQuantitiesMatchDb(
         active_languages,
       };
     }
-    updates = buildUpdates(subscription);
+    updates = collectStripeAddonItemUpdates(subscription, priceConfig, loopTarget);
     if (updates.length === 0) break;
     try {
+      // No proration for usage-driven add-on quantity sync: changes apply from the next
+      // invoice so totals stay predictable for salons (plan changes use billing-update-plan).
       await stripe.subscriptions.update(
         subId,
         {
           items: updates,
-          proration_behavior: "create_prorations",
+          proration_behavior: "none",
         },
         {
-          idempotencyKey: `addon-sync:${salonId}:${expected.extra_staff}:${expected.extra_languages}:${attempt}`,
+          idempotencyKey: `addon-sync:${salonId}:${loopTarget.extra_staff}:${loopTarget.extra_languages}:${attempt}`,
         },
       );
       lastError = null;
@@ -434,7 +459,8 @@ export async function ensureStripeAddonQuantitiesMatchDb(
 
   subscription = await stripe.subscriptions.retrieve(subId);
   stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
-  const drift = !matches(expected, stripeQty);
+  const finalTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
+  const drift = !matchesAddonQty(finalTarget, stripeQty);
   const snap: AddonSyncSnapshot = {
     expected,
     stripe: stripeQty,
@@ -450,7 +476,7 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     await markBillingInconsistent(
       supabase,
       salonId,
-      `${ADDON_DRIFT_PREFIX}expected=staff:${expected.extra_staff},lang:${expected.extra_languages};stripe=staff:${stripeQty.extra_staff},lang:${stripeQty.extra_languages}`,
+      `${ADDON_DRIFT_PREFIX}usage_target=staff:${finalTarget.extra_staff},lang:${finalTarget.extra_languages};stripe=staff:${stripeQty.extra_staff},lang:${stripeQty.extra_languages}`,
     );
   } else {
     await markBillingInconsistent(
@@ -470,4 +496,113 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     active_employees,
     active_languages,
   };
+}
+
+export type ApplyPendingAddonsResult = { applied: boolean; reason?: string };
+
+/**
+ * Model A: merge `salons.pending_*` into Stripe add-on line quantities (`proration_behavior: none`),
+ * clear pending, and refresh local addon projection. Idempotent when pending is zero.
+ */
+export async function applyPendingSalonAddonsToStripe(
+  supabase: SupabaseClient,
+  stripe: Stripe,
+  salonId: string,
+  options: { idempotencySuffix: string },
+): Promise<ApplyPendingAddonsResult> {
+  const priceConfig = getBillingPriceConfig();
+  const { data: salon, error: salonErr } = await supabase
+    .from("salons")
+    .select(
+      "pending_extra_staff, pending_extra_languages, billing_subscription_id, plan, billing_customer_id",
+    )
+    .eq("id", salonId)
+    .maybeSingle();
+
+  if (salonErr || !salon?.billing_subscription_id || !salon.plan) {
+    return { applied: false, reason: "no_subscription" };
+  }
+
+  const pStaff = Math.max(0, Number((salon as { pending_extra_staff?: number }).pending_extra_staff) || 0);
+  const pLang = Math.max(0, Number((salon as { pending_extra_languages?: number }).pending_extra_languages) || 0);
+  if (pStaff === 0 && pLang === 0) {
+    return { applied: false, reason: "no_pending" };
+  }
+
+  const subId = salon.billing_subscription_id as string;
+  let subscription = await stripe.subscriptions.retrieve(subId);
+  const stripeCustomerId =
+    typeof subscription.customer === "string"
+      ? subscription.customer
+      : subscription.customer?.id ?? null;
+
+  const bindErr = validateBillingBinding({
+    stripeSubscriptionCustomerId: stripeCustomerId,
+    salonBillingCustomerId: salon.billing_customer_id as string | null,
+  });
+  if (bindErr) {
+    console.error("applyPendingSalonAddonsToStripe binding", { salonId, bindErr });
+    return { applied: false, reason: bindErr };
+  }
+
+  const current = readAddonQtyFromSubscription(subscription, priceConfig);
+  const plan = salon.plan as BillingPlan;
+  const cappedNext = capStarterAddonQuantities(plan, {
+    extra_staff: current.extra_staff + pStaff,
+    extra_languages: current.extra_languages + pLang,
+  });
+
+  if (matchesAddonQty(cappedNext, current)) {
+    const { error: clearErr } = await supabase
+      .from("salons")
+      .update({ pending_extra_staff: 0, pending_extra_languages: 0 })
+      .eq("id", salonId);
+    if (clearErr) console.error("applyPendingSalonAddonsToStripe clear capped pending", clearErr);
+    return { applied: false, reason: "pending_absorbed_by_cap" };
+  }
+
+  const updates = collectStripeAddonItemUpdates(subscription, priceConfig, cappedNext);
+  if (updates.length === 0) {
+    return { applied: false, reason: "no_stripe_updates" };
+  }
+
+  try {
+    await stripe.subscriptions.update(
+      subId,
+      {
+        items: updates,
+        proration_behavior: "none",
+      },
+      { idempotencyKey: `addon-apply-pending:${salonId}:${options.idempotencySuffix}` },
+    );
+  } catch (e) {
+    console.error("applyPendingSalonAddonsToStripe stripe update", e);
+    return { applied: false, reason: e instanceof Error ? e.message : "stripe_error" };
+  }
+
+  subscription = await stripe.subscriptions.retrieve(subId);
+  const stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
+
+  const { error: pendClearErr } = await supabase
+    .from("salons")
+    .update({ pending_extra_staff: 0, pending_extra_languages: 0 })
+    .eq("id", salonId);
+  if (pendClearErr) {
+    console.error("applyPendingSalonAddonsToStripe pending clear failed", pendClearErr);
+  }
+
+  await upsertAddonsTable(supabase, salonId, stripeQty);
+  await clearAddonBillingDriftReason(supabase, salonId);
+  const snap: AddonSyncSnapshot = {
+    expected: stripeQty,
+    stripe: stripeQty,
+    drift: false,
+    last_attempt_at: new Date().toISOString(),
+    retry_count: 0,
+  };
+  await persistSalonAddonState(supabase, salonId, "synced", snap);
+  await upsertProjectionRow(supabase, salonId, stripeQty, stripeQty, false, 0, null);
+  await invokeRecomputeProductAccessState(supabase, salonId, "applyPendingSalonAddonsToStripe");
+
+  return { applied: true };
 }

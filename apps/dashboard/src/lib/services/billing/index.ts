@@ -8,6 +8,7 @@ export {
   syncSalonAddonUsageImmediate,
   refreshSubscriptionProjection,
   previewBillingUpcomingInvoice,
+  setSalonPendingAddons,
   listBillingInvoices,
 } from "./subscription";
 

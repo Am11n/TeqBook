@@ -127,6 +127,7 @@ export async function syncSubscriptionProjection(
     billing_subscription_id: subscription.status === "canceled" ? null : subscription.id,
     current_period_end: currentPeriodEndIso,
     billing_inconsistent_reason: null,
+    billing_subscription_period_start: subscription.current_period_start ?? null,
   };
   if (plan) updatePayload.plan = plan;
   if (subscription.status === "active" || subscription.status === "trialing") {

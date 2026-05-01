@@ -4,7 +4,7 @@ import type { TranslationNamespaces } from "../../types";
 export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]> = {
   billingAddonsTitle: "Add-on impact",
   billingAddonsDescription:
-    "Extra staff and language charges are derived from active usage and synced to billing automatically.",
+    "Extra staff and languages: usage is limited to what is already paid this period. You can schedule more for the next billing period; new add-on charges start then, not mid-cycle (Model A).",
   billingAddonExtraStaffFallbackName: "Extra staff members",
   billingAddonExtraLanguagesFallbackName: "Extra languages",
   billingUnlimited: "Unlimited",
@@ -31,9 +31,23 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
     "You are close to your subscription capacity ({percent}% of your current limit). Consider upgrading soon.",
   billingAddonLimitPressureMedium:
     "You are using most of your subscription capacity ({percent}% of your current limit).",
+  billingActiveCapacityTitle: "Active capacity now",
+  billingActiveCapacityIntro:
+    "What you can use today: plan inclusions plus add-on units already on this billing period.",
+  billingPlannedFromNextPeriodTitle: "Planned from next period",
+  billingPlannedFromNextPeriodIntro:
+    "Extra units you have scheduled for the next billing date ({date}). Billing and access for them start together then.",
+  billingPendingExtraStaffLabel: "Extra staff units to schedule for next period",
+  billingPendingExtraLanguagesLabel: "Extra language units to schedule for next period",
+  billingPendingSaveButton: "Save scheduled add-ons",
+  billingPendingSaving: "Saving…",
+  billingPendingCappedHint: "Some values were limited by your plan's add-on maximum.",
+  billingPlannedNone: "No extra units scheduled for the next period.",
+  billingPendingSectionHint:
+    "Schedule add-ons here for the next period without mid-cycle subscription line changes.",
   billingInvoiceTimingAdjustmentsLabel: "Mid-cycle timing adjustments",
   billingInvoiceProrationFootnote:
-    "The total is what the payment provider will charge on the next invoice. It equals the recurring plan and add-ons above plus any timing row when your subscription changed mid-period. Extra staff and language changes usually apply from the next bill onward. This is not an extra fee from TeqBook.",
+    "The total is what the payment provider will charge on the next invoice (plan + recurring add-ons). Timing or proration lines may still appear in Stripe; the main view keeps the recurring parts clear. Plan changes can still invoice immediately on their own rules.",
   billingInvoiceShowStripeDetails: "Show line details",
   billingInvoiceHideStripeDetails: "Hide line details",
   billingInvoiceDetailRecurringHeading: "Subscription & recurring add-ons",

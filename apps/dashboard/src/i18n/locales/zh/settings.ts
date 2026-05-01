@@ -1,6 +1,17 @@
 import type { TranslationNamespaces } from '../../types';
 
 const settingsBillingExtendedZh: Partial<TranslationNamespaces['settings']> = {
+    billingActiveCapacityTitle: "Active capacity now",
+    billingActiveCapacityIntro: "Included in your plan plus add-on units already paid for this billing period.",
+    billingPlannedFromNextPeriodTitle: "Planned from next period",
+    billingPlannedFromNextPeriodIntro: "These extra units start on your next billing date ({date}). You are not charged until then.",
+    billingPendingExtraStaffLabel: "Extra staff units to schedule for next period",
+    billingPendingExtraLanguagesLabel: "Extra language units to schedule for next period",
+    billingPendingSaveButton: "Save scheduled add-ons",
+    billingPendingSaving: "Saving…",
+    billingPendingCappedHint: "Some values were limited by your plan's add-on maximum.",
+    billingPlannedNone: "No extra units scheduled for the next period.",
+    billingPendingSectionHint: "Use this to add paid capacity for the next billing period without mid-cycle charges.",
     billingAddonsTitle: "附加项影响",
     billingAddonsDescription:
         "额外员工与语言费用根据实际使用计算，并自动同步到账单。",

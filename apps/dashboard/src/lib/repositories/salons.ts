@@ -95,6 +95,9 @@ export type Salon = {
   billing_inconsistent_reason?: string | null;
   addon_billing_sync_state?: AddonBillingSyncState | null;
   addon_billing_sync_snapshot?: Record<string, unknown> | null;
+  pending_extra_staff?: number | null;
+  pending_extra_languages?: number | null;
+  billing_subscription_period_start?: number | null;
   // General settings fields
   business_address?: string | null;
   org_number?: string | null;

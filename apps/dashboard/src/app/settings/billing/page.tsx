@@ -13,7 +13,10 @@ import { applyTemplate } from "@/i18n/apply-template";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
-import { finalizeSetupIntentDefaultPaymentMethod } from "@/lib/services/billing-service";
+import {
+  finalizeSetupIntentDefaultPaymentMethod,
+  setSalonPendingAddons,
+} from "@/lib/services/billing-service";
 import { getPlans, getAddonDisplay } from "@/lib/utils/billing/billing-utils";
 import { supabase } from "@/lib/supabase-client";
 import { CurrentPlanCard } from "@/components/billing/CurrentPlanCard";
@@ -92,6 +95,8 @@ export default function BillingSettingsPage() {
   const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
   const pendingSetupIntentIdRef = useRef<string | null>(null);
   const [showStripeInvoiceLines, setShowStripeInvoiceLines] = useState(false);
+  const [pendingAddonSaving, setPendingAddonSaving] = useState(false);
+  const [pendingCapped, setPendingCapped] = useState(false);
 
   useEffect(() => {
     const billingPrefs = (
@@ -184,6 +189,25 @@ export default function BillingSettingsPage() {
     await refreshSalon();
   };
 
+  const handleSavePendingAddons = async (staff: number, languages: number) => {
+    if (!salon?.id) return;
+    setPendingAddonSaving(true);
+    setPendingCapped(false);
+    setError(null);
+    const { data, error: pendErr } = await setSalonPendingAddons(salon.id, {
+      pending_extra_staff: staff,
+      pending_extra_languages: languages,
+    });
+    setPendingAddonSaving(false);
+    if (pendErr) {
+      setError(pendErr);
+      return;
+    }
+    setPendingCapped(Boolean(data?.capped));
+    await refetch();
+    await refreshSalon();
+  };
+
   const handleCancelConfirm = async () => {
     const success = await handleCancelSubscription();
     if (success) {
@@ -244,15 +268,26 @@ export default function BillingSettingsPage() {
       typeof timingFromApi === "number" && !Number.isNaN(timingFromApi)
         ? timingFromApi
         : proration.reduce((s, line) => s + line.amount_minor, 0);
+    const effectiveSummary = invoicePreview.summary ?? summarizeUpcomingLinesClient(lines);
+    const recurringSubtotalMinor = effectiveSummary.subscription_minor + effectiveSummary.addons_minor;
     return {
       currency: invoicePreview.currency,
       total_minor: invoicePreview.total_minor,
-      effectiveSummary:
-        invoicePreview.summary ?? summarizeUpcomingLinesClient(lines),
+      effectiveSummary,
+      recurringSubtotalMinor,
       recurring,
       timingAdjustmentsMinor,
     };
   }, [invoicePreview]);
+
+  const stripePreviewTotalShownMinor = useMemo(() => {
+    if (invoicePreview?.mode !== "stripe_preview" || !stripePreviewDerived) return null;
+    const timing = stripePreviewDerived.timingAdjustmentsMinor;
+    if (!showStripeInvoiceLines && Math.abs(timing) >= 1) {
+      return stripePreviewDerived.recurringSubtotalMinor;
+    }
+    return stripePreviewDerived.total_minor;
+  }, [invoicePreview, stripePreviewDerived, showStripeInvoiceLines]);
 
   useEffect(() => {
     const loadSmsUsage = async () => {
@@ -414,6 +449,12 @@ export default function BillingSettingsPage() {
 
       <AddonsCard
         stripeAddonUsageTrusted={addonStripeUsageTrusted}
+        pendingExtraStaff={Number(salon?.pending_extra_staff) || 0}
+        pendingExtraLanguages={Number(salon?.pending_extra_languages) || 0}
+        nextPeriodEndIso={salon?.current_period_end ?? null}
+        onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
+        pendingSaving={pendingAddonSaving}
+        pendingCapped={pendingCapped}
         addons={addonDisplay}
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}
@@ -575,7 +616,9 @@ export default function BillingSettingsPage() {
                     </div>
                   </>
                 ) : null}
-                {stripePreviewDerived && Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
+                {showStripeInvoiceLines &&
+                stripePreviewDerived &&
+                Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-muted-foreground line-clamp-2">
                       {t.billingInvoiceTimingAdjustmentsLabel}
@@ -604,7 +647,7 @@ export default function BillingSettingsPage() {
                   <span>{t.billingEstimatedTotal}</span>
                   <span className="tabular-nums">
                     {formatMoneyMinor(
-                      stripePreviewDerived?.total_minor ?? invoicePreview.total_minor,
+                      stripePreviewTotalShownMinor ?? invoicePreview.total_minor,
                       stripePreviewDerived?.currency ?? invoicePreview.currency,
                     )}
                   </span>

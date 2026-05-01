@@ -6,6 +6,7 @@ Alle stier som endrer **aktive ansatte** eller **`supported_languages`** må til
 |--------|-----|--------|
 | Dashboard | `dashboard_create_salon_employee` RPC via `repositories/employees/mutations.createEmployee` | Primær |
 | Dashboard | `dashboard_update_salon_supported_languages` RPC via `repositories/salons.updateSalon` når `supported_languages` settes | Primær |
+| Dashboard | `billing-set-pending-addons` edge (planlagte tillegg Modell A) via `setSalonPendingAddons` | Øker ikke `addons`/Stripe før periodeskifte; se `model-a-addon-scheduling.md` |
 | Dashboard | `employees/mutations.updateEmployee` (direkte `UPDATE`) | Dekket av trigger |
 | Dashboard | Import batch `lib/services/import/execute.ts` (employee rows) | Dekket av trigger på `INSERT` |
 | Dashboard | Øvrige `INSERT`/`UPDATE` employees eller `salons.supported_languages` (fremtidig API) | Må kartlegges; trigger fanger direkte SQL |

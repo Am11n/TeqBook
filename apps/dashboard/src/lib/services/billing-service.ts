@@ -9,6 +9,7 @@ export {
   syncSalonAddonUsageImmediate,
   refreshSubscriptionProjection,
   previewBillingUpcomingInvoice,
+  setSalonPendingAddons,
   listBillingInvoices,
   handlePaymentFailure,
   retryFailedPayment,

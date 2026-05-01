@@ -14,6 +14,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getBillingPriceConfig } from "../_shared/billing.ts";
 import { invokeRecomputeProductAccessState } from "../_shared/billing-recompute.ts";
 import { syncSubscriptionProjection } from "../_shared/billing-sync-subscription-projection.ts";
+import { applyPendingSalonAddonsToStripe } from "../_shared/billing-addon-sync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -213,7 +214,7 @@ serve(async (req) => {
       switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
+        let subscription = event.data.object as Stripe.Subscription;
         const salonId = subscription.metadata.salon_id;
 
         // Do not activate plan for incomplete subscriptions.
@@ -241,6 +242,30 @@ serve(async (req) => {
             await invokeRecomputeProductAccessState(supabase, salonId, "subscription_incomplete");
           }
           break;
+        }
+
+        if (salonId) {
+          const { data: salonRow } = await supabase
+            .from("salons")
+            .select("pending_extra_staff, pending_extra_languages, billing_subscription_period_start")
+            .eq("id", salonId)
+            .maybeSingle();
+
+          const prevStart = salonRow?.billing_subscription_period_start ?? null;
+          const newStart = subscription.current_period_start;
+          const pStaff = Number(salonRow?.pending_extra_staff) || 0;
+          const pLang = Number(salonRow?.pending_extra_languages) || 0;
+          if (pStaff + pLang > 0 && prevStart !== null && newStart > prevStart) {
+            const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, salonId, {
+              idempotencySuffix: `${event.id}:period_roll`,
+            });
+            console.log("subscription webhook apply pending addons", {
+              salonId,
+              subscriptionId: subscription.id,
+              ...applyResult,
+            });
+            subscription = await stripe.subscriptions.retrieve(subscription.id);
+          }
         }
 
         await syncSubscriptionProjection(supabase, subscription, priceConfig);
@@ -487,10 +512,31 @@ serve(async (req) => {
 
       case "invoice.upcoming": {
         const invoice = event.data.object as Stripe.Invoice;
-        console.log("Invoice upcoming received - SMS overage hook is preview-only in this phase", {
+        const subRef = invoice.subscription;
+        const upcomingSubId = typeof subRef === "string" ? subRef : subRef?.id ?? null;
+        if (upcomingSubId && invoice.billing_reason === "subscription_cycle") {
+          try {
+            const upcomingSub = await stripe.subscriptions.retrieve(upcomingSubId);
+            const upcomingSalonId = upcomingSub.metadata.salon_id;
+            if (upcomingSalonId) {
+              const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, upcomingSalonId, {
+                idempotencySuffix: event.id,
+              });
+              console.log("invoice.upcoming apply pending addons", {
+                invoice_id: invoice.id,
+                salon_id: upcomingSalonId,
+                ...applyResult,
+              });
+            }
+          } catch (upcomingErr) {
+            console.error("invoice.upcoming pending addon apply failed", upcomingErr);
+          }
+        }
+        console.log("Invoice upcoming received", {
           invoice_id: invoice.id,
           customer_id: invoice.customer,
           subscription_id: invoice.subscription,
+          billing_reason: invoice.billing_reason,
         });
         break;
       }

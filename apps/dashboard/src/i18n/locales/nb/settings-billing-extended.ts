@@ -3,7 +3,7 @@ import type { TranslationNamespaces } from "../../types";
 export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"]> = {
   billingAddonsTitle: "Tilleggskostnader",
   billingAddonsDescription:
-    "Ekstra ansatte og språk beregnes ut fra aktiv bruk og synkroniseres automatisk til fakturering.",
+    "Ekstra ansatte og språk: bruk er begrenset til det som allerede er betalt i inneværende periode. Du kan planlegge flere fra neste faktureringsdato; nye tillegg starter da — ikke midt i perioden (Modell A).",
   billingAddonExtraStaffFallbackName: "Ekstra ansatte",
   billingAddonExtraLanguagesFallbackName: "Ekstra språk",
   billingUnlimited: "Ubegrenset",
@@ -30,9 +30,23 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
     "Du nærmer deg abonnementsgrensen ({percent}% av gjeldende tak). Vurder oppgradering.",
   billingAddonLimitPressureMedium:
     "Du bruker en stor del av kapasiteten ({percent}% av gjeldende tak).",
+  billingActiveCapacityTitle: "Aktiv kapasitet nå",
+  billingActiveCapacityIntro:
+    "Hva du kan bruke i dag: inkludert i planen pluss tilleggsenheter som allerede ligger på denne faktureringsperioden.",
+  billingPlannedFromNextPeriodTitle: "Planlagt fra neste periode",
+  billingPlannedFromNextPeriodIntro:
+    "Ekstra enheter du har planlagt fra neste faktureringsdato ({date}). Fakturering og tilgang starter samtidig da.",
+  billingPendingExtraStaffLabel: "Ekstra ansatt-enheter å planlegge til neste periode",
+  billingPendingExtraLanguagesLabel: "Ekstra språk-enheter å planlegge til neste periode",
+  billingPendingSaveButton: "Lagre planlagte tillegg",
+  billingPendingSaving: "Lagrer…",
+  billingPendingCappedHint: "Noen verdier ble begrenset av planens maksimum for tillegg.",
+  billingPlannedNone: "Ingen ekstra enheter planlagt for neste periode.",
+  billingPendingSectionHint:
+    "Planlegg tillegg her for neste periode uten å endre Stripe-linjer midt i perioden.",
   billingInvoiceTimingAdjustmentsLabel: "Tidsjusteringer i perioden",
   billingInvoiceProrationFootnote:
-    "Totalen er det betalingsleverandøren faktisk tar på neste faktura. Den tilsvarer grunnplan + tillegg over pluss eventuell tidsrad når abonnementet er endret midt i en periode. Ekstra ansatte og språk trår vanligvis inn fra neste faktura. Dette er ikke en ekstra avgift fra TeqBook.",
+    "Totalen er det betalingsleverandøren tar på neste faktura (plan + faste tillegg). Tids- eller prorering-linjer kan fortsatt finnes i Stripe; hovedvisningen fokuserer på de faste delene. Planbytte kan fortsatt faktureres umiddelbart etter egne regler.",
   billingInvoiceShowStripeDetails: "Vis linjedetaljer",
   billingInvoiceHideStripeDetails: "Skjul linjedetaljer",
   billingInvoiceDetailRecurringHeading: "Abonnement og faste tillegg",
