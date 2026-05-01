@@ -7,7 +7,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CreditCard, X, CheckCircle2, AlertTriangle, Clock, Ban, Sparkles } from "lucide-react";
 import { SettingsLimitBar } from "@/components/settings/SettingsLimitBar";
 import type { Plan } from "@/lib/utils/billing/billing-utils";
-import type { ProductAccessState, Salon } from "@/lib/types";
+import type { Salon } from "@/lib/types";
+import type { ProductAccessState } from "@/lib/types/domain";
 
 // ─── Billing state matrix ────────────────────────────
 
