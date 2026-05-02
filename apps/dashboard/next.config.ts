@@ -11,6 +11,24 @@ const supabaseHost = (() => {
 
 const fallbackSupabaseHosts = ["qacgwgecrsinwjvuiobd.supabase.co"];
 
+/** Extra connect-src tokens so billing Edge calls are not blocked by CSP (e.g. 127.0.0.1 vs localhost, custom Supabase URL). */
+function supabaseConnectSrcCspExtras(): string {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return "";
+  try {
+    const u = new URL(raw);
+    const parts = [u.origin];
+    if (u.protocol === "https:") {
+      parts.push(`wss://${u.host}`);
+    } else if (u.protocol === "http:") {
+      parts.push(`ws://${u.host}`);
+    }
+    return ` ${parts.join(" ")}`;
+  } catch {
+    return "";
+  }
+}
+
 const dashboardBasePath =
   process.env.NEXT_PUBLIC_DASHBOARD_BASE_PATH || (process.env.VERCEL === "1" ? "/dashboard" : "");
 
@@ -125,6 +143,13 @@ const nextConfig: NextConfig = {
       // Ignore invalid env URL and keep safe defaults.
     }
 
+    const supabaseCspExtras = supabaseConnectSrcCspExtras();
+    const connectSrcDev =
+      "connect-src 'self' ws://localhost:* http://localhost:* ws://127.0.0.1:* http://127.0.0.1:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com" +
+      supabaseCspExtras;
+    const connectSrcProd =
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com" + supabaseCspExtras;
+
     const cspDirectives = [
       "default-src 'self'",
       isDevelopment
@@ -133,9 +158,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
-      isDevelopment
-        ? "connect-src 'self' ws://localhost:* http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com"
-        : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
+      isDevelopment ? connectSrcDev : connectSrcProd,
       `frame-src ${Array.from(frameSources).join(" ")}`,
       "object-src 'none'",
       "base-uri 'self'",

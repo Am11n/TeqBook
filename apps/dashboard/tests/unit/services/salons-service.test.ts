@@ -11,6 +11,13 @@ import * as planLimitsService from "@/lib/services/plan-limits-service";
 // Mock repositories and services
 vi.mock("@/lib/repositories/salons");
 vi.mock("@/lib/services/plan-limits-service");
+vi.mock("@/lib/services/addon-pending-auto-schedule", () => ({
+  tryAutoBumpLanguagePending: vi.fn().mockResolvedValue({
+    ok: false,
+    error: "TB|ADDON_USAGE_REQUIRES_UPGRADE",
+    limitReached: true,
+  }),
+}));
 
 describe("Salons Service", () => {
   beforeEach(() => {

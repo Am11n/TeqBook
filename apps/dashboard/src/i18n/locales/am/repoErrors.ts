@@ -20,7 +20,7 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeesLoadFailed: "ሰራተኞች መጫን አልተቻለም።",
     failedToLoadEmployees: "ሰራተኞች መጫን አልተቻለም።",
     addonUsageRequiresUpgrade:
-      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+      "ይህ ከክልከላዎ እና ከተከፈለ ተጨማሪዎች ለዚህ የክፍያ ጊዜ ከሚፈቀድ በላይ ነው። ከሚቀጥለው እንደገና ከመጀመሪያ ተጨማሪ ሰራተኞች ወይም ቋንቋዎች ለመያዝ ቅንብሮች → ክፍያ ይክፈቱ፣ እቅድ ያሻሽሉ ወይም አጠቃቀም ይቀንሱ—ከዚያ እንደገና ይሞክሩ።",
     giftCardNotFound: "የስጦታ ካርድ አልተገኘም።",
     importChunkFailed: "ረድፎች በማስቀመጥ ላይ መግቢያ አልተሳካም።",
     importCreateBatchFailed: "የመግቢያ ቡድን መፍጠር አልተቻለም።",

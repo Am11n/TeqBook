@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Ang numero ng telepono ay dapat hindi bababa sa 8 character.",
   failedToLoadEmployees: "Hindi ma-load ang mga empleyado.",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "Lalampas ito sa pinapayagan ng plano mo at ng binayarang add-on para sa billing period na ito. Buksan ang Billing sa Settings para mag-iskedyul ng karagdagang staff o wika simula sa susunod na renewal, mag-upgrade ng plano, o bawasan ang paggamit—subukan ulit pagkatapos.",
 };

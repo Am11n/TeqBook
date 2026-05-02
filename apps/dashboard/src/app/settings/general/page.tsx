@@ -24,8 +24,10 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 import { FormRow } from "@/components/settings/FormRow";
 import { StickySaveBar } from "@/components/settings/StickySaveBar";
 import { useSettingsForm } from "@/lib/hooks/useSettingsForm";
+import { useRepoError } from "@/lib/hooks/useRepoError";
 import { useTabGuard } from "../layout";
 import { resolveSettings } from "../_helpers/resolve-settings";
+import { applyTemplate } from "@/i18n/apply-template";
 import { type GeneralFormValues, langLabelFn } from "./_components/types";
 import { SalonInfoSection } from "./_components/SalonInfoSection";
 import { LanguageSection } from "./_components/LanguageSection";
@@ -39,9 +41,11 @@ export default function GeneralSettingsPage() {
   const router = useRouter();
   const appLocale = normalizeLocale(locale);
   const t = resolveSettings(translations[appLocale].settings);
+  const mapRepoE = useRepoError();
   const { registerDirtyState, reportLastSaved } = useTabGuard();
 
   const [languageLimit, setLanguageLimit] = useState<number | null>(null);
+  const [addonScheduleHint, setAddonScheduleHint] = useState<string | null>(null);
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
   const [coverImageUploadError, setCoverImageUploadError] = useState<string | null>(null);
   const userRole = profile?.role || "owner";
@@ -62,7 +66,12 @@ export default function GeneralSettingsPage() {
       setLanguageLimit(limit);
     }
     loadLimit();
-  }, [salon?.id, salon?.plan]);
+  }, [
+    salon?.id,
+    salon?.plan,
+    salon?.pending_extra_languages,
+    salon?.pending_extra_staff,
+  ]);
 
   const initialValues = useMemo<GeneralFormValues>(() => ({
     salonName: salon?.name || "",
@@ -116,7 +125,7 @@ export default function GeneralSettingsPage() {
   const handleSave = useCallback(async (v: GeneralFormValues) => {
     if (!salon?.id) throw new Error("No salon");
 
-    const { error: updateError } = await updateSalon(salon.id, {
+    const { error: updateError, scheduledAddonForNextPeriod } = await updateSalon(salon.id, {
       name: v.salonName,
       salon_type: v.salonType || null,
       whatsapp_number: v.whatsappNumber || null,
@@ -141,13 +150,30 @@ export default function GeneralSettingsPage() {
       website_url: v.websiteUrl || null,
     }, salon.plan);
 
-    if (updateError) throw new Error(updateError);
+    if (updateError) throw new Error(mapRepoE(updateError));
+
+    if (scheduledAddonForNextPeriod?.dimension === "languages") {
+      const iso = scheduledAddonForNextPeriod.nextPeriodEndIso;
+      const dateLabel =
+        iso == null || iso === ""
+          ? "—"
+          : new Date(iso).toLocaleDateString(appLocale === "nb" ? "nb-NO" : undefined, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+      setAddonScheduleHint(
+        applyTemplate(t.generalAddonLanguagesScheduledNotice, { date: dateLabel }),
+      );
+    } else {
+      setAddonScheduleHint(null);
+    }
 
     if (user?.id && v.userPreferredLanguage !== profile?.preferred_language) {
       const { error: profileError } = await updateProfile(user.id, {
         preferred_language: v.userPreferredLanguage || null,
       });
-      if (profileError) throw new Error(profileError);
+      if (profileError) throw new Error(mapRepoE(profileError));
     }
 
     const previousLanguageCount = salon?.supported_languages?.length ?? 0;
@@ -159,13 +185,17 @@ export default function GeneralSettingsPage() {
     if (v.userPreferredLanguage && v.userPreferredLanguage !== locale) {
       setLocale(clampToEnabledLocale(v.userPreferredLanguage) as AppLocale);
     }
-  }, [salon, user, profile, locale, setLocale, refreshSalon]);
+  }, [salon, user, profile, locale, setLocale, refreshSalon, mapRepoE, appLocale, t]);
 
   const form = useSettingsForm<GeneralFormValues>({
     initialValues,
     onSave: handleSave,
     validate,
   });
+
+  useEffect(() => {
+    if (form.isDirty) setAddonScheduleHint(null);
+  }, [form.isDirty]);
 
   useEffect(() => {
     registerDirtyState("general", form.isDirty);
@@ -360,6 +390,15 @@ export default function GeneralSettingsPage() {
           />
         </div>
       </SettingsGrid>
+
+      {addonScheduleHint ? (
+        <div
+          className="mb-4 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-50"
+          role="status"
+        >
+          {addonScheduleHint}
+        </div>
+      ) : null}
 
       <StickySaveBar
         isDirty={form.isDirty}

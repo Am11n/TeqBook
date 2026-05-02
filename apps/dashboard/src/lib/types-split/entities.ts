@@ -240,6 +240,9 @@ export type Salon = {
     | "expired"
     | "inconsistent_billing"
     | null;
+  /** Model A: add-on units scheduled for next Stripe billing boundary */
+  pending_extra_staff?: number | null;
+  pending_extra_languages?: number | null;
   business_address?: string | null;
   org_number?: string | null;
   cancellation_hours?: number | null;

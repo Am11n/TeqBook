@@ -25,6 +25,8 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonExtraPaidLineStaff: "+{count} staff · {price}",
   billingAddonExtraPaidLineLang: "+{count} languages · {price}",
   billingAddonExtraPaidNone: "None",
+  billingAddonPaidThisCycleHint:
+    "“Extra (paid)” shows seats Stripe is billing on this subscription cycle. Add-ons you schedule for the next renewal (above) are not charged until that date and do not change this number.",
   billingAddonLimitAtCapacity:
     "You are at your current subscription capacity for this item. Upgrade or add seats in Billing.",
   billingAddonLimitPressureHigh:
@@ -43,6 +45,9 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingPendingSaving: "Saving…",
   billingPendingCappedHint: "Some values were limited by your plan's add-on maximum.",
   billingPlannedNone: "No extra units scheduled for the next period.",
+  /** After saving General settings when an extra language seat was auto-scheduled for Model A — use {date}. */
+  generalAddonLanguagesScheduledNotice:
+    "An extra language seat was scheduled for your next billing date ({date}). You can use the language now; charges for that seat align on that date.",
   billingPendingSectionHint:
     "Schedule add-ons here for the next period without mid-cycle subscription line changes.",
   billingInvoiceTimingAdjustmentsLabel: "Mid-cycle timing adjustments",

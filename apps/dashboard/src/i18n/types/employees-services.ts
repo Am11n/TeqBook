@@ -155,6 +155,8 @@ export type EmployeesMessages = {
   validationImageTooLarge?: string;
   createEmployeeFailed?: string;
   employeeCreatedImageUploadFailed?: string;
+  /** Model A: staff seat auto-scheduled — {date} */
+  addonExtraStaffScheduledNotice?: string;
 };
 
 export type ServicesMessages = {

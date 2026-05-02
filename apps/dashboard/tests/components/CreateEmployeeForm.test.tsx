@@ -42,6 +42,7 @@ vi.mock("@/lib/hooks/employees/useCreateEmployee", () => ({
     setProfileImageFile: vi.fn(),
     saving: false,
     error: null,
+    scheduleNotice: null,
     handleSubmit: vi.fn((e) => e.preventDefault()),
   })),
 }));

@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "电话号码至少需要 8 个字符。",
   failedToLoadEmployees: "无法加载员工。",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "这会超出您当前计费周期内套餐与已购附加项的限额。请打开「设置 → 账单」，从下次续费起安排更多员工或语言、升级套餐，或减少使用量—然后再试。",
 };

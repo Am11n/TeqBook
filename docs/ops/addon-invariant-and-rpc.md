@@ -5,7 +5,7 @@
 For hver dimensjon (`employees` = aktive ansatte, `languages` = antall `supported_languages`):
 
 - `included` kommer fra `plan_features` (`PLAN_INCLUDED_STAFF` og `MULTILINGUAL.limit_value`), med SQL-fallback til 2/5 om rader mangler. `business` ⇒ ubegrenset (`NULL`).
-- `max_addon` = kjøpt `addons.qty` for `extra_staff` / `extra_languages`, med **Starter-tak** 20 / 8 (samme som edge `billing.ts`).
+- `max_addon` = kjøpt `addons.qty` for `extra_staff` / `extra_languages` **pluss** `salons.pending_extra_*` (Modell A), med **Starter-tak** 20 / 8 på summen (samme som edge `billing.ts`).
 - `allowed = included + max_addon` (eller `NULL` = ubegrenset).
 - **Krav:** `usage <= allowed` etter steg-0. Brudd ⇒ `addon_usage_requires_upgrade` (PostgreSQL `RAISE` med `ERRCODE` `P0001`).
 

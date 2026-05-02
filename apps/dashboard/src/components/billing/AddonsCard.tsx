@@ -13,6 +13,8 @@ import { applyTemplate } from "@/i18n/apply-template";
 interface AddonsCardProps {
   /** When false, usage-based euro amounts are not presented as billing truth (Stripe sync pending). */
   stripeAddonUsageTrusted?: boolean;
+  /** BCP 47 tag for next-period date label (match dashboard locale). */
+  dateLocale?: string;
   /** Model A: units scheduled for next Stripe billing boundary */
   pendingExtraStaff?: number;
   pendingExtraLanguages?: number;
@@ -58,6 +60,7 @@ function limitPressureNote(
 
 export function AddonsCard({
   stripeAddonUsageTrusted = true,
+  dateLocale = "en-US",
   pendingExtraStaff = 0,
   pendingExtraLanguages = 0,
   nextPeriodEndIso,
@@ -79,7 +82,7 @@ export function AddonsCard({
   }, [pendingExtraStaff, pendingExtraLanguages]);
 
   const nextPeriodLabel = nextPeriodEndIso
-    ? new Date(nextPeriodEndIso).toLocaleDateString(undefined, {
+    ? new Date(nextPeriodEndIso).toLocaleDateString(dateLocale, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -328,6 +331,11 @@ export function AddonsCard({
             </Button>
           </div>
         </div>
+        {stripeAddonUsageTrusted && t.billingAddonPaidThisCycleHint ? (
+          <p className="text-xs text-muted-foreground rounded-md border border-dashed bg-muted/10 p-3">
+            {t.billingAddonPaidThisCycleHint}
+          </p>
+        ) : null}
       </div>
     </Card>
   );

@@ -13,6 +13,7 @@
 
 ## 2026-05-01
 
+- [kode/db] `salon_capped_addon_quantity` inkluderer `pending_extra_*` (Modell A) slik at `assert_salon_addon_usage` og trim matcher planlagt kapasitet; migrasjon `20260505130000_addon_invariant_include_pending.sql`; manifest oppdatert.
 - [kode/db] Add-on **invariant** + RPC-er + steg-0 trim: `20260503120000_addon_invariant_rpc_step0.sql` — `PLAN_INCLUDED_STAFF` i `plan_features`, `dashboard_update_salon_supported_languages`, `dashboard_create_salon_employee`, triggers på `employees`/`salons.supported_languages`, auto-trim + `notifications` ved brudd før deploy. Manifest oppdatert.
 - [pilot/edge] Deployet `billing-preview-upcoming-invoice` og `billing-sync-addon-usage` til **teqbook-pilot** (`mdqnburqfzvzhvsicdyo`): CORS (`Allow-Methods`, `Max-Age`), OPTIONS 204, `select('*')` i preview, trygg `req.json()` i sync (unngår 500 på tom/ugyldig body).
 - [pilot/db] `supabase db push --yes` mot lenket **teqbook-pilot** (`mdqnburqfzvzhvsicdyo`): påført `20260502120000_addon_billing_sync_state.sql` som manglet på fjern-DB (PostgREST 400 / «column salons.addon_billing_sync_state does not exist» ved salon-load i dashboard).

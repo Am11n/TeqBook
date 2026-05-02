@@ -20,7 +20,7 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeesLoadFailed: "Lama soo gelin karin shaqaalaha.",
     failedToLoadEmployees: "Lama soo gelin karin shaqaalaha.",
     addonUsageRequiresUpgrade:
-      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+      "Tani waxay ka baxaysaa waxa qorshahaaga iyo ku darista lacag bixinta u oggolaato muddadan biilka. Fur Biillin (Hoosta Dejitaannada) si aad u qorsheyso shaqaale ama luqado dheeraad ah bilowga cusbaynta soo socota, kor u qaad qorshahaaga, ama yaree isticmaalka—kadna mar kale isku day.",
     giftCardNotFound: "Kaarka hadiyadda lama helin.",
     importChunkFailed: "Soo dejintu way fashilantay markii la kaydiyayay safyada.",
     importCreateBatchFailed: "Lama abuuri karin kooxda soo dejinta.",

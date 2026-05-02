@@ -56,6 +56,7 @@ export function CreateEmployeeForm({
     setProfileImageFile,
     saving,
     error,
+    scheduleNotice,
     handleSubmit,
   } = useCreateEmployee({ services, onEmployeeCreated });
 
@@ -207,6 +208,16 @@ export function CreateEmployeeForm({
           options={services.map((service) => ({ value: service.id, label: service.name }))}
         />
       </Field>
+
+      {scheduleNotice ? (
+        <p
+          className="text-sm text-emerald-800 dark:text-emerald-200"
+          role="status"
+          aria-live="polite"
+        >
+          {scheduleNotice}
+        </p>
+      ) : null}
 
       {error && (
         <p className="text-sm text-red-500" aria-live="polite">

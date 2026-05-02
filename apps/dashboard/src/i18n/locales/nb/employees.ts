@@ -111,6 +111,8 @@ export const employees: TranslationNamespaces['employees'] = {
     createEmployeeFailed: "Kunne ikke opprette ansatt.",
     employeeCreatedImageUploadFailed:
       "Ansatt ble opprettet, men profilbildet kunne ikke lastes opp.",
+    addonExtraStaffScheduledNotice:
+      "En ekstra ansattplass ble planlagt til neste faktureringsdato ({date}). Personen er aktiv nå; kostnaden for plassen følger den datoen.",
     shiftsLabel: "Vakter",
     setupShifts: "Sett opp arbeidstider",
     staffCount: "ansatte",

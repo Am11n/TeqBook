@@ -6,9 +6,13 @@
 
 import { getSalonBySlug, getSalonById, updateSalon as updateSalonRepo } from "@/lib/repositories/salons";
 import type { Salon } from "@/lib/repositories/salons";
-import { canAddLanguage } from "./plan-limits-service";
+import { canAddLanguage, invalidatePlanLimitsCache } from "./plan-limits-service";
 import type { PlanType } from "@/lib/types";
 import { tb } from "@/lib/i18n/repo-error-codes";
+import { tryAutoBumpLanguagePending } from "@/lib/services/addon-pending-auto-schedule";
+import type { AddonScheduledNotice } from "@/lib/services/addon-pending-auto-schedule";
+
+export type { AddonScheduledNotice } from "@/lib/services/addon-pending-auto-schedule";
 
 /**
  * Get salon by slug (for public booking pages)
@@ -93,7 +97,11 @@ export async function updateSalonSettings(
     website_url?: string | null;
   },
   salonPlan?: PlanType | null
-): Promise<{ error: string | null; limitReached?: boolean }> {
+): Promise<{
+  error: string | null;
+  limitReached?: boolean;
+  scheduledAddonForNextPeriod?: AddonScheduledNotice;
+}> {
   // Validation
   if (!salonId) {
     return { error: "Salon ID is required" };
@@ -104,6 +112,8 @@ export async function updateSalonSettings(
     return { error: "Salon name cannot be empty" };
   }
 
+  let scheduledAddonForNextPeriod: AddonScheduledNotice | undefined;
+
   if (updates.supported_languages !== undefined) {
     let plan: PlanType | null | undefined = salonPlan;
     if (plan === undefined || plan === null) {
@@ -111,11 +121,28 @@ export async function updateSalonSettings(
       plan = (salonRow?.plan ?? null) as PlanType | null;
     }
     if (plan != null) {
-      const { canAdd, error: limitError } = await canAddLanguage(
-        salonId,
-        plan,
-        updates.supported_languages || [],
-      );
+      const langs = updates.supported_languages || [];
+      let { canAdd, error: limitError } = await canAddLanguage(salonId, plan, langs);
+
+      if (!canAdd && limitError === tb("ADDON_USAGE_REQUIRES_UPGRADE")) {
+        const bump = await tryAutoBumpLanguagePending(salonId, plan, langs.length);
+        if (!bump.ok) {
+          return {
+            error: bump.error,
+            ...(bump.limitReached ? { limitReached: true as const } : {}),
+          };
+        }
+        if (bump.increased) {
+          invalidatePlanLimitsCache(salonId);
+          const retry = await canAddLanguage(salonId, plan, langs);
+          canAdd = retry.canAdd;
+          limitError = retry.error;
+          if (retry.canAdd && bump.notice) {
+            scheduledAddonForNextPeriod = bump.notice;
+          }
+        }
+      }
+
       if (limitError) {
         return {
           error: limitError,
@@ -129,7 +156,13 @@ export async function updateSalonSettings(
   }
 
   // Call repository
-  return await updateSalonRepo(salonId, updates);
+  const repoResult = await updateSalonRepo(salonId, updates);
+  if (repoResult.error) {
+    return repoResult;
+  }
+  return scheduledAddonForNextPeriod
+    ? { ...repoResult, scheduledAddonForNextPeriod }
+    : repoResult;
 }
 
 /**
@@ -184,7 +217,11 @@ export async function updateSalon(
     website_url?: string | null;
   },
   salonPlan?: PlanType | null
-): Promise<{ error: string | null; limitReached?: boolean }> {
+): Promise<{
+  error: string | null;
+  limitReached?: boolean;
+  scheduledAddonForNextPeriod?: AddonScheduledNotice;
+}> {
   return updateSalonSettings(salonId, updates, salonPlan);
 }
 

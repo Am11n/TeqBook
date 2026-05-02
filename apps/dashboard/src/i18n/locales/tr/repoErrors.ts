@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Telefon numarası en az 8 karakter olmalıdır.",
   failedToLoadEmployees: "Çalışanlar yüklenemedi.",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "Bu, planınızın ve bu fatura dönemi için ödenen eklerin izin verdiğinin ötesine gider. Bir sonraki yenilemeden itibaren daha fazla personel veya dil planlamak için Ayarlar → Faturalama bölümünü açın, planı yükseltin veya kullanımı azaltın—ardından yeniden deneyin.",
 };

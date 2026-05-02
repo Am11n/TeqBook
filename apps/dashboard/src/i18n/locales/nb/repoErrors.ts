@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Telefonnummer må være minst 8 tegn.",
   failedToLoadEmployees: "Kunne ikke laste ansatte.",
   addonUsageRequiresUpgrade:
-    "Endringen overstiger planen og kjøpte tillegg. Oppgrader eller kjøp plasser under Fakturering, og prøv igjen.",
+    "Dette overstiger hva planen og betalte tillegg tillater i denne faktureringsperioden. Gå til Innstillinger → Fakturering for å planlegge flere plasser fra neste fornyelse, oppgradere planen, eller redusere bruken—prøv deretter igjen.",
 };

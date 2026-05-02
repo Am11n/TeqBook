@@ -144,4 +144,7 @@ export const employees: TranslationNamespaces['employees'] = {
     createEmployeeFailed: "Failed to create employee.",
     employeeCreatedImageUploadFailed:
       "Employee was created but the profile image could not be uploaded.",
+    /** Model A auto-schedule — use {date} */
+    addonExtraStaffScheduledNotice:
+      "An extra staff seat was scheduled for your next billing date ({date}). This person is active now; charges for that seat align on that date.",
   };

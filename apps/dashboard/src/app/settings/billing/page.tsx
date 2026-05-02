@@ -10,6 +10,8 @@ import { translations } from "@/i18n/translations";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { resolveSettings } from "../_helpers/resolve-settings";
 import { applyTemplate } from "@/i18n/apply-template";
+import { intlLocaleTag } from "@/i18n/intlLocaleTag";
+import type { AppLocale } from "@/i18n/translations";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
@@ -276,18 +278,16 @@ export default function BillingSettingsPage() {
       effectiveSummary,
       recurringSubtotalMinor,
       recurring,
+      proration,
       timingAdjustmentsMinor,
     };
   }, [invoicePreview]);
 
+  /** Model A: headline “next invoice” estimate = recurring plan + add-on lines only (no mid-cycle proration). */
   const stripePreviewTotalShownMinor = useMemo(() => {
     if (invoicePreview?.mode !== "stripe_preview" || !stripePreviewDerived) return null;
-    const timing = stripePreviewDerived.timingAdjustmentsMinor;
-    if (!showStripeInvoiceLines && Math.abs(timing) >= 1) {
-      return stripePreviewDerived.recurringSubtotalMinor;
-    }
-    return stripePreviewDerived.total_minor;
-  }, [invoicePreview, stripePreviewDerived, showStripeInvoiceLines]);
+    return stripePreviewDerived.recurringSubtotalMinor;
+  }, [invoicePreview, stripePreviewDerived]);
 
   useEffect(() => {
     const loadSmsUsage = async () => {
@@ -406,7 +406,7 @@ export default function BillingSettingsPage() {
         onShowCancelDialog={() => setShowCancelDialog(true)}
         planChangeDisabled={billingPlanChangesBlocked}
         paymentMethodActionDisabled={billingPaymentMethodBlocked}
-        dateLocale={appLocale === "nb" ? "nb-NO" : "en-US"}
+        dateLocale={intlLocaleTag(appLocale as AppLocale)}
         translations={{
           billingTitle: t.billingTitle,
           billingDescription: t.billingDescription,
@@ -449,6 +449,7 @@ export default function BillingSettingsPage() {
 
       <AddonsCard
         stripeAddonUsageTrusted={addonStripeUsageTrusted}
+        dateLocale={intlLocaleTag(appLocale as AppLocale)}
         pendingExtraStaff={Number(salon?.pending_extra_staff) || 0}
         pendingExtraLanguages={Number(salon?.pending_extra_languages) || 0}
         nextPeriodEndIso={salon?.current_period_end ?? null}
@@ -616,21 +617,6 @@ export default function BillingSettingsPage() {
                     </div>
                   </>
                 ) : null}
-                {showStripeInvoiceLines &&
-                stripePreviewDerived &&
-                Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground line-clamp-2">
-                      {t.billingInvoiceTimingAdjustmentsLabel}
-                    </span>
-                    <span className="tabular-nums shrink-0">
-                      {formatMoneyMinor(
-                        stripePreviewDerived.timingAdjustmentsMinor,
-                        stripePreviewDerived.currency,
-                      )}
-                    </span>
-                  </div>
-                ) : null}
                 {smsMetricsTrustedForEstimate &&
                 smsUsage &&
                 !invoicePreview.lines.some((line) => /sms/i.test(line.description)) ? (
@@ -682,6 +668,44 @@ export default function BillingSettingsPage() {
                         </div>
                       ))}
                     </div>
+                    {stripePreviewDerived.proration.length > 0 ||
+                    Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
+                      <div className="space-y-2 border-t pt-3">
+                        {t.billingInvoiceDetailProrationHeading ? (
+                          <p className="text-xs font-medium text-foreground">
+                            {t.billingInvoiceDetailProrationHeading}
+                          </p>
+                        ) : null}
+                        {t.billingInvoiceDetailProrationLead ? (
+                          <p className="text-xs text-muted-foreground">{t.billingInvoiceDetailProrationLead}</p>
+                        ) : null}
+                        {stripePreviewDerived.proration.length > 0
+                          ? stripePreviewDerived.proration.map((line, idx) => (
+                              <div
+                                key={`pro-${line.description}-${idx}`}
+                                className="flex items-center justify-between gap-4"
+                              >
+                                <span className="text-muted-foreground line-clamp-2">{line.description}</span>
+                                <span className="tabular-nums shrink-0">
+                                  {formatMoneyMinor(line.amount_minor, stripePreviewDerived.currency)}
+                                </span>
+                              </div>
+                            ))
+                          : Math.abs(stripePreviewDerived.timingAdjustmentsMinor) >= 1 ? (
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-muted-foreground line-clamp-2">
+                                  {t.billingInvoiceTimingAdjustmentsLabel}
+                                </span>
+                                <span className="tabular-nums shrink-0">
+                                  {formatMoneyMinor(
+                                    stripePreviewDerived.timingAdjustmentsMinor,
+                                    stripePreviewDerived.currency,
+                                  )}
+                                </span>
+                              </div>
+                            ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
@@ -734,7 +758,8 @@ export default function BillingSettingsPage() {
                     <div>
                       <p className="text-sm font-medium">{invoice.id}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(invoice.date).toLocaleDateString()} • {invoice.status}
+                        {new Date(invoice.date).toLocaleDateString(intlLocaleTag(appLocale as AppLocale))} •{" "}
+                        {invoice.status}
                       </p>
                     </div>
                     <div className="text-right">

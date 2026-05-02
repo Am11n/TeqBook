@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Số điện thoại phải có ít nhất 8 ký tự.",
   failedToLoadEmployees: "Không thể tải nhân viên.",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "Thao tác này vượt quá giới hạn gói và phụ phí đã trả cho kỳ thanh toán hiện tại. Mở mục Thanh toán trong Cài đặt để lên lịch thêm nhân sự hoặc ngôn ngữ từ kỳ gia hạn tiếp theo, nâng cấp gói hoặc giảm mức sử dụng—rồi thử lại.",
 };

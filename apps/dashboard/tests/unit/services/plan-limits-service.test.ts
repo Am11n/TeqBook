@@ -17,9 +17,20 @@ import type { PlanType } from "@/lib/types";
 // Mock repositories and cache (dashboard uses cacheGetOrSet in plan-limits-service)
 vi.mock("@/lib/repositories/addons");
 vi.mock("@/lib/repositories/employees");
+vi.mock("@/lib/repositories/salons", () => ({
+  getSalonById: vi.fn().mockResolvedValue({
+    data: {
+      id: "test-salon-id",
+      pending_extra_staff: 0,
+      pending_extra_languages: 0,
+    },
+    error: null,
+  }),
+}));
 vi.mock("@/lib/services/cache-service", () => ({
   cacheGetOrSet: vi.fn((_key: string, fn: () => Promise<unknown>) => fn()),
   cacheDelete: vi.fn(),
+  cacheInvalidateByPrefix: vi.fn(),
   CacheKeys: { planLimits: (salonId: string) => `plan-limits:${salonId}` },
   CacheTTL: { MEDIUM: 300 },
 }));

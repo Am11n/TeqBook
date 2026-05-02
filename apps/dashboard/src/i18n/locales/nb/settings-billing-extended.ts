@@ -24,6 +24,8 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonExtraPaidLineStaff: "+{count} ansatte · {price}",
   billingAddonExtraPaidLineLang: "+{count} språk · {price}",
   billingAddonExtraPaidNone: "Ingen",
+  billingAddonPaidThisCycleHint:
+    "«Ekstra (betalt)» viser plasser Stripe fakturerer i denne abonnementsperioden. Tillegg du planlegger til neste fornyelse (ovenfor) belastes ikke før den datoen og endrer ikke dette tallet.",
   billingAddonLimitAtCapacity:
     "Du er ved dagens abonnementskapasitet for dette punktet. Oppgrader eller kjøp plasser under Fakturering.",
   billingAddonLimitPressureHigh:
@@ -42,6 +44,8 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingPendingSaving: "Lagrer…",
   billingPendingCappedHint: "Noen verdier ble begrenset av planens maksimum for tillegg.",
   billingPlannedNone: "Ingen ekstra enheter planlagt for neste periode.",
+  generalAddonLanguagesScheduledNotice:
+    "Et ekstra språktillegg ble planlagt til neste faktureringsdato ({date}). Du kan bruke språket nå; kostnaden for plassen følger den datoen.",
   billingPendingSectionHint:
     "Planlegg tillegg her for neste periode uten å endre Stripe-linjer midt i perioden.",
   billingInvoiceTimingAdjustmentsLabel: "Tidsjusteringer i perioden",

@@ -13,7 +13,8 @@ import {
 } from "@teqbook/shared-core";
 import * as addonsRepo from "@/lib/repositories/addons";
 import * as employeesRepo from "@/lib/repositories/employees";
-import { cacheGetOrSet, cacheDelete, CacheKeys, CacheTTL } from "@/lib/services/cache-service";
+import { getSalonById } from "@/lib/repositories/salons";
+import { cacheGetOrSet, cacheInvalidateByPrefix, CacheKeys, CacheTTL } from "@/lib/services/cache-service";
 
 export type PlanLimits = {
   employees: number | null;
@@ -33,7 +34,13 @@ export async function getEffectiveLimit(
   limitType: "employees" | "languages",
 ): Promise<{ limit: number | null; error: string | null }> {
   try {
-    const cacheKey = `${CacheKeys.planLimits(salonId)}:${limitType}`;
+    const { data: salonRow, error: salonErr } = await getSalonById(salonId);
+    if (salonErr) {
+      return { limit: null, error: salonErr };
+    }
+    const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
+    const pendingLang = Number(salonRow?.pending_extra_languages) || 0;
+    const cacheKey = `${CacheKeys.planLimits(salonId)}:${limitType}:ps:${pendingStaff}:pl:${pendingLang}`;
 
     const cachedResult = await cacheGetOrSet(
       cacheKey,
@@ -50,7 +57,8 @@ export async function getEffectiveLimit(
           return { limit: null as number | null, error: addonError };
         }
 
-        const addonQtyRaw = addon?.qty ?? 0;
+        const pending = limitType === "employees" ? pendingStaff : pendingLang;
+        const addonQtyRaw = (addon?.qty ?? 0) + pending;
         const maxAddon = capAddonUnitsForPlan(plan, limitType, addonQtyRaw);
         return { limit: included + maxAddon, error: null as string | null };
       },
@@ -67,8 +75,7 @@ export async function getEffectiveLimit(
 }
 
 export function invalidatePlanLimitsCache(salonId: string): void {
-  cacheDelete(`${CacheKeys.planLimits(salonId)}:employees`);
-  cacheDelete(`${CacheKeys.planLimits(salonId)}:languages`);
+  cacheInvalidateByPrefix(`${CacheKeys.planLimits(salonId)}:`);
 }
 
 export async function canAddEmployee(
@@ -86,6 +93,12 @@ export async function canAddEmployee(
 
     const currentCount = (employeesData ?? []).filter((e) => e.is_active).length;
 
+    const { data: salonRow, error: salonErr } = await getSalonById(salonId);
+    if (salonErr) {
+      return { canAdd: false, currentCount, limit: null, error: salonErr };
+    }
+    const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
+
     const addonType = "extra_staff" as const;
     const { data: addon, error: addonError } = await addonsRepo.getAddonByType(salonId, addonType);
     if (addonError) {
@@ -96,7 +109,7 @@ export async function canAddEmployee(
       usageAfter: currentCount + 1,
       plan,
       dimension: "employees",
-      addonQtyRaw: addon?.qty ?? 0,
+      addonQtyRaw: (addon?.qty ?? 0) + pendingStaff,
     });
 
     return {
@@ -123,6 +136,12 @@ export async function canAddLanguage(
   try {
     const currentCount = currentLanguages.length;
 
+    const { data: salonRow, error: salonErr } = await getSalonById(salonId);
+    if (salonErr) {
+      return { canAdd: false, currentCount, limit: null, error: salonErr };
+    }
+    const pendingLang = Number(salonRow?.pending_extra_languages) || 0;
+
     const { data: addon, error: addonError } = await addonsRepo.getAddonByType(salonId, "extra_languages");
     if (addonError) {
       return { canAdd: false, currentCount, limit: null, error: addonError };
@@ -132,7 +151,7 @@ export async function canAddLanguage(
       usageAfter: currentCount,
       plan,
       dimension: "languages",
-      addonQtyRaw: addon?.qty ?? 0,
+      addonQtyRaw: (addon?.qty ?? 0) + pendingLang,
     });
 
     return {

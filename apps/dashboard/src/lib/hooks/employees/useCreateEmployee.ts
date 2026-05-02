@@ -5,6 +5,7 @@ import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
 import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
+import { applyTemplate } from "@/i18n/apply-template";
 import { createEmployee, updateEmployee } from "@/lib/services/employees-service";
 import { uploadEmployeeProfileImage } from "@/lib/services/storage-service";
 import type { Service } from "@/lib/types";
@@ -37,6 +38,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scheduleNotice, setScheduleNotice] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -47,8 +49,9 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
 
     setSaving(true);
     setError(null);
+    setScheduleNotice(null);
 
-    const { data: createdData, error: createdError } = await createEmployee({
+    const { data: createdData, error: createdError, scheduledAddonForNextPeriod } = await createEmployee({
       salon_id: salon.id,
       full_name: fullName.trim(),
       email: email.trim() || null,
@@ -72,6 +75,19 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
       setError(createdError ? m(createdError) : te.createEmployeeFailed);
       setSaving(false);
       return;
+    }
+
+    if (scheduledAddonForNextPeriod?.dimension === "employees" && te.addonExtraStaffScheduledNotice) {
+      const iso = scheduledAddonForNextPeriod.nextPeriodEndIso;
+      const dateLabel =
+        iso == null || iso === ""
+          ? "—"
+          : new Date(iso).toLocaleDateString(appLocale === "nb" ? "nb-NO" : undefined, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+      setScheduleNotice(applyTemplate(te.addonExtraStaffScheduledNotice, { date: dateLabel }));
     }
 
     if (profileImageFile) {
@@ -148,6 +164,7 @@ export function useCreateEmployee({ services, onEmployeeCreated }: UseCreateEmpl
     setProfileImageFile,
     saving,
     error,
+    scheduleNotice,
     handleSubmit,
   };
 }

@@ -20,7 +20,7 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeesLoadFailed: "بارگذاری کارمندان ممکن نشد.",
     failedToLoadEmployees: "بارگذاری کارمندان ممکن نشد.",
     addonUsageRequiresUpgrade:
-      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+      "این از حدی فراتر می‌رود که طرح و افزونه‌های پرداخت‌شده برای این دوره صورتحساب اجازه می‌دهند. «صورتحساب» را در «تنظیمات» باز کنید تا از تمدید بعدی نیروی کار یا زبان بیشتری برنامه‌ریزی کنید، طرح را ارتقا دهید یا مصرف را کم کنید—سپس دوباره تلاش کنید.",
     giftCardNotFound: "کارت هدیه یافت نشد.",
     importChunkFailed: "وارد کردن هنگام ذخیره ردیف‌ها شکست خورد.",
     importCreateBatchFailed: "ایجاد گروه واردات ممکن نشد.",

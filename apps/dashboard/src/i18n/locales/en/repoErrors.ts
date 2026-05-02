@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Phone number must be at least 8 characters.",
   failedToLoadEmployees: "Could not load employees.",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "That would go beyond what your plan and paid add-ons allow for this billing period. Open Billing under Settings to schedule more staff or languages from your next renewal, upgrade your plan, or reduce usage—then try again.",
 };

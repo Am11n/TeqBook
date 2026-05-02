@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "Numer telefonu musi mieć co najmniej 8 znaków.",
   failedToLoadEmployees: "Nie udało się wczytać pracowników.",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "To przekroczyłoby limit wynikający z planu i opłaconych dodatków w tym okresie rozliczeniowym. Otwórz Rozliczenia w Ustawieniach, aby zaplanować więcej pracowników lub języków od następnego odnowienia, ulepsz plan lub ogranicz użycie—potem spróbuj ponownie.",
 };

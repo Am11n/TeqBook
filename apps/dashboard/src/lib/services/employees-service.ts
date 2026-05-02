@@ -13,10 +13,13 @@ import {
   deleteEmployee as deleteEmployeeRepo,
 } from "@/lib/repositories/employees";
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, PlanType } from "@/lib/types";
-import { canAddEmployee } from "./plan-limits-service";
+import { canAddEmployee, invalidatePlanLimitsCache } from "./plan-limits-service";
 import { tb } from "@/lib/i18n/repo-error-codes";
 import { invariantEval } from "@teqbook/shared-core";
 import * as addonsRepo from "@/lib/repositories/addons";
+import { getSalonById } from "@/lib/repositories/salons";
+import { tryAutoBumpStaffPending } from "@/lib/services/addon-pending-auto-schedule";
+import type { AddonScheduledNotice } from "@/lib/services/addon-pending-auto-schedule";
 import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
 import { syncUsageDerivedAddons } from "@/lib/services/billing-service";
 
@@ -82,7 +85,12 @@ export async function getEmployeesWithServicesForSalon(
 export async function createEmployee(
   input: CreateEmployeeInput,
   salonPlan?: PlanType | null
-): Promise<{ data: Employee | null; error: string | null; limitReached?: boolean }> {
+): Promise<{
+  data: Employee | null;
+  error: string | null;
+  limitReached?: boolean;
+  scheduledAddonForNextPeriod?: AddonScheduledNotice;
+}> {
   // Validation
   if (!input.salon_id || !input.full_name) {
     return { data: null, error: tb("SALON_FULL_NAME_REQUIRED") };
@@ -98,8 +106,31 @@ export async function createEmployee(
     return { data: null, error: tb("PHONE_TOO_SHORT") };
   }
 
+  let scheduledAddonForNextPeriod: AddonScheduledNotice | undefined;
+
   if (salonPlan !== undefined) {
-    const { canAdd, error: limitError } = await canAddEmployee(input.salon_id, salonPlan);
+    let { canAdd, error: limitError } = await canAddEmployee(input.salon_id, salonPlan);
+    if (!canAdd && limitError === tb("ADDON_USAGE_REQUIRES_UPGRADE") && salonPlan != null) {
+      const { data: employeesData } = await getEmployeesForCurrentSalon(input.salon_id);
+      const active = (employeesData ?? []).filter((e) => e.is_active).length;
+      const bump = await tryAutoBumpStaffPending(input.salon_id, salonPlan, active + 1);
+      if (!bump.ok) {
+        return {
+          data: null,
+          error: bump.error,
+          ...(bump.limitReached ? { limitReached: true as const } : {}),
+        };
+      }
+      if (bump.increased) {
+        invalidatePlanLimitsCache(input.salon_id);
+        const retry = await canAddEmployee(input.salon_id, salonPlan);
+        canAdd = retry.canAdd;
+        limitError = retry.error;
+        if (retry.canAdd && bump.notice) {
+          scheduledAddonForNextPeriod = bump.notice;
+        }
+      }
+    }
     if (limitError) {
       return { data: null, error: limitError };
     }
@@ -125,6 +156,9 @@ export async function createEmployee(
     await syncUsageDerivedAddonsBestEffort(input.salon_id);
   }
 
+  if (!result.error && result.data && scheduledAddonForNextPeriod) {
+    return { ...result, scheduledAddonForNextPeriod };
+  }
   return result;
 }
 
@@ -166,11 +200,16 @@ export async function updateEmployee(
       if (addonErr) {
         return { data: null, error: addonErr };
       }
+      const { data: salonRow, error: salonErr } = await getSalonById(salonId);
+      if (salonErr) {
+        return { data: null, error: salonErr };
+      }
+      const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
       const inv = invariantEval({
         usageAfter,
         plan: salonPlan,
         dimension: "employees",
-        addonQtyRaw: addon?.qty ?? 0,
+        addonQtyRaw: (addon?.qty ?? 0) + pendingStaff,
       });
       if (inv.violates) {
         return { data: null, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };

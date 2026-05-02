@@ -46,5 +46,5 @@ export const repoErrors: TranslationNamespaces["repoErrors"] = {
   phoneTooShort: "फ़ोन नंबर कम से कम 8 अक्षरों का होना चाहिए।",
   failedToLoadEmployees: "कर्मचारी लोड नहीं हो सके।",
   addonUsageRequiresUpgrade:
-    "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+    "यह आपकी योजना और इस बिलिंग अवधि के लिए चुकाए गए ऐड-ऑन की अनुमति से अधिक हो जाएगा। अगली नवीनीकरण तिथि से अधिक स्टाफ या भाषाएँ निर्धारित करने के लिए सेटिंग्स में बिलिंग खोलें, प्लान अपग्रेड करें, या उपयोग कम करें—फिर कोशिश करें।",
 };

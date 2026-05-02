@@ -20,7 +20,7 @@ export const repoErrors: TranslationNamespaces['repoErrors'] = {
     employeesLoadFailed: "ሰራሕተኛታት ምጽዓን ኣይተኽእለን።",
     failedToLoadEmployees: "ሰራሕተኛታት ምጽዓን ኣይተኽእለን።",
     addonUsageRequiresUpgrade:
-      "This change would exceed your plan and purchased add-ons. Upgrade your plan or add seats in Billing, then try again.",
+      "እዚ ንኽልካለካን ንዝተኸፈለ ወሰኽታትን ኣብዚ ናይ ክፍሊት ዘርኣየ ግዜ ዝፍቀድ ዝሓለፈ እዩ። ካብ ዝቕጽል ምሕዳስ ንላዕለ ደረጃ ሰራሕተኛታት ወይ ቛንቋታት ንምቕራብ ኣብ ምርግጋጽ → ክፍሊት ኽፈት፣ እናኸፍእ ወይ ተጠቐምካ ውሑድ—ድሕሪኡ ደጊም ፈትን።",
     giftCardNotFound: "ናይ ህያብ ካርድ ኣይተረኽበን።",
     importChunkFailed: "ረድፍታት ክእስር እንከሎ ምእታው ኣይተሳነነን።",
     importCreateBatchFailed: "ናይ ምእታው ባቸ ምፍጣር ኣይተኽእለን።",

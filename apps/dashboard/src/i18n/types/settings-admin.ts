@@ -311,6 +311,8 @@ export type SettingsMessages = {
   billingAddonExtraPaidLineStaff?: string;
   billingAddonExtraPaidLineLang?: string;
   billingAddonExtraPaidNone?: string;
+  /** Clarifies Stripe-billed seats vs Model A scheduled next-period add-ons */
+  billingAddonPaidThisCycleHint?: string;
   /** At hard cap — e.g. "You are at your plan limit ({percent}%)." */
   billingAddonLimitAtCapacity?: string;
   /** Strong warning — usage ~90%+ of allowed */
@@ -329,6 +331,8 @@ export type SettingsMessages = {
   billingPendingSaving?: string;
   billingPendingCappedHint?: string;
   billingPlannedNone?: string;
+  /** General settings: extra language seat auto-scheduled (Model A) — {date} */
+  generalAddonLanguagesScheduledNotice?: string;
   billingPendingSectionHint?: string;
   billingInvoiceProrationFootnote?: string;
   /** One row label for aggregated mid-cycle timing / proration total on next invoice. */
