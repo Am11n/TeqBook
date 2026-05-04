@@ -243,6 +243,8 @@ export type Salon = {
   /** Model A: add-on units scheduled for next Stripe billing boundary */
   pending_extra_staff?: number | null;
   pending_extra_languages?: number | null;
+  /** Scheduled plan change for next period (see pending_plan migration). */
+  pending_plan?: PlanType | null;
   business_address?: string | null;
   org_number?: string | null;
   cancellation_hours?: number | null;
