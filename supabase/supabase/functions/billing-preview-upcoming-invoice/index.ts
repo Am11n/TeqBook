@@ -1,8 +1,8 @@
 // =====================================================
 // Billing: Stripe upcoming invoice preview (single salon)
 // =====================================================
-// Primary monetary estimate for dashboard: only returned when add-on sync is `synced`
-// and product access is not `inconsistent_billing`.
+// Primary monetary estimate for dashboard: not returned when add-on sync is `syncing` / `failed`
+// or `product_access_state` is `inconsistent_billing`. `drift_detected` is allowed (Stripe total is still valid).
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
@@ -128,11 +128,11 @@ serve(async (req) => {
     }
 
     const addonState = salon.addon_billing_sync_state as string | null;
-    if (addonState !== "synced") {
+    if (addonState === "syncing" || addonState === "failed") {
       return new Response(
         JSON.stringify({
           mode: "degraded",
-          reason: addonState === "syncing" ? "addon_syncing" : `addon_state:${addonState ?? "unknown"}`,
+          reason: addonState === "syncing" ? "addon_syncing" : `addon_state:${addonState}`,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

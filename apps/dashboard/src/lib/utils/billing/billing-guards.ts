@@ -10,7 +10,7 @@ export function salonBlocksPlanChangeForBillingSync(salon: SalonBillingGuards): 
   if (!salon) return false;
   if (salon.product_access_state === "inconsistent_billing") return true;
   const s = salon.addon_billing_sync_state;
-  return s === "drift_detected" || s === "failed" || s === "syncing";
+  return s === "failed" || s === "syncing";
 }
 
 /** Blocks payment-method updates when billing is inconsistent or add-on sync failed. */
@@ -18,5 +18,5 @@ export function salonBlocksPaymentMethodUpdateForBilling(salon: SalonBillingGuar
   if (!salon) return false;
   if (salon.product_access_state === "inconsistent_billing") return true;
   const s = salon.addon_billing_sync_state;
-  return s === "drift_detected" || s === "failed";
+  return s === "failed";
 }

@@ -208,6 +208,32 @@ export async function clearAddonBillingDriftReason(
   }
 }
 
+/** Clears legacy `addon_drift:*` inconsistency only — deferred mid-cycle drift is not a subscription integrity failure. */
+export async function clearLegacyAddonDriftInconsistentReason(
+  supabase: SupabaseClient,
+  salonId: string,
+): Promise<void> {
+  const { data } = await supabase
+    .from("salons")
+    .select("billing_inconsistent_reason")
+    .eq("id", salonId)
+    .maybeSingle();
+  const r = data?.billing_inconsistent_reason as string | null | undefined;
+  if (r && r.startsWith(ADDON_DRIFT_PREFIX)) {
+    const { error } = await supabase
+      .from("salons")
+      .update({ billing_inconsistent_reason: null })
+      .eq("id", salonId);
+    if (!error) {
+      await invokeRecomputeProductAccessState(
+        supabase,
+        salonId,
+        "clearLegacyAddonDriftInconsistentReason",
+      );
+    }
+  }
+}
+
 export type EnsureAddonSyncResult = {
   ok: boolean;
   synced: boolean;
@@ -375,11 +401,7 @@ export async function ensureStripeAddonQuantitiesMatchDb(
   if (drift && invalidPrice) {
     await markBillingInconsistent(supabase, salonId, `${ADDON_SYNC_FAIL_PREFIX}invalid_addon_price_ids`);
   } else if (drift) {
-    await markBillingInconsistent(
-      supabase,
-      salonId,
-      `${ADDON_DRIFT_PREFIX}usage_target=staff:${cappedExpected.extra_staff},lang:${cappedExpected.extra_languages};stripe=staff:${stripeQty.extra_staff},lang:${stripeQty.extra_languages}`,
-    );
+    await clearLegacyAddonDriftInconsistentReason(supabase, salonId);
   }
 
   const { error: pendErr } = await supabase

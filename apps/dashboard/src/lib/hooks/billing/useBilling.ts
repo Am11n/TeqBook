@@ -115,11 +115,16 @@ export function useBilling() {
           invalidatePlanLimitsCache(salon.id);
         }
         const { data: freshSalon } = await getSalonById(salon.id);
-        const trusted =
-          freshSalon?.addon_billing_sync_state === "synced" &&
-          freshSalon.product_access_state !== "inconsistent_billing";
-        setAddonStripeUsageTrusted(Boolean(trusted));
-        if (trusted) {
+        const pas = freshSalon?.product_access_state;
+        const addonS = freshSalon?.addon_billing_sync_state;
+        const addonHardFail = addonS === "syncing" || addonS === "failed";
+        /** Stripe add-on line items match usage — safe to show add-on € figures from DB. */
+        const stripeAddonFiguresTrusted =
+          addonS === "synced" && pas !== "inconsistent_billing";
+        /** Upcoming invoice preview: allow during intentional mid-cycle drift (Stripe total still meaningful). */
+        const previewTrusted = pas !== "inconsistent_billing" && !addonHardFail;
+        setAddonStripeUsageTrusted(Boolean(stripeAddonFiguresTrusted));
+        if (previewTrusted) {
           const { data: inv, error: invErr } = await previewBillingUpcomingInvoice(salon.id);
           if (!invErr && inv) {
             setInvoicePreview(inv);
@@ -130,14 +135,14 @@ export function useBilling() {
               details: invErr ?? undefined,
             });
           }
-        } else if (freshSalon?.addon_billing_sync_state === "syncing") {
+        } else if (addonS === "syncing") {
           setInvoicePreview({ mode: "degraded", reason: "addon_syncing" });
-        } else if (freshSalon?.product_access_state === "inconsistent_billing") {
+        } else if (pas === "inconsistent_billing") {
           setInvoicePreview({ mode: "degraded", reason: "inconsistent_billing" });
-        } else if (freshSalon?.addon_billing_sync_state) {
+        } else if (addonS) {
           setInvoicePreview({
             mode: "degraded",
-            reason: `addon_state:${freshSalon.addon_billing_sync_state}`,
+            reason: `addon_state:${addonS}`,
           });
         } else {
           setInvoicePreview({ mode: "degraded", reason: "addon_not_synced" });
