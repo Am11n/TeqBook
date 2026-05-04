@@ -5,7 +5,7 @@
 For hver dimensjon (`employees` = aktive ansatte, `languages` = antall `supported_languages`):
 
 - `included` kommer fra `plan_features` (`PLAN_INCLUDED_STAFF` og `MULTILINGUAL.limit_value`), med SQL-fallback til 2/5 om rader mangler. `business` ⇒ ubegrenset (`NULL`).
-- `max_addon` = kjøpt `addons.qty` for `extra_staff` / `extra_languages` **pluss** `salons.pending_extra_*` (Modell A), med **Starter-tak** 20 / 8 på summen (samme som edge `billing.ts`).
+- `max_addon` = kjøpt `addons.qty` for `extra_staff` / `extra_languages` (Stripe-speil) med **Starter-tak** 20 / 8 på summen (samme som edge `billing.ts`). `salons.pending_target_*` gir **ikke** høyere kapasitet før Stripe er oppdatert.
 - `allowed = included + max_addon` (eller `NULL` = ubegrenset).
 - **Krav:** `usage <= allowed` etter steg-0. Brudd ⇒ `addon_usage_requires_upgrade` (PostgreSQL `RAISE` med `ERRCODE` `P0001`).
 
@@ -25,7 +25,7 @@ Etter steg-0 skal DB aldri ha `usage > allowed`. Edge fortsetter med `expected_e
 
 ## Modell A (tillegg neste periode)
 
-Økning av tilleggskvantum i Stripe **midt i periode** skjer ikke automatisk fra brukssynk; se [`model-a-addon-scheduling.md`](./model-a-addon-scheduling.md). `addons.qty` fortsetter å speile Stripe; `salons.pending_*` styrer planlagt økning ved neste grense.
+Økning av tilleggskvantum i Stripe **midt i periode** skjer ikke; se [`model-a-addon-scheduling.md`](./model-a-addon-scheduling.md). `addons.qty` speiler Stripe; `salons.pending_target_*` er absolutt mål for neste grense-apply.
 
 ## Steg 0
 

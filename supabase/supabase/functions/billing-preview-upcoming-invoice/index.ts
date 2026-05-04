@@ -191,8 +191,8 @@ serve(async (req) => {
     }));
 
     const salonRow = salon as {
-      pending_extra_staff?: number;
-      pending_extra_languages?: number;
+      pending_target_extra_staff?: number;
+      pending_target_extra_languages?: number;
       current_period_end?: string | null;
     };
 
@@ -208,8 +208,8 @@ serve(async (req) => {
           timing_adjustments_minor,
         },
         lines,
-        pending_extra_staff: Math.max(0, Number(salonRow.pending_extra_staff) || 0),
-        pending_extra_languages: Math.max(0, Number(salonRow.pending_extra_languages) || 0),
+        pending_target_extra_staff: Math.max(0, Number(salonRow.pending_target_extra_staff) || 0),
+        pending_target_extra_languages: Math.max(0, Number(salonRow.pending_target_extra_languages) || 0),
         current_period_end: salonRow.current_period_end ?? null,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

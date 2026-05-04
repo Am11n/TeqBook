@@ -476,7 +476,7 @@ export async function refreshSubscriptionProjection(
 
 export async function setSalonPendingAddons(
   salonId: string,
-  body: { pending_extra_staff: number; pending_extra_languages: number },
+  body: { pending_target_extra_staff: number; pending_target_extra_languages: number },
 ): Promise<{ data: SetPendingAddonsResponse | null; error: string | null }> {
   try {
     const session = await getAuthSession();
@@ -494,8 +494,8 @@ export async function setSalonPendingAddons(
         },
         body: JSON.stringify({
           salon_id: salonId,
-          pending_extra_staff: body.pending_extra_staff,
-          pending_extra_languages: body.pending_extra_languages,
+          pending_target_extra_staff: body.pending_target_extra_staff,
+          pending_target_extra_languages: body.pending_target_extra_languages,
         }),
       },
     );

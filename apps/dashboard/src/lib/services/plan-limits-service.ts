@@ -38,9 +38,7 @@ export async function getEffectiveLimit(
     if (salonErr) {
       return { limit: null, error: salonErr };
     }
-    const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
-    const pendingLang = Number(salonRow?.pending_extra_languages) || 0;
-    const cacheKey = `${CacheKeys.planLimits(salonId)}:${limitType}:ps:${pendingStaff}:pl:${pendingLang}`;
+    const cacheKey = `${CacheKeys.planLimits(salonId)}:${limitType}`;
 
     const cachedResult = await cacheGetOrSet(
       cacheKey,
@@ -57,8 +55,7 @@ export async function getEffectiveLimit(
           return { limit: null as number | null, error: addonError };
         }
 
-        const pending = limitType === "employees" ? pendingStaff : pendingLang;
-        const addonQtyRaw = (addon?.qty ?? 0) + pending;
+        const addonQtyRaw = addon?.qty ?? 0;
         const maxAddon = capAddonUnitsForPlan(plan, limitType, addonQtyRaw);
         return { limit: included + maxAddon, error: null as string | null };
       },
@@ -97,8 +94,6 @@ export async function canAddEmployee(
     if (salonErr) {
       return { canAdd: false, currentCount, limit: null, error: salonErr };
     }
-    const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
-
     const addonType = "extra_staff" as const;
     const { data: addon, error: addonError } = await addonsRepo.getAddonByType(salonId, addonType);
     if (addonError) {
@@ -109,7 +104,7 @@ export async function canAddEmployee(
       usageAfter: currentCount + 1,
       plan,
       dimension: "employees",
-      addonQtyRaw: (addon?.qty ?? 0) + pendingStaff,
+      addonQtyRaw: addon?.qty ?? 0,
     });
 
     return {
@@ -140,8 +135,6 @@ export async function canAddLanguage(
     if (salonErr) {
       return { canAdd: false, currentCount, limit: null, error: salonErr };
     }
-    const pendingLang = Number(salonRow?.pending_extra_languages) || 0;
-
     const { data: addon, error: addonError } = await addonsRepo.getAddonByType(salonId, "extra_languages");
     if (addonError) {
       return { canAdd: false, currentCount, limit: null, error: addonError };
@@ -151,7 +144,7 @@ export async function canAddLanguage(
       usageAfter: currentCount,
       plan,
       dimension: "languages",
-      addonQtyRaw: (addon?.qty ?? 0) + pendingLang,
+      addonQtyRaw: addon?.qty ?? 0,
     });
 
     return {

@@ -1,4 +1,4 @@
-// Auto-schedule Model A pending add-on units when the user increases languages or staff
+// Auto-schedule pending_target add-on quantities when the user increases languages or staff
 // from settings/employees — mirrors billing-set-pending-addons + Postgres invariant.
 
 import type { PlanType } from "@/lib/types";
@@ -16,24 +16,25 @@ export type AddonScheduledNotice = {
 const MAX_PENDING_SEARCH_STAFF = 40;
 const MAX_PENDING_SEARCH_LANG = 16;
 
-export function minPendingColumnForInvariant(input: {
+/** Smallest absolute paid-extra target ≥ max(stripe, currentPendingTarget) that satisfies the invariant. */
+export function minAbsolutePendingTarget(input: {
   plan: PlanType | null | undefined;
   dimension: AddonDimension;
   stripeAddonQty: number;
-  currentPendingColumn: number;
+  currentPendingTarget: number;
   usageAfter: number;
 }): number | null {
-  const span =
-    input.dimension === "employees" ? MAX_PENDING_SEARCH_STAFF : MAX_PENDING_SEARCH_LANG;
-  const hi = input.currentPendingColumn + span;
-  for (let p = input.currentPendingColumn; p <= hi; p++) {
+  const span = input.dimension === "employees" ? MAX_PENDING_SEARCH_STAFF : MAX_PENDING_SEARCH_LANG;
+  const start = Math.max(input.stripeAddonQty, input.currentPendingTarget);
+  const hi = start + span;
+  for (let t = start; t <= hi; t++) {
     const inv = invariantEval({
       usageAfter: input.usageAfter,
       plan: input.plan,
       dimension: input.dimension,
-      addonQtyRaw: input.stripeAddonQty + p,
+      addonQtyRaw: t,
     });
-    if (!inv.violates) return p;
+    if (!inv.violates) return t;
   }
   return null;
 }
@@ -60,25 +61,25 @@ export async function tryAutoBumpLanguagePending(
   }
 
   const stripe = addon?.qty ?? 0;
-  const p0 = Number(salonRow.pending_extra_languages) || 0;
-  const need = minPendingColumnForInvariant({
+  const prevTarget = Number(salonRow.pending_target_extra_languages) || 0;
+  const need = minAbsolutePendingTarget({
     plan,
     dimension: "languages",
     stripeAddonQty: stripe,
-    currentPendingColumn: p0,
+    currentPendingTarget: prevTarget,
     usageAfter: targetLanguageCount,
   });
 
   if (need === null) {
     return { ok: false, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
   }
-  if (need <= p0) {
+  if (need <= prevTarget) {
     return { ok: true, increased: false, notice: null };
   }
 
   const { error: pendErr } = await setSalonPendingAddons(salonId, {
-    pending_extra_staff: Number(salonRow.pending_extra_staff) || 0,
-    pending_extra_languages: need,
+    pending_target_extra_staff: Number(salonRow.pending_target_extra_staff) || 0,
+    pending_target_extra_languages: need,
   });
   if (pendErr) {
     return { ok: false, error: pendErr };
@@ -116,25 +117,25 @@ export async function tryAutoBumpStaffPending(
   }
 
   const stripe = addon?.qty ?? 0;
-  const p0 = Number(salonRow.pending_extra_staff) || 0;
-  const need = minPendingColumnForInvariant({
+  const prevTarget = Number(salonRow.pending_target_extra_staff) || 0;
+  const need = minAbsolutePendingTarget({
     plan,
     dimension: "employees",
     stripeAddonQty: stripe,
-    currentPendingColumn: p0,
+    currentPendingTarget: prevTarget,
     usageAfter: usageAfterActiveEmployees,
   });
 
   if (need === null) {
     return { ok: false, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
   }
-  if (need <= p0) {
+  if (need <= prevTarget) {
     return { ok: true, increased: false, notice: null };
   }
 
   const { error: pendErr } = await setSalonPendingAddons(salonId, {
-    pending_extra_staff: need,
-    pending_extra_languages: Number(salonRow.pending_extra_languages) || 0,
+    pending_target_extra_staff: need,
+    pending_target_extra_languages: Number(salonRow.pending_target_extra_languages) || 0,
   });
   if (pendErr) {
     return { ok: false, error: pendErr };

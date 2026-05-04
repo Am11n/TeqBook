@@ -26,23 +26,6 @@ export type AddonSyncSnapshot = {
 const ADDON_DRIFT_PREFIX = "addon_drift:";
 const ADDON_SYNC_FAIL_PREFIX = "addon_sync:";
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isRetriableStripeError(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  const msg = err.message.toLowerCase();
-  if (msg.includes("rate limit")) return true;
-  if (msg.includes("429")) return true;
-  if (msg.includes("timeout")) return true;
-  if (msg.includes("econnreset")) return true;
-  if (msg.includes("503")) return true;
-  if (msg.includes("502")) return true;
-  const se = err as { type?: string };
-  return se.type === "StripeConnectionError";
-}
-
 function matchesAddonQty(a: AddonQty, b: AddonQty): boolean {
   return a.extra_staff === b.extra_staff && a.extra_languages === b.extra_languages;
 }
@@ -343,9 +326,16 @@ export async function ensureStripeAddonQuantitiesMatchDb(
   }
 
   let stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
-  const stripeTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
+  const cappedExpected = capStarterAddonQuantities(salon.plan as BillingPlan, expected);
 
-  if (matchesAddonQty(stripeTarget, stripeQty)) {
+  if (matchesAddonQty(cappedExpected, stripeQty)) {
+    await supabase
+      .from("salons")
+      .update({
+        pending_target_extra_staff: 0,
+        pending_target_extra_languages: 0,
+      })
+      .eq("id", salonId);
     await upsertAddonsTable(supabase, salonId, stripeQty);
     await clearAddonBillingDriftReason(supabase, salonId);
     const snap: AddonSyncSnapshot = {
@@ -369,128 +359,46 @@ export async function ensureStripeAddonQuantitiesMatchDb(
     };
   }
 
-  let updates = collectStripeAddonItemUpdates(subscription, priceConfig, stripeTarget);
-  if (updates.length === 0) {
-    const snap: AddonSyncSnapshot = {
-      expected,
-      stripe: stripeQty,
-      drift: !matchesAddonQty(stripeTarget, stripeQty),
-      last_attempt_at: new Date().toISOString(),
-      retry_count: 0,
-    };
-    const invalidPrice =
-      !isValidStripePriceId(priceConfig.addonPriceIds.extra_staff) ||
-      !isValidStripePriceId(priceConfig.addonPriceIds.extra_languages);
-    if (snap.drift && invalidPrice) {
-      await markBillingInconsistent(supabase, salonId, `${ADDON_SYNC_FAIL_PREFIX}invalid_addon_price_ids`);
-    }
-    await persistSalonAddonState(supabase, salonId, snap.drift ? "drift_detected" : "synced", snap);
-    await upsertProjectionRow(supabase, salonId, expected, stripeQty, snap.drift, 0, null);
-    return {
-      ok: !snap.drift,
-      synced: !snap.drift,
-      reason: snap.drift ? "drift_no_updates_possible" : undefined,
-      state: snap.drift ? "drift_detected" : "synced",
-      snapshot: snap,
-      stripe_subscription_id: subId,
-      active_employees,
-      active_languages,
-    };
-  }
-
-  let lastError: string | null = null;
-  let attempt = 0;
-  const maxRetries = Math.max(1, options.maxRetries);
-
-  while (attempt < maxRetries) {
-    attempt += 1;
-    const attemptIso = new Date().toISOString();
-    subscription = await stripe.subscriptions.retrieve(subId);
-    stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
-    const loopTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
-    if (matchesAddonQty(loopTarget, stripeQty)) {
-      await upsertAddonsTable(supabase, salonId, stripeQty);
-      await clearAddonBillingDriftReason(supabase, salonId);
-      const snap: AddonSyncSnapshot = {
-        expected,
-        stripe: stripeQty,
-        drift: false,
-        last_attempt_at: attemptIso,
-        retry_count: attempt - 1,
-      };
-      await persistSalonAddonState(supabase, salonId, "synced", snap);
-      await upsertProjectionRow(supabase, salonId, expected, stripeQty, false, attempt - 1, null);
-      await invokeRecomputeProductAccessState(supabase, salonId, "ensureStripeAddonQuantitiesMatchDb_after_update");
-      return {
-        ok: true,
-        synced: true,
-        state: "synced",
-        snapshot: snap,
-        stripe_subscription_id: subId,
-        active_employees,
-        active_languages,
-      };
-    }
-    updates = collectStripeAddonItemUpdates(subscription, priceConfig, loopTarget);
-    if (updates.length === 0) break;
-    try {
-      // No proration for usage-driven add-on quantity sync: changes apply from the next
-      // invoice so totals stay predictable for salons (plan changes use billing-update-plan).
-      await stripe.subscriptions.update(
-        subId,
-        {
-          items: updates,
-          proration_behavior: "none",
-        },
-        {
-          idempotencyKey: `addon-sync:${salonId}:${loopTarget.extra_staff}:${loopTarget.extra_languages}:${attempt}`,
-        },
-      );
-      lastError = null;
-    } catch (e) {
-      lastError = e instanceof Error ? e.message : "unknown";
-      if (attempt < maxRetries && isRetriableStripeError(e)) {
-        await sleep(100 * Math.pow(4, attempt - 1));
-        continue;
-      }
-      break;
-    }
-  }
-
-  subscription = await stripe.subscriptions.retrieve(subId);
-  stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
-  const finalTarget = stripeMidCycleAddonSyncTarget(expected, stripeQty);
-  const drift = !matchesAddonQty(finalTarget, stripeQty);
+  const drift = !matchesAddonQty(cappedExpected, stripeQty);
   const snap: AddonSyncSnapshot = {
     expected,
     stripe: stripeQty,
     drift,
     last_attempt_at: new Date().toISOString(),
-    retry_count: attempt,
-    last_error_code: lastError ?? "max_retries",
+    retry_count: 0,
+    last_error_code: drift ? "deferred_to_next_billing_boundary" : undefined,
   };
-  await persistSalonAddonState(supabase, salonId, drift ? "drift_detected" : "failed", snap);
-  await upsertProjectionRow(supabase, salonId, expected, stripeQty, drift, attempt, lastError);
 
-  if (drift) {
+  const invalidPrice =
+    !isValidStripePriceId(priceConfig.addonPriceIds.extra_staff) ||
+    !isValidStripePriceId(priceConfig.addonPriceIds.extra_languages);
+  if (drift && invalidPrice) {
+    await markBillingInconsistent(supabase, salonId, `${ADDON_SYNC_FAIL_PREFIX}invalid_addon_price_ids`);
+  } else if (drift) {
     await markBillingInconsistent(
       supabase,
       salonId,
-      `${ADDON_DRIFT_PREFIX}usage_target=staff:${finalTarget.extra_staff},lang:${finalTarget.extra_languages};stripe=staff:${stripeQty.extra_staff},lang:${stripeQty.extra_languages}`,
-    );
-  } else {
-    await markBillingInconsistent(
-      supabase,
-      salonId,
-      `${ADDON_SYNC_FAIL_PREFIX}${(lastError ?? "update_failed").slice(0, 500)}`,
+      `${ADDON_DRIFT_PREFIX}usage_target=staff:${cappedExpected.extra_staff},lang:${cappedExpected.extra_languages};stripe=staff:${stripeQty.extra_staff},lang:${stripeQty.extra_languages}`,
     );
   }
 
+  const { error: pendErr } = await supabase
+    .from("salons")
+    .update({
+      pending_target_extra_staff: cappedExpected.extra_staff,
+      pending_target_extra_languages: cappedExpected.extra_languages,
+    })
+    .eq("id", salonId);
+  if (pendErr) console.error("ensureStripeAddonQuantitiesMatchDb pending_target update failed", pendErr);
+
+  await persistSalonAddonState(supabase, salonId, drift ? "drift_detected" : "synced", snap);
+  await upsertProjectionRow(supabase, salonId, expected, stripeQty, drift, 0, null);
+
   return {
-    ok: false,
-    synced: false,
-    reason: lastError ?? "addon_sync_failed",
-    state: drift ? "drift_detected" : "failed",
+    ok: !drift,
+    synced: !drift,
+    reason: drift ? "deferred_to_next_billing_boundary" : undefined,
+    state: drift ? "drift_detected" : "synced",
     snapshot: snap,
     stripe_subscription_id: subId,
     active_employees,
@@ -501,8 +409,8 @@ export async function ensureStripeAddonQuantitiesMatchDb(
 export type ApplyPendingAddonsResult = { applied: boolean; reason?: string };
 
 /**
- * Model A: merge `salons.pending_*` into Stripe add-on line quantities (`proration_behavior: none`),
- * clear pending, and refresh local addon projection. Idempotent when pending is zero.
+ * Apply `salons.pending_target_*` (absolute desired paid extras) at billing boundary.
+ * `proration_behavior: none`. Row lock + Stripe idempotency.suffix should include period boundary.
  */
 export async function applyPendingSalonAddonsToStripe(
   supabase: SupabaseClient,
@@ -511,10 +419,11 @@ export async function applyPendingSalonAddonsToStripe(
   options: { idempotencySuffix: string },
 ): Promise<ApplyPendingAddonsResult> {
   const priceConfig = getBillingPriceConfig();
+
   const { data: salon, error: salonErr } = await supabase
     .from("salons")
     .select(
-      "pending_extra_staff, pending_extra_languages, billing_subscription_id, plan, billing_customer_id",
+      "pending_target_extra_staff, pending_target_extra_languages, billing_subscription_id, plan, billing_customer_id",
     )
     .eq("id", salonId)
     .maybeSingle();
@@ -523,11 +432,8 @@ export async function applyPendingSalonAddonsToStripe(
     return { applied: false, reason: "no_subscription" };
   }
 
-  const pStaff = Math.max(0, Number((salon as { pending_extra_staff?: number }).pending_extra_staff) || 0);
-  const pLang = Math.max(0, Number((salon as { pending_extra_languages?: number }).pending_extra_languages) || 0);
-  if (pStaff === 0 && pLang === 0) {
-    return { applied: false, reason: "no_pending" };
-  }
+  const rawStaff = Math.max(0, Number((salon as { pending_target_extra_staff?: number }).pending_target_extra_staff) || 0);
+  const rawLang = Math.max(0, Number((salon as { pending_target_extra_languages?: number }).pending_target_extra_languages) || 0);
 
   const subId = salon.billing_subscription_id as string;
   let subscription = await stripe.subscriptions.retrieve(subId);
@@ -547,24 +453,27 @@ export async function applyPendingSalonAddonsToStripe(
 
   const current = readAddonQtyFromSubscription(subscription, priceConfig);
   const plan = salon.plan as BillingPlan;
-  const cappedNext = capStarterAddonQuantities(plan, {
-    extra_staff: current.extra_staff + pStaff,
-    extra_languages: current.extra_languages + pLang,
+  const cappedTarget = capStarterAddonQuantities(plan, {
+    extra_staff: rawStaff,
+    extra_languages: rawLang,
   });
 
-  if (matchesAddonQty(cappedNext, current)) {
+  if (matchesAddonQty(cappedTarget, current)) {
     const { error: clearErr } = await supabase
       .from("salons")
-      .update({ pending_extra_staff: 0, pending_extra_languages: 0 })
+      .update({ pending_target_extra_staff: 0, pending_target_extra_languages: 0 })
       .eq("id", salonId);
-    if (clearErr) console.error("applyPendingSalonAddonsToStripe clear capped pending", clearErr);
-    return { applied: false, reason: "pending_absorbed_by_cap" };
+    if (clearErr) console.error("applyPendingSalonAddonsToStripe clear aligned pending_target", clearErr);
+    return { applied: false, reason: "already_aligned" };
   }
 
-  const updates = collectStripeAddonItemUpdates(subscription, priceConfig, cappedNext);
+  const updates = collectStripeAddonItemUpdates(subscription, priceConfig, cappedTarget);
   if (updates.length === 0) {
     return { applied: false, reason: "no_stripe_updates" };
   }
+
+  const periodStart = subscription.current_period_start ?? 0;
+  const idempotencyKey = `pending-target-apply:${salonId}:${periodStart}:${cappedTarget.extra_staff}:${cappedTarget.extra_languages}:${options.idempotencySuffix}`;
 
   try {
     await stripe.subscriptions.update(
@@ -573,7 +482,7 @@ export async function applyPendingSalonAddonsToStripe(
         items: updates,
         proration_behavior: "none",
       },
-      { idempotencyKey: `addon-apply-pending:${salonId}:${options.idempotencySuffix}` },
+      { idempotencyKey },
     );
   } catch (e) {
     console.error("applyPendingSalonAddonsToStripe stripe update", e);
@@ -583,12 +492,21 @@ export async function applyPendingSalonAddonsToStripe(
   subscription = await stripe.subscriptions.retrieve(subId);
   const stripeQty = readAddonQtyFromSubscription(subscription, priceConfig);
 
+  if (!matchesAddonQty(cappedTarget, stripeQty)) {
+    console.error("applyPendingSalonAddonsToStripe stripe mismatch after update", {
+      salonId,
+      cappedTarget,
+      stripeQty,
+    });
+    return { applied: false, reason: "stripe_verify_failed" };
+  }
+
   const { error: pendClearErr } = await supabase
     .from("salons")
-    .update({ pending_extra_staff: 0, pending_extra_languages: 0 })
+    .update({ pending_target_extra_staff: 0, pending_target_extra_languages: 0 })
     .eq("id", salonId);
   if (pendClearErr) {
-    console.error("applyPendingSalonAddonsToStripe pending clear failed", pendClearErr);
+    console.error("applyPendingSalonAddonsToStripe pending_target clear failed", pendClearErr);
   }
 
   await upsertAddonsTable(supabase, salonId, stripeQty);

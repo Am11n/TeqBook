@@ -136,9 +136,9 @@ export type PreviewBillingUpcomingInvoiceResponse =
         timing_adjustments_minor?: number;
       };
       lines: { description: string; amount_minor: number; quantity: number | null }[];
-      /** Model A: scheduled add-on units (not yet on Stripe). */
-      pending_extra_staff?: number;
-      pending_extra_languages?: number;
+      /** Absolute paid-extra targets applied at next billing boundary (not yet on Stripe). */
+      pending_target_extra_staff?: number;
+      pending_target_extra_languages?: number;
       current_period_end?: string | null;
     };
 
@@ -152,8 +152,8 @@ export interface RefreshSubscriptionProjectionResponse {
 
 export type SetPendingAddonsResponse = {
   success: boolean;
-  pending_extra_staff: number;
-  pending_extra_languages: number;
+  pending_target_extra_staff: number;
+  pending_target_extra_languages: number;
   capped?: boolean;
 };
 

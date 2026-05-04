@@ -248,14 +248,12 @@ serve(async (req) => {
         if (salonId) {
           const { data: salonRow } = await supabase
             .from("salons")
-            .select("pending_extra_staff, pending_extra_languages, billing_subscription_period_start")
+            .select("billing_subscription_period_start")
             .eq("id", salonId)
             .maybeSingle();
 
           const prevStart = salonRow?.billing_subscription_period_start ?? null;
           const newStart = subscription.current_period_start;
-          const pStaff = Number(salonRow?.pending_extra_staff) || 0;
-          const pLang = Number(salonRow?.pending_extra_languages) || 0;
           if (prevStart !== null && newStart > prevStart) {
             const planResult = await applyPendingSalonPlanToStripe(supabase, stripe, salonId, {
               idempotencySuffix: `${event.id}:plan`,
@@ -268,16 +266,14 @@ serve(async (req) => {
             if (planResult.subscription) {
               subscription = planResult.subscription;
             }
-            if (pStaff + pLang > 0) {
-              const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, salonId, {
-                idempotencySuffix: `${event.id}:period_roll`,
-              });
-              console.log("subscription webhook apply pending addons", {
-                salonId,
-                subscriptionId: subscription.id,
-                ...applyResult,
-              });
-            }
+            const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, salonId, {
+              idempotencySuffix: `${event.id}:period_roll:${newStart}`,
+            });
+            console.log("subscription webhook apply pending addon targets", {
+              salonId,
+              subscriptionId: subscription.id,
+              ...applyResult,
+            });
             subscription = await stripe.subscriptions.retrieve(subscription.id);
           }
         }

@@ -15,7 +15,8 @@
     "supabase/supabase/migrations/20260503120000_addon_invariant_rpc_step0.sql",
     "supabase/supabase/migrations/20260504120000_model_a_pending_addons.sql",
     "supabase/supabase/migrations/20260505130000_addon_invariant_include_pending.sql",
-    "supabase/supabase/migrations/20260506120000_pending_plan.sql"
+    "supabase/supabase/migrations/20260506120000_pending_plan.sql",
+    "supabase/supabase/migrations/20260507120000_pending_target_addons.sql"
   ]
 }
 

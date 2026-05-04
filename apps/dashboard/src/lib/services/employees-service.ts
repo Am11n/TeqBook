@@ -17,7 +17,6 @@ import { canAddEmployee, invalidatePlanLimitsCache } from "./plan-limits-service
 import { tb } from "@/lib/i18n/repo-error-codes";
 import { invariantEval } from "@teqbook/shared-core";
 import * as addonsRepo from "@/lib/repositories/addons";
-import { getSalonById } from "@/lib/repositories/salons";
 import { tryAutoBumpStaffPending } from "@/lib/services/addon-pending-auto-schedule";
 import type { AddonScheduledNotice } from "@/lib/services/addon-pending-auto-schedule";
 import { logEmployeeEvent } from "@/lib/services/audit-trail-service";
@@ -200,16 +199,11 @@ export async function updateEmployee(
       if (addonErr) {
         return { data: null, error: addonErr };
       }
-      const { data: salonRow, error: salonErr } = await getSalonById(salonId);
-      if (salonErr) {
-        return { data: null, error: salonErr };
-      }
-      const pendingStaff = Number(salonRow?.pending_extra_staff) || 0;
       const inv = invariantEval({
         usageAfter,
         plan: salonPlan,
         dimension: "employees",
-        addonQtyRaw: (addon?.qty ?? 0) + pendingStaff,
+        addonQtyRaw: addon?.qty ?? 0,
       });
       if (inv.violates) {
         return { data: null, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };

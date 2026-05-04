@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-05-07
+
+- [kode/db] `20260507120000_pending_target_addons.sql`: kolonner `pending_target_extra_staff` / `pending_target_extra_languages` (absolutt neste-periode-mål), migrering fra `pending_extra_*`, `salon_capped_addon_quantity` uten pending i tillatt add-on-kapasitet; manifest oppdatert. Dashboard/edge: tillegg Stripe kun ved periodeskifte; umiddelbart planbytte uten Stripe add-on-linjeskift (mål i `pending_target_*`); midtsyklus sync utsetter og setter `pending_target_*`.
+
 ## 2026-05-02
 
 - [pilot/db] `supabase db push --yes`: `20260506120000_pending_plan.sql` — `salons.pending_plan` (`plan_type`) for planlagt planbytte neste periode; manifest oppdatert. Edge: `billing-preview-plan-change`, `billing-clear-pending-plan`, `billing-update-plan` (`timing`), `applyPendingSalonPlanToStripe` + webhook/invoice apply.

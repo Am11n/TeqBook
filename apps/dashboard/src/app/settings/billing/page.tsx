@@ -233,8 +233,8 @@ export default function BillingSettingsPage() {
     setPendingCapped(false);
     setError(null);
     const { data, error: pendErr } = await setSalonPendingAddons(salon.id, {
-      pending_extra_staff: staff,
-      pending_extra_languages: languages,
+      pending_target_extra_staff: staff,
+      pending_target_extra_languages: languages,
     });
     setPendingAddonSaving(false);
     if (pendErr) {
@@ -489,8 +489,8 @@ export default function BillingSettingsPage() {
       <AddonsCard
         stripeAddonUsageTrusted={addonStripeUsageTrusted}
         dateLocale={intlLocaleTag(appLocale as AppLocale)}
-        pendingExtraStaff={Number(salon?.pending_extra_staff) || 0}
-        pendingExtraLanguages={Number(salon?.pending_extra_languages) || 0}
+        pendingExtraStaff={Number(salon?.pending_target_extra_staff) || 0}
+        pendingExtraLanguages={Number(salon?.pending_target_extra_languages) || 0}
         nextPeriodEndIso={salon?.current_period_end ?? null}
         onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
         pendingSaving={pendingAddonSaving}

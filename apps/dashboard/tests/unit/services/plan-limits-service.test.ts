@@ -21,8 +21,8 @@ vi.mock("@/lib/repositories/salons", () => ({
   getSalonById: vi.fn().mockResolvedValue({
     data: {
       id: "test-salon-id",
-      pending_extra_staff: 0,
-      pending_extra_languages: 0,
+      pending_target_extra_staff: 0,
+      pending_target_extra_languages: 0,
     },
     error: null,
   }),

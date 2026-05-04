@@ -5,6 +5,7 @@
 import type Stripe from "https://esm.sh/stripe@14.21.0";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  capStarterAddonQuantities,
   computeExtraQuantity,
   getBaseLimits,
   getBillingPriceConfig,
@@ -13,10 +14,7 @@ import {
   type BillingPlan,
 } from "./billing.ts";
 import { validateBillingBinding } from "./billing-binding.ts";
-import {
-  collectAddonSubscriptionItemUpdates,
-  getPlanSubscriptionItem,
-} from "./billing-plan-subscription-items.ts";
+import { getPlanSubscriptionItem } from "./billing-plan-subscription-items.ts";
 
 export type ApplyPendingPlanResult = {
   applied: boolean;
@@ -91,16 +89,22 @@ export async function applyPendingSalonPlanToStripe(
   const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
   const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
 
-  const addonItemUpdates = collectAddonSubscriptionItemUpdates(
-    subscription,
-    priceConfig,
-    extraStaffQty,
-    extraLanguagesQty,
-  );
+  const cappedAddonTargets = capStarterAddonQuantities(targetPlan, {
+    extra_staff: extraStaffQty,
+    extra_languages: extraLanguagesQty,
+  });
 
   const stripePlanFromPrice = getPlanFromPriceId(planItem.price.id, priceConfig.planPriceIds);
-  if (stripePlanFromPrice === targetPlan && addonItemUpdates.length === 0) {
-    const { error: clearErr } = await supabase.from("salons").update({ pending_plan: null }).eq("id", salonId);
+  if (stripePlanFromPrice === targetPlan && !planPriceChanged) {
+    const { error: clearErr } = await supabase
+      .from("salons")
+      .update({
+        pending_plan: null,
+        plan: targetPlan,
+        pending_target_extra_staff: cappedAddonTargets.extra_staff,
+        pending_target_extra_languages: cappedAddonTargets.extra_languages,
+      })
+      .eq("id", salonId);
     if (clearErr) console.error("applyPendingSalonPlanToStripe clear stale pending", clearErr);
     return { applied: false, reason: "already_aligned", subscription };
   }
@@ -109,27 +113,33 @@ export async function applyPendingSalonPlanToStripe(
   if (planPriceChanged) {
     items.push({ id: planItem.id, price: newPriceId });
   }
-  items.push(...addonItemUpdates);
-
-  if (items.length === 0) {
-    const { error: clearErr } = await supabase.from("salons").update({ pending_plan: null }).eq("id", salonId);
-    if (clearErr) console.error("applyPendingSalonPlanToStripe clear empty items", clearErr);
-    return { applied: false, reason: "no_items", subscription };
-  }
 
   try {
-    subscription = await stripe.subscriptions.update(
-      subId,
-      {
-        items,
-        proration_behavior: "none",
-        metadata: {
-          ...subscription.metadata,
-          plan: targetPlan,
+    if (items.length === 0) {
+      subscription = await stripe.subscriptions.update(
+        subId,
+        {
+          metadata: {
+            ...subscription.metadata,
+            plan: targetPlan,
+          },
         },
-      },
-      { idempotencyKey: `pending-plan-apply:${salonId}:${options.idempotencySuffix}` },
-    );
+        { idempotencyKey: `pending-plan-meta:${salonId}:${options.idempotencySuffix}` },
+      );
+    } else {
+      subscription = await stripe.subscriptions.update(
+        subId,
+        {
+          items,
+          proration_behavior: "none",
+          metadata: {
+            ...subscription.metadata,
+            plan: targetPlan,
+          },
+        },
+        { idempotencyKey: `pending-plan-apply:${salonId}:${options.idempotencySuffix}` },
+      );
+    }
   } catch (e) {
     console.error("applyPendingSalonPlanToStripe stripe update", e);
     return {
@@ -140,7 +150,12 @@ export async function applyPendingSalonPlanToStripe(
 
   const { error: pendClearErr } = await supabase
     .from("salons")
-    .update({ pending_plan: null, plan: targetPlan })
+    .update({
+      pending_plan: null,
+      plan: targetPlan,
+      pending_target_extra_staff: cappedAddonTargets.extra_staff,
+      pending_target_extra_languages: cappedAddonTargets.extra_languages,
+    })
     .eq("id", salonId);
   if (pendClearErr) {
     console.error("applyPendingSalonPlanToStripe pending_plan clear failed", pendClearErr);

@@ -69,8 +69,8 @@ export default function GeneralSettingsPage() {
   }, [
     salon?.id,
     salon?.plan,
-    salon?.pending_extra_languages,
-    salon?.pending_extra_staff,
+    salon?.pending_target_extra_languages,
+    salon?.pending_target_extra_staff,
   ]);
 
   const initialValues = useMemo<GeneralFormValues>(() => ({

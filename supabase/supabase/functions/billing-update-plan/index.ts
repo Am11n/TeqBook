@@ -3,11 +3,8 @@
 // =====================================================
 // Updates a Stripe subscription plan for a salon.
 //
-// Hybrid proration (salon-friendly):
-// - Plan price change: separate update with proration_behavior "always_invoice" when active/trialing
-//   so upgrades charge immediately.
-// - Add-on line items: follow-up update with proration_behavior "none" so seat/language alignment
-//   matches usage on the next invoice. Plan changes may still adjust add-ons immediately (outside Model A mid-cycle deferral).
+// Plan price change: proration_behavior "always_invoice" when active/trialing (upgrades invoice immediately).
+// Paid add-on lines are NOT updated in Stripe here — targets go to `salons.pending_target_*` for next boundary apply.
 //
 // Usage:
 // POST /functions/v1/billing-update-plan
@@ -21,6 +18,7 @@ import {
   createRateLimitErrorResponse,
 } from "../_shared/rate-limit.ts";
 import {
+  capStarterAddonQuantities,
   computeExtraQuantity,
   getBaseLimits,
   getBillingPriceConfig,
@@ -28,10 +26,7 @@ import {
 } from "../_shared/billing.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
 import { validateBillingBinding } from "../_shared/billing-binding.ts";
-import {
-  collectAddonSubscriptionItemUpdates,
-  getPlanSubscriptionItem,
-} from "../_shared/billing-plan-subscription-items.ts";
+import { getPlanSubscriptionItem } from "../_shared/billing-plan-subscription-items.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -416,8 +411,57 @@ serve(async (req) => {
     const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
     const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
 
+    const { data: addonRows } = await supabase
+      .from("addons")
+      .select("type, qty")
+      .eq("salon_id", body.salon_id);
+    const addonStaffPaid = addonRows?.find((a) => a.type === "extra_staff")?.qty ?? 0;
+    const addonLangPaid = addonRows?.find((a) => a.type === "extra_languages")?.qty ?? 0;
+
+    if (baseLimits.employees !== null && activeEmployees > baseLimits.employees + addonStaffPaid) {
+      return new Response(
+        JSON.stringify({
+          error: "Cannot change plan now",
+          details:
+            "Active employees exceed what the new plan allows with your current paid add-ons. Remove employees or schedule the change for the next billing period.",
+          code: "immediate_downgrade_blocked",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+    if (baseLimits.languages !== null && activeLanguages > baseLimits.languages + addonLangPaid) {
+      return new Response(
+        JSON.stringify({
+          error: "Cannot change plan now",
+          details:
+            "Supported languages exceed what the new plan allows with your current paid add-ons. Remove languages or schedule the change for the next billing period.",
+          code: "immediate_downgrade_blocked",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const { planItem } = getPlanSubscriptionItem(subscription, priceConfig);
     const planPriceChanged = planItem.price.id !== newPriceId;
+
+    if ((salonBinding.plan as string) === body.new_plan && !planPriceChanged) {
+      return new Response(
+        JSON.stringify({
+          error: "Already on this plan",
+          details: "Choose a different plan or adjust add-ons from billing settings.",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const canProratePlan =
       subscription.status === "active" || subscription.status === "trialing";
@@ -430,9 +474,6 @@ serve(async (req) => {
     let updatedSubscription: Stripe.Subscription = subscription;
 
     try {
-      // Hybrid billing: plan price change invoices immediately; add-on quantity alignment
-      // uses a separate update with proration_behavior none so small seat/language changes
-      // do not create confusing mid-cycle proration lines (see billing-addon-sync).
       if (planPriceChanged) {
         const planParams: Stripe.SubscriptionUpdateParams = {
           items: [{ id: planItem.id, price: newPriceId }],
@@ -449,45 +490,16 @@ serve(async (req) => {
           planParams,
           { idempotencyKey: `${baseIdempotencyKey}:plan` },
         );
-      }
-
-      const subForAddons = planPriceChanged
-        ? await stripe.subscriptions.retrieve(body.subscription_id)
-        : subscription;
-
-      const addonItemUpdates = collectAddonSubscriptionItemUpdates(
-        subForAddons,
-        priceConfig,
-        extraStaffQty,
-        extraLanguagesQty,
-      );
-
-      if (addonItemUpdates.length > 0) {
-        const addonParams: Stripe.SubscriptionUpdateParams = {
-          items: addonItemUpdates,
-          metadata: {
-            ...subForAddons.metadata,
-            plan: body.new_plan,
-          },
-        };
-        if (canProratePlan) {
-          addonParams.proration_behavior = "none";
-        }
+      } else {
         updatedSubscription = await stripe.subscriptions.update(
           body.subscription_id,
-          addonParams,
-          { idempotencyKey: `${baseIdempotencyKey}:addons` },
-        );
-      } else if (!planPriceChanged) {
-        return new Response(
-          JSON.stringify({
-            error: "No subscription changes",
-            details: "The selected plan and add-on quantities already match the subscription.",
-          }),
           {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            metadata: {
+              ...subscription.metadata,
+              plan: body.new_plan,
+            },
           },
+          { idempotencyKey: `${baseIdempotencyKey}:plan-meta` },
         );
       }
     } catch (updateError) {
@@ -519,13 +531,21 @@ serve(async (req) => {
     // Calculate new current period end
     const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
 
-    // Update salon with new plan using service role key
+    const cappedAddonTargets = capStarterAddonQuantities(body.new_plan, {
+      extra_staff: extraStaffQty,
+      extra_languages: extraLanguagesQty,
+    });
+
+    // Update salon with new plan using service role key (included limits apply immediately in DB).
+    // Paid add-on Stripe lines follow `pending_target_*` at the next billing boundary only.
     const { error: updateError } = await supabase
       .from("salons")
       .update({
         plan: body.new_plan,
         current_period_end: currentPeriodEnd,
         pending_plan: null,
+        pending_target_extra_staff: cappedAddonTargets.extra_staff,
+        pending_target_extra_languages: cappedAddonTargets.extra_languages,
       })
       .eq("id", body.salon_id);
 

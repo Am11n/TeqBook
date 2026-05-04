@@ -1,8 +1,8 @@
 // =====================================================
-// Billing: set pending add-on units (Model A)
+// Billing: set pending target add-on quantities (absolute next-period targets)
 // =====================================================
-// Schedules extra staff / language add-on quantities for the next Stripe billing boundary.
-// Does not call Stripe immediately for increases.
+// Writes `salons.pending_target_*` — desired paid extra_staff / extra_languages on Stripe
+// after the next billing boundary apply. Does not call Stripe immediately.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
@@ -12,9 +12,8 @@ import {
   createRateLimitErrorResponse,
 } from "../_shared/rate-limit.ts";
 import { authenticateRequest, authorizeSalonAccess } from "../_shared/auth.ts";
-import { capStarterAddonQuantities, getBillingPriceConfig } from "../_shared/billing.ts";
+import { capStarterAddonQuantities } from "../_shared/billing.ts";
 import { validateBillingBinding } from "../_shared/billing-binding.ts";
-import { readAddonQtyFromSubscription } from "../_shared/billing-addon-sync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,8 +25,9 @@ const corsHeaders = {
 
 type Body = {
   salon_id?: string;
-  pending_extra_staff?: unknown;
-  pending_extra_languages?: unknown;
+  /** Absolute desired paid extra_staff units after next boundary (non-negative). */
+  pending_target_extra_staff?: unknown;
+  pending_target_extra_languages?: unknown;
 };
 
 function parseNonNegInt(v: unknown): number | null {
@@ -93,11 +93,13 @@ serve(async (req) => {
       });
     }
 
-    const ps = parseNonNegInt(body.pending_extra_staff);
-    const pl = parseNonNegInt(body.pending_extra_languages);
+    const ps = parseNonNegInt(body.pending_target_extra_staff);
+    const pl = parseNonNegInt(body.pending_target_extra_languages);
     if (ps === null || pl === null) {
       return new Response(
-        JSON.stringify({ error: "pending_extra_staff and pending_extra_languages must be non-negative integers" }),
+        JSON.stringify({
+          error: "pending_target_extra_staff and pending_target_extra_languages must be non-negative integers",
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -141,22 +143,18 @@ serve(async (req) => {
       });
     }
 
-    const priceConfig = getBillingPriceConfig();
-    const current = readAddonQtyFromSubscription(subscription, priceConfig);
     const plan = salon.plan as "starter" | "pro" | "business";
-    const proposed = {
-      extra_staff: current.extra_staff + ps,
-      extra_languages: current.extra_languages + pl,
-    };
-    const capped = capStarterAddonQuantities(plan, proposed);
-    const nextPending = {
-      pending_extra_staff: Math.max(0, capped.extra_staff - current.extra_staff),
-      pending_extra_languages: Math.max(0, capped.extra_languages - current.extra_languages),
-    };
+    const capped = capStarterAddonQuantities(plan, {
+      extra_staff: ps,
+      extra_languages: pl,
+    });
 
     const { error: updErr } = await supabase
       .from("salons")
-      .update(nextPending)
+      .update({
+        pending_target_extra_staff: capped.extra_staff,
+        pending_target_extra_languages: capped.extra_languages,
+      })
       .eq("id", body.salon_id);
 
     if (updErr) {
@@ -169,9 +167,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        pending_extra_staff: nextPending.pending_extra_staff,
-        pending_extra_languages: nextPending.pending_extra_languages,
-        capped: nextPending.pending_extra_staff !== ps || nextPending.pending_extra_languages !== pl,
+        pending_target_extra_staff: capped.extra_staff,
+        pending_target_extra_languages: capped.extra_languages,
+        capped: capped.extra_staff !== ps || capped.extra_languages !== pl,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
