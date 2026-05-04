@@ -35,6 +35,38 @@
     {
       "file": "supabase/supabase/migrations/20260430153000_public_booking_used_action_token_nonces.sql",
       "sha256": "baaf2419d613f3537a6c2cde39930a5688b300bc2b1956c3cc32996bd9688fc7"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260501120000_product_access_state.sql",
+      "sha256": "e27c4b19389fc3ed8bebe29c002e56e9056c1a87787dbf6f50c7b42f716521ed"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260502120000_addon_billing_sync_state.sql",
+      "sha256": "2795b25ef5cc163abc599683033a2a60a8b569efbbb5268ce0cc46a5f7950436"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260503120000_addon_invariant_rpc_step0.sql",
+      "sha256": "675e0ff39cf382be1b09dcc0604c25418e2953fa2b22aa9ef370bbe9d3699efd"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260504120000_model_a_pending_addons.sql",
+      "sha256": "891df045f09f84ca0189953fc2f179bcd6145cc44ebb2e7a66a8f026da785815"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260505130000_addon_invariant_include_pending.sql",
+      "sha256": "64866c825d2499842dd3ecb345a3c7c6e19d8ac69b4a23e731142fe7065948e7"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260506120000_pending_plan.sql",
+      "sha256": "90d68376b458b7b50c369ee6415600b9f959140724b31a3df278b74a3f4c147c"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260507120000_pending_target_addons.sql",
+      "sha256": "f76c3eb3551abe600c578372c007c9c2b0c175a5b2aaedc406deb92f8659a587"
+    },
+    {
+      "file": "supabase/supabase/migrations/20260508120000_grant_addon_invariant_for_triggers.sql",
+      "sha256": "4279e7d6a8860993ce24f9000cd7dea1274dcffff0117fb70972e1474f445c59"
     }
   ]
 }

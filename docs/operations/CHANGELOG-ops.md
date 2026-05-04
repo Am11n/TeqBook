@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-05-08
+
+- [kode/db] `20260508120000_grant_addon_invariant_for_triggers.sql`: `GRANT EXECUTE` til `authenticated` på `addon_included_limit`, `salon_capped_addon_quantity`, `assert_salon_addon_usage` slik at `BEFORE` triggers på `employees` (f.eks. `is_active`) ikke feiler med «permission denied» etter at `PUBLIC` ble revoket i steg-0; manifest oppdatert.
+
 ## 2026-05-07
 
 - [kode/db] `20260507120000_pending_target_addons.sql`: kolonner `pending_target_extra_staff` / `pending_target_extra_languages` (absolutt neste-periode-mål), migrering fra `pending_extra_*`, `salon_capped_addon_quantity` uten pending i tillatt add-on-kapasitet; manifest oppdatert. Dashboard/edge: tillegg Stripe kun ved periodeskifte; umiddelbart planbytte uten Stripe add-on-linjeskift (mål i `pending_target_*`); midtsyklus sync utsetter og setter `pending_target_*`.
