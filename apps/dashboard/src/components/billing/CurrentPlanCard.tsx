@@ -124,6 +124,10 @@ export type CurrentPlanCardCopy = {
   billingPeriodStaleSyncBody?: string;
   billingPeriodStaleFailedTitle?: string;
   billingPeriodStaleFailedBody?: string;
+  billingUsageEmployeesBarLabel?: string;
+  billingUsageLanguagesBarLabel?: string;
+  /** Shown under the two usage bars when limit can include purchased add-ons */
+  billingPlanLimitsFootnote?: string;
 };
 
 const FALLBACK: Required<
@@ -159,6 +163,9 @@ const FALLBACK: Required<
     | "billingPeriodStaleSyncBody"
     | "billingPeriodStaleFailedTitle"
     | "billingPeriodStaleFailedBody"
+    | "billingUsageEmployeesBarLabel"
+    | "billingUsageLanguagesBarLabel"
+    | "billingPlanLimitsFootnote"
   >
 > = {
   billingTrialBadge: "Free trial",
@@ -197,6 +204,10 @@ const FALLBACK: Required<
   billingPeriodStaleFailedTitle: "Could not refresh billing date",
   billingPeriodStaleFailedBody:
     "The displayed renewal date may be out of date. Check that billing edge functions are deployed, then reload or contact support.",
+  billingUsageEmployeesBarLabel: "Employees",
+  billingUsageLanguagesBarLabel: "Languages",
+  billingPlanLimitsFootnote:
+    "Active usage vs total allowed on your subscription (package allowance plus any purchased add-on seats or languages).",
 };
 
 function mergeCopy(t: CurrentPlanCardCopy): typeof FALLBACK {
@@ -226,9 +237,13 @@ interface CurrentPlanCardProps {
   dateLocale?: string;
   usage?: {
     employeesActive: number;
-    employeesIncluded: number | null;
+    /** Total allowed active staff (package + purchased extra seats). */
+    employeesCapacity: number | null;
     languagesActive: number;
-    languagesIncluded: number | null;
+    /** Total allowed booking languages (package + purchased extras). */
+    languagesCapacity: number | null;
+    planIncludesEmployees: number | null;
+    planIncludesLanguages: number | null;
   } | null;
   /** When subscription period end in DB is before “now” we sync with Stripe; surface status here */
   billingPeriodStale?: { syncing: boolean; failed: boolean } | null;
@@ -566,18 +581,21 @@ export function CurrentPlanCard({
           </div>
         )}
 
-        {/* Plan limits as visual bars */}
+        {/* Plan limits: active usage vs total allowed (includes + purchased add-ons) */}
         <div className="mt-3 pt-3 border-t space-y-2">
           <SettingsLimitBar
-            label="Employees"
+            label={tc.billingUsageEmployeesBarLabel}
             current={usage?.employeesActive ?? 0}
-            limit={usage?.employeesIncluded ?? activePlan.limits.employees}
+            limit={usage?.employeesCapacity ?? activePlan.limits.employees}
           />
           <SettingsLimitBar
-            label="Languages"
+            label={tc.billingUsageLanguagesBarLabel}
             current={usage?.languagesActive ?? 0}
-            limit={usage?.languagesIncluded ?? activePlan.limits.languages}
+            limit={usage?.languagesCapacity ?? activePlan.limits.languages}
           />
+          {tc.billingPlanLimitsFootnote ? (
+            <p className="text-[11px] text-muted-foreground leading-snug pt-0.5">{tc.billingPlanLimitsFootnote}</p>
+          ) : null}
         </div>
       </div>
 

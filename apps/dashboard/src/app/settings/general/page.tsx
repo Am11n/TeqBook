@@ -305,6 +305,7 @@ export default function GeneralSettingsPage() {
             supportedLanguages={form.values.supportedLanguages}
             defaultLanguage={form.values.defaultLanguage}
             languageLimit={languageLimit}
+            languageLimitFootnote={languageLimit !== null ? t.bookingLanguagesLimitExplainer ?? null : null}
             t={t}
             onToggleLanguage={toggleLanguage}
             onChangeDefault={(v) => form.setValue("defaultLanguage", v)}

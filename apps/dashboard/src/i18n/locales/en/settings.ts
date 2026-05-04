@@ -121,7 +121,9 @@ const settingsCore: TranslationNamespaces['settings'] = {
     bookingLanguagesTitle: "Booking Languages",
     bookingLanguagesDescription: "Languages customers can use when booking.",
     searchLanguages: "Search languages...",
-    languagesUsed: "Languages used",
+    languagesUsed: "Languages (selected / total allowed)",
+    bookingLanguagesLimitExplainer:
+      "The limit on the right is total capacity: languages included in your plan plus any extra booking languages purchased—not “included only”.",
     upgradePlan: "Billing & add-ons",
     languageLimitReached:
       "You’ve used your included languages. Extra languages are billed — open Billing to review.",

@@ -118,7 +118,9 @@ const settingsCore: TranslationNamespaces['settings'] = {
     bookingLanguagesTitle: "Bookingspråk",
     bookingLanguagesDescription: "Språk kundene kan bruke ved booking.",
     searchLanguages: "Søk etter språk...",
-    languagesUsed: "Språk brukt",
+    languagesUsed: "Språk (valgt / totalt tillatt)",
+    bookingLanguagesLimitExplainer:
+      "Tallet til høyre er totalkapasitet: språk i pakken pluss eventuelle ekstra bookingspråk du har kjøpt — ikke bare «inkludert i pakken».",
     upgradePlan: "Fakturering og tillegg",
     languageLimitReached:
       "Du har brukt inkluderte språk. Ekstra språk faktureres — se Fakturering.",

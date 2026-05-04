@@ -77,10 +77,11 @@ export const employees: TranslationNamespaces['employees'] = {
     capacityTitle: "Staff capacity",
     capacityMessage: "You have reached the staff limit.",
     capacityNearTitle: "Capacity for {entity}",
-    capacityNearMessage: "You are using {current} of {limit} {entity}.",
-    capacityBlockedTitle: "Included {entity} in use",
+    capacityNearMessage:
+      "You are using {current} of {limit} active {entity} (package allowance plus any purchased extra seats).",
+    capacityBlockedTitle: "At capacity for {entity}",
     capacityBlockedMessage:
-      "You are using {current} of {limit} included {entity}. You can add more; extra seats are billed as add-ons (see Billing).",
+      "You are using {current} of {limit} active {entity} allowed on your subscription. Need more? Extra seats are billed as add-ons (see Billing).",
     deactivateToFree: "Remove a staff member to free up a slot",
     upgradePlan: "Upgrade plan",
     limitGaugeStaffLabel: "Staff",

@@ -434,9 +434,11 @@ export default function BillingSettingsPage() {
           summary
             ? {
                 employeesActive: summary.usage.employeesActive,
-                employeesIncluded: summary.usage.employeesAllowed,
+                employeesCapacity: summary.usage.employeesAllowed,
                 languagesActive: summary.usage.languagesActive,
-                languagesIncluded: summary.usage.languagesAllowed,
+                languagesCapacity: summary.usage.languagesAllowed,
+                planIncludesEmployees: summary.usage.planIncludesEmployees,
+                planIncludesLanguages: summary.usage.planIncludesLanguages,
               }
             : null
         }
@@ -479,6 +481,9 @@ export default function BillingSettingsPage() {
           billingPeriodStaleSyncBody: t.billingPeriodStaleSyncBody,
           billingPeriodStaleFailedTitle: t.billingPeriodStaleFailedTitle,
           billingPeriodStaleFailedBody: t.billingPeriodStaleFailedBody,
+          billingUsageEmployeesBarLabel: t.billingUsageEmployeesBarLabel,
+          billingUsageLanguagesBarLabel: t.billingUsageLanguagesBarLabel,
+          billingPlanLimitsFootnote: t.billingPlanLimitsFootnote,
         }}
       />
 

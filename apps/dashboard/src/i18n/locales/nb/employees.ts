@@ -84,10 +84,11 @@ export const employees: TranslationNamespaces['employees'] = {
     capacityTitle: "Kapasitet for ansatte",
     capacityMessage: "Du har nådd grensen for antall ansatte.",
     capacityNearTitle: "Kapasitet for {entity}",
-    capacityNearMessage: "Du bruker {current} av {limit} {entity}.",
-    capacityBlockedTitle: "Inkluderte {entity} i bruk",
+    capacityNearMessage:
+      "Du bruker {current} av {limit} aktive {entity} (pakke + eventuelle kjøpte tilleggsplasser).",
+    capacityBlockedTitle: "Full kapasitet for {entity}",
     capacityBlockedMessage:
-      "Du bruker {current} av {limit} inkluderte {entity}. Du kan legge til flere; ekstra plasser faktureres som tillegg (se Fakturering).",
+      "Du bruker {current} av {limit} aktive {entity} som abonnementet tillater. Trenger du flere? Ekstra plasser faktureres som tillegg (se Fakturering).",
     deactivateToFree: "Fjern en ansatt for å frigjøre plass",
     upgradePlan: "Oppgrader plan",
     limitGaugeStaffLabel: "Ansatte",

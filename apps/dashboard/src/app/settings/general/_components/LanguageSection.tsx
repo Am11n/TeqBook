@@ -20,6 +20,8 @@ interface LanguageSectionProps {
   supportedLanguages: string[];
   defaultLanguage: string;
   languageLimit: number | null;
+  /** Explains that limit = package + purchased extras */
+  languageLimitFootnote?: string | null;
   t: ResolvedSettingsMessages;
   onToggleLanguage: (code: string, checked: boolean) => void;
   onChangeDefault: (code: string) => void;
@@ -30,6 +32,7 @@ export function LanguageSection({
   supportedLanguages,
   defaultLanguage,
   languageLimit,
+  languageLimitFootnote,
   t,
   onToggleLanguage,
   onChangeDefault,
@@ -86,6 +89,7 @@ export function LanguageSection({
           limit={languageLimit}
           onAction={onUpgrade}
           actionLabel={t.upgradePlan}
+          caption={languageLimitFootnote ?? undefined}
         />
       )}
 

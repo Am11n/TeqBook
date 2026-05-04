@@ -171,4 +171,8 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingPeriodStaleFailedTitle: "Could not refresh billing date",
   billingPeriodStaleFailedBody:
     "The displayed renewal date may be out of date. Check that billing edge functions are deployed, then use refresh or contact support.",
+  billingUsageEmployeesBarLabel: "Employees (active / total allowed)",
+  billingUsageLanguagesBarLabel: "Languages (active / total allowed)",
+  billingPlanLimitsFootnote:
+    "“Total allowed” is your package seats plus any extra staff seats or booking languages you have purchased—not just what Starter includes.",
 };

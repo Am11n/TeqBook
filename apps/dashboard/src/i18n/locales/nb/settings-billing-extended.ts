@@ -144,4 +144,8 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingPeriodStaleFailedTitle: "Kunne ikke oppdatere fakturadato",
   billingPeriodStaleFailedBody:
     "Den viste fornyelsesdatoen kan være utdatert. Sjekk at fakturerings-funksjoner er deployet, prøv å laste siden på nytt, eller kontakt support.",
+  billingUsageEmployeesBarLabel: "Ansatte (aktive / totalt tillatt)",
+  billingUsageLanguagesBarLabel: "Språk (aktive / totalt tillatt)",
+  billingPlanLimitsFootnote:
+    "«Totalt tillatt» er plasser i pakken pluss eventuelle kjøpte tilleggsplasser — ikke bare det som følger med Starter.",
 };

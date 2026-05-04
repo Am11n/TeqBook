@@ -72,6 +72,10 @@ export type SettingsMessages = {
   /** Shown when automatic sync could not refresh the period (e.g. edge function or Stripe) */
   billingPeriodStaleFailedTitle?: string;
   billingPeriodStaleFailedBody?: string;
+  /** Plan card: bar labels and footnote (package + add-on capacity) */
+  billingUsageEmployeesBarLabel?: string;
+  billingUsageLanguagesBarLabel?: string;
+  billingPlanLimitsFootnote?: string;
   currentPlan: string;
   planStarter: string;
   planPro: string;
@@ -138,6 +142,8 @@ export type SettingsMessages = {
   bookingLanguagesDescription?: string;
   searchLanguages?: string;
   languagesUsed?: string;
+  /** Under booking language limit bar: total = package + purchased extras */
+  bookingLanguagesLimitExplainer?: string;
   upgradePlan?: string;
   languageLimitReached?: string;
   recommendedLanguages?: string;

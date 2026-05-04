@@ -12,6 +12,8 @@ interface SettingsLimitBarProps {
   limit: number | null;
   onAction?: () => void;
   actionLabel?: string;
+  /** Optional line below the bar (e.g. clarify package vs total capacity). */
+  caption?: string | null;
 }
 
 export function SettingsLimitBar({
@@ -20,6 +22,7 @@ export function SettingsLimitBar({
   limit,
   onAction,
   actionLabel,
+  caption,
 }: SettingsLimitBarProps) {
   if (limit === null) return null;
 
@@ -61,6 +64,9 @@ export function SettingsLimitBar({
           style={{ width: `${percentage}%` }}
         />
       </div>
+      {caption ? (
+        <p className="text-[11px] text-muted-foreground leading-snug">{caption}</p>
+      ) : null}
     </div>
   );
 }

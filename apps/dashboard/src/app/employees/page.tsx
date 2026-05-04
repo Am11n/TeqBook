@@ -70,7 +70,8 @@ export default function EmployeesPage() {
     hasShiftsFeature,
   });
 
-  const planLimits = usePlanLimits({ employees: employees.length });
+  const activeEmployeeCount = employees.filter((e) => e.is_active).length;
+  const planLimits = usePlanLimits({ employees: activeEmployeeCount });
 
   const handleUpgrade = () => router.push("/settings/billing");
 
