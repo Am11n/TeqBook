@@ -36,11 +36,37 @@ export interface CreateSubscriptionResponse {
 }
 
 export interface UpdatePlanResponse {
-  plan: string;
+  success?: boolean;
+  timing?: "immediate" | "next_period";
+  plan?: string;
+  pending_plan?: string;
   subscription_id: string;
-  current_period_end: string;
+  current_period_end: string | null;
   status: string;
 }
+
+/** billing-preview-plan-change edge response */
+export type PreviewPlanChangeResponse =
+  | { mode: "no_subscription" }
+  | { mode: "degraded"; reason: string }
+  | { mode: "no_change"; message?: string }
+  | {
+      mode: "preview";
+      currency: string;
+      total_minor: number;
+      amount_due_minor: number;
+      summary: {
+        subscription_minor: number;
+        addons_minor: number;
+        timing_adjustments_minor: number;
+      };
+      lines: {
+        description: string;
+        amount_minor: number | null;
+        quantity: number | null;
+        proration?: boolean;
+      }[];
+    };
 
 export interface CancelSubscriptionResponse {
   subscription_id: string;

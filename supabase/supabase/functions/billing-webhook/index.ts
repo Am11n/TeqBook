@@ -15,6 +15,7 @@ import { getBillingPriceConfig } from "../_shared/billing.ts";
 import { invokeRecomputeProductAccessState } from "../_shared/billing-recompute.ts";
 import { syncSubscriptionProjection } from "../_shared/billing-sync-subscription-projection.ts";
 import { applyPendingSalonAddonsToStripe } from "../_shared/billing-addon-sync.ts";
+import { applyPendingSalonPlanToStripe } from "../_shared/billing-apply-pending-plan.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -255,15 +256,28 @@ serve(async (req) => {
           const newStart = subscription.current_period_start;
           const pStaff = Number(salonRow?.pending_extra_staff) || 0;
           const pLang = Number(salonRow?.pending_extra_languages) || 0;
-          if (pStaff + pLang > 0 && prevStart !== null && newStart > prevStart) {
-            const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, salonId, {
-              idempotencySuffix: `${event.id}:period_roll`,
+          if (prevStart !== null && newStart > prevStart) {
+            const planResult = await applyPendingSalonPlanToStripe(supabase, stripe, salonId, {
+              idempotencySuffix: `${event.id}:plan`,
             });
-            console.log("subscription webhook apply pending addons", {
+            console.log("subscription webhook apply pending plan", {
               salonId,
               subscriptionId: subscription.id,
-              ...applyResult,
+              ...planResult,
             });
+            if (planResult.subscription) {
+              subscription = planResult.subscription;
+            }
+            if (pStaff + pLang > 0) {
+              const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, salonId, {
+                idempotencySuffix: `${event.id}:period_roll`,
+              });
+              console.log("subscription webhook apply pending addons", {
+                salonId,
+                subscriptionId: subscription.id,
+                ...applyResult,
+              });
+            }
             subscription = await stripe.subscriptions.retrieve(subscription.id);
           }
         }
@@ -519,6 +533,14 @@ serve(async (req) => {
             const upcomingSub = await stripe.subscriptions.retrieve(upcomingSubId);
             const upcomingSalonId = upcomingSub.metadata.salon_id;
             if (upcomingSalonId) {
+              const planResult = await applyPendingSalonPlanToStripe(supabase, stripe, upcomingSalonId, {
+                idempotencySuffix: `${event.id}:plan`,
+              });
+              console.log("invoice.upcoming apply pending plan", {
+                invoice_id: invoice.id,
+                salon_id: upcomingSalonId,
+                ...planResult,
+              });
               const applyResult = await applyPendingSalonAddonsToStripe(supabase, stripe, upcomingSalonId, {
                 idempotencySuffix: event.id,
               });

@@ -28,6 +28,10 @@ import {
 } from "../_shared/billing.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
 import { validateBillingBinding } from "../_shared/billing-binding.ts";
+import {
+  collectAddonSubscriptionItemUpdates,
+  getPlanSubscriptionItem,
+} from "../_shared/billing-plan-subscription-items.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -88,42 +92,9 @@ interface UpdatePlanRequest {
   salon_id: string;
   subscription_id: string;
   new_plan: "starter" | "pro" | "business";
+  /** Default `immediate` for backwards compatibility. */
+  timing?: "immediate" | "next_period";
   idempotency_key?: string;
-}
-
-/** Add-on line item updates only (plan line excluded). Omits no-op quantity rows. */
-function collectAddonSubscriptionItemUpdates(
-  subscription: Stripe.Subscription,
-  priceConfig: ReturnType<typeof getBillingPriceConfig>,
-  extraStaffQty: number,
-  extraLanguagesQty: number,
-): Stripe.SubscriptionUpdateParams.Item[] {
-  const itemsByPriceId = new Map(
-    subscription.items.data.map((item) => [item.price.id, item] as const),
-  );
-  const out: Stripe.SubscriptionUpdateParams.Item[] = [];
-
-  const pushAddon = (addonPriceId: string, quantity: number) => {
-    if (!isValidStripePriceId(addonPriceId)) return;
-    const existing = itemsByPriceId.get(addonPriceId);
-    if (existing && quantity <= 0) {
-      out.push({ id: existing.id, deleted: true });
-      return;
-    }
-    if (existing) {
-      const currentQty = existing.quantity ?? 1;
-      if (currentQty === quantity) return;
-      out.push({ id: existing.id, quantity });
-      return;
-    }
-    if (quantity > 0) {
-      out.push({ price: addonPriceId, quantity });
-    }
-  };
-
-  pushAddon(priceConfig.addonPriceIds.extra_staff, extraStaffQty);
-  pushAddon(priceConfig.addonPriceIds.extra_languages, extraLanguagesQty);
-  return out;
 }
 
 serve(async (req) => {
@@ -250,7 +221,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { data: salonBinding, error: salonBindingError } = await supabase
       .from("salons")
-      .select("id, billing_customer_id, billing_subscription_id, supported_languages")
+      .select("id, billing_customer_id, billing_subscription_id, supported_languages, plan, pending_plan")
       .eq("id", body.salon_id)
       .maybeSingle();
     if (salonBindingError || !salonBinding) {
@@ -379,6 +350,56 @@ serve(async (req) => {
     // Option 2: Wait for payment to complete
     // For now, we'll prevent the update and suggest completing payment first
 
+    const timing = body.timing ?? "immediate";
+
+    if (timing === "next_period") {
+      const currentDbPlan = salonBinding.plan as string | null | undefined;
+      if (currentDbPlan === body.new_plan) {
+        return new Response(
+          JSON.stringify({
+            error: "Already on this plan",
+            details: "Choose a different plan or cancel the scheduled change.",
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      const currentPeriodEndIso = subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000).toISOString()
+        : null;
+      const { error: pendErr } = await supabase
+        .from("salons")
+        .update({ pending_plan: body.new_plan })
+        .eq("id", body.salon_id);
+      if (pendErr) {
+        console.error("pending_plan update failed", pendErr);
+        return new Response(JSON.stringify({ error: "Failed to save scheduled plan change" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          success: true,
+          timing: "next_period",
+          pending_plan: body.new_plan,
+          current_period_end: currentPeriodEndIso,
+          subscription_id: body.subscription_id,
+          status: subscription.status,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            ...rateLimitResult.headers,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
     const [{ count: activeEmployeesCount }] = await Promise.all([
       supabase
         .from("employees")
@@ -395,11 +416,7 @@ serve(async (req) => {
     const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
     const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
 
-    const currentItems = subscription.items.data;
-    const planPriceSet = new Set(Object.values(priceConfig.planPriceIds));
-    const planItem =
-      currentItems.find((item) => planPriceSet.has(item.price.id)) ??
-      currentItems[0];
+    const { planItem } = getPlanSubscriptionItem(subscription, priceConfig);
     const planPriceChanged = planItem.price.id !== newPriceId;
 
     const canProratePlan =
@@ -508,6 +525,7 @@ serve(async (req) => {
       .update({
         plan: body.new_plan,
         current_period_end: currentPeriodEnd,
+        pending_plan: null,
       })
       .eq("id", body.salon_id);
 
@@ -518,6 +536,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        timing: "immediate",
         plan: body.new_plan,
         subscription_id: updatedSubscription.id,
         current_period_end: currentPeriodEnd,

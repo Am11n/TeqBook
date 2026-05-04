@@ -234,6 +234,10 @@ interface CurrentPlanCardProps {
   billingPeriodStale?: { syncing: boolean; failed: boolean } | null;
   planChangeDisabled?: boolean;
   paymentMethodActionDisabled?: boolean;
+  /** Model A style scheduled plan change — human-readable line (already localized in parent) */
+  pendingPlanBanner?: string | null;
+  onCancelPendingPlan?: () => void;
+  cancelPendingPlanLabel?: string;
 }
 
 // ─── Component ──────────────────────────────────────
@@ -253,6 +257,9 @@ export function CurrentPlanCard({
   billingPeriodStale = null,
   planChangeDisabled = false,
   paymentMethodActionDisabled = false,
+  pendingPlanBanner = null,
+  onCancelPendingPlan,
+  cancelPendingPlanLabel,
 }: CurrentPlanCardProps) {
   const PlanIcon = activePlan.icon;
   const state = getBillingState(hasSubscription, salon);
@@ -361,6 +368,20 @@ export function CurrentPlanCard({
           {activePlan.name}
         </Badge>
       </div>
+
+      {pendingPlanBanner ? (
+        <Alert variant="default" className="mb-4 border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/25">
+          <Clock className="h-4 w-4 text-sky-800 dark:text-sky-200" />
+          <AlertDescription className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-sm text-sky-950 dark:text-sky-50">{pendingPlanBanner}</span>
+            {onCancelPendingPlan && cancelPendingPlanLabel ? (
+              <Button type="button" variant="outline" size="sm" onClick={onCancelPendingPlan}>
+                {cancelPendingPlanLabel}
+              </Button>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {/* Plan overview */}
       <div className="border rounded-lg p-4 bg-muted/20">

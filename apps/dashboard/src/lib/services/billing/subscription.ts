@@ -11,6 +11,7 @@ import {
   type SyncAddonUsageResponse,
   type RefreshSubscriptionProjectionResponse,
   type PreviewBillingUpcomingInvoiceResponse,
+  type PreviewPlanChangeResponse,
   type SetPendingAddonsResponse,
 } from "./shared";
 
@@ -128,14 +129,10 @@ export async function createStripeSubscription(
 export async function updateSubscriptionPlan(
   salonId: string,
   subscriptionId: string,
-  newPlan: "starter" | "pro" | "business"
+  newPlan: "starter" | "pro" | "business",
+  options?: { timing?: "immediate" | "next_period" },
 ): Promise<{
-  data: {
-    plan: string;
-    subscription_id: string;
-    current_period_end: string;
-    status: string;
-  } | null;
+  data: UpdatePlanResponse | null;
   error: string | null;
 }> {
   try {
@@ -145,6 +142,8 @@ export async function updateSubscriptionPlan(
       return { data: null, error: "Not authenticated" };
     }
 
+    const timing = options?.timing ?? "immediate";
+
     const { data: result, error: fetchError } = await safeFetch<UpdatePlanResponse>(
       `${EDGE_FUNCTION_BASE}/billing-update-plan`,
       {
@@ -153,12 +152,13 @@ export async function updateSubscriptionPlan(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-          "x-idempotency-key": `update-plan:${salonId}:${subscriptionId}:${newPlan}`,
+          "x-idempotency-key": `update-plan:${salonId}:${subscriptionId}:${newPlan}:${timing}`,
         },
         body: JSON.stringify({
           salon_id: salonId,
           subscription_id: subscriptionId,
           new_plan: newPlan,
+          timing,
         }),
       }
     );
@@ -386,6 +386,57 @@ export async function previewBillingUpcomingInvoice(
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
           "x-idempotency-key": `billing-preview-upcoming:${salonId}`,
+        },
+        body: JSON.stringify({ salon_id: salonId }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function previewPlanChange(
+  salonId: string,
+  newPlan: "starter" | "pro" | "business",
+): Promise<{ data: PreviewPlanChangeResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<PreviewPlanChangeResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-preview-plan-change`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-preview-plan:${salonId}:${newPlan}`,
+        },
+        body: JSON.stringify({ salon_id: salonId, new_plan: newPlan }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function clearPendingPlan(
+  salonId: string,
+): Promise<{ data: { success: boolean } | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<{ success: boolean }>(
+      `${EDGE_FUNCTION_BASE}/billing-clear-pending-plan`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-clear-pending-plan:${salonId}`,
         },
         body: JSON.stringify({ salon_id: salonId }),
       },

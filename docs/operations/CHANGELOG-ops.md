@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-05-02
+
+- [pilot/db] `supabase db push --yes`: `20260506120000_pending_plan.sql` — `salons.pending_plan` (`plan_type`) for planlagt planbytte neste periode; manifest oppdatert. Edge: `billing-preview-plan-change`, `billing-clear-pending-plan`, `billing-update-plan` (`timing`), `applyPendingSalonPlanToStripe` + webhook/invoice apply.
+
 ## 2026-05-01
 
 - [kode/db] `salon_capped_addon_quantity` inkluderer `pending_extra_*` (Modell A) slik at `assert_salon_addon_usage` og trim matcher planlagt kapasitet; migrasjon `20260505130000_addon_invariant_include_pending.sql`; manifest oppdatert.

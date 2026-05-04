@@ -351,6 +351,21 @@ export type SettingsMessages = {
   billingInvoicePreviewDegradedBody?: string;
   billingInvoicePreviewSyncingBody?: string;
   billingInvoicePreviewNoSubscription?: string;
+  billingPlanTimingTitle?: string;
+  billingPlanChangeImmediateLabel?: string;
+  billingPlanChangeNextPeriodLabel?: string;
+  billingPlanChangeImmediateDescription?: string;
+  billingPlanChangeNextPeriodDescription?: string;
+  billingPlanPreviewTitle?: string;
+  billingPlanPreviewLoadError?: string;
+  billingPlanPreviewTotal?: string;
+  billingPlanPreviewTimingLine?: string;
+  billingPlanPreviewDisclaimer?: string;
+  billingPlanNextPeriodSummary?: string;
+  billingPlanNextPeriodDateLabel?: string;
+  billingPlanPendingBanner?: string;
+  billingPlanPendingCancel?: string;
+  billingPlanChangeSyncing?: string;
   billingInvoicePreviewSmsSupplement?: string;
   // Billing — SMS usage
   billingSmsUsageTitle?: string;

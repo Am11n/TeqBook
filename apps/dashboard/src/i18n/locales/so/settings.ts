@@ -376,6 +376,26 @@ export const settings: TranslationNamespaces['settings'] = {
     yourProfileTitle: "Borofaylkaaga",
     yourRoleLabel: "Doorkaaga",
     billingPlanSelectionTitle: "Dooro qorshe",
+    billingPlanTimingTitle: "When should the change take effect?",
+    billingPlanChangeImmediateLabel: "Change now",
+    billingPlanChangeNextPeriodLabel: "From next billing period",
+    billingPlanChangeImmediateDescription:
+      "Your subscription updates right away. The next invoice may include proration or credits—see the estimate below.",
+    billingPlanChangeNextPeriodDescription:
+      "No extra charge until renewal. Your current plan limits stay until the next billing date.",
+    billingPlanPreviewTitle: "Estimated next invoice (if you change now)",
+    billingPlanPreviewLoadError: "Could not load the invoice preview. You can still confirm—amounts may differ slightly.",
+    billingPlanPreviewTotal: "Estimated total",
+    billingPlanPreviewTimingLine: "Mid-cycle timing / proration",
+    billingPlanPreviewDisclaimer:
+      "Estimates come from your payment provider and can change until the invoice is finalized.",
+    billingPlanNextPeriodSummary:
+      "Starting {date}, your subscription will show as {plan}. You remain on {current} until then.",
+    billingPlanNextPeriodDateLabel: "Next renewal",
+    billingPlanPendingBanner:
+      "Scheduled change to {plan} on {date}. You are still on {current} until then.",
+    billingPlanPendingCancel: "Cancel scheduled change",
+    billingPlanChangeSyncing: "Updating your subscription…",
     billingPlanSelectionDescription: "Dooro qorshe diiwaangelinta ee ku habboon baahiyahaaga",
     billingPlanPriceMonth: "{price} / bil",
     billingPlanStarterFeature1: "Ballanshaha internetka iyo jadwalka",

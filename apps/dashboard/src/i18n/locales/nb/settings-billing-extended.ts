@@ -65,6 +65,27 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
     "Vi viser ikke et estimert totalbeløp før faktureringssynk er frisk. Last siden på nytt om litt, eller kontakt support ved vedvarende problem.",
   billingInvoicePreviewSyncingBody: "Synkroniserer tilleggsfakturering … forhåndsvisning vises straks.",
   billingInvoicePreviewNoSubscription: "Velg betalt plan for å se forhåndsvisning av neste faktura her.",
+  billingPlanTimingTitle: "Når skal endringen tre i kraft?",
+  billingPlanChangeImmediateLabel: "Endre nå",
+  billingPlanChangeNextPeriodLabel: "Fra neste faktureringsperiode",
+  billingPlanChangeImmediateDescription:
+    "Abonnementet oppdateres med én gang. Neste faktura kan inkludere prorering eller kreditter—se estimatet under.",
+  billingPlanChangeNextPeriodDescription:
+    "Ingen ekstra trekk før fornyelse. Dagens plangrenser gjelder til neste faktureringsdato.",
+  billingPlanPreviewTitle: "Estimert neste faktura (ved endring nå)",
+  billingPlanPreviewLoadError:
+    "Kunne ikke laste forhåndsvisning. Du kan fortsatt bekrefte—beløp kan avvike litt.",
+  billingPlanPreviewTotal: "Estimert total",
+  billingPlanPreviewTimingLine: "Tidsjusteringer / prorering",
+  billingPlanPreviewDisclaimer:
+    "Estimat fra betalingsleverandør og kan endres til fakturaen er endelig.",
+  billingPlanNextPeriodSummary:
+    "Fra {date} vises abonnementet som {plan}. Du er på {current} frem til da.",
+  billingPlanNextPeriodDateLabel: "Neste fornyelse",
+  billingPlanPendingBanner:
+    "Planlagt bytte til {plan} den {date}. Du er fortsatt på {current} nå.",
+  billingPlanPendingCancel: "Avbryt planlagt endring",
+  billingPlanChangeSyncing: "Oppdaterer abonnement…",
   billingInvoicePreviewSmsSupplement:
     "SMS-overskudd (bruksbasert estimat; kan mangle i forhåndsvisningen av neste faktura)",
   billingSmsUsageTitle: "SMS-bruk",

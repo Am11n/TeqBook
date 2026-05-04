@@ -10,21 +10,26 @@ import {
   createStripeSubscription,
   updateSubscriptionPlan,
 } from "@/lib/services/billing-service";
+import type { UpdatePlanResponse } from "@/lib/services/billing/shared";
 
 export function useTestBilling() {
   const { salon, user, refreshSalon } = useCurrentSalon();
   const { locale } = useLocale();
   const s = translations[normalizeLocale(locale)].settings;
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    subscription_id?: string;
-    plan?: string;
-    customer_id?: string;
-    email?: string;
-    current_period_end?: string;
-    status?: string;
-    client_secret?: string;
-  } | null>(null);
+  const [result, setResult] = useState<
+    | UpdatePlanResponse
+    | {
+        subscription_id?: string;
+        plan?: string;
+        customer_id?: string;
+        email?: string;
+        current_period_end?: string;
+        status?: string;
+        client_secret?: string;
+      }
+    | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);

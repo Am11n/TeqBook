@@ -67,6 +67,28 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
     "We will not show an estimated total until billing sync is healthy. Open this page again in a moment, or contact support if this persists.",
   billingInvoicePreviewSyncingBody: "Syncing add-on billing… your preview will load in a moment.",
   billingInvoicePreviewNoSubscription: "Subscribe to a paid plan to see your next invoice preview here.",
+  billingPlanTimingTitle: "When should the change take effect?",
+  billingPlanChangeImmediateLabel: "Change now",
+  billingPlanChangeNextPeriodLabel: "From next billing period",
+  billingPlanChangeImmediateDescription:
+    "Your subscription updates right away. The next invoice may include proration or credits—see the estimate below.",
+  billingPlanChangeNextPeriodDescription:
+    "No extra charge until renewal. Your current plan limits stay until the next billing date.",
+  billingPlanPreviewTitle: "Estimated next invoice (if you change now)",
+  billingPlanPreviewLoadError: "Could not load the invoice preview. You can still confirm—amounts may differ slightly.",
+  billingPlanPreviewTotal: "Estimated total",
+  billingPlanPreviewTimingLine: "Mid-cycle timing / proration",
+  billingPlanPreviewDisclaimer:
+    "Estimates come from your payment provider and can change until the invoice is finalized.",
+  /** {date} {plan} {current} */
+  billingPlanNextPeriodSummary:
+    "Starting {date}, your subscription will show as {plan}. You remain on {current} until then.",
+  billingPlanNextPeriodDateLabel: "Next renewal",
+  /** {plan} {date} {current} */
+  billingPlanPendingBanner:
+    "Scheduled change to {plan} on {date}. You are still on {current} until then.",
+  billingPlanPendingCancel: "Cancel scheduled change",
+  billingPlanChangeSyncing: "Updating your subscription…",
   billingInvoicePreviewSmsSupplement:
     "SMS overage (usage-based estimate; may not yet appear in the next-invoice preview)",
   billingSmsUsageTitle: "SMS usage",

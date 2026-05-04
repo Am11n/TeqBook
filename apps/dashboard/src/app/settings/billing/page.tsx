@@ -16,6 +16,7 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
 import {
+  clearPendingPlan,
   finalizeSetupIntentDefaultPaymentMethod,
   setSalonPendingAddons,
 } from "@/lib/services/billing-service";
@@ -24,6 +25,7 @@ import { supabase } from "@/lib/supabase-client";
 import { CurrentPlanCard } from "@/components/billing/CurrentPlanCard";
 import { AddonsCard } from "@/components/billing/AddonsCard";
 import { PlanSelectionDialog } from "@/components/billing/PlanSelectionDialog";
+import type { PlanChangeTiming } from "@/components/billing/PlanSelectionDialog";
 import { PaymentFormDialog } from "@/components/billing/PaymentFormDialog";
 import { CancelSubscriptionDialog } from "@/components/billing/CancelSubscriptionDialog";
 import { ChevronDown, FileText } from "lucide-react";
@@ -145,9 +147,9 @@ export default function BillingSettingsPage() {
     return Math.round((smsUsage.used / smsUsage.included) * 100);
   }, [smsUsage]);
 
-  const handlePlanChange = async () => {
+  const handlePlanChangeConfirm = async (opts: { timing: PlanChangeTiming }) => {
     if (!selectedPlan) return;
-    const result = await handleChangePlan(selectedPlan);
+    const result = await handleChangePlan(selectedPlan, { timing: opts.timing });
     if (result?.success) {
       if (result.clientSecret) {
         setClientSecret(result.clientSecret);
@@ -156,9 +158,43 @@ export default function BillingSettingsPage() {
         setShowPlanDialog(false);
       } else {
         setShowPlanDialog(false);
+        await refetch();
+        await refreshSalon();
+        if (opts.timing === "immediate") {
+          await new Promise((r) => setTimeout(r, 900));
+          await refetch();
+          await refreshSalon();
+        }
       }
     }
   };
+
+  const handleCancelPendingPlan = async () => {
+    if (!salon?.id) return;
+    setError(null);
+    const { error: clrErr } = await clearPendingPlan(salon.id);
+    if (clrErr) {
+      setError(clrErr);
+      return;
+    }
+    await refreshSalon();
+    await refetch();
+  };
+
+  const pendingPlanBannerText =
+    salon?.pending_plan && ["starter", "pro", "business"].includes(salon.pending_plan)
+      ? applyTemplate(t.billingPlanPendingBanner, {
+          plan: plans.find((p) => p.id === salon.pending_plan)?.name ?? String(salon.pending_plan),
+          current: activePlan.name,
+          date: salon.current_period_end
+            ? new Date(salon.current_period_end).toLocaleDateString(intlLocaleTag(appLocale as AppLocale), {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "—",
+        })
+      : null;
 
   const handlePaymentSuccess = async (details?: { setupIntentId?: string }) => {
     const setupIntentId =
@@ -387,6 +423,9 @@ export default function BillingSettingsPage() {
         hasSubscription={hasSubscription}
         actionLoading={actionLoading}
         error={error}
+        pendingPlanBanner={pendingPlanBannerText}
+        onCancelPendingPlan={salon?.pending_plan ? handleCancelPendingPlan : undefined}
+        cancelPendingPlanLabel={t.billingPlanPendingCancel}
         billingPeriodStale={{
           syncing: loading && billingPeriodEndStale && !billingPeriodStaleSyncFailed,
           failed: billingPeriodStaleSyncFailed && billingPeriodEndStale,
@@ -810,10 +849,13 @@ export default function BillingSettingsPage() {
         plans={plans}
         selectedPlan={selectedPlan}
         onSelectPlan={(plan) => setSelectedPlan(plan)}
-        onConfirm={handlePlanChange}
+        onConfirm={(opts) => void handlePlanChangeConfirm(opts)}
         actionLoading={actionLoading}
         confirmDisabled={billingPlanChangesBlocked}
         hasSubscription={hasSubscription}
+        salonId={salon?.id ?? null}
+        currentPlan={currentPlan}
+        currentPeriodEndIso={salon?.current_period_end ?? null}
         title={t.billingPlanSelectionTitle}
         description={t.billingPlanSelectionDescription}
         priceMonthTemplate={t.billingPlanPriceMonth}
@@ -821,6 +863,20 @@ export default function BillingSettingsPage() {
         subscribeLabel={t.billingPlanDialogSubscribe}
         changePlanLabel={t.billingPlanDialogChangePlan}
         processingLabel={t.billingPlanDialogProcessing}
+        translations={{
+          billingPlanTimingTitle: t.billingPlanTimingTitle ?? "",
+          billingPlanChangeImmediateLabel: t.billingPlanChangeImmediateLabel ?? "",
+          billingPlanChangeNextPeriodLabel: t.billingPlanChangeNextPeriodLabel ?? "",
+          billingPlanChangeImmediateDescription: t.billingPlanChangeImmediateDescription ?? "",
+          billingPlanChangeNextPeriodDescription: t.billingPlanChangeNextPeriodDescription ?? "",
+          billingPlanPreviewTitle: t.billingPlanPreviewTitle ?? "",
+          billingPlanPreviewLoadError: t.billingPlanPreviewLoadError ?? "",
+          billingPlanPreviewTotal: t.billingPlanPreviewTotal ?? "",
+          billingPlanPreviewTimingLine: t.billingPlanPreviewTimingLine ?? "",
+          billingPlanPreviewDisclaimer: t.billingPlanPreviewDisclaimer ?? "",
+          billingPlanNextPeriodSummary: t.billingPlanNextPeriodSummary ?? "",
+          billingPlanNextPeriodDateLabel: t.billingPlanNextPeriodDateLabel ?? "",
+        }}
       />
 
       <PaymentFormDialog

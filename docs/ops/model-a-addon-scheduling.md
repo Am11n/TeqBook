@@ -8,7 +8,7 @@ Accepted (produktvedtak).
 
 Tillegg (ekstra ansatte / språk) skal ikke gi kunden opplevelse av mellomfakturering, prorering eller «timing»-rader i hoved-UI. Økt behov registreres som **pending** og **aktiveres samtidig** som Stripe-abonnementets tilleggslinjer ved **neste faktureringshendelse** (typisk `invoice.upcoming` for `subscription_cycle` eller periodeskifte via `customer.subscription.updated`).
 
-**Planbytte** (Starter → Pro osv.) følger **egne** regler og kan fortsatt avregnes umiddelbart på plandel; se `billing-update-plan`.
+**Planbytte** (Starter → Pro osv.) kan gjøres **umiddelbart** (Stripe med ev. prorering som i `billing-update-plan`) eller **planlegges til neste periode** via **`salons.pending_plan`** (ingen Stripe-endring før apply ved periodeskifte; apply i `applyPendingSalonPlanToStripe` med `proration_behavior: none`). Dashboard lar brukeren velge og viser forhåndsvisning for «nå» via `billing-preview-plan-change`.
 
 ## Beslutning
 

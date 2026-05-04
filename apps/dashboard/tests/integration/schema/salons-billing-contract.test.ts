@@ -17,7 +17,9 @@ describeIf("DB contract: public.salons billing columns", () => {
 
     const { error: okError, data } = await client
       .from("salons")
-      .select("id, billing_customer_id, pending_extra_staff, pending_extra_languages, billing_subscription_period_start")
+      .select(
+        "id, billing_customer_id, pending_extra_staff, pending_extra_languages, billing_subscription_period_start, pending_plan",
+      )
       .limit(1);
     expect(okError).toBeNull();
     expect(Array.isArray(data)).toBe(true);

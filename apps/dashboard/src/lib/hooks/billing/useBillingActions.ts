@@ -39,7 +39,10 @@ export function useBillingActions() {
     );
   };
 
-  const handleChangePlan = async (selectedPlan: PlanType): Promise<{ success: boolean; clientSecret: string | null }> => {
+  const handleChangePlan = async (
+    selectedPlan: PlanType,
+    opts?: { timing?: "immediate" | "next_period" },
+  ): Promise<{ success: boolean; clientSecret: string | null }> => {
     if (!salon?.id) {
       return { success: false, clientSecret: null };
     }
@@ -107,10 +110,12 @@ export function useBillingActions() {
       }
     } else if (currentSubscriptionId && selectedPlan) {
       // Update existing subscription
+      const timing = opts?.timing ?? "immediate";
       const { data: updateData, error: updateError } = await updateSubscriptionPlan(
         salon.id,
         currentSubscriptionId,
-        selectedPlan
+        selectedPlan,
+        { timing },
       );
 
       if (updateError || !updateData) {

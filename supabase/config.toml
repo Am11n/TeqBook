@@ -78,3 +78,11 @@ entrypoint = "./supabase/functions/billing-preview-upcoming-invoice/index.ts"
 [functions.billing-set-pending-addons]
 verify_jwt = false
 entrypoint = "./supabase/functions/billing-set-pending-addons/index.ts"
+
+[functions.billing-preview-plan-change]
+verify_jwt = false
+entrypoint = "./supabase/functions/billing-preview-plan-change/index.ts"
+
+[functions.billing-clear-pending-plan]
+verify_jwt = false
+entrypoint = "./supabase/functions/billing-clear-pending-plan/index.ts"
