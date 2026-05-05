@@ -182,6 +182,18 @@ export const RATE_LIMIT_CONFIGS: Record<string, EdgeRateLimitPolicy> = {
     blockDurationMs: FIVE_MINUTES_MS,
     failurePolicy: "fail_closed",
   },
+  "billing-preview-immediate-addon-change": {
+    maxAttempts: 30,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIVE_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
+  "billing-apply-immediate-addon-change": {
+    maxAttempts: 20,
+    windowMs: ONE_HOUR_MS,
+    blockDurationMs: FIFTEEN_MINUTES_MS,
+    failurePolicy: "fail_closed",
+  },
   "whatsapp-send": {
     maxAttempts: 100,
     windowMs: ONE_HOUR_MS,

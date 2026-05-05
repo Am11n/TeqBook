@@ -157,6 +157,33 @@ export type SetPendingAddonsResponse = {
   capped?: boolean;
 };
 
+export type AddonType = "extra_staff" | "extra_languages";
+
+export type PreviewImmediateAddonChangeResponse =
+  | { mode: "degraded"; reason: string; details?: string }
+  | { mode: "forbidden"; reason: string }
+  | {
+      mode: "preview";
+      addon_type: AddonType;
+      quantity: number;
+      currency: string;
+      cost_now_minor: number;
+      cost_monthly_minor: number;
+      amount_due_minor: number;
+      lines: { description: string; amount_minor: number; quantity: number | null; proration?: boolean }[];
+    };
+
+export type ApplyImmediateAddonChangeResponse =
+  | { success: false; reason: string }
+  | {
+      success: true;
+      addon_type: AddonType;
+      quantity: number;
+      pending_cleared: boolean;
+      subscription_id: string;
+      current_period_end: string | null;
+    };
+
 export async function safeFetch<T>(
   url: string,
   options: RequestInit

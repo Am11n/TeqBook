@@ -13,6 +13,9 @@ import {
   type PreviewBillingUpcomingInvoiceResponse,
   type PreviewPlanChangeResponse,
   type SetPendingAddonsResponse,
+  type AddonType,
+  type PreviewImmediateAddonChangeResponse,
+  type ApplyImmediateAddonChangeResponse,
 } from "./shared";
 
 const SYNC_ADDON_DEBOUNCE_MS = 650;
@@ -414,6 +417,68 @@ export async function previewPlanChange(
           "x-idempotency-key": `billing-preview-plan:${salonId}:${newPlan}`,
         },
         body: JSON.stringify({ salon_id: salonId, new_plan: newPlan }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function previewImmediateAddonChange(
+  salonId: string,
+  addonType: AddonType,
+  quantity: number,
+): Promise<{ data: PreviewImmediateAddonChangeResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<PreviewImmediateAddonChangeResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-preview-immediate-addon-change`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-preview-immediate-addon:${salonId}:${addonType}:${quantity}`,
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          addon_type: addonType,
+          quantity,
+        }),
+      },
+    );
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function applyImmediateAddonChange(
+  salonId: string,
+  addonType: AddonType,
+  quantity: number,
+): Promise<{ data: ApplyImmediateAddonChangeResponse | null; error: string | null }> {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { data: null, error: "Not authenticated" };
+
+    return await safeFetch<ApplyImmediateAddonChangeResponse>(
+      `${EDGE_FUNCTION_BASE}/billing-apply-immediate-addon-change`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          "x-idempotency-key": `billing-apply-immediate-addon:${salonId}:${addonType}:${quantity}:${Date.now()}`,
+        },
+        body: JSON.stringify({
+          salon_id: salonId,
+          addon_type: addonType,
+          quantity,
+        }),
       },
     );
   } catch (error) {

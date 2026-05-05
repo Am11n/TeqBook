@@ -10,6 +10,8 @@ export {
   refreshSubscriptionProjection,
   previewBillingUpcomingInvoice,
   previewPlanChange,
+  previewImmediateAddonChange,
+  applyImmediateAddonChange,
   clearPendingPlan,
   setSalonPendingAddons,
   listBillingInvoices,
