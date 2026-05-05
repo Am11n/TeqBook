@@ -14,6 +14,33 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonLanguageImpactLine: "{price} • Estimert månedlig påvirkning: {impact}",
   billingAddonManagePlan: "Administrer plan",
   billingAddonReviewLanguages: "Se språk",
+  billingAddonActivateNow: "Aktiver nå (avansert)",
+  billingAddonActivateNextPeriod: "Fra neste periode",
+  billingAddonRecommended: "Anbefalt",
+  billingAddonCostNow: "Kostnad denne perioden",
+  billingAddonCostMonthly: "Månedlig løpende kostnad",
+  billingAddonStartsAt: "Starter {date}",
+  billingAddonNoCostNow: "Ingen ekstra kostnad nå",
+  billingAddonAdvancedOption: "Dette valget kan gi ekstra kostnad midt i perioden.",
+  billingAddonChooseTiming: "Velg når tillegget skal tre i kraft.",
+  billingAddonQuantityLabel: "Antall",
+  billingAddonConfirmSchedule: "Planlegg tillegg",
+  billingAddonConfirmActivateNow: "Aktiver nå",
+  billingAddonPreviewLoading: "Laster prisforhåndsvisning…",
+  billingAddonPreviewFailed: "Kunne ikke laste prisforhåndsvisning for umiddelbar aktivering.",
+  billingAddonPreviewRequired: "Umiddelbar aktivering krever vellykket forhåndsvisning først.",
+  billingAddonPendingConflict:
+    "Det finnes allerede et planlagt tillegg av denne typen. Umiddelbar aktivering erstatter den planlagte verdien for denne typen.",
+  billingAddonPendingConflictAcknowledge:
+    "Jeg forstår og vil erstatte planlagt verdi for denne tilleggstypen.",
+  billingAddonImmediateBlockedByRole: "Kun owner/admin kan aktivere tillegg umiddelbart.",
+  billingAddonUpdatingBilling: "Oppdaterer fakturering…",
+  billingAddonDialogTitleStaff: "Ekstra ansatte",
+  billingAddonDialogTitleLanguages: "Ekstra språk",
+  billingAddonCtaStaff: "Legg til ekstra ansatte",
+  billingAddonCtaLanguages: "Legg til ekstra språk",
+  billingAddonNoAccessHint:
+    "Du kan fortsatt planlegge tillegg fra neste periode. Umiddelbar aktivering er begrenset til owner/admin.",
   billingAddonUsagePendingStripe:
     "Tilleggsfakturering synkroniseres fortsatt. Vi viser ikke dollartall før de stemmer med abonnementet, så du ikke får et villedende «neste faktura»-tall.",
   billingAddonImpactHiddenUntilSync:

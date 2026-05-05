@@ -15,6 +15,33 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonLanguageImpactLine: "{price} • Estimated monthly impact: {impact}",
   billingAddonManagePlan: "Manage plan",
   billingAddonReviewLanguages: "Review languages",
+  billingAddonActivateNow: "Activate now (advanced)",
+  billingAddonActivateNextPeriod: "From next period",
+  billingAddonRecommended: "Recommended",
+  billingAddonCostNow: "Cost this period",
+  billingAddonCostMonthly: "Monthly recurring cost",
+  billingAddonStartsAt: "Starts on {date}",
+  billingAddonNoCostNow: "No extra charge now",
+  billingAddonAdvancedOption: "This choice can add a mid-cycle charge.",
+  billingAddonChooseTiming: "Choose when this add-on should take effect.",
+  billingAddonQuantityLabel: "Quantity",
+  billingAddonConfirmSchedule: "Schedule add-on",
+  billingAddonConfirmActivateNow: "Activate now",
+  billingAddonPreviewLoading: "Loading pricing preview…",
+  billingAddonPreviewFailed: "Could not load immediate pricing preview.",
+  billingAddonPreviewRequired: "Immediate activation requires successful preview first.",
+  billingAddonPendingConflict:
+    "A scheduled add-on already exists for this type. Immediate activation will replace that scheduled value for this add-on type.",
+  billingAddonPendingConflictAcknowledge:
+    "I understand and want to replace the scheduled value for this add-on type.",
+  billingAddonImmediateBlockedByRole: "Only owner/admin can activate add-ons immediately.",
+  billingAddonUpdatingBilling: "Updating billing…",
+  billingAddonDialogTitleStaff: "Extra staff",
+  billingAddonDialogTitleLanguages: "Extra language",
+  billingAddonCtaStaff: "Add extra staff",
+  billingAddonCtaLanguages: "Add extra language",
+  billingAddonNoAccessHint:
+    "You can still schedule add-ons for next period. Immediate activation is restricted to owner/admin.",
   billingAddonUsagePendingStripe:
     "Add-on billing is still syncing. Dollar amounts stay hidden until they match your subscription so we do not show a misleading “next invoice” number.",
   billingAddonImpactHiddenUntilSync:

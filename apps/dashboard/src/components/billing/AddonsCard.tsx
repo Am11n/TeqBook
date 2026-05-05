@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { AddonDisplay } from "@/lib/utils/billing/billing-utils";
 import type { ResolvedSettingsMessages } from "@/app/settings/_helpers/resolve-settings";
 import { applyTemplate } from "@/i18n/apply-template";
+import type { AddonType, PreviewImmediateAddonChangeResponse } from "@/lib/services/billing/shared";
+import { AlertTriangle } from "lucide-react";
 
 interface AddonsCardProps {
   /** When false, usage-based euro amounts are not presented as billing truth (Stripe sync pending). */
@@ -21,8 +25,16 @@ interface AddonsCardProps {
   /** Salon `current_period_end` ISO — label for next period */
   nextPeriodEndIso?: string | null;
   onSavePending?: (pendingStaff: number, pendingLanguages: number) => Promise<void>;
+  onPreviewImmediate?: (
+    addonType: AddonType,
+    quantity: number,
+  ) => Promise<{ data: PreviewImmediateAddonChangeResponse | null; error: string | null }>;
+  onApplyImmediate?: (addonType: AddonType, quantity: number) => Promise<{ success: boolean; error?: string }>;
   pendingSaving?: boolean;
   pendingCapped?: boolean;
+  immediateMutationLoading?: boolean;
+  immediateReconcilePending?: boolean;
+  canImmediateActivate?: boolean;
   addons: AddonDisplay[];
   usage: {
     planIncludesEmployees: number | null;
@@ -65,21 +77,26 @@ export function AddonsCard({
   pendingExtraLanguages = 0,
   nextPeriodEndIso,
   onSavePending,
+  onPreviewImmediate,
+  onApplyImmediate,
   pendingSaving = false,
   pendingCapped = false,
+  immediateMutationLoading = false,
+  immediateReconcilePending = false,
+  canImmediateActivate = false,
   addons,
   usage,
   actionLoading = false,
   onManagePlan,
   t,
 }: AddonsCardProps) {
-  const [draftStaff, setDraftStaff] = useState(String(pendingExtraStaff));
-  const [draftLang, setDraftLang] = useState(String(pendingExtraLanguages));
-
-  useEffect(() => {
-    setDraftStaff(String(pendingExtraStaff));
-    setDraftLang(String(pendingExtraLanguages));
-  }, [pendingExtraStaff, pendingExtraLanguages]);
+  const [openDialog, setOpenDialog] = useState<AddonType | null>(null);
+  const [dialogQuantity, setDialogQuantity] = useState("0");
+  const [dialogTiming, setDialogTiming] = useState<"next_period" | "immediate">("next_period");
+  const [immediatePreviewLoading, setImmediatePreviewLoading] = useState(false);
+  const [immediatePreviewError, setImmediatePreviewError] = useState<string | null>(null);
+  const [immediatePreview, setImmediatePreview] = useState<PreviewImmediateAddonChangeResponse | null>(null);
+  const [pendingConflictAck, setPendingConflictAck] = useState(false);
 
   const nextPeriodLabel = nextPeriodEndIso
     ? new Date(nextPeriodEndIso).toLocaleDateString(dateLocale, {
@@ -92,6 +109,7 @@ export function AddonsCard({
   const addonByType = new Map(addons.map((addon) => [addon.type, addon] as const));
   const extraStaffAddon = addonByType.get("extra_staff");
   const extraLanguagesAddon = addonByType.get("extra_languages");
+  const immediateDisabledByRole = !canImmediateActivate;
 
   /** When Stripe sync is trusted, show subscription add-on quantities; otherwise usage-based extras only. */
   const billableStaffUnits = stripeAddonUsageTrusted
@@ -150,6 +168,114 @@ export function AddonsCard({
     impact: String(estimatedLanguageImpact),
   });
 
+  const addonUi = useMemo(
+    () => ({
+      activateNow: t.billingAddonActivateNow ?? "Activate now (advanced)",
+      activateNextPeriod: t.billingAddonActivateNextPeriod ?? "From next period",
+      recommended: t.billingAddonRecommended ?? "Recommended",
+      costNow: t.billingAddonCostNow ?? "Cost this period",
+      costMonthly: t.billingAddonCostMonthly ?? "Monthly recurring cost",
+      startsAt: t.billingAddonStartsAt ?? "Starts on {date}",
+      noCostNow: t.billingAddonNoCostNow ?? "No extra charge now",
+      advancedOption: t.billingAddonAdvancedOption ?? "This may add a mid-cycle charge.",
+      chooseTiming: t.billingAddonChooseTiming ?? "Choose when this add-on should take effect.",
+      quantityLabel: t.billingAddonQuantityLabel ?? "Quantity",
+      confirmSchedule: t.billingAddonConfirmSchedule ?? "Schedule add-on",
+      confirmActivateNow: t.billingAddonConfirmActivateNow ?? "Activate now",
+      previewLoading: t.billingAddonPreviewLoading ?? "Loading pricing preview…",
+      previewFailed: t.billingAddonPreviewFailed ?? "Could not load immediate pricing preview.",
+      pendingConflict: t.billingAddonPendingConflict ?? "You already have a scheduled add-on of this type. Confirming immediate activation will replace that scheduled value for this add-on type.",
+      pendingConflictAck: t.billingAddonPendingConflictAcknowledge ?? "I understand and want to replace scheduled quantity for this add-on type.",
+      immediateBlockedByRole: t.billingAddonImmediateBlockedByRole ?? "Only owner/admin can activate immediately.",
+      updatingBilling: t.billingAddonUpdatingBilling ?? "Updating billing…",
+      previewRequired: t.billingAddonPreviewRequired ?? "Immediate activation requires a successful preview before confirmation.",
+      dialogTitleStaff: t.billingAddonDialogTitleStaff ?? "Extra staff",
+      dialogTitleLanguages: t.billingAddonDialogTitleLanguages ?? "Extra language",
+      ctaStaff: t.billingAddonCtaStaff ?? "Add extra staff",
+      ctaLanguages: t.billingAddonCtaLanguages ?? "Add extra language",
+      noAccessHint: t.billingAddonNoAccessHint ?? "You can schedule add-ons for next period. Immediate activation is restricted.",
+    }),
+    [t],
+  );
+
+  const currentDialogAddon = openDialog === "extra_staff" ? extraStaffAddon : extraLanguagesAddon;
+  const currentDialogPending = openDialog === "extra_staff" ? pendingExtraStaff : pendingExtraLanguages;
+  const parsedDialogQuantity = Math.max(0, Math.floor(Number(dialogQuantity) || 0));
+  const hasPendingConflict = dialogTiming === "immediate" && (currentDialogPending ?? 0) > 0;
+  const canConfirmImmediate =
+    dialogTiming === "immediate" &&
+    canImmediateActivate &&
+    immediatePreview?.mode === "preview" &&
+    !immediatePreviewLoading &&
+    !immediateMutationLoading &&
+    (!hasPendingConflict || pendingConflictAck);
+
+  const resetDialogState = () => {
+    setDialogTiming("next_period");
+    setImmediatePreview(null);
+    setImmediatePreviewError(null);
+    setImmediatePreviewLoading(false);
+    setPendingConflictAck(false);
+  };
+
+  const openAddonDialog = (addonType: AddonType) => {
+    setOpenDialog(addonType);
+    setDialogQuantity(String(addonType === "extra_staff" ? pendingExtraStaff : pendingExtraLanguages));
+    resetDialogState();
+  };
+
+  useEffect(() => {
+    if (dialogTiming !== "immediate" || !openDialog || !onPreviewImmediate) return;
+    if (!canImmediateActivate) return;
+    let cancelled = false;
+    setImmediatePreviewLoading(true);
+    setImmediatePreviewError(null);
+    setImmediatePreview(null);
+    void onPreviewImmediate(openDialog, parsedDialogQuantity).then((res: {
+      data: PreviewImmediateAddonChangeResponse | null;
+      error: string | null;
+    }) => {
+      if (cancelled) return;
+      setImmediatePreviewLoading(false);
+      if (res.error) {
+        setImmediatePreviewError(res.error);
+        return;
+      }
+      if (!res.data || res.data.mode !== "preview") {
+        const reason = res.data && "reason" in res.data ? res.data.reason : addonUi.previewFailed;
+        setImmediatePreviewError(reason ?? addonUi.previewFailed);
+        return;
+      }
+      setImmediatePreview(res.data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dialogTiming, openDialog, onPreviewImmediate, parsedDialogQuantity, canImmediateActivate, addonUi.previewFailed]);
+
+  const handleDialogConfirm = async () => {
+    if (!openDialog) return;
+    if (dialogTiming === "next_period") {
+      if (!onSavePending) return;
+      const s = openDialog === "extra_staff" ? parsedDialogQuantity : Math.max(0, pendingExtraStaff);
+      const l = openDialog === "extra_languages" ? parsedDialogQuantity : Math.max(0, pendingExtraLanguages);
+      await onSavePending(s, l);
+      setOpenDialog(null);
+      return;
+    }
+    if (!onApplyImmediate) return;
+    if (!canConfirmImmediate) {
+      setImmediatePreviewError(addonUi.previewRequired);
+      return;
+    }
+    const result = await onApplyImmediate(openDialog, parsedDialogQuantity);
+    if (!result.success) {
+      setImmediatePreviewError(result.error ?? addonUi.previewFailed);
+      return;
+    }
+    setOpenDialog(null);
+  };
+
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-2">{t.billingAddonsTitle}</h3>
@@ -192,49 +318,21 @@ export function AddonsCard({
         {onSavePending ? (
           <div className="space-y-3 pt-2 border-t">
             <p className="text-xs text-muted-foreground">{t.billingPendingSectionHint}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground" htmlFor="pending-staff">
-                  {t.billingPendingExtraStaffLabel}
-                </label>
-                <Input
-                  id="pending-staff"
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
-                  value={draftStaff}
-                  onChange={(e) => setDraftStaff(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground" htmlFor="pending-lang">
-                  {t.billingPendingExtraLanguagesLabel}
-                </label>
-                <Input
-                  id="pending-lang"
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
-                  value={draftLang}
-                  onChange={(e) => setDraftLang(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" size="sm" onClick={() => openAddonDialog("extra_staff")} disabled={actionLoading}>
+                {addonUi.ctaStaff}
+              </Button>
+              <Button type="button" size="sm" onClick={() => openAddonDialog("extra_languages")} disabled={actionLoading}>
+                {addonUi.ctaLanguages}
+              </Button>
             </div>
+            {!canImmediateActivate ? <p className="text-xs text-muted-foreground">{addonUi.noAccessHint}</p> : null}
             {pendingCapped ? (
               <p className="text-xs text-amber-800 dark:text-amber-200">{t.billingPendingCappedHint}</p>
             ) : null}
-            <Button
-              type="button"
-              size="sm"
-              disabled={pendingSaving || actionLoading}
-              onClick={async () => {
-                const s = Math.max(0, Math.floor(Number(draftStaff) || 0));
-                const l = Math.max(0, Math.floor(Number(draftLang) || 0));
-                await onSavePending(s, l);
-              }}
-            >
-              {pendingSaving ? t.billingPendingSaving : t.billingPendingSaveButton}
-            </Button>
+            {immediateReconcilePending ? (
+              <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.updatingBilling}</p>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -337,6 +435,128 @@ export function AddonsCard({
           </p>
         ) : null}
       </div>
+
+      <Dialog open={Boolean(openDialog)} onOpenChange={(next) => (!next ? setOpenDialog(null) : undefined)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {openDialog === "extra_staff" ? addonUi.dialogTitleStaff : addonUi.dialogTitleLanguages}
+            </DialogTitle>
+            <DialogDescription>{addonUi.chooseTiming}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="addon-dialog-quantity">
+                {addonUi.quantityLabel}
+              </label>
+              <Input
+                id="addon-dialog-quantity"
+                type="number"
+                min={0}
+                inputMode="numeric"
+                value={dialogQuantity}
+                onChange={(e) => setDialogQuantity(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setDialogTiming("next_period")}
+              className={cn(
+                "w-full rounded-md border p-3 text-left",
+                dialogTiming === "next_period" ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "",
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{addonUi.activateNextPeriod}</span>
+                <Badge variant="secondary" className="text-green-700">{addonUi.recommended}</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {applyTemplate(addonUi.startsAt, { date: nextPeriodLabel })}
+              </p>
+              <p className="text-xs text-green-700 dark:text-green-300">{addonUi.noCostNow}</p>
+            </button>
+
+            <button
+              type="button"
+              disabled={immediateDisabledByRole}
+              onClick={() => setDialogTiming("immediate")}
+              className={cn(
+                "w-full rounded-md border p-3 text-left",
+                dialogTiming === "immediate" ? "border-amber-500 bg-amber-50 dark:bg-amber-950/20" : "",
+                immediateDisabledByRole && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{addonUi.activateNow}</span>
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    </TooltipTrigger>
+                    <TooltipContent>{addonUi.advancedOption}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">{addonUi.advancedOption}</p>
+              {dialogTiming === "immediate" ? (
+                <div className="text-xs mt-2 space-y-1">
+                  {immediatePreviewLoading ? <p>{addonUi.previewLoading}</p> : null}
+                  {immediatePreview?.mode === "preview" ? (
+                    <>
+                      <p>{addonUi.costNow}: {immediatePreview.cost_now_minor / 100} {immediatePreview.currency}</p>
+                      <p>{addonUi.costMonthly}: {immediatePreview.cost_monthly_minor / 100} {immediatePreview.currency}</p>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+            </button>
+            {immediateDisabledByRole ? (
+              <p className="text-xs text-muted-foreground">{addonUi.immediateBlockedByRole}</p>
+            ) : null}
+            {hasPendingConflict ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-2 space-y-2">
+                <p className="text-xs text-amber-900">{addonUi.pendingConflict}</p>
+                <label className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={pendingConflictAck}
+                    onChange={(e) => setPendingConflictAck(e.target.checked)}
+                  />
+                  {addonUi.pendingConflictAck}
+                </label>
+              </div>
+            ) : null}
+            {immediatePreviewError ? (
+              <p className="text-xs text-red-700">{immediatePreviewError}</p>
+            ) : null}
+            {currentDialogAddon?.price ? (
+              <p className="text-xs text-muted-foreground">
+                {openDialog === "extra_staff"
+                  ? applyTemplate(t.billingAddonStaffImpactLine, { price: currentDialogAddon.price, impact: String(parsedDialogQuantity * 5) })
+                  : applyTemplate(t.billingAddonLanguageImpactLine, { price: currentDialogAddon.price, impact: String(parsedDialogQuantity * 10) })}
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenDialog(null)}>
+              {t.billingPlanDialogCancel ?? "Cancel"}
+            </Button>
+            <Button
+              onClick={handleDialogConfirm}
+              disabled={
+                pendingSaving ||
+                actionLoading ||
+                immediateMutationLoading ||
+                (dialogTiming === "immediate" && !canConfirmImmediate)
+              }
+            >
+              {dialogTiming === "next_period"
+                ? (pendingSaving ? t.billingPendingSaving : addonUi.confirmSchedule)
+                : (immediateMutationLoading ? addonUi.updatingBilling : addonUi.confirmActivateNow)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

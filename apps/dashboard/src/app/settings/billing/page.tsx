@@ -16,8 +16,10 @@ import { useCurrentSalon } from "@/components/salon-provider";
 import { useBilling } from "@/lib/hooks/billing/useBilling";
 import { useBillingActions } from "@/lib/hooks/billing/useBillingActions";
 import {
+  applyImmediateAddonChange,
   clearPendingPlan,
   finalizeSetupIntentDefaultPaymentMethod,
+  previewImmediateAddonChange,
   setSalonPendingAddons,
 } from "@/lib/services/billing-service";
 import { getPlans, getAddonDisplay } from "@/lib/utils/billing/billing-utils";
@@ -40,6 +42,7 @@ import {
   partitionUpcomingInvoiceLines,
   summarizeUpcomingLinesClient,
 } from "@/lib/utils/billing/upcoming-invoice-display";
+import type { AddonType, PreviewImmediateAddonChangeResponse } from "@/lib/services/billing/shared";
 
 export default function BillingSettingsPage() {
   const { locale } = useLocale();
@@ -101,6 +104,8 @@ export default function BillingSettingsPage() {
   const [showStripeInvoiceLines, setShowStripeInvoiceLines] = useState(false);
   const [pendingAddonSaving, setPendingAddonSaving] = useState(false);
   const [pendingCapped, setPendingCapped] = useState(false);
+  const [immediateAddonSaving, setImmediateAddonSaving] = useState(false);
+  const [immediateAddonReconciling, setImmediateAddonReconciling] = useState(false);
 
   useEffect(() => {
     const billingPrefs = (
@@ -244,6 +249,56 @@ export default function BillingSettingsPage() {
     setPendingCapped(Boolean(data?.capped));
     await refetch();
     await refreshSalon();
+  };
+
+  const canUseImmediateAddon = profile?.role === "owner" || profile?.role === "admin";
+
+  const handlePreviewImmediateAddon = async (
+    addonType: AddonType,
+    quantity: number,
+  ): Promise<{ data: PreviewImmediateAddonChangeResponse | null; error: string | null }> => {
+    if (!salon?.id) return { data: null, error: "Missing salon context" };
+    return previewImmediateAddonChange(salon.id, addonType, quantity);
+  };
+
+  const handleApplyImmediateAddon = async (
+    addonType: AddonType,
+    quantity: number,
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!salon?.id) return { success: false, error: "Missing salon context" };
+    setImmediateAddonSaving(true);
+    setImmediateAddonReconciling(false);
+    setError(null);
+    const { data, error: applyErr } = await applyImmediateAddonChange(salon.id, addonType, quantity);
+    if (applyErr || !data || ("success" in data && !data.success)) {
+      setImmediateAddonSaving(false);
+      return { success: false, error: applyErr ?? ("reason" in (data ?? {}) ? (data as { reason?: string }).reason : "Immediate update failed") };
+    }
+
+    try {
+      await refetch();
+      await refreshSalon();
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await refetch();
+      await refreshSalon();
+      setImmediateAddonSaving(false);
+      return { success: true };
+    } catch {
+      setImmediateAddonSaving(false);
+      setImmediateAddonReconciling(true);
+      setError("Billing is updating. We are re-syncing your add-on state.");
+      setTimeout(() => {
+        void (async () => {
+          try {
+            await refetch();
+            await refreshSalon();
+          } finally {
+            setImmediateAddonReconciling(false);
+          }
+        })();
+      }, 1500);
+      return { success: true };
+    }
   };
 
   const handleCancelConfirm = async () => {
@@ -498,8 +553,13 @@ export default function BillingSettingsPage() {
         pendingExtraLanguages={Number(salon?.pending_target_extra_languages) || 0}
         nextPeriodEndIso={salon?.current_period_end ?? null}
         onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
+        onPreviewImmediate={hasSubscription ? handlePreviewImmediateAddon : undefined}
+        onApplyImmediate={hasSubscription ? handleApplyImmediateAddon : undefined}
         pendingSaving={pendingAddonSaving}
         pendingCapped={pendingCapped}
+        immediateMutationLoading={immediateAddonSaving}
+        immediateReconcilePending={immediateAddonReconciling}
+        canImmediateActivate={Boolean(canUseImmediateAddon)}
         addons={addonDisplay}
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}
