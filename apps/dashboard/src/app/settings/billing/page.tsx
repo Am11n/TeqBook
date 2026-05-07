@@ -22,7 +22,13 @@ import {
   previewImmediateAddonChange,
   setSalonPendingAddons,
 } from "@/lib/services/billing-service";
-import { getPlans, getAddonDisplay } from "@/lib/utils/billing/billing-utils";
+import {
+  buildUpgradeRecommendationModel,
+  getAddonDisplay,
+  getPlans,
+  UPGRADE_HIDE_THRESHOLD,
+  UPGRADE_SHOW_THRESHOLD,
+} from "@/lib/utils/billing/billing-utils";
 import { supabase } from "@/lib/supabase-client";
 import { CurrentPlanCard } from "@/components/billing/CurrentPlanCard";
 import { AddonsCard } from "@/components/billing/AddonsCard";
@@ -106,6 +112,7 @@ export default function BillingSettingsPage() {
   const [pendingCapped, setPendingCapped] = useState(false);
   const [immediateAddonSaving, setImmediateAddonSaving] = useState(false);
   const [immediateAddonReconciling, setImmediateAddonReconciling] = useState(false);
+  const [showUpgradeRecommendation, setShowUpgradeRecommendation] = useState(false);
 
   useEffect(() => {
     const billingPrefs = (
@@ -146,11 +153,39 @@ export default function BillingSettingsPage() {
   const addonDisplay = getAddonDisplay(addons);
   const activePlan = plans.find((p) => p.id === currentPlan) || plans[0];
   const smsMetricsTrustedForEstimate = smsUsageUiMode === "ready" && smsUsage !== null;
+  const upgradeRecommendationModel = useMemo(
+    () => buildUpgradeRecommendationModel(activePlan.id, plans, addonDisplay),
+    [activePlan.id, plans, addonDisplay],
+  );
 
   const usagePercent = useMemo(() => {
     if (!smsUsage || smsUsage.included === null || smsUsage.included <= 0) return 0;
     return Math.round((smsUsage.used / smsUsage.included) * 100);
   }, [smsUsage]);
+
+  useEffect(() => {
+    if (!upgradeRecommendationModel) {
+      setShowUpgradeRecommendation(false);
+      return;
+    }
+    setShowUpgradeRecommendation((prev) => {
+      if (prev) {
+        return upgradeRecommendationModel.ratioToNextPlan >= UPGRADE_HIDE_THRESHOLD;
+      }
+      return upgradeRecommendationModel.ratioToNextPlan >= UPGRADE_SHOW_THRESHOLD;
+    });
+  }, [upgradeRecommendationModel]);
+
+  const upgradeRecommendation =
+    !loading && !showPlanDialog && showUpgradeRecommendation && upgradeRecommendationModel
+      ? {
+          ...upgradeRecommendationModel,
+          mode:
+            upgradeRecommendationModel.currentRecurringMinor >= upgradeRecommendationModel.nextPlanMinor
+              ? ("above" as const)
+              : ("near" as const),
+        }
+      : null;
 
   const handlePlanChangeConfirm = async (opts: { timing: PlanChangeTiming }) => {
     if (!selectedPlan) return;
@@ -560,6 +595,7 @@ export default function BillingSettingsPage() {
         immediateMutationLoading={immediateAddonSaving}
         immediateReconcilePending={immediateAddonReconciling}
         canImmediateActivate={Boolean(canUseImmediateAddon)}
+        upgradeRecommendation={upgradeRecommendation}
         addons={addonDisplay}
         usage={summary?.usage ?? null}
         actionLoading={actionLoading}

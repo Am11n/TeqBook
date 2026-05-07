@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { AddonDisplay } from "@/lib/utils/billing/billing-utils";
+import type { AddonDisplay, UpgradeRecommendationModel } from "@/lib/utils/billing/billing-utils";
 import type { ResolvedSettingsMessages } from "@/app/settings/_helpers/resolve-settings";
 import { applyTemplate } from "@/i18n/apply-template";
 import type { AddonType, PreviewImmediateAddonChangeResponse } from "@/lib/services/billing/shared";
@@ -35,6 +35,7 @@ interface AddonsCardProps {
   immediateMutationLoading?: boolean;
   immediateReconcilePending?: boolean;
   canImmediateActivate?: boolean;
+  upgradeRecommendation?: (UpgradeRecommendationModel & { mode: "near" | "above" }) | null;
   addons: AddonDisplay[];
   usage: {
     planIncludesEmployees: number | null;
@@ -84,6 +85,7 @@ export function AddonsCard({
   immediateMutationLoading = false,
   immediateReconcilePending = false,
   canImmediateActivate = false,
+  upgradeRecommendation = null,
   addons,
   usage,
   actionLoading = false,
@@ -194,9 +196,49 @@ export function AddonsCard({
       ctaStaff: t.billingAddonCtaStaff ?? "Add extra staff",
       ctaLanguages: t.billingAddonCtaLanguages ?? "Add extra language",
       noAccessHint: t.billingAddonNoAccessHint ?? "You can schedule add-ons for next period. Immediate activation is restricted.",
+      upgradeNearTitle: t.billingAddonUpgradeNearTitle ?? "You are close to the next plan price.",
+      upgradeAboveTitle: t.billingAddonUpgradeAboveTitle ?? "Your recurring add-ons now cost as much as the next plan.",
+      upgradeBody:
+        t.billingAddonUpgradeBody ??
+        "Switching to {plan} can give more included capacity at a better monthly value.",
+      upgradeSavings:
+        t.billingAddonUpgradeSavings ??
+        "Current recurring: {current}. Next plan ({plan}): {next}. Difference: {delta}.",
+      upgradeIncludes:
+        t.billingAddonUpgradeIncludes ??
+        "{plan} includes up to {employees} staff and {languages} languages before extra add-ons.",
+      upgradeCta: t.billingAddonUpgradeCta ?? "Compare plans",
     }),
     [t],
   );
+
+  const formatMoneyMinor = (minor: number) => `$${(minor / 100).toFixed(2)}`;
+  const recommendationTitle =
+    upgradeRecommendation?.mode === "above" ? addonUi.upgradeAboveTitle : addonUi.upgradeNearTitle;
+  const recommendationBody = upgradeRecommendation
+    ? applyTemplate(addonUi.upgradeBody, { plan: upgradeRecommendation.nextPlanName })
+    : null;
+  const recommendationSavings = upgradeRecommendation
+    ? applyTemplate(addonUi.upgradeSavings, {
+        current: formatMoneyMinor(upgradeRecommendation.currentRecurringMinor),
+        next: formatMoneyMinor(upgradeRecommendation.nextPlanMinor),
+        plan: upgradeRecommendation.nextPlanName,
+        delta: formatMoneyMinor(Math.abs(upgradeRecommendation.deltaMinor)),
+      })
+    : null;
+  const recommendationIncludes = upgradeRecommendation
+    ? applyTemplate(addonUi.upgradeIncludes, {
+        plan: upgradeRecommendation.nextPlanName,
+        employees:
+          upgradeRecommendation.nextPlanEmployees === null
+            ? t.billingUnlimited
+            : String(upgradeRecommendation.nextPlanEmployees),
+        languages:
+          upgradeRecommendation.nextPlanLanguages === null
+            ? t.billingUnlimited
+            : String(upgradeRecommendation.nextPlanLanguages),
+      })
+    : null;
 
   const currentDialogAddon = openDialog === "extra_staff" ? extraStaffAddon : extraLanguagesAddon;
   const currentDialogPending = openDialog === "extra_staff" ? pendingExtraStaff : pendingExtraLanguages;
@@ -280,6 +322,18 @@ export function AddonsCard({
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-2">{t.billingAddonsTitle}</h3>
       <p className="text-sm text-muted-foreground mb-4">{t.billingAddonsDescription}</p>
+
+      {upgradeRecommendation ? (
+        <div className="rounded-lg border border-sky-200 bg-sky-50 dark:bg-sky-950/20 dark:border-sky-900 p-4 mb-6 space-y-2">
+          <h4 className="text-sm font-semibold">{recommendationTitle}</h4>
+          {recommendationBody ? <p className="text-sm text-muted-foreground">{recommendationBody}</p> : null}
+          {recommendationSavings ? <p className="text-xs text-muted-foreground">{recommendationSavings}</p> : null}
+          {recommendationIncludes ? <p className="text-xs text-muted-foreground">{recommendationIncludes}</p> : null}
+          <Button type="button" size="sm" onClick={onManagePlan} disabled={actionLoading}>
+            {addonUi.upgradeCta}
+          </Button>
+        </div>
+      ) : null}
 
       <div className="rounded-lg border bg-muted/20 p-4 mb-6 space-y-2">
         <h4 className="text-sm font-semibold">{t.billingActiveCapacityTitle}</h4>

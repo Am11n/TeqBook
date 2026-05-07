@@ -42,6 +42,15 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonCtaLanguages: "Add extra language",
   billingAddonNoAccessHint:
     "You can still schedule add-ons for next period. Immediate activation is restricted to owner/admin.",
+  billingAddonUpgradeNearTitle: "You are close to the next plan price.",
+  billingAddonUpgradeAboveTitle: "Your recurring add-ons now cost as much as the next plan.",
+  billingAddonUpgradeBody:
+    "Switching to {plan} can give you more included capacity and better monthly value.",
+  billingAddonUpgradeSavings:
+    "Current recurring: {current}. Next plan ({plan}): {next}. Difference: {delta}.",
+  billingAddonUpgradeIncludes:
+    "{plan} includes up to {employees} staff and {languages} languages before extra add-ons.",
+  billingAddonUpgradeCta: "Compare plans",
   billingAddonUsagePendingStripe:
     "Add-on billing is still syncing. Dollar amounts stay hidden until they match your subscription so we do not show a misleading “next invoice” number.",
   billingAddonImpactHiddenUntilSync:

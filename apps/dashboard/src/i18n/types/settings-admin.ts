@@ -332,6 +332,12 @@ export type SettingsMessages = {
   billingAddonCtaStaff?: string;
   billingAddonCtaLanguages?: string;
   billingAddonNoAccessHint?: string;
+  billingAddonUpgradeNearTitle?: string;
+  billingAddonUpgradeAboveTitle?: string;
+  billingAddonUpgradeBody?: string;
+  billingAddonUpgradeSavings?: string;
+  billingAddonUpgradeIncludes?: string;
+  billingAddonUpgradeCta?: string;
   billingAddonUsagePendingStripe?: string;
   billingAddonImpactHiddenUntilSync?: string;
   billingAddonBlockPlanIncludes?: string;

@@ -39,6 +39,10 @@ export interface Plan {
   };
 }
 
+export const PLAN_ORDER: PlanType[] = ["starter", "pro", "business"];
+export const UPGRADE_SHOW_THRESHOLD = 0.95;
+export const UPGRADE_HIDE_THRESHOLD = 0.9;
+
 export interface AddonDisplay {
   id: string;
   name: string;
@@ -170,5 +174,66 @@ export function getAddonDisplay(addons: Addon[]): AddonDisplay[] {
       quantity: dbAddon?.qty || 0,
     };
   });
+}
+
+export function planPriceMinor(plan: Plan): number {
+  const normalized = plan.price.replace(/[^0-9.]/g, "");
+  const asNumber = Number(normalized);
+  if (Number.isNaN(asNumber) || asNumber < 0) return 0;
+  return Math.round(asNumber * 100);
+}
+
+export function nextPlanFor(currentPlanId: PlanType, plans: Plan[]): Plan | null {
+  const idx = PLAN_ORDER.indexOf(currentPlanId);
+  if (idx < 0 || idx >= PLAN_ORDER.length - 1) return null;
+  const nextId = PLAN_ORDER[idx + 1];
+  return plans.find((plan) => plan.id === nextId) ?? null;
+}
+
+export function activeAddonRecurringMinor(addons: AddonDisplay[]): number {
+  const staffQty = addons.find((a) => a.type === "extra_staff")?.quantity ?? 0;
+  const langQty = addons.find((a) => a.type === "extra_languages")?.quantity ?? 0;
+  return staffQty * 500 + langQty * 1000;
+}
+
+export type UpgradeRecommendationModel = {
+  currentPlanId: PlanType;
+  currentPlanName: string;
+  nextPlanId: PlanType;
+  nextPlanName: string;
+  currentRecurringMinor: number;
+  nextPlanMinor: number;
+  deltaMinor: number;
+  ratioToNextPlan: number;
+  nextPlanEmployees: number | null;
+  nextPlanLanguages: number | null;
+};
+
+export function buildUpgradeRecommendationModel(
+  currentPlanId: PlanType,
+  plans: Plan[],
+  addons: AddonDisplay[],
+): UpgradeRecommendationModel | null {
+  const currentPlan = plans.find((p) => p.id === currentPlanId) ?? null;
+  if (!currentPlan) return null;
+  const nextPlan = nextPlanFor(currentPlanId, plans);
+  if (!nextPlan) return null;
+
+  const currentRecurringMinor = planPriceMinor(currentPlan) + activeAddonRecurringMinor(addons);
+  const nextPlanMinor = planPriceMinor(nextPlan);
+  const ratioToNextPlan = nextPlanMinor > 0 ? currentRecurringMinor / nextPlanMinor : 0;
+
+  return {
+    currentPlanId: currentPlan.id,
+    currentPlanName: currentPlan.name,
+    nextPlanId: nextPlan.id,
+    nextPlanName: nextPlan.name,
+    currentRecurringMinor,
+    nextPlanMinor,
+    deltaMinor: currentRecurringMinor - nextPlanMinor,
+    ratioToNextPlan,
+    nextPlanEmployees: nextPlan.limits.employees,
+    nextPlanLanguages: nextPlan.limits.languages,
+  };
 }
 

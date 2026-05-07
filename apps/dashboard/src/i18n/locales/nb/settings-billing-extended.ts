@@ -41,6 +41,15 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonCtaLanguages: "Legg til ekstra språk",
   billingAddonNoAccessHint:
     "Du kan fortsatt planlegge tillegg fra neste periode. Umiddelbar aktivering er begrenset til owner/admin.",
+  billingAddonUpgradeNearTitle: "Du nærmer deg prisen på neste plan.",
+  billingAddonUpgradeAboveTitle: "Løpende tillegg koster nå like mye som neste plan.",
+  billingAddonUpgradeBody:
+    "Ved å bytte til {plan} kan du få mer inkludert kapasitet og bedre månedlig verdi.",
+  billingAddonUpgradeSavings:
+    "Nåværende løpende kostnad: {current}. Neste plan ({plan}): {next}. Forskjell: {delta}.",
+  billingAddonUpgradeIncludes:
+    "{plan} inkluderer opptil {employees} ansatte og {languages} språk før ekstra tillegg trengs.",
+  billingAddonUpgradeCta: "Sammenlign planer",
   billingAddonUsagePendingStripe:
     "Tilleggsfakturering synkroniseres fortsatt. Vi viser ikke dollartall før de stemmer med abonnementet, så du ikke får et villedende «neste faktura»-tall.",
   billingAddonImpactHiddenUntilSync:
