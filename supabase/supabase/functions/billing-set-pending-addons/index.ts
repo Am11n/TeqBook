@@ -25,9 +25,14 @@ const corsHeaders = {
 
 type Body = {
   salon_id?: string;
-  /** Absolute desired paid extra_staff units after next boundary (non-negative). */
+  /** Legacy absolute paid-extra fields (compat). */
   pending_target_extra_staff?: unknown;
   pending_target_extra_languages?: unknown;
+  /** New target-capacity fields. */
+  active_target_staff_capacity?: unknown;
+  active_target_language_capacity?: unknown;
+  pending_target_staff_capacity?: unknown;
+  pending_target_language_capacity?: unknown;
 };
 
 function parseNonNegInt(v: unknown): number | null {
@@ -93,17 +98,6 @@ serve(async (req) => {
       });
     }
 
-    const ps = parseNonNegInt(body.pending_target_extra_staff);
-    const pl = parseNonNegInt(body.pending_target_extra_languages);
-    if (ps === null || pl === null) {
-      return new Response(
-        JSON.stringify({
-          error: "pending_target_extra_staff and pending_target_extra_languages must be non-negative integers",
-        }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const authz = await authorizeSalonAccess(user.id, body.salon_id, supabaseUrl, supabaseServiceKey);
     if (!authz.allowed) {
@@ -115,7 +109,9 @@ serve(async (req) => {
 
     const { data: salon, error: salonErr } = await supabase
       .from("salons")
-      .select("plan, billing_subscription_id, billing_customer_id")
+      .select(
+        "plan, billing_subscription_id, billing_customer_id, supported_languages, active_target_staff_capacity, active_target_language_capacity, pending_target_staff_capacity, pending_target_language_capacity",
+      )
       .eq("id", body.salon_id)
       .maybeSingle();
 
@@ -144,16 +140,97 @@ serve(async (req) => {
     }
 
     const plan = salon.plan as "starter" | "pro" | "business";
-    const capped = capStarterAddonQuantities(plan, {
-      extra_staff: ps,
-      extra_languages: pl,
+    const includedStaff = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+    const includedLanguages = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+
+    const legacyPendingExtraStaff = parseNonNegInt(body.pending_target_extra_staff);
+    const legacyPendingExtraLanguages = parseNonNegInt(body.pending_target_extra_languages);
+    const newPendingStaffTarget = parseNonNegInt(body.pending_target_staff_capacity);
+    const newPendingLanguageTarget = parseNonNegInt(body.pending_target_language_capacity);
+    const newActiveStaffTarget = parseNonNegInt(body.active_target_staff_capacity);
+    const newActiveLanguageTarget = parseNonNegInt(body.active_target_language_capacity);
+
+    if (
+      (body.pending_target_extra_staff !== undefined && legacyPendingExtraStaff === null) ||
+      (body.pending_target_extra_languages !== undefined && legacyPendingExtraLanguages === null) ||
+      (body.pending_target_staff_capacity !== undefined && newPendingStaffTarget === null) ||
+      (body.pending_target_language_capacity !== undefined && newPendingLanguageTarget === null) ||
+      (body.active_target_staff_capacity !== undefined && newActiveStaffTarget === null) ||
+      (body.active_target_language_capacity !== undefined && newActiveLanguageTarget === null)
+    ) {
+      return new Response(JSON.stringify({ error: "Target values must be non-negative integers" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const [{ count: activeEmployeesCount }] = await Promise.all([
+      supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("salon_id", body.salon_id)
+        .eq("is_active", true),
+    ]);
+    const activeEmployees = activeEmployeesCount ?? 0;
+    const activeLanguages = Array.isArray(salon.supported_languages) ? salon.supported_languages.length : 0;
+
+    const currentActiveStaffTarget = Math.max(0, Number(salon.active_target_staff_capacity ?? includedStaff));
+    const currentActiveLanguageTarget = Math.max(0, Number(salon.active_target_language_capacity ?? includedLanguages));
+    const currentPendingStaffTarget = Math.max(0, Number(salon.pending_target_staff_capacity ?? currentActiveStaffTarget));
+    const currentPendingLanguageTarget = Math.max(0, Number(salon.pending_target_language_capacity ?? currentActiveLanguageTarget));
+
+    let activeStaffTarget = newActiveStaffTarget ?? currentActiveStaffTarget;
+    let activeLanguageTarget = newActiveLanguageTarget ?? currentActiveLanguageTarget;
+    let pendingStaffTarget =
+      newPendingStaffTarget ??
+      (legacyPendingExtraStaff !== null ? includedStaff + legacyPendingExtraStaff : currentPendingStaffTarget);
+    let pendingLanguageTarget =
+      newPendingLanguageTarget ??
+      (legacyPendingExtraLanguages !== null ? includedLanguages + legacyPendingExtraLanguages : currentPendingLanguageTarget);
+
+    if (activeStaffTarget < activeEmployees) {
+      return new Response(
+        JSON.stringify({
+          error: "Active staff target cannot be below active usage",
+          code: "target_below_usage_staff",
+          usage: activeEmployees,
+          required_min_target: activeEmployees,
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (activeLanguageTarget < activeLanguages) {
+      return new Response(
+        JSON.stringify({
+          error: "Active language target cannot be below active usage",
+          code: "target_below_usage_languages",
+          usage: activeLanguages,
+          required_min_target: activeLanguages,
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const cappedActive = capStarterAddonQuantities(plan, {
+      extra_staff: Math.max(activeStaffTarget - includedStaff, 0),
+      extra_languages: Math.max(activeLanguageTarget - includedLanguages, 0),
     });
+    const cappedPending = capStarterAddonQuantities(plan, {
+      extra_staff: Math.max(pendingStaffTarget - includedStaff, 0),
+      extra_languages: Math.max(pendingLanguageTarget - includedLanguages, 0),
+    });
+    activeStaffTarget = includedStaff + cappedActive.extra_staff;
+    activeLanguageTarget = includedLanguages + cappedActive.extra_languages;
+    pendingStaffTarget = includedStaff + cappedPending.extra_staff;
+    pendingLanguageTarget = includedLanguages + cappedPending.extra_languages;
 
     const { error: updErr } = await supabase
       .from("salons")
       .update({
-        pending_target_extra_staff: capped.extra_staff,
-        pending_target_extra_languages: capped.extra_languages,
+        active_target_staff_capacity: activeStaffTarget,
+        active_target_language_capacity: activeLanguageTarget,
+        pending_target_staff_capacity: pendingStaffTarget,
+        pending_target_language_capacity: pendingLanguageTarget,
       })
       .eq("id", body.salon_id);
 
@@ -167,9 +244,23 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        pending_target_extra_staff: capped.extra_staff,
-        pending_target_extra_languages: capped.extra_languages,
-        capped: capped.extra_staff !== ps || capped.extra_languages !== pl,
+        active_target_staff_capacity: activeStaffTarget,
+        active_target_language_capacity: activeLanguageTarget,
+        pending_target_staff_capacity: pendingStaffTarget,
+        pending_target_language_capacity: pendingLanguageTarget,
+        pending_target_extra_staff: Math.max(pendingStaffTarget - includedStaff, 0),
+        pending_target_extra_languages: Math.max(pendingLanguageTarget - includedLanguages, 0),
+        capped:
+          activeStaffTarget !== (newActiveStaffTarget ?? currentActiveStaffTarget) ||
+          activeLanguageTarget !== (newActiveLanguageTarget ?? currentActiveLanguageTarget) ||
+          pendingStaffTarget !==
+            (newPendingStaffTarget ??
+              (legacyPendingExtraStaff !== null ? includedStaff + legacyPendingExtraStaff : currentPendingStaffTarget)) ||
+          pendingLanguageTarget !==
+            (newPendingLanguageTarget ??
+              (legacyPendingExtraLanguages !== null
+                ? includedLanguages + legacyPendingExtraLanguages
+                : currentPendingLanguageTarget)),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

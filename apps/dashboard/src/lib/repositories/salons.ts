@@ -97,6 +97,10 @@ export type Salon = {
   addon_billing_sync_snapshot?: Record<string, unknown> | null;
   pending_target_extra_staff?: number | null;
   pending_target_extra_languages?: number | null;
+  active_target_staff_capacity?: number | null;
+  active_target_language_capacity?: number | null;
+  pending_target_staff_capacity?: number | null;
+  pending_target_language_capacity?: number | null;
   /** Target plan to apply at next period boundary (Stripe unchanged until apply). */
   pending_plan?: "starter" | "pro" | "business" | null;
   billing_subscription_period_start?: number | null;

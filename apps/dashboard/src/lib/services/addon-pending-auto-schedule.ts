@@ -61,7 +61,11 @@ export async function tryAutoBumpLanguagePending(
   }
 
   const stripe = addon?.qty ?? 0;
-  const prevTarget = Number(salonRow.pending_target_extra_languages) || 0;
+  const includedLang = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+  const prevTarget =
+    Math.max(Number(salonRow.pending_target_language_capacity ?? 0) - includedLang, 0) ||
+    Number(salonRow.pending_target_extra_languages) ||
+    0;
   const need = minAbsolutePendingTarget({
     plan,
     dimension: "languages",
@@ -78,8 +82,10 @@ export async function tryAutoBumpLanguagePending(
   }
 
   const { error: pendErr } = await setSalonPendingAddons(salonId, {
-    pending_target_extra_staff: Number(salonRow.pending_target_extra_staff) || 0,
-    pending_target_extra_languages: need,
+    active_target_staff_capacity: Number(salonRow.active_target_staff_capacity ?? 0),
+    active_target_language_capacity: Number(salonRow.active_target_language_capacity ?? 0),
+    pending_target_staff_capacity: Number(salonRow.pending_target_staff_capacity ?? 0),
+    pending_target_language_capacity: includedLang + need,
   });
   if (pendErr) {
     return { ok: false, error: pendErr };
@@ -117,7 +123,11 @@ export async function tryAutoBumpStaffPending(
   }
 
   const stripe = addon?.qty ?? 0;
-  const prevTarget = Number(salonRow.pending_target_extra_staff) || 0;
+  const includedStaff = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+  const prevTarget =
+    Math.max(Number(salonRow.pending_target_staff_capacity ?? 0) - includedStaff, 0) ||
+    Number(salonRow.pending_target_extra_staff) ||
+    0;
   const need = minAbsolutePendingTarget({
     plan,
     dimension: "employees",
@@ -134,8 +144,10 @@ export async function tryAutoBumpStaffPending(
   }
 
   const { error: pendErr } = await setSalonPendingAddons(salonId, {
-    pending_target_extra_staff: need,
-    pending_target_extra_languages: Number(salonRow.pending_target_extra_languages) || 0,
+    active_target_staff_capacity: Number(salonRow.active_target_staff_capacity ?? 0),
+    active_target_language_capacity: Number(salonRow.active_target_language_capacity ?? 0),
+    pending_target_staff_capacity: includedStaff + need,
+    pending_target_language_capacity: Number(salonRow.pending_target_language_capacity ?? 0),
   });
   if (pendErr) {
     return { ok: false, error: pendErr };

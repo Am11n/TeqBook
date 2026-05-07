@@ -152,6 +152,10 @@ export interface RefreshSubscriptionProjectionResponse {
 
 export type SetPendingAddonsResponse = {
   success: boolean;
+  active_target_staff_capacity: number;
+  active_target_language_capacity: number;
+  pending_target_staff_capacity: number;
+  pending_target_language_capacity: number;
   pending_target_extra_staff: number;
   pending_target_extra_languages: number;
   capped?: boolean;

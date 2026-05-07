@@ -65,6 +65,10 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
     "Monthly $ impact stays hidden until billing confirms your add-on seat counts.",
   billingAddonBlockPlanIncludes: "Plan includes",
   billingAddonBlockYouUse: "You use",
+  billingAddonTargetNowLabel: "Billing target now",
+  billingAddonPendingTargetLabel: "Pending billing target",
+  billingAddonTargetBelowUsageHint:
+    "Current usage is above billing target. Increase target or reduce active staff/languages before continuing.",
   billingAddonBlockExtraPaid: "Extra (paid)",
   billingAddonExtraPaidLineStaff: "+{count} staff · {price}",
   billingAddonExtraPaidLineLang: "+{count} languages · {price}",

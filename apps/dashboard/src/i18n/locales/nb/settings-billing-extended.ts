@@ -64,6 +64,10 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
     "Månedlig $-påvirkning skjules til faktureringen har bekreftet antall tilleggsplasser.",
   billingAddonBlockPlanIncludes: "Planen inkluderer",
   billingAddonBlockYouUse: "Du bruker",
+  billingAddonTargetNowLabel: "Betalt kapasitetsmål nå",
+  billingAddonPendingTargetLabel: "Planlagt kapasitetsmål",
+  billingAddonTargetBelowUsageHint:
+    "Nåværende bruk er over betalt kapasitetsmål. Øk målet eller reduser aktive ansatte/språk før du fortsetter.",
   billingAddonBlockExtraPaid: "Ekstra (betalt)",
   billingAddonExtraPaidLineStaff: "+{count} ansatte · {price}",
   billingAddonExtraPaidLineLang: "+{count} språk · {price}",

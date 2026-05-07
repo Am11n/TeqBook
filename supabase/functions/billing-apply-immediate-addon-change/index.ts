@@ -102,7 +102,7 @@ serve(async (req) => {
     const { data: salon, error: salonErr } = await supabase
       .from("salons")
       .select(
-        "plan, billing_subscription_id, billing_customer_id, pending_target_extra_staff, pending_target_extra_languages",
+        "plan, billing_subscription_id, billing_customer_id, active_target_staff_capacity, active_target_language_capacity, pending_target_staff_capacity, pending_target_language_capacity",
       )
       .eq("id", salonId)
       .maybeSingle();
@@ -139,8 +139,14 @@ serve(async (req) => {
     const itemByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
     const stripeStaff = itemByPrice.get(priceConfig.addonPriceIds.extra_staff)?.quantity ?? 0;
     const stripeLang = itemByPrice.get(priceConfig.addonPriceIds.extra_languages)?.quantity ?? 0;
-    const targetStaff = addonType === "extra_staff" ? requestedQty : stripeStaff;
-    const targetLang = addonType === "extra_languages" ? requestedQty : stripeLang;
+    const includedStaff = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+    const includedLanguages = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+    const activeStaffTarget = Math.max(0, Number(salon.active_target_staff_capacity ?? (includedStaff + stripeStaff)));
+    const activeLanguageTarget = Math.max(0, Number(salon.active_target_language_capacity ?? (includedLanguages + stripeLang)));
+    const nextActiveStaffTarget = addonType === "extra_staff" ? includedStaff + requestedQty : activeStaffTarget;
+    const nextActiveLanguageTarget = addonType === "extra_languages" ? includedLanguages + requestedQty : activeLanguageTarget;
+    const targetStaff = Math.max(nextActiveStaffTarget - includedStaff, 0);
+    const targetLang = Math.max(nextActiveLanguageTarget - includedLanguages, 0);
     const subscriptionItems = collectAddonSubscriptionItemUpdates(subscription, priceConfig, targetStaff, targetLang);
 
     const canProrate = subscription.status === "active" || subscription.status === "trialing";
@@ -157,8 +163,14 @@ serve(async (req) => {
 
     const pendingUpdate =
       addonType === "extra_staff"
-        ? { pending_target_extra_staff: 0 }
-        : { pending_target_extra_languages: 0 };
+        ? {
+            active_target_staff_capacity: nextActiveStaffTarget,
+            pending_target_staff_capacity: nextActiveStaffTarget,
+          }
+        : {
+            active_target_language_capacity: nextActiveLanguageTarget,
+            pending_target_language_capacity: nextActiveLanguageTarget,
+          };
     const { error: pendingErr } = await supabase.from("salons").update(pendingUpdate).eq("id", salonId);
     if (pendingErr) {
       console.error("billing-apply-immediate-addon-change: pending clear failed", pendingErr);

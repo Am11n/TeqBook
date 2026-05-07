@@ -6,7 +6,6 @@ import type Stripe from "https://esm.sh/stripe@14.21.0";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   capStarterAddonQuantities,
-  computeExtraQuantity,
   getBaseLimits,
   getBillingPriceConfig,
   getPlanFromPriceId,
@@ -33,7 +32,7 @@ export async function applyPendingSalonPlanToStripe(
   const { data: salon, error: salonErr } = await supabase
     .from("salons")
     .select(
-      "pending_plan, billing_subscription_id, billing_customer_id, supported_languages, plan",
+      "pending_plan, billing_subscription_id, billing_customer_id, supported_languages, plan, active_target_staff_capacity, active_target_language_capacity, pending_target_staff_capacity, pending_target_language_capacity",
     )
     .eq("id", salonId)
     .maybeSingle();
@@ -74,24 +73,28 @@ export async function applyPendingSalonPlanToStripe(
   const { planItem } = getPlanSubscriptionItem(subscription, priceConfig);
   const planPriceChanged = planItem.price.id !== newPriceId;
 
-  const [{ count: activeEmployeesCount }] = await Promise.all([
-    supabase
-      .from("employees")
-      .select("id", { count: "exact", head: true })
-      .eq("salon_id", salonId)
-      .eq("is_active", true),
-  ]);
-
-  const activeEmployees = activeEmployeesCount ?? 0;
-  const langs = (salon as { supported_languages?: string[] | null }).supported_languages;
-  const activeLanguages = Array.isArray(langs) ? langs.length : 0;
   const baseLimits = getBaseLimits(targetPlan);
-  const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
-  const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
+  const oldActiveStaffTarget = Math.max(0, Number((salon as { active_target_staff_capacity?: number }).active_target_staff_capacity ?? 0));
+  const oldActiveLanguageTarget = Math.max(0, Number((salon as { active_target_language_capacity?: number }).active_target_language_capacity ?? 0));
+  const oldPendingStaffTarget = Math.max(0, Number((salon as { pending_target_staff_capacity?: number }).pending_target_staff_capacity ?? oldActiveStaffTarget));
+  const oldPendingLanguageTarget = Math.max(0, Number((salon as { pending_target_language_capacity?: number }).pending_target_language_capacity ?? oldActiveLanguageTarget));
+
+  const maxStaffTarget = targetPlan === "starter" ? (baseLimits.employees ?? 0) + 20 : null;
+  const maxLanguageTarget = targetPlan === "starter" ? (baseLimits.languages ?? 0) + 8 : null;
+  const nextActiveStaffTarget = maxStaffTarget === null ? oldActiveStaffTarget : Math.min(oldActiveStaffTarget, maxStaffTarget);
+  const nextActiveLanguageTarget = maxLanguageTarget === null ? oldActiveLanguageTarget : Math.min(oldActiveLanguageTarget, maxLanguageTarget);
+  const nextPendingStaffTarget = Math.max(
+    nextActiveStaffTarget,
+    maxStaffTarget === null ? oldPendingStaffTarget : Math.min(oldPendingStaffTarget, maxStaffTarget),
+  );
+  const nextPendingLanguageTarget = Math.max(
+    nextActiveLanguageTarget,
+    maxLanguageTarget === null ? oldPendingLanguageTarget : Math.min(oldPendingLanguageTarget, maxLanguageTarget),
+  );
 
   const cappedAddonTargets = capStarterAddonQuantities(targetPlan, {
-    extra_staff: extraStaffQty,
-    extra_languages: extraLanguagesQty,
+    extra_staff: Math.max(nextActiveStaffTarget - (baseLimits.employees ?? 0), 0),
+    extra_languages: Math.max(nextActiveLanguageTarget - (baseLimits.languages ?? 0), 0),
   });
 
   const stripePlanFromPrice = getPlanFromPriceId(planItem.price.id, priceConfig.planPriceIds);
@@ -101,8 +104,10 @@ export async function applyPendingSalonPlanToStripe(
       .update({
         pending_plan: null,
         plan: targetPlan,
-        pending_target_extra_staff: cappedAddonTargets.extra_staff,
-        pending_target_extra_languages: cappedAddonTargets.extra_languages,
+        active_target_staff_capacity: nextActiveStaffTarget,
+        active_target_language_capacity: nextActiveLanguageTarget,
+        pending_target_staff_capacity: nextPendingStaffTarget,
+        pending_target_language_capacity: nextPendingLanguageTarget,
       })
       .eq("id", salonId);
     if (clearErr) console.error("applyPendingSalonPlanToStripe clear stale pending", clearErr);
@@ -153,8 +158,10 @@ export async function applyPendingSalonPlanToStripe(
     .update({
       pending_plan: null,
       plan: targetPlan,
-      pending_target_extra_staff: cappedAddonTargets.extra_staff,
-      pending_target_extra_languages: cappedAddonTargets.extra_languages,
+      active_target_staff_capacity: nextActiveStaffTarget,
+      active_target_language_capacity: nextActiveLanguageTarget,
+      pending_target_staff_capacity: nextPendingStaffTarget,
+      pending_target_language_capacity: nextPendingLanguageTarget,
     })
     .eq("id", salonId);
   if (pendClearErr) {

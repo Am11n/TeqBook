@@ -92,7 +92,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { data: salon, error: salonErr } = await supabase
       .from("salons")
-      .select("plan, billing_subscription_id, billing_customer_id, pending_target_extra_staff, pending_target_extra_languages")
+      .select("plan, billing_subscription_id, billing_customer_id, active_target_staff_capacity, active_target_language_capacity")
       .eq("id", salonId)
       .maybeSingle();
     if (salonErr || !salon?.billing_subscription_id || !salon.billing_customer_id || !salon.plan) {
@@ -128,8 +128,12 @@ serve(async (req) => {
     const itemByPrice = new Map(subscription.items.data.map((item) => [item.price.id, item] as const));
     const stripeStaff = itemByPrice.get(priceConfig.addonPriceIds.extra_staff)?.quantity ?? 0;
     const stripeLang = itemByPrice.get(priceConfig.addonPriceIds.extra_languages)?.quantity ?? 0;
-    const targetStaff = addonType === "extra_staff" ? requestedQty : stripeStaff;
-    const targetLang = addonType === "extra_languages" ? requestedQty : stripeLang;
+    const includedStaff = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+    const includedLanguages = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
+    const activeStaffTarget = Math.max(0, Number(salon.active_target_staff_capacity ?? (includedStaff + stripeStaff)));
+    const activeLanguageTarget = Math.max(0, Number(salon.active_target_language_capacity ?? (includedLanguages + stripeLang)));
+    const targetStaff = addonType === "extra_staff" ? requestedQty : Math.max(activeStaffTarget - includedStaff, 0);
+    const targetLang = addonType === "extra_languages" ? requestedQty : Math.max(activeLanguageTarget - includedLanguages, 0);
 
     const subscriptionItems = collectAddonSubscriptionItemUpdates(subscription, priceConfig, targetStaff, targetLang);
     if (subscriptionItems.length === 0) {

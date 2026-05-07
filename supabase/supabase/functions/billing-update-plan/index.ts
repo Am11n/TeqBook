@@ -20,7 +20,6 @@ import {
 } from "../_shared/rate-limit.ts";
 import {
   capStarterAddonQuantities,
-  computeExtraQuantity,
   getBaseLimits,
   getBillingPriceConfig,
   isValidStripePriceId,
@@ -220,7 +219,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { data: salonBinding, error: salonBindingError } = await supabase
       .from("salons")
-      .select("id, billing_customer_id, billing_subscription_id, supported_languages, plan, pending_plan")
+      .select("id, billing_customer_id, billing_subscription_id, supported_languages, plan, pending_plan, active_target_staff_capacity, active_target_language_capacity, pending_target_staff_capacity, pending_target_language_capacity")
       .eq("id", body.salon_id)
       .maybeSingle();
     if (salonBindingError || !salonBinding) {
@@ -412,22 +411,14 @@ serve(async (req) => {
       ? salonBinding.supported_languages.length
       : 0;
     const baseLimits = getBaseLimits(body.new_plan);
-    const extraStaffQty = computeExtraQuantity(activeEmployees, baseLimits.employees);
-    const extraLanguagesQty = computeExtraQuantity(activeLanguages, baseLimits.languages);
-
-    const { data: addonRows } = await supabase
-      .from("addons")
-      .select("type, qty")
-      .eq("salon_id", body.salon_id);
-    const addonStaffPaid = addonRows?.find((a) => a.type === "extra_staff")?.qty ?? 0;
-    const addonLangPaid = addonRows?.find((a) => a.type === "extra_languages")?.qty ?? 0;
-
-    if (baseLimits.employees !== null && activeEmployees > baseLimits.employees + addonStaffPaid) {
+    const maxStaffTarget = body.new_plan === "starter" ? (baseLimits.employees ?? 0) + 20 : null;
+    const maxLanguageTarget = body.new_plan === "starter" ? (baseLimits.languages ?? 0) + 8 : null;
+    if (maxStaffTarget !== null && activeEmployees > maxStaffTarget) {
       return new Response(
         JSON.stringify({
           error: "Cannot change plan now",
           details:
-            "Active employees exceed what the new plan allows with your current paid add-ons. Remove employees or schedule the change for the next billing period.",
+            "Active employees exceed the maximum target capacity on this plan. Reduce active employees or schedule for next period.",
           code: "immediate_downgrade_blocked",
         }),
         {
@@ -436,12 +427,12 @@ serve(async (req) => {
         },
       );
     }
-    if (baseLimits.languages !== null && activeLanguages > baseLimits.languages + addonLangPaid) {
+    if (maxLanguageTarget !== null && activeLanguages > maxLanguageTarget) {
       return new Response(
         JSON.stringify({
           error: "Cannot change plan now",
           details:
-            "Supported languages exceed what the new plan allows with your current paid add-ons. Remove languages or schedule the change for the next billing period.",
+            "Supported languages exceed the maximum target capacity on this plan. Remove languages or schedule for next period.",
           code: "immediate_downgrade_blocked",
         }),
         {
@@ -477,11 +468,37 @@ serve(async (req) => {
 
     let updatedSubscription: Stripe.Subscription = subscription;
 
+    const oldActiveStaffTarget = Math.max(0, Number(salonBinding.active_target_staff_capacity ?? activeEmployees));
+    const oldActiveLanguageTarget = Math.max(0, Number(salonBinding.active_target_language_capacity ?? activeLanguages));
+    const oldPendingStaffTarget = Math.max(0, Number(salonBinding.pending_target_staff_capacity ?? oldActiveStaffTarget));
+    const oldPendingLanguageTarget = Math.max(0, Number(salonBinding.pending_target_language_capacity ?? oldActiveLanguageTarget));
+
+    const nextActiveStaffTarget = Math.max(
+      activeEmployees,
+      maxStaffTarget === null ? oldActiveStaffTarget : Math.min(oldActiveStaffTarget, maxStaffTarget),
+    );
+    const nextActiveLanguageTarget = Math.max(
+      activeLanguages,
+      maxLanguageTarget === null ? oldActiveLanguageTarget : Math.min(oldActiveLanguageTarget, maxLanguageTarget),
+    );
+    const nextPendingStaffTarget = Math.max(
+      nextActiveStaffTarget,
+      maxStaffTarget === null ? oldPendingStaffTarget : Math.min(oldPendingStaffTarget, maxStaffTarget),
+    );
+    const nextPendingLanguageTarget = Math.max(
+      nextActiveLanguageTarget,
+      maxLanguageTarget === null ? oldPendingLanguageTarget : Math.min(oldPendingLanguageTarget, maxLanguageTarget),
+    );
+
+    const cappedAddonTargets = capStarterAddonQuantities(body.new_plan, {
+      extra_staff: Math.max(nextActiveStaffTarget - (baseLimits.employees ?? 0), 0),
+      extra_languages: Math.max(nextActiveLanguageTarget - (baseLimits.languages ?? 0), 0),
+    });
     const addonItemUpdates = collectAddonSubscriptionItemUpdates(
       subscription,
       priceConfig,
-      extraStaffQty,
-      extraLanguagesQty,
+      cappedAddonTargets.extra_staff,
+      cappedAddonTargets.extra_languages,
     );
 
     try {
@@ -543,21 +560,18 @@ serve(async (req) => {
     // Calculate new current period end
     const currentPeriodEnd = new Date(updatedSubscription.current_period_end * 1000).toISOString();
 
-    const cappedAddonTargets = capStarterAddonQuantities(body.new_plan, {
-      extra_staff: extraStaffQty,
-      extra_languages: extraLanguagesQty,
-    });
-
     // Update salon with new plan using service role key (included limits apply immediately in DB).
-    // We still persist pending targets so next boundary stays aligned with usage-derived expectations.
+    // Preserve explicit active/pending targets with plan-cap clamping; never below usage.
     const { error: updateError } = await supabase
       .from("salons")
       .update({
         plan: body.new_plan,
         current_period_end: currentPeriodEnd,
         pending_plan: null,
-        pending_target_extra_staff: cappedAddonTargets.extra_staff,
-        pending_target_extra_languages: cappedAddonTargets.extra_languages,
+        active_target_staff_capacity: nextActiveStaffTarget,
+        active_target_language_capacity: nextActiveLanguageTarget,
+        pending_target_staff_capacity: nextPendingStaffTarget,
+        pending_target_language_capacity: nextPendingLanguageTarget,
       })
       .eq("id", body.salon_id);
 

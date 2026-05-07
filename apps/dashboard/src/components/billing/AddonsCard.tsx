@@ -22,6 +22,10 @@ interface AddonsCardProps {
   /** Model A: units scheduled for next Stripe billing boundary */
   pendingExtraStaff?: number;
   pendingExtraLanguages?: number;
+  activeTargetStaffCapacity?: number;
+  activeTargetLanguageCapacity?: number;
+  pendingTargetStaffCapacity?: number;
+  pendingTargetLanguageCapacity?: number;
   /** Salon `current_period_end` ISO — label for next period */
   nextPeriodEndIso?: string | null;
   onSavePending?: (pendingStaff: number, pendingLanguages: number) => Promise<void>;
@@ -76,6 +80,10 @@ export function AddonsCard({
   dateLocale = "en-US",
   pendingExtraStaff = 0,
   pendingExtraLanguages = 0,
+  activeTargetStaffCapacity = 0,
+  activeTargetLanguageCapacity = 0,
+  pendingTargetStaffCapacity = 0,
+  pendingTargetLanguageCapacity = 0,
   nextPeriodEndIso,
   onSavePending,
   onPreviewImmediate,
@@ -125,6 +133,8 @@ export function AddonsCard({
 
   const staffPlanInc = formatIncluded(usage?.planIncludesEmployees ?? null, t.billingUnlimited);
   const langPlanInc = formatIncluded(usage?.planIncludesLanguages ?? null, t.billingUnlimited);
+  const usageTargetMismatchStaff = (usage?.employeesActive ?? 0) > activeTargetStaffCapacity;
+  const usageTargetMismatchLanguages = (usage?.languagesActive ?? 0) > activeTargetLanguageCapacity;
 
   const staffExtraLine =
     billableStaffUnits > 0
@@ -386,6 +396,10 @@ export function AddonsCard({
                   <div className="font-medium tabular-nums">{usage?.employeesActive ?? 0}</div>
                 </div>
                 <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonTargetNowLabel ?? "Billing target now"}</div>
+                  <div className="font-medium tabular-nums">{activeTargetStaffCapacity}</div>
+                </div>
+                <div>
                   <div className="text-xs text-muted-foreground">{t.billingAddonBlockExtraPaid}</div>
                   <div className="font-medium tabular-nums">{staffExtraLine}</div>
                 </div>
@@ -399,6 +413,9 @@ export function AddonsCard({
             <div className="rounded-md border p-3">
               <p className="text-xs font-medium mb-1">{addonUi.scheduledLabel}</p>
               <p className="text-xs text-muted-foreground mb-2">{startsNextPeriodText}</p>
+              <p className="text-sm font-medium">
+                {(t.billingAddonPendingTargetLabel ?? "Pending target") + `: ${pendingTargetStaffCapacity}`}
+              </p>
               <p className="text-sm font-medium">
                 {pendingExtraStaff > 0
                   ? applyTemplate(t.billingAddonExtraPaidLineStaff, {
@@ -445,6 +462,10 @@ export function AddonsCard({
                   <div className="font-medium tabular-nums">{usage?.languagesActive ?? 0}</div>
                 </div>
                 <div>
+                  <div className="text-xs text-muted-foreground">{t.billingAddonTargetNowLabel ?? "Billing target now"}</div>
+                  <div className="font-medium tabular-nums">{activeTargetLanguageCapacity}</div>
+                </div>
+                <div>
                   <div className="text-xs text-muted-foreground">{t.billingAddonBlockExtraPaid}</div>
                   <div className="font-medium tabular-nums">{langExtraLine}</div>
                 </div>
@@ -458,6 +479,9 @@ export function AddonsCard({
             <div className="rounded-md border p-3">
               <p className="text-xs font-medium mb-1">{addonUi.scheduledLabel}</p>
               <p className="text-xs text-muted-foreground mb-2">{startsNextPeriodText}</p>
+              <p className="text-sm font-medium">
+                {(t.billingAddonPendingTargetLabel ?? "Pending target") + `: ${pendingTargetLanguageCapacity}`}
+              </p>
               <p className="text-sm font-medium">
                 {pendingExtraLanguages > 0
                   ? applyTemplate(t.billingAddonExtraPaidLineLang, {
@@ -482,6 +506,12 @@ export function AddonsCard({
         {!canImmediateActivate ? <p className="text-xs text-muted-foreground">{addonUi.noAccessHint}</p> : null}
         {pendingCapped ? (
           <p className="text-xs text-amber-800 dark:text-amber-200">{t.billingPendingCappedHint}</p>
+        ) : null}
+        {usageTargetMismatchStaff || usageTargetMismatchLanguages ? (
+          <p className="text-xs text-red-700">
+            {t.billingAddonTargetBelowUsageHint ??
+              "Current usage is above billing target. Increase target or reduce active staff/languages before continuing."}
+          </p>
         ) : null}
         {immediateReconcilePending ? (
           <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.updatingBilling}</p>

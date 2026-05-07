@@ -272,9 +272,15 @@ export default function BillingSettingsPage() {
     setPendingAddonSaving(true);
     setPendingCapped(false);
     setError(null);
+    const includedStaff = summary?.usage.planIncludesEmployees ?? 0;
+    const includedLanguages = summary?.usage.planIncludesLanguages ?? 0;
+    const pendingStaffTarget = Math.max(includedStaff + staff, 0);
+    const pendingLanguageTarget = Math.max(includedLanguages + languages, 0);
     const { data, error: pendErr } = await setSalonPendingAddons(salon.id, {
-      pending_target_extra_staff: staff,
-      pending_target_extra_languages: languages,
+      active_target_staff_capacity: Number(salon.active_target_staff_capacity ?? 0),
+      active_target_language_capacity: Number(salon.active_target_language_capacity ?? 0),
+      pending_target_staff_capacity: pendingStaffTarget,
+      pending_target_language_capacity: pendingLanguageTarget,
     });
     setPendingAddonSaving(false);
     if (pendErr) {
@@ -584,8 +590,18 @@ export default function BillingSettingsPage() {
       <AddonsCard
         stripeAddonUsageTrusted={addonStripeUsageTrusted}
         dateLocale={intlLocaleTag(appLocale as AppLocale)}
-        pendingExtraStaff={Number(salon?.pending_target_extra_staff) || 0}
-        pendingExtraLanguages={Number(salon?.pending_target_extra_languages) || 0}
+        pendingExtraStaff={Math.max(
+          Number(salon?.pending_target_staff_capacity ?? 0) - Number(summary?.usage.planIncludesEmployees ?? 0),
+          0,
+        )}
+        pendingExtraLanguages={Math.max(
+          Number(salon?.pending_target_language_capacity ?? 0) - Number(summary?.usage.planIncludesLanguages ?? 0),
+          0,
+        )}
+        activeTargetStaffCapacity={Number(salon?.active_target_staff_capacity ?? 0)}
+        activeTargetLanguageCapacity={Number(salon?.active_target_language_capacity ?? 0)}
+        pendingTargetStaffCapacity={Number(salon?.pending_target_staff_capacity ?? 0)}
+        pendingTargetLanguageCapacity={Number(salon?.pending_target_language_capacity ?? 0)}
         nextPeriodEndIso={salon?.current_period_end ?? null}
         onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
         onPreviewImmediate={hasSubscription ? handlePreviewImmediateAddon : undefined}

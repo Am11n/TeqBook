@@ -350,6 +350,9 @@ export type SettingsMessages = {
   billingAddonImpactHiddenUntilSync?: string;
   billingAddonBlockPlanIncludes?: string;
   billingAddonBlockYouUse?: string;
+  billingAddonTargetNowLabel?: string;
+  billingAddonPendingTargetLabel?: string;
+  billingAddonTargetBelowUsageHint?: string;
   billingAddonBlockExtraPaid?: string;
   /** e.g. "+{count} at {price}" */
   billingAddonExtraPaidLineStaff?: string;

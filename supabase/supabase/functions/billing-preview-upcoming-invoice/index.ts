@@ -191,10 +191,13 @@ serve(async (req) => {
     }));
 
     const salonRow = salon as {
-      pending_target_extra_staff?: number;
-      pending_target_extra_languages?: number;
+      plan?: string | null;
+      pending_target_staff_capacity?: number;
+      pending_target_language_capacity?: number;
       current_period_end?: string | null;
     };
+    const includedStaff = salonRow.plan === "starter" ? 2 : salonRow.plan === "pro" ? 5 : 0;
+    const includedLanguages = salonRow.plan === "starter" ? 2 : salonRow.plan === "pro" ? 5 : 0;
 
     return new Response(
       JSON.stringify({
@@ -208,8 +211,14 @@ serve(async (req) => {
           timing_adjustments_minor,
         },
         lines,
-        pending_target_extra_staff: Math.max(0, Number(salonRow.pending_target_extra_staff) || 0),
-        pending_target_extra_languages: Math.max(0, Number(salonRow.pending_target_extra_languages) || 0),
+        pending_target_extra_staff: Math.max(
+          0,
+          (Number(salonRow.pending_target_staff_capacity) || 0) - includedStaff,
+        ),
+        pending_target_extra_languages: Math.max(
+          0,
+          (Number(salonRow.pending_target_language_capacity) || 0) - includedLanguages,
+        ),
         current_period_end: salonRow.current_period_end ?? null,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
