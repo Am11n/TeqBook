@@ -152,6 +152,16 @@ export default function BillingSettingsPage() {
 
   const addonDisplay = getAddonDisplay(addons);
   const activePlan = plans.find((p) => p.id === currentPlan) || plans[0];
+  const includedStaff = summary?.usage.planIncludesEmployees ?? 0;
+  const includedLanguages = summary?.usage.planIncludesLanguages ?? 0;
+  const safeActiveTargetStaff = Number(salon?.active_target_staff_capacity ?? includedStaff);
+  const safeActiveTargetLanguages = Number(salon?.active_target_language_capacity ?? includedLanguages);
+  const safePendingTargetStaff = Number(
+    salon?.pending_target_staff_capacity ?? salon?.active_target_staff_capacity ?? includedStaff,
+  );
+  const safePendingTargetLanguages = Number(
+    salon?.pending_target_language_capacity ?? salon?.active_target_language_capacity ?? includedLanguages,
+  );
   const smsMetricsTrustedForEstimate = smsUsageUiMode === "ready" && smsUsage !== null;
   const upgradeRecommendationModel = useMemo(
     () => buildUpgradeRecommendationModel(activePlan.id, plans, addonDisplay),
@@ -272,13 +282,11 @@ export default function BillingSettingsPage() {
     setPendingAddonSaving(true);
     setPendingCapped(false);
     setError(null);
-    const includedStaff = summary?.usage.planIncludesEmployees ?? 0;
-    const includedLanguages = summary?.usage.planIncludesLanguages ?? 0;
     const pendingStaffTarget = Math.max(includedStaff + staff, 0);
     const pendingLanguageTarget = Math.max(includedLanguages + languages, 0);
     const { data, error: pendErr } = await setSalonPendingAddons(salon.id, {
-      active_target_staff_capacity: Number(salon.active_target_staff_capacity ?? 0),
-      active_target_language_capacity: Number(salon.active_target_language_capacity ?? 0),
+      active_target_staff_capacity: safeActiveTargetStaff,
+      active_target_language_capacity: safeActiveTargetLanguages,
       pending_target_staff_capacity: pendingStaffTarget,
       pending_target_language_capacity: pendingLanguageTarget,
     });
@@ -591,17 +599,17 @@ export default function BillingSettingsPage() {
         stripeAddonUsageTrusted={addonStripeUsageTrusted}
         dateLocale={intlLocaleTag(appLocale as AppLocale)}
         pendingExtraStaff={Math.max(
-          Number(salon?.pending_target_staff_capacity ?? 0) - Number(summary?.usage.planIncludesEmployees ?? 0),
+          safePendingTargetStaff - includedStaff,
           0,
         )}
         pendingExtraLanguages={Math.max(
-          Number(salon?.pending_target_language_capacity ?? 0) - Number(summary?.usage.planIncludesLanguages ?? 0),
+          safePendingTargetLanguages - includedLanguages,
           0,
         )}
-        activeTargetStaffCapacity={Number(salon?.active_target_staff_capacity ?? 0)}
-        activeTargetLanguageCapacity={Number(salon?.active_target_language_capacity ?? 0)}
-        pendingTargetStaffCapacity={Number(salon?.pending_target_staff_capacity ?? 0)}
-        pendingTargetLanguageCapacity={Number(salon?.pending_target_language_capacity ?? 0)}
+        activeTargetStaffCapacity={safeActiveTargetStaff}
+        activeTargetLanguageCapacity={safeActiveTargetLanguages}
+        pendingTargetStaffCapacity={safePendingTargetStaff}
+        pendingTargetLanguageCapacity={safePendingTargetLanguages}
         nextPeriodEndIso={salon?.current_period_end ?? null}
         onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
         onPreviewImmediate={hasSubscription ? handlePreviewImmediateAddon : undefined}
