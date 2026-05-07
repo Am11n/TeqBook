@@ -86,3 +86,11 @@ entrypoint = "./supabase/functions/billing-preview-plan-change/index.ts"
 [functions.billing-clear-pending-plan]
 verify_jwt = false
 entrypoint = "./supabase/functions/billing-clear-pending-plan/index.ts"
+
+[functions.billing-preview-immediate-addon-change]
+verify_jwt = false
+entrypoint = "./supabase/functions/billing-preview-immediate-addon-change/index.ts"
+
+[functions.billing-apply-immediate-addon-change]
+verify_jwt = false
+entrypoint = "./supabase/functions/billing-apply-immediate-addon-change/index.ts"
