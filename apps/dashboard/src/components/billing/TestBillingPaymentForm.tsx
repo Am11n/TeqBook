@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/utils/billing/stripe-utils";
+import { getStripePromise } from "@/lib/utils/billing/stripe-utils";
 
 interface TestBillingPaymentFormProps {
   clientSecret: string;
@@ -78,6 +78,8 @@ export function TestBillingPaymentForm({
   onSuccess,
   onCancel,
 }: TestBillingPaymentFormProps) {
+  const stripePromise = getStripePromise();
+
   return (
     <Card className="mt-4 p-6">
       <h2 className="text-lg font-semibold mb-4">Confirm Payment</h2>

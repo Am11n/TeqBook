@@ -106,6 +106,7 @@ export default function BillingSettingsPage() {
   const [smsUsageIsStale, setSmsUsageIsStale] = useState(false);
   const [smsUsageMessage, setSmsUsageMessage] = useState<string | null>(null);
   const smsLastGoodRef = useRef<{ windowKey: string; metrics: SmsUsageSummaryMetrics } | null>(null);
+  const smsFetchKeyRef = useRef<string | null>(null);
   const pendingSetupIntentIdRef = useRef<string | null>(null);
   const [showStripeInvoiceLines, setShowStripeInvoiceLines] = useState(false);
   const [pendingAddonSaving, setPendingAddonSaving] = useState(false);
@@ -430,6 +431,17 @@ export default function BillingSettingsPage() {
   }, [invoicePreview, stripePreviewDerived]);
 
   useEffect(() => {
+    const smsCopy = {
+      duplicateRows: t.billingSmsDuplicateRows,
+      usageError: t.billingSmsUsageError,
+      planDataError: t.billingSmsPlanDataError,
+      unavailable: t.billingSmsUnavailable,
+      staleLine: t.billingSmsStaleLine,
+    };
+    const requestKey = `${salon?.id ?? "none"}|${salon?.plan ?? "none"}|${salon?.current_period_end ?? "none"}`;
+    if (smsFetchKeyRef.current === requestKey) return;
+    smsFetchKeyRef.current = requestKey;
+
     const loadSmsUsage = async () => {
       if (!salon?.id) {
         setSmsBillingPackActive(false);
@@ -473,19 +485,19 @@ export default function BillingSettingsPage() {
 
       const detail =
         result.status === "duplicate_row"
-          ? t.billingSmsDuplicateRows
+          ? smsCopy.duplicateRows
           : result.usageError
-            ? applyTemplate(t.billingSmsUsageError, { detail: result.usageError })
+            ? applyTemplate(smsCopy.usageError, { detail: result.usageError })
             : result.featureError
-              ? applyTemplate(t.billingSmsPlanDataError, { detail: result.featureError })
-              : t.billingSmsUnavailable;
+              ? applyTemplate(smsCopy.planDataError, { detail: result.featureError })
+              : smsCopy.unavailable;
 
       if (smsLastGoodRef.current?.windowKey === windowKey) {
         setSmsUsage(smsLastGoodRef.current.metrics);
         setSmsUsageUiMode("ready");
         setSmsUsageIsStale(true);
         setSmsUsageMessage(
-          applyTemplate(t.billingSmsStaleLine, { detail }),
+          applyTemplate(smsCopy.staleLine, { detail }),
         );
       } else {
         setSmsUsage(null);
@@ -501,11 +513,7 @@ export default function BillingSettingsPage() {
     salon?.id,
     salon?.plan,
     salon?.current_period_end,
-    t.billingSmsDuplicateRows,
-    t.billingSmsUsageError,
-    t.billingSmsPlanDataError,
-    t.billingSmsUnavailable,
-    t.billingSmsStaleLine,
+    t,
   ]);
 
   if (loading) {

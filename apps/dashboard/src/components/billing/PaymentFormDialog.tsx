@@ -7,9 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { PaymentForm, type PaymentFormSuccessDetails } from "./PaymentForm";
-import { stripePromise, stripePublishableKey } from "@/lib/utils/billing/stripe-utils";
+import { getStripePromise, stripePublishableKey } from "@/lib/utils/billing/stripe-utils";
 
 interface PaymentFormDialogProps {
   open: boolean;
@@ -28,6 +29,14 @@ export function PaymentFormDialog({
   onSuccess,
   onCancel,
 }: PaymentFormDialogProps) {
+  const [stripePromise, setStripePromise] = useState<ReturnType<typeof getStripePromise>>(null);
+
+  useEffect(() => {
+    // Lazy init Stripe only when payment dialog is actually needed.
+    if (!open || !clientSecret) return;
+    setStripePromise(getStripePromise());
+  }, [open, clientSecret]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -48,7 +57,7 @@ export function PaymentFormDialog({
             Stripe publishable key is missing. Set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` for dashboard env.
           </p>
         )}
-        {clientSecret && stripePromise && (
+        {open && clientSecret && stripePromise && (
           <Elements
             stripe={stripePromise}
             options={{
