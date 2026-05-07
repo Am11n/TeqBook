@@ -155,7 +155,10 @@ export async function updateSubscriptionPlan(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-          "x-idempotency-key": `update-plan:${salonId}:${subscriptionId}:${newPlan}:${timing}`,
+          // Stripe rejects reused idempotency keys when subsequent requests differ in effective params.
+          // Plan updates can now include add-on item adjustments server-side, so reuse across
+          // downgrade/upgrade sequences may collide with "same key, different params".
+          "x-idempotency-key": `update-plan:${salonId}:${subscriptionId}:${newPlan}:${timing}:${Date.now()}`,
         },
         body: JSON.stringify({
           salon_id: salonId,

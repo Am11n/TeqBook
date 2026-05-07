@@ -247,8 +247,6 @@ export function AddonsCard({
             : String(upgradeRecommendation.nextPlanLanguages),
       })
     : null;
-  const atCapacityStaff = Boolean(usage && usage.employeesAllowed !== null && usage.employeesActive >= usage.employeesAllowed);
-  const atCapacityLanguages = Boolean(usage && usage.languagesAllowed !== null && usage.languagesActive >= usage.languagesAllowed);
   const startsNextPeriodText = applyTemplate(addonUi.startsNextPeriodLabel, { date: nextPeriodLabel });
 
   const currentDialogAddon = openDialog === "extra_staff" ? extraStaffAddon : extraLanguagesAddon;
@@ -416,11 +414,10 @@ export function AddonsCard({
             <Button
               type="button"
               onClick={() => openAddonDialog("extra_staff")}
-              disabled={actionLoading || atCapacityStaff}
+              disabled={actionLoading}
             >
               {addonUi.addStaffAction}
             </Button>
-            {atCapacityStaff ? <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.addMoreDisabledHint}</p> : null}
           </div>
         </div>
 
@@ -476,11 +473,10 @@ export function AddonsCard({
             <Button
               type="button"
               onClick={() => openAddonDialog("extra_languages")}
-              disabled={actionLoading || atCapacityLanguages}
+              disabled={actionLoading}
             >
               {addonUi.addLanguagesAction}
             </Button>
-            {atCapacityLanguages ? <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.addMoreDisabledHint}</p> : null}
           </div>
         </div>
         {!canImmediateActivate ? <p className="text-xs text-muted-foreground">{addonUi.noAccessHint}</p> : null}
