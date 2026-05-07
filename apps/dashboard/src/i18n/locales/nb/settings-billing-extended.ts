@@ -50,6 +50,14 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonUpgradeIncludes:
     "{plan} inkluderer opptil {employees} ansatte og {languages} språk før ekstra tillegg trengs.",
   billingAddonUpgradeCta: "Sammenlign planer",
+  billingAddonManagePlanGlobal: "Endre plan",
+  billingAddonActiveNowLabel: "Aktiv nå",
+  billingAddonStartsNextPeriodLabel: "Starter neste faktureringsperiode ({date})",
+  billingAddonScheduledLabel: "Neste periode",
+  billingAddonScheduledNone: "Ingen planlagte endringer.",
+  billingAddonAddMoreDisabledHint: "Oppgrader plan for å legge til flere.",
+  billingAddonAddStaffAction: "Legg til ekstra ansatte",
+  billingAddonAddLanguagesAction: "Legg til ekstra språk",
   billingAddonUsagePendingStripe:
     "Tilleggsfakturering synkroniseres fortsatt. Vi viser ikke dollartall før de stemmer med abonnementet, så du ikke får et villedende «neste faktura»-tall.",
   billingAddonImpactHiddenUntilSync:

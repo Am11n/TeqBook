@@ -208,6 +208,14 @@ export function AddonsCard({
         t.billingAddonUpgradeIncludes ??
         "{plan} includes up to {employees} staff and {languages} languages before extra add-ons.",
       upgradeCta: t.billingAddonUpgradeCta ?? "Compare plans",
+      managePlanGlobal: t.billingAddonManagePlanGlobal ?? "Manage plan",
+      activeNowLabel: t.billingAddonActiveNowLabel ?? "Active now",
+      startsNextPeriodLabel: t.billingAddonStartsNextPeriodLabel ?? "Starts next billing period ({date})",
+      scheduledLabel: t.billingAddonScheduledLabel ?? "Scheduled",
+      scheduledNone: t.billingAddonScheduledNone ?? "No scheduled changes.",
+      addMoreDisabledHint: t.billingAddonAddMoreDisabledHint ?? "Upgrade plan to add more",
+      addStaffAction: t.billingAddonAddStaffAction ?? "Add extra staff",
+      addLanguagesAction: t.billingAddonAddLanguagesAction ?? "Add extra language",
     }),
     [t],
   );
@@ -239,6 +247,9 @@ export function AddonsCard({
             : String(upgradeRecommendation.nextPlanLanguages),
       })
     : null;
+  const atCapacityStaff = Boolean(usage && usage.employeesAllowed !== null && usage.employeesActive >= usage.employeesAllowed);
+  const atCapacityLanguages = Boolean(usage && usage.languagesAllowed !== null && usage.languagesActive >= usage.languagesAllowed);
+  const startsNextPeriodText = applyTemplate(addonUi.startsNextPeriodLabel, { date: nextPeriodLabel });
 
   const currentDialogAddon = openDialog === "extra_staff" ? extraStaffAddon : extraLanguagesAddon;
   const currentDialogPending = openDialog === "extra_staff" ? pendingExtraStaff : pendingExtraLanguages;
@@ -320,8 +331,21 @@ export function AddonsCard({
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-2">{t.billingAddonsTitle}</h3>
-      <p className="text-sm text-muted-foreground mb-4">{t.billingAddonsDescription}</p>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 className="text-lg font-semibold mb-1">{t.billingAddonsTitle}</h3>
+          <p className="text-sm text-muted-foreground">{t.billingAddonsDescription}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onManagePlan?.()}
+          disabled={actionLoading || !onManagePlan}
+        >
+          {addonUi.managePlanGlobal}
+        </Button>
+      </div>
 
       {upgradeRecommendation ? (
         <div className="rounded-lg border border-sky-200 bg-sky-50 dark:bg-sky-950/20 dark:border-sky-900 p-4 mb-6 space-y-2">
@@ -335,62 +359,6 @@ export function AddonsCard({
         </div>
       ) : null}
 
-      <div className="rounded-lg border bg-muted/20 p-4 mb-6 space-y-2">
-        <h4 className="text-sm font-semibold">{t.billingActiveCapacityTitle}</h4>
-        <p className="text-xs text-muted-foreground">{t.billingActiveCapacityIntro}</p>
-      </div>
-
-      <div className="rounded-lg border p-4 mb-6 space-y-3">
-        <div>
-          <h4 className="text-sm font-semibold">{t.billingPlannedFromNextPeriodTitle}</h4>
-          <p className="text-xs text-muted-foreground mt-1">
-            {applyTemplate(t.billingPlannedFromNextPeriodIntro, { date: nextPeriodLabel })}
-          </p>
-        </div>
-        {pendingExtraStaff === 0 && pendingExtraLanguages === 0 ? (
-          <p className="text-sm text-muted-foreground">{t.billingPlannedNone}</p>
-        ) : (
-          <ul className="text-sm list-disc pl-5 space-y-1">
-            {pendingExtraStaff > 0 ? (
-              <li>
-                {applyTemplate(t.billingAddonExtraPaidLineStaff, {
-                  count: String(pendingExtraStaff),
-                  price: extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback,
-                })}
-              </li>
-            ) : null}
-            {pendingExtraLanguages > 0 ? (
-              <li>
-                {applyTemplate(t.billingAddonExtraPaidLineLang, {
-                  count: String(pendingExtraLanguages),
-                  price: extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback,
-                })}
-              </li>
-            ) : null}
-          </ul>
-        )}
-        {onSavePending ? (
-          <div className="space-y-3 pt-2 border-t">
-            <p className="text-xs text-muted-foreground">{t.billingPendingSectionHint}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" onClick={() => openAddonDialog("extra_staff")} disabled={actionLoading}>
-                {addonUi.ctaStaff}
-              </Button>
-              <Button type="button" size="sm" onClick={() => openAddonDialog("extra_languages")} disabled={actionLoading}>
-                {addonUi.ctaLanguages}
-              </Button>
-            </div>
-            {!canImmediateActivate ? <p className="text-xs text-muted-foreground">{addonUi.noAccessHint}</p> : null}
-            {pendingCapped ? (
-              <p className="text-xs text-amber-800 dark:text-amber-200">{t.billingPendingCappedHint}</p>
-            ) : null}
-            {immediateReconcilePending ? (
-              <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.updatingBilling}</p>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
       {!stripeAddonUsageTrusted && t.billingAddonUsagePendingStripe ? (
         <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 mb-4">
           {t.billingAddonUsagePendingStripe}
@@ -398,19 +366,18 @@ export function AddonsCard({
       ) : null}
 
       <div className="space-y-3">
-        <div className={cn("border rounded-lg p-4", extraStaffAddon?.active && "border-l-4 border-l-green-500")}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-medium">
-                  {extraStaffAddon?.name ?? t.billingAddonExtraStaffFallbackName}
-                </h4>
-                {(extraStaffAddon?.quantity ?? 0) > 0 && (
-                  <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                    {t.billingStateActive}
-                  </Badge>
-                )}
-              </div>
+        <div className={cn("border rounded-lg p-4 space-y-4", extraStaffAddon?.active && "border-l-4 border-l-green-500")}>
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium">{extraStaffAddon?.name ?? t.billingAddonExtraStaffFallbackName}</h4>
+            {(extraStaffAddon?.quantity ?? 0) > 0 ? (
+              <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                {t.billingStateActive}
+              </Badge>
+            ) : null}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border p-3">
+              <p className="text-xs font-medium mb-2">{addonUi.activeNowLabel}</p>
               <div className="grid gap-2 sm:grid-cols-3 text-sm">
                 <div>
                   <div className="text-xs text-muted-foreground">{t.billingAddonBlockPlanIncludes}</div>
@@ -425,36 +392,52 @@ export function AddonsCard({
                   <div className="font-medium tabular-nums">{staffExtraLine}</div>
                 </div>
               </div>
-              {staffPressure ? (
-                <p className="text-xs text-amber-800 dark:text-amber-200">{staffPressure}</p>
-              ) : null}
               {stripeAddonUsageTrusted ? (
-                <p className="text-sm font-medium">{staffImpactLine}</p>
+                <p className="text-sm font-medium mt-2">{staffImpactLine}</p>
               ) : (
-                <p className="text-sm text-muted-foreground">{t.billingAddonImpactHiddenUntilSync}</p>
+                <p className="text-sm text-muted-foreground mt-2">{t.billingAddonImpactHiddenUntilSync}</p>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
-              {t.billingAddonManagePlan}
+            <div className="rounded-md border p-3">
+              <p className="text-xs font-medium mb-1">{addonUi.scheduledLabel}</p>
+              <p className="text-xs text-muted-foreground mb-2">{startsNextPeriodText}</p>
+              <p className="text-sm font-medium">
+                {pendingExtraStaff > 0
+                  ? applyTemplate(t.billingAddonExtraPaidLineStaff, {
+                      count: String(pendingExtraStaff),
+                      price: extraStaffAddon?.price ?? t.billingAddonStaffPriceFallback,
+                    })
+                  : addonUi.scheduledNone}
+              </p>
+            </div>
+          </div>
+          {staffPressure ? <p className="text-xs text-amber-800 dark:text-amber-200">{staffPressure}</p> : null}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => openAddonDialog("extra_staff")}
+              disabled={actionLoading || atCapacityStaff}
+            >
+              {addonUi.addStaffAction}
             </Button>
+            {atCapacityStaff ? <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.addMoreDisabledHint}</p> : null}
           </div>
         </div>
 
         <div
-          className={cn("border rounded-lg p-4", extraLanguagesAddon?.active && "border-l-4 border-l-green-500")}
+          className={cn("border rounded-lg p-4 space-y-4", extraLanguagesAddon?.active && "border-l-4 border-l-green-500")}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-medium">
-                  {extraLanguagesAddon?.name ?? t.billingAddonExtraLanguagesFallbackName}
-                </h4>
-                {(extraLanguagesAddon?.quantity ?? 0) > 0 && (
-                  <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                    {t.billingStateActive}
-                  </Badge>
-                )}
-              </div>
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium">{extraLanguagesAddon?.name ?? t.billingAddonExtraLanguagesFallbackName}</h4>
+            {(extraLanguagesAddon?.quantity ?? 0) > 0 ? (
+              <Badge className="text-xs bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                {t.billingStateActive}
+              </Badge>
+            ) : null}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border p-3">
+              <p className="text-xs font-medium mb-2">{addonUi.activeNowLabel}</p>
               <div className="grid gap-2 sm:grid-cols-3 text-sm">
                 <div>
                   <div className="text-xs text-muted-foreground">{t.billingAddonBlockPlanIncludes}</div>
@@ -469,20 +452,44 @@ export function AddonsCard({
                   <div className="font-medium tabular-nums">{langExtraLine}</div>
                 </div>
               </div>
-              {langPressure ? (
-                <p className="text-xs text-amber-800 dark:text-amber-200">{langPressure}</p>
-              ) : null}
               {stripeAddonUsageTrusted ? (
-                <p className="text-sm font-medium">{langImpactLine}</p>
+                <p className="text-sm font-medium mt-2">{langImpactLine}</p>
               ) : (
-                <p className="text-sm text-muted-foreground">{t.billingAddonImpactHiddenUntilSync}</p>
+                <p className="text-sm text-muted-foreground mt-2">{t.billingAddonImpactHiddenUntilSync}</p>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={onManagePlan} disabled={actionLoading}>
-              {t.billingAddonReviewLanguages}
+            <div className="rounded-md border p-3">
+              <p className="text-xs font-medium mb-1">{addonUi.scheduledLabel}</p>
+              <p className="text-xs text-muted-foreground mb-2">{startsNextPeriodText}</p>
+              <p className="text-sm font-medium">
+                {pendingExtraLanguages > 0
+                  ? applyTemplate(t.billingAddonExtraPaidLineLang, {
+                      count: String(pendingExtraLanguages),
+                      price: extraLanguagesAddon?.price ?? t.billingAddonLanguagePriceFallback,
+                    })
+                  : addonUi.scheduledNone}
+              </p>
+            </div>
+          </div>
+          {langPressure ? <p className="text-xs text-amber-800 dark:text-amber-200">{langPressure}</p> : null}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => openAddonDialog("extra_languages")}
+              disabled={actionLoading || atCapacityLanguages}
+            >
+              {addonUi.addLanguagesAction}
             </Button>
+            {atCapacityLanguages ? <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.addMoreDisabledHint}</p> : null}
           </div>
         </div>
+        {!canImmediateActivate ? <p className="text-xs text-muted-foreground">{addonUi.noAccessHint}</p> : null}
+        {pendingCapped ? (
+          <p className="text-xs text-amber-800 dark:text-amber-200">{t.billingPendingCappedHint}</p>
+        ) : null}
+        {immediateReconcilePending ? (
+          <p className="text-xs text-amber-800 dark:text-amber-200">{addonUi.updatingBilling}</p>
+        ) : null}
         {stripeAddonUsageTrusted && t.billingAddonPaidThisCycleHint ? (
           <p className="text-xs text-muted-foreground rounded-md border border-dashed bg-muted/10 p-3">
             {t.billingAddonPaidThisCycleHint}

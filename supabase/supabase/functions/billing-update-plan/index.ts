@@ -4,7 +4,8 @@
 // Updates a Stripe subscription plan for a salon.
 //
 // Plan price change: proration_behavior "always_invoice" when active/trialing (upgrades invoice immediately).
-// Paid add-on lines are NOT updated in Stripe here — targets go to `salons.pending_target_*` for next boundary apply.
+// For immediate changes, Stripe add-on lines are also aligned to usage-derived quantities so stale add-ons
+// from lower plans do not continue billing after upgrade.
 //
 // Usage:
 // POST /functions/v1/billing-update-plan
@@ -26,7 +27,10 @@ import {
 } from "../_shared/billing.ts";
 import { authorizeSalonAccess } from "../_shared/auth.ts";
 import { validateBillingBinding } from "../_shared/billing-binding.ts";
-import { getPlanSubscriptionItem } from "../_shared/billing-plan-subscription-items.ts";
+import {
+  collectAddonSubscriptionItemUpdates,
+  getPlanSubscriptionItem,
+} from "../_shared/billing-plan-subscription-items.ts";
 
 // Inline authentication function (no shared folder needed)
 async function authenticateRequest(
@@ -473,10 +477,17 @@ serve(async (req) => {
 
     let updatedSubscription: Stripe.Subscription = subscription;
 
+    const addonItemUpdates = collectAddonSubscriptionItemUpdates(
+      subscription,
+      priceConfig,
+      extraStaffQty,
+      extraLanguagesQty,
+    );
+
     try {
       if (planPriceChanged) {
         const planParams: Stripe.SubscriptionUpdateParams = {
-          items: [{ id: planItem.id, price: newPriceId }],
+          items: [{ id: planItem.id, price: newPriceId }, ...addonItemUpdates],
           metadata: {
             ...subscription.metadata,
             plan: body.new_plan,
@@ -494,6 +505,7 @@ serve(async (req) => {
         updatedSubscription = await stripe.subscriptions.update(
           body.subscription_id,
           {
+            items: addonItemUpdates.length > 0 ? addonItemUpdates : undefined,
             metadata: {
               ...subscription.metadata,
               plan: body.new_plan,
@@ -537,7 +549,7 @@ serve(async (req) => {
     });
 
     // Update salon with new plan using service role key (included limits apply immediately in DB).
-    // Paid add-on Stripe lines follow `pending_target_*` at the next billing boundary only.
+    // We still persist pending targets so next boundary stays aligned with usage-derived expectations.
     const { error: updateError } = await supabase
       .from("salons")
       .update({

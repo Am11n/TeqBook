@@ -51,6 +51,14 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonUpgradeIncludes:
     "{plan} includes up to {employees} staff and {languages} languages before extra add-ons.",
   billingAddonUpgradeCta: "Compare plans",
+  billingAddonManagePlanGlobal: "Change plan",
+  billingAddonActiveNowLabel: "Active now",
+  billingAddonStartsNextPeriodLabel: "Starts next billing period ({date})",
+  billingAddonScheduledLabel: "Next period",
+  billingAddonScheduledNone: "No scheduled changes.",
+  billingAddonAddMoreDisabledHint: "Upgrade plan to add more.",
+  billingAddonAddStaffAction: "Add extra staff",
+  billingAddonAddLanguagesAction: "Add extra language",
   billingAddonUsagePendingStripe:
     "Add-on billing is still syncing. Dollar amounts stay hidden until they match your subscription so we do not show a misleading “next invoice” number.",
   billingAddonImpactHiddenUntilSync:

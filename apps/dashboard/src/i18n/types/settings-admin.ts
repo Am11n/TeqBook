@@ -338,6 +338,14 @@ export type SettingsMessages = {
   billingAddonUpgradeSavings?: string;
   billingAddonUpgradeIncludes?: string;
   billingAddonUpgradeCta?: string;
+  billingAddonManagePlanGlobal?: string;
+  billingAddonActiveNowLabel?: string;
+  billingAddonStartsNextPeriodLabel?: string;
+  billingAddonScheduledLabel?: string;
+  billingAddonScheduledNone?: string;
+  billingAddonAddMoreDisabledHint?: string;
+  billingAddonAddStaffAction?: string;
+  billingAddonAddLanguagesAction?: string;
   billingAddonUsagePendingStripe?: string;
   billingAddonImpactHiddenUntilSync?: string;
   billingAddonBlockPlanIncludes?: string;
