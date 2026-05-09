@@ -296,6 +296,9 @@ export type SettingsMessages = {
   // Billing — add-ons card
   billingAddonsTitle?: string;
   billingAddonsDescription?: string;
+  /** Shown instead of staff/language add-on controls on the Business plan (unlimited included). */
+  billingAddonsBusinessTitle?: string;
+  billingAddonsBusinessBody?: string;
   billingAddonExtraStaffFallbackName?: string;
   billingAddonExtraLanguagesFallbackName?: string;
   billingUnlimited?: string;

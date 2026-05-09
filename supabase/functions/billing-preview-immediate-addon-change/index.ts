@@ -103,6 +103,12 @@ serve(async (req) => {
     }
 
     const plan = String(salon.plan);
+    if (plan === "business") {
+      return new Response(JSON.stringify({ mode: "degraded", reason: "addons_not_applicable_business" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const capped = capStarterAddonQuantities(plan, {
       extra_staff: addonType === "extra_staff" ? rawQty : 0,
       extra_languages: addonType === "extra_languages" ? rawQty : 0,

@@ -54,6 +54,9 @@ export async function tryAutoBumpLanguagePending(
   if (!salonRow.billing_subscription_id) {
     return { ok: false, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
   }
+  if (plan === "business") {
+    return { ok: true, increased: false, notice: null };
+  }
 
   const { data: addon, error: aErr } = await addonsRepo.getAddonByType(salonId, "extra_languages");
   if (aErr) {
@@ -115,6 +118,9 @@ export async function tryAutoBumpStaffPending(
   }
   if (!salonRow.billing_subscription_id) {
     return { ok: false, error: tb("ADDON_USAGE_REQUIRES_UPGRADE"), limitReached: true };
+  }
+  if (plan === "business") {
+    return { ok: true, increased: false, notice: null };
   }
 
   const { data: addon, error: aErr } = await addonsRepo.getAddonByType(salonId, "extra_staff");

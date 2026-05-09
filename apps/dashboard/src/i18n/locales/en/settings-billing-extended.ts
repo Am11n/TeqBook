@@ -5,6 +5,9 @@ export const settingsBillingExtended: Partial<TranslationNamespaces["settings"]>
   billingAddonsTitle: "Add-on impact",
   billingAddonsDescription:
     "Extra staff and languages: usage is limited to what is already paid this period. You can schedule more for the next billing period; new add-on charges start then, not mid-cycle (Model A).",
+  billingAddonsBusinessTitle: "Staff and languages included",
+  billingAddonsBusinessBody:
+    "The Business plan already includes unlimited active staff and booking languages. Purchasable staff and language add-ons do not apply — use Manage plan if you want to change your subscription.",
   billingAddonExtraStaffFallbackName: "Extra staff members",
   billingAddonExtraLanguagesFallbackName: "Extra languages",
   billingUnlimited: "Unlimited",

@@ -603,37 +603,57 @@ export default function BillingSettingsPage() {
         <p className="text-sm text-muted-foreground max-w-2xl">{t.billingAutoRenewFootnote}</p>
       ) : null}
 
-      <AddonsCard
-        stripeAddonUsageTrusted={addonStripeUsageTrusted}
-        dateLocale={intlLocaleTag(appLocale as AppLocale)}
-        pendingExtraStaff={Math.max(
-          safePendingTargetStaff - includedStaff,
-          0,
-        )}
-        pendingExtraLanguages={Math.max(
-          safePendingTargetLanguages - includedLanguages,
-          0,
-        )}
-        activeTargetStaffCapacity={safeActiveTargetStaff}
-        activeTargetLanguageCapacity={safeActiveTargetLanguages}
-        pendingTargetStaffCapacity={safePendingTargetStaff}
-        pendingTargetLanguageCapacity={safePendingTargetLanguages}
-        nextPeriodEndIso={salon?.current_period_end ?? null}
-        onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
-        onPreviewImmediate={hasSubscription ? handlePreviewImmediateAddon : undefined}
-        onApplyImmediate={hasSubscription ? handleApplyImmediateAddon : undefined}
-        pendingSaving={pendingAddonSaving}
-        pendingCapped={pendingCapped}
-        immediateMutationLoading={immediateAddonSaving}
-        immediateReconcilePending={immediateAddonReconciling}
-        canImmediateActivate={Boolean(canUseImmediateAddon)}
-        upgradeRecommendation={upgradeRecommendation}
-        addons={addonDisplay}
-        usage={summary?.usage ?? null}
-        actionLoading={actionLoading}
-        onManagePlan={() => setShowPlanDialog(true)}
-        t={t}
-      />
+      {currentPlan === "business" ? (
+        <Card className="p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold mb-1">{t.billingAddonsBusinessTitle}</h3>
+              <p className="text-sm text-muted-foreground">{t.billingAddonsBusinessBody}</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPlanDialog(true)}
+              disabled={actionLoading}
+            >
+              {t.billingAddonManagePlanGlobal}
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <AddonsCard
+          stripeAddonUsageTrusted={addonStripeUsageTrusted}
+          dateLocale={intlLocaleTag(appLocale as AppLocale)}
+          pendingExtraStaff={Math.max(
+            safePendingTargetStaff - includedStaff,
+            0,
+          )}
+          pendingExtraLanguages={Math.max(
+            safePendingTargetLanguages - includedLanguages,
+            0,
+          )}
+          activeTargetStaffCapacity={safeActiveTargetStaff}
+          activeTargetLanguageCapacity={safeActiveTargetLanguages}
+          pendingTargetStaffCapacity={safePendingTargetStaff}
+          pendingTargetLanguageCapacity={safePendingTargetLanguages}
+          nextPeriodEndIso={salon?.current_period_end ?? null}
+          onSavePending={hasSubscription ? handleSavePendingAddons : undefined}
+          onPreviewImmediate={hasSubscription ? handlePreviewImmediateAddon : undefined}
+          onApplyImmediate={hasSubscription ? handleApplyImmediateAddon : undefined}
+          pendingSaving={pendingAddonSaving}
+          pendingCapped={pendingCapped}
+          immediateMutationLoading={immediateAddonSaving}
+          immediateReconcilePending={immediateAddonReconciling}
+          canImmediateActivate={Boolean(canUseImmediateAddon)}
+          upgradeRecommendation={upgradeRecommendation}
+          addons={addonDisplay}
+          usage={summary?.usage ?? null}
+          actionLoading={actionLoading}
+          onManagePlan={() => setShowPlanDialog(true)}
+          t={t}
+        />
+      )}
 
       {smsBillingPackActive ? (
       <Card className="p-6">

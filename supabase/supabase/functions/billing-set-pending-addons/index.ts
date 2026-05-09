@@ -140,6 +140,15 @@ serve(async (req) => {
     }
 
     const plan = salon.plan as "starter" | "pro" | "business";
+    if (plan === "business") {
+      return new Response(
+        JSON.stringify({
+          error: "Staff and language add-ons do not apply on the Business plan.",
+          code: "addons_not_applicable_business",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     const includedStaff = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
     const includedLanguages = plan === "starter" ? 2 : plan === "pro" ? 5 : 0;
 

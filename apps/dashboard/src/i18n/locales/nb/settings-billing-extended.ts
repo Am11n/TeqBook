@@ -4,6 +4,9 @@ export const settingsBillingExtendedNb: Partial<TranslationNamespaces["settings"
   billingAddonsTitle: "Tilleggskostnader",
   billingAddonsDescription:
     "Ekstra ansatte og språk: bruk er begrenset til det som allerede er betalt i inneværende periode. Du kan planlegge flere fra neste faktureringsdato; nye tillegg starter da — ikke midt i perioden (Modell A).",
+  billingAddonsBusinessTitle: "Ansatte og språk inkludert",
+  billingAddonsBusinessBody:
+    "Business-planen inkluderer allerede ubegrenset antall aktive ansatte og booking-språk. Kjøpbare tillegg for ansatte og språk gjelder ikke — bruk «Administrer plan» hvis du vil endre abonnementet.",
   billingAddonExtraStaffFallbackName: "Ekstra ansatte",
   billingAddonExtraLanguagesFallbackName: "Ekstra språk",
   billingUnlimited: "Ubegrenset",
