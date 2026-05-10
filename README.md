@@ -140,6 +140,8 @@ TeqBook offers three pricing tiers:
 - **Pro** ($50/month) – Starter + shifts, advanced reports, inventory, branding
 - **Business** ($75/month) – Pro + roles & access control, exports, customer history
 
+**Capacity:** Starter and Pro include fixed staff and booking-language counts and may purchase **extra staff / extra language** Stripe add-ons. **Business** includes unlimited active staff and booking languages; those purchasable add-ons do not apply (dashboard billing reflects this).
+
 Features are controlled via a plan-based feature flag system. For detailed billing documentation, see [`docs/backend/billing-and-plans.md`](docs/backend/billing-and-plans.md).
 
 ---
@@ -306,6 +308,6 @@ This project is licensed under the terms described in `LICENSE` at the repositor
 
 ---
 
-**Last Updated:** 2026-02-03  
+**Last Updated:** 2026-05-09  
 **Version:** 2.1  
 **Status:** Production Ready (Phase 3 Security Hardening Complete). Monorepo: 3 apps (Public, Dashboard, Admin) + shared packages (`@teqbook/ui`, `@teqbook/shared`).
