@@ -45,6 +45,7 @@ export type SignUpMessages = {
   passwordHint: string;
   termsAgreement: string;
   secureLoginLine: string;
+  emailAlreadyRegistered: string;
 };
 
 export type OnboardingMessages = {

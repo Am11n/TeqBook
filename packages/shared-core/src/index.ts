@@ -71,3 +71,8 @@ export {
   type AddonUsageStatus,
   type InvariantEvalResult,
 } from "./billing/invariant-eval";
+
+export {
+  SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR,
+  isSignUpEmailAlreadyRegistered,
+} from "./auth/signup-email-already-registered";

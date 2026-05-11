@@ -48,7 +48,9 @@ signup: {
     passwordHint: "至少使用 8 个字符。您可以稍后更改此设置。",
     termsAgreement: "我同意条款和隐私政策。",
     secureLoginLine: "安全登录。您的密码永远不会以明文形式存储。",
-   },
+    emailAlreadyRegistered:
+      "该邮箱已被注册。如已有账户，请登录。",
+  },
 onboarding: {
     title: "创建你的第一个沙龙",
     description:

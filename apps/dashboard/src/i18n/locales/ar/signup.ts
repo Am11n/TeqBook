@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement: "أوافق على الشروط وسياسة الخصوصية.",
     title: "إنشاء حساب",
     trustLine: "موثوق به من قبل الصالونات التي تريد جدولة بسيطة ونظيفة – وليس برنامجًا منتفخًا.",
+    emailAlreadyRegistered:
+      "هذا البريد الإلكتروني مسجّل مسبقًا. سجّل الدخول إن كان لديك حسابًا.",
   };

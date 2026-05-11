@@ -48,6 +48,8 @@ signup: {
     passwordHint: "Use at least 8 characters. You can change this later.",
     termsAgreement: "I agree to the Terms and Privacy Policy.",
     secureLoginLine: "Secure login. Your password is never stored in plain text.",
+    emailAlreadyRegistered:
+      "This email is already registered. Log in if you already have an account.",
   },
 onboarding: {
     title: "Create your first salon",

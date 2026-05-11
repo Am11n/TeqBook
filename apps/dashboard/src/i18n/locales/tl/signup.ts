@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement:
       "Sumasang-ayon ako sa Mga Tuntunin (Terms) at Patakaran sa Privacy.",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
-   };
+    emailAlreadyRegistered:
+      "Naka-register na ang email na ito. Mag-log in kung mayroon ka nang account.",
+  };

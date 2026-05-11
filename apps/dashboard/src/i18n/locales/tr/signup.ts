@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     passwordHint: "En az 8 karakter kullanın. Bunu daha sonra değiştirebilirsiniz.",
     termsAgreement: "Şartları ve Gizlilik Politikasını kabul ediyorum.",
     secureLoginLine: "Güvenli giriş. Şifreniz asla düz metin olarak saklanmaz.",
-   };
+    emailAlreadyRegistered:
+      "Bu e-posta adresi zaten kayıtlı. Hesabınız varsa giriş yapın.",
+  };

@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "Isticmaal ugu yaraan 8 xaraf. Waxaad beddeli kartaa tan marka dambe.",
     termsAgreement: "Waxaan aqbalayaa shuruudaha iyo siyaasadda qarsoonaanta.",
     secureLoginLine: "Soo gal amaan ah. Password-kaaga marna ma lagu keydin qoraal cad.",
+    emailAlreadyRegistered:
+      "Iimaylkani horay ayaa loo diiwaangeliyey. Haddii aad haysato koonto, fadlan gal.",
 };

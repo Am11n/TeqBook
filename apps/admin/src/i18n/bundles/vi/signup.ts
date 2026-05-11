@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "Sử dụng ít nhất 8 ký tự. Bạn có thể thay đổi điều này sau.",
     termsAgreement: "Tôi đồng ý với Điều khoản và Chính sách bảo mật.",
     secureLoginLine: "Đăng nhập an toàn. Mật khẩu của bạn không bao giờ được lưu dưới dạng văn bản thuần túy.",
+    emailAlreadyRegistered:
+      "Email này đã được đăng ký. Hãy đăng nhập nếu bạn đã có tài khoản.",
 };

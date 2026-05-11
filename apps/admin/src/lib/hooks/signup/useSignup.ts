@@ -3,11 +3,13 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/services/auth-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { validatePassword } from "@/lib/utils/signup/signup-utils";
+import { SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR } from "@teqbook/shared-core";
 
 interface UseSignupOptions {
   locale: string;
   translations: {
     passwordMismatch: string;
+    emailAlreadyRegistered: string;
   };
 }
 
@@ -67,7 +69,11 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
       const { data: signUpData, error: signUpError } = await signUp(email, password);
 
       if (signUpError || !signUpData?.user) {
-        setError(signUpError || "Failed to create account");
+        const message =
+          signUpError === SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR
+            ? translations.emailAlreadyRegistered
+            : signUpError || "Failed to create account";
+        setError(message);
         setStatus("error");
         return;
       }

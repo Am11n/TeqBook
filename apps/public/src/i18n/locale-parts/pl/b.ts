@@ -48,7 +48,9 @@ signup: {
     passwordHint: "Użyj co najmniej 8 znaków. Możesz to zmienić później.",
     termsAgreement: "Akceptuję Warunki i Politykę prywatności.",
     secureLoginLine: "Bezpieczne logowanie. Twoje hasło nigdy nie jest przechowywane w postaci zwykłego tekstu.",
-   },
+    emailAlreadyRegistered:
+      "Ten adres e-mail jest już zarejestrowany. Zaloguj się, jeśli masz już konto.",
+  },
 onboarding: {
     title: "Utwórz swój pierwszy salon",
     description:

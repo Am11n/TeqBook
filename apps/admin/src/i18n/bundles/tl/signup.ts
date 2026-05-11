@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "Gumamit ng hindi bababa sa 8 na karakter. Maaari mong baguhin ito mamaya.",
     termsAgreement: "Sumasang-ayon ako sa Terms at Privacy Policy.",
     secureLoginLine: "Secure na login. Ang password mo ay hindi kailanman naka-store bilang plain text.",
+    emailAlreadyRegistered:
+      "Naka-register na ang email na ito. Mag-log in kung mayroon ka nang account.",
 };

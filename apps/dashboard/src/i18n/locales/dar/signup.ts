@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement: "من با شرایط استفاده و حریم خصوصی موافقم.",
     title: "ایجاد حساب",
     trustLine: "مورد اعتماد سالون‌هایی که زمان‌بندی ساده و تمیز می‌خواهند، نه نرم‌افزار سنگین.",
+    emailAlreadyRegistered:
+      "این ایمیل قبلاً ثبت شده است. اگر حساب دارید، وارد شوید.",
   };

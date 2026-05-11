@@ -1,5 +1,9 @@
 import { supabase } from "@/lib/supabase-client";
 import type { User } from "@supabase/supabase-js";
+import {
+  isSignUpEmailAlreadyRegistered,
+  SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR,
+} from "@teqbook/shared-core";
 import { logSecurity, logError } from "@/lib/services/logger";
 import { logAuthEvent, logSecurityEvent } from "@/lib/services/audit-log-service";
 import { clearErrorContext } from "@/lib/services/error-tracking-service";
@@ -86,7 +90,15 @@ export async function signUp(
         data: { first_name: options?.firstName || null, last_name: options?.lastName || null },
       },
     });
-    if (error) return { data: null, error: error.message };
+    if (error) {
+      if (isSignUpEmailAlreadyRegistered(error, data.user)) {
+        return { data: null, error: SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR };
+      }
+      return { data: null, error: error.message };
+    }
+    if (isSignUpEmailAlreadyRegistered(null, data.user)) {
+      return { data: null, error: SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR };
+    }
     return { data: { user: data.user }, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : "Unknown error" };

@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "Bruk minst 8 tegn. Du kan endre dette senere.",
     termsAgreement: "Jeg godtar vilkårene og personvernreglene.",
     secureLoginLine: "Sikker innlogging. Passordet ditt lagres aldri i ren tekst.",
+    emailAlreadyRegistered:
+      "Denne e-postadressen er allerede registrert. Logg inn hvis du allerede har en konto.",
 };

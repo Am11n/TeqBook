@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "እንተወሰነ 8 ፊደላት ተጠቐም። እዚ ድሕሪኡ ክትቀይሮ ትኽእል።",
     termsAgreement: "ነቲ ሸርሕታትን ፖሊሲ ምስጢርን እተቀበልኩ።",
     secureLoginLine: "ኣረጋዊ መግቢ። ፓስዎርድኩም ብጽሑፍ ኣይትከሓን።",
+    emailAlreadyRegistered:
+      "እዚ ኢመይል ቅድሚ ሕጂ ተመዝጊቡ። ኣካውንት ከለካ ብምእታው እተገብሩ።",
 };

@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement: "Waxaan aqbalayaa shuruudaha iyo siyaasadda qarsoonaanta.",
     title: "Samee akoon",
     trustLine: "Loo aaminsan yahay saloonnada doonaya inay helaan ballansasho fudud oo nadiif ah – maaha software weyn.",
+    emailAlreadyRegistered:
+      "Iimaylkani horay ayaa loo diiwaangeliyey. Haddii aad haysato koonto, fadlan gal.",
   };

@@ -4,6 +4,7 @@ import { signUp } from "@/lib/services/auth-service";
 import { updateProfile } from "@/lib/services/profiles-service";
 import { validatePassword } from "@/lib/utils/signup/signup-utils";
 import { buildPublicAuthRedirect } from "@/lib/utils/auth-redirect";
+import { SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR } from "@teqbook/shared-core";
 
 interface UseSignupOptions {
   locale: string;
@@ -13,6 +14,7 @@ interface UseSignupOptions {
     lastNameRequired: string;
     termsRequired: string;
     confirmationSent: string;
+    emailAlreadyRegistered: string;
   };
 }
 
@@ -82,7 +84,11 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
       });
 
       if (signUpError || !signUpData?.user) {
-        setError(signUpError || "Failed to create account");
+        const message =
+          signUpError === SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR
+            ? translations.emailAlreadyRegistered
+            : signUpError || "Failed to create account";
+        setError(message);
         setStatus("error");
         return;
       }

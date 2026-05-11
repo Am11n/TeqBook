@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "ቢያንስ 8 ቁምፊዎችን ይጠቀሙ። ይህንን በኋላ ማስተካከል ይችላሉ።",
     termsAgreement: "ውሎችን እና የግላዊነት ፖሊሲውን እቀበላለሁ።",
     secureLoginLine: "አረጋዊ መግባት። የይለፍ ቃልዎ በግልጽ ጽሑፍ ተቀምጧል።",
+    emailAlreadyRegistered:
+      "ይህ ኢሜይል አስቀድሞ ተመዝግቧል። መለያ ካለዎት እባክዎ ይግቡ።",
 };

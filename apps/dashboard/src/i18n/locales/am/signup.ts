@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement: "ውሎችን እና የግላዊነት ፖሊሲውን እቀበላለሁ።",
     title: "መለያ ፍጠር",
     trustLine: "ቀላል፣ ንጹር የጊዜ ሰሌዳ የሚፈልጉ ሳሎኖች ይታመኑበታል – አይደለም የተጨናነቀ ሶፍትዌር።",
+    emailAlreadyRegistered:
+      "ይህ ኢሜይል አስቀድሞ ተመዝግቧል። መለያ ካለዎት እባክዎ ይግቡ።",
   };

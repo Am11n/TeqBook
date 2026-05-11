@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     passwordHint: "کم از کم 8 حروف استعمال کریں۔ آپ بعد میں اسے تبدیل کر سکتے ہیں۔",
     termsAgreement: "میں شرائط اور پرائیویسی پالیسی سے متفق ہوں۔",
     secureLoginLine: "محفوظ لاگ ان۔ آپ کا پاس ورڈ کبھی بھی سادہ متن کے طور پر محفوظ نہیں کیا جاتا۔",
-   };
+    emailAlreadyRegistered:
+      "یہ ای میل پہلے سے رجسٹر ہے۔ اگر آپ کا اکاؤنٹ ہے تو لاگ ان کریں۔",
+  };

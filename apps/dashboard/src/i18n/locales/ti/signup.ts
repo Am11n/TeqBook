@@ -22,4 +22,6 @@ export const signup: TranslationNamespaces['signup'] = {
     termsAgreement: "ነቲ ሸርሕታትን ፖሊሲ ምስጢርን እተቀበልኩ።",
     title: "ኣካውንት ፍጠር",
     trustLine: "ንሳሎናት እቲ ቀሊል፣ ንጹር ናይ ምድላይ ዝደለዩ ዝእመኑ። ኣይኮነን ነዊሕ ሶፍትዌር።",
+    emailAlreadyRegistered:
+      "እዚ ኢመይል ቅድሚ ሕጂ ተመዝጊቡ። ኣካውንት ከለካ ብምእታው እተገብሩ።",
   };

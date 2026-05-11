@@ -23,4 +23,6 @@ export const signup: TranslationNamespaces["signup"] = {
     passwordHint: "कम से कम 8 अक्षर उपयोग करें। आप इसे बाद में बदल सकते हैं।",
     termsAgreement: "मैं नियम और गोपनीयता नीति से सहमत हूँ।",
     secureLoginLine: "सुरक्षित लॉगिन। आपका पासवर्ड कभी भी सादे पाठ के रूप में संग्रहीत नहीं किया जाता।",
+    emailAlreadyRegistered:
+      "यह ईमेल पहले से पंजीकृत है। यदि आपका खाता है, तो लॉग इन करें।",
 };

@@ -87,6 +87,7 @@ export default function SignUpPage() {
       lastNameRequired: ui.lastNameRequired,
       termsRequired: ui.termsRequired,
       confirmationSent: ui.confirmationSent,
+      emailAlreadyRegistered: signupT.emailAlreadyRegistered,
     },
   });
 
