@@ -165,6 +165,7 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDevelopment = process.env.NODE_ENV === "development";
     const dashboardAppOrigin = toOrigin(process.env.DASHBOARD_APP_URL);
+    const adminAppOrigin = toOrigin(process.env.ADMIN_APP_URL);
     const publicAppOrigin = toOrigin(process.env.NEXT_PUBLIC_APP_URL);
     const frameAncestors = new Set<string>(["'self'"]);
     if (isDevelopment) {
@@ -174,13 +175,23 @@ const nextConfig: NextConfig = {
     if (dashboardAppOrigin) {
       frameAncestors.add(dashboardAppOrigin);
     }
+    if (adminAppOrigin) {
+      frameAncestors.add(adminAppOrigin);
+    }
     if (publicAppOrigin) {
       frameAncestors.add(publicAppOrigin);
+    }
+    // Optional: comma/space-separated origins (e.g. https://app.teqbook.com) for dashboard/booking iframes.
+    for (const raw of (process.env.BOOKING_PREVIEW_FRAME_ANCESTORS ?? "").split(/[\s,]+/).map((s) => s.trim()).filter(Boolean)) {
+      const o = toOrigin(raw);
+      if (o) frameAncestors.add(o);
     }
     if (!isDevelopment) {
       // Allow first-party dashboard embedding on primary production domains.
       frameAncestors.add("https://teqbook.com");
       frameAncestors.add("https://www.teqbook.com");
+      // Vercel branch/preview deployments (…-git-….vercel.app) differ from production *.vercel.app hostname.
+      frameAncestors.add("https://*.vercel.app");
     }
 
     const cspDirectives = [
