@@ -9,7 +9,6 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { getCurrentUser, subscribeToAuthChanges, type User } from "@/lib/services/auth-service";
 import { getProfileForUser } from "@/lib/services/profiles-service";
 import { getSalonByIdForUser } from "@/lib/services/salons-service";
@@ -192,15 +191,12 @@ export function SalonProvider({ children }: SalonProviderProps) {
     loadSalonData();
 
     try {
-      const unsubscribe = subscribeToAuthChanges((event: AuthChangeEvent) => {
-        // Same-origin booking preview iframes share localStorage with the dashboard; Supabase in the
-        // iframe can emit TOKEN_REFRESHED / USER_UPDATED. A foreground reload would set status to
-        // "loading", unmount the whole app (including branding preview state) and flash LoadingScreen.
-        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
-          void loadSalonData({ background: true });
-          return;
-        }
-        void loadSalonData();
+      // Same-origin booking preview iframes share localStorage with the dashboard; Supabase in the
+      // iframe can emit auth events (TOKEN_REFRESHED, INITIAL_SESSION, etc.). A foreground reload
+      // sets status to "loading", replaces the tree with LoadingScreen, and drops client state
+      // (e.g. branding "Show preview"). Only the initial effect load above may show LoadingScreen.
+      const unsubscribe = subscribeToAuthChanges(() => {
+        void loadSalonData({ background: true });
       });
 
       return () => {

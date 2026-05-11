@@ -20,6 +20,9 @@ type FeaturesCache = {
 
 let globalFeaturesCache: FeaturesCache | null = null;
 
+/** Last salon we successfully resolved feature keys for (survives brief global cache clears). */
+let hotFeatureSalonId: string | null = null;
+
 export function useFeatures() {
   const { salon, isReady } = useCurrentSalon();
   const [features, setFeatures] = useState<FeatureKey[]>([]);
@@ -44,6 +47,7 @@ export function useFeatures() {
       setLoading(false);
       setFeatures([]);
       globalFeaturesCache = null;
+      hotFeatureSalonId = null;
       return;
     }
 
@@ -55,6 +59,9 @@ export function useFeatures() {
       setFeatures(globalFeaturesCache.features);
       setLoading(false);
       setError(globalFeaturesCache.error);
+      if (!globalFeaturesCache.error && globalFeaturesCache.features.length > 0) {
+        hotFeatureSalonId = salonId;
+      }
       return;
     }
 
@@ -69,18 +76,25 @@ export function useFeatures() {
         setFeatures(globalFeaturesCache.features);
         setLoading(false);
         setError(globalFeaturesCache.error);
+        if (!globalFeaturesCache.error && globalFeaturesCache.features.length > 0) {
+          hotFeatureSalonId = salonId;
+        }
         loadingRef.current = false;
         return;
       }
 
       loadingRef.current = true;
-      setLoading(true);
+      // Avoid FeatureGate skeleton (unmounts entire page) when re-fetching flags for the same salon
+      // after a brief cache clear — e.g. same-origin iframe + auth/storage sync.
+      const silentRefetch = hotFeatureSalonId === salonId;
+      setLoading(!silentRefetch);
       setError(null);
 
       const { features: featureKeys, error: featuresError } =
         await featureFlagsService.getFeaturesForSalon(salonId);
 
       if (featuresError) {
+        hotFeatureSalonId = null;
         setError(featuresError);
         setFeatures([]);
         globalFeaturesCache = {
@@ -90,6 +104,7 @@ export function useFeatures() {
           error: featuresError,
         };
       } else {
+        hotFeatureSalonId = salonId;
         setFeatures(featureKeys);
         // Cache the features for this salon
         globalFeaturesCache = {
