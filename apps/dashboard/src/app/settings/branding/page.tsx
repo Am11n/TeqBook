@@ -21,20 +21,41 @@ type PortfolioItem = {
 };
 
 export default function BrandingSettingsPage() {
+  // Keep above FeatureGate's loading skeleton so "Show preview" survives brief unmounts of inner content.
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+
   return (
     <FeatureGate feature="BRANDING" wrapInShell={false}>
-      <BrandingSettingsPageInner />
+      <BrandingSettingsPageInner
+        showPreview={showPreview}
+        setShowPreview={setShowPreview}
+        previewRefreshKey={previewRefreshKey}
+        onBrandingSaved={() => setPreviewRefreshKey((n) => n + 1)}
+      />
     </FeatureGate>
   );
 }
 
-function BrandingSettingsPageInner() {
+type BrandingSettingsPageInnerProps = {
+  showPreview: boolean;
+  setShowPreview: (value: boolean) => void;
+  previewRefreshKey: number;
+  onBrandingSaved: () => void;
+};
+
+function BrandingSettingsPageInner({
+  showPreview,
+  setShowPreview,
+  previewRefreshKey,
+  onBrandingSaved,
+}: BrandingSettingsPageInnerProps) {
   const { locale } = useLocale();
   const { salon } = useCurrentSalon();
   const appLocale = normalizeLocale(locale);
   const t = translations[appLocale].settings;
 
-  const branding = useBranding();
+  const branding = useBranding({ onBrandingSaved });
   const isStarterPlan = (salon?.plan || "starter") === "starter";
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [loadingPortfolio, setLoadingPortfolio] = useState(false);
@@ -145,7 +166,7 @@ function BrandingSettingsPageInner() {
 
   return (
     <div className="space-y-6">
-      {branding.showPreview && (
+      {showPreview && (
         <LivePreviewCard
           salon={salon}
           theme={{
@@ -154,8 +175,8 @@ function BrandingSettingsPageInner() {
             font: branding.fontFamily,
             logo_url: branding.logoUrl || undefined,
           }}
-          onHide={() => branding.setShowPreview(false)}
-          previewRefreshKey={branding.previewRefreshKey}
+          onHide={() => setShowPreview(false)}
+          previewRefreshKey={previewRefreshKey}
         />
       )}
 
@@ -202,8 +223,8 @@ function BrandingSettingsPageInner() {
         saving={branding.saving}
         error={branding.error}
         saved={branding.saved}
-        showPreview={branding.showPreview}
-        onShowPreview={() => branding.setShowPreview(true)}
+        showPreview={showPreview}
+        onShowPreview={() => setShowPreview(true)}
         translations={{
           brandingTitle: t.brandingTitle,
           brandingDescription: t.brandingDescription,

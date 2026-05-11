@@ -27,7 +27,12 @@ function angleFromDirection(direction: GradientDirection): number {
   return 180;
 }
 
-export function useBranding() {
+export type UseBrandingOptions = {
+  /** Called after branding is saved and salon context refreshed (e.g. bump iframe preview). */
+  onBrandingSaved?: () => void;
+};
+
+export function useBranding(options?: UseBrandingOptions) {
   const { salon, refreshSalon } = useCurrentSalon();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,8 +40,6 @@ export function useBranding() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
 
   // Default colors for user's custom theme (not design tokens)
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
@@ -287,7 +290,7 @@ export function useBranding() {
       }
 
       await refreshSalon();
-      setPreviewRefreshKey((value) => value + 1);
+      options?.onBrandingSaved?.();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -302,9 +305,6 @@ export function useBranding() {
     saved,
     error,
     uploadingLogo,
-    showPreview,
-    setShowPreview,
-    previewRefreshKey,
     fileInputRef,
     primaryColor,
     setPrimaryColor,
