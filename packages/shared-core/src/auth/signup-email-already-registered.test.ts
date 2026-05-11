@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { isSignUpEmailAlreadyRegistered, SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR } from "./signup-email-already-registered";
+import {
+  isSignUpEmailAlreadyRegistered,
+  isSignupEmailAlreadyRegisteredError,
+  SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR,
+} from "./signup-email-already-registered";
 
 describe("isSignUpEmailAlreadyRegistered", () => {
   it("returns false for a new user with an email identity", () => {
@@ -29,5 +33,16 @@ describe("isSignUpEmailAlreadyRegistered", () => {
 describe("SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR", () => {
   it("is a stable sentinel string", () => {
     expect(SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR).toContain("teqbook");
+  });
+});
+
+describe("isSignupEmailAlreadyRegisteredError", () => {
+  it("detects the exact sentinel returned from signUp", () => {
+    expect(isSignupEmailAlreadyRegisteredError(SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR)).toBe(true);
+  });
+
+  it("returns false for unrelated errors", () => {
+    expect(isSignupEmailAlreadyRegisteredError("Invalid login credentials")).toBe(false);
+    expect(isSignupEmailAlreadyRegisteredError(null)).toBe(false);
   });
 });

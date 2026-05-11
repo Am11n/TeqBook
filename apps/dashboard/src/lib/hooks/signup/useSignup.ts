@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/services/auth-service";
 import { upsertProfile } from "@/lib/services/profiles-service";
 import { validatePassword } from "@/lib/utils/signup/signup-utils";
-import { SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR } from "@teqbook/shared-core";
+import { isSignupEmailAlreadyRegisteredError } from "@teqbook/shared-core";
 
 interface UseSignupOptions {
   locale: string;
@@ -72,10 +72,12 @@ export function useSignup({ locale, translations }: UseSignupOptions) {
       });
 
       if (signUpError || !signUpData?.user) {
-        const message =
-          signUpError === SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR
-            ? translations.emailAlreadyRegistered
-            : signUpError || "Failed to create account";
+        const duplicateCopy =
+          translations.emailAlreadyRegistered ||
+          "This email is already registered. Log in if you already have an account.";
+        const message = isSignupEmailAlreadyRegisteredError(signUpError)
+          ? duplicateCopy
+          : signUpError || "Failed to create account";
         setError(message);
         setStatus("error");
         return;

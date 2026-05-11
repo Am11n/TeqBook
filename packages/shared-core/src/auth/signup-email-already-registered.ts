@@ -5,6 +5,15 @@
  */
 export const SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR = "__teqbook_signup_email_already_registered__" as const;
 
+/**
+ * Use this in UI code instead of `error === SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR`.
+ * Some bundlers can instantiate `@teqbook/shared-core` more than once, which can break
+ * strict `===` against the exported constant. The marker substring is matched literally here.
+ */
+export function isSignupEmailAlreadyRegisteredError(message: string | null | undefined): boolean {
+  return typeof message === "string" && message.includes("__teqbook_signup_email_already_registered__");
+}
+
 function authErrorIndicatesExistingEmail(message: string): boolean {
   const m = message.toLowerCase();
   return (

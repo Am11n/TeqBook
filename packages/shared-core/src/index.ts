@@ -75,4 +75,5 @@ export {
 export {
   SIGNUP_EMAIL_ALREADY_REGISTERED_ERROR,
   isSignUpEmailAlreadyRegistered,
+  isSignupEmailAlreadyRegisteredError,
 } from "./auth/signup-email-already-registered";
