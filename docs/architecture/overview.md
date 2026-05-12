@@ -219,4 +219,3 @@ Test repositories med mocked Supabase-klient (eller integration tests).
 - `docs/architecture/types.md` - Type-dokumentasjon
 - `docs/backend/data-model.md` - Datamodell
 - `docs/coding-style.md` - Kodestilguide
-
