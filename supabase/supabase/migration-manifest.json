@@ -17,7 +17,8 @@
     "supabase/supabase/migrations/20260505130000_addon_invariant_include_pending.sql",
     "supabase/supabase/migrations/20260506120000_pending_plan.sql",
     "supabase/supabase/migrations/20260507120000_pending_target_addons.sql",
-    "supabase/supabase/migrations/20260508120000_grant_addon_invariant_for_triggers.sql"
+    "supabase/supabase/migrations/20260508120000_grant_addon_invariant_for_triggers.sql",
+    "supabase/supabase/migrations/20261101090000_data_api_grants_service_only_ledgers.sql"
   ]
 }
 

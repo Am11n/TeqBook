@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-11-01
+
+- [kode/db] Data API / `public`-grants (post Supabase 2026-10-30): ny migrasjon `20261101090000_data_api_grants_service_only_ledgers.sql` for eksplisitt `GRANT`/`REVOKE` på `stripe_webhook_events`, `public_booking_action_proofs`, `public_booking_used_action_token_nonces` (service_role-only ledger-tabeller). Runbook: [`docs/ops/supabase-data-api-public-grants.md`](../ops/supabase-data-api-public-grants.md). `migration-manifest.json` + `db:manifest:lock`.
+
 ## 2026-05-08
 
 - [kode/db] `20260508120000_grant_addon_invariant_for_triggers.sql`: `GRANT EXECUTE` til `authenticated` på `addon_included_limit`, `salon_capped_addon_quantity`, `assert_salon_addon_usage` slik at `BEFORE` triggers på `employees` (f.eks. `is_active`) ikke feiler med «permission denied» etter at `PUBLIC` ble revoket i steg-0; manifest oppdatert.
