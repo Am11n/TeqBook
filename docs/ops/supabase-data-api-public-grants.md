@@ -112,7 +112,7 @@ Følgende er **implementert i repo** for å tette kjente hull der tabeller ble o
   - `public.public_booking_action_proofs` (kun `service_role`, i tråd med kommentarer i skjema)
   - `public.public_booking_used_action_token_nonces` (samme)
 
-Etter merge: kjør **`supabase db push --yes`** mot lenket prosjekt (eller avtalt pilot-rutine) slik at remote aldri henger etter app-kode.
+**Utrullet på teqbook-pilot** (`mdqnburqfzvzhvsicdyo`, 2026-05-15): `db push` bekreftet at `20261101090000` er på remote; tabell-grants verifisert (`service_role` only for de tre ledger-tabellene).
 
 ---
 

@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-05-15
+
+- [pilot/db] `supabase db push --yes` mot **teqbook-pilot** (`mdqnburqfzvzhvsicdyo`): remote allerede på `20261101090000_data_api_grants_service_only_ledgers.sql`; verifisert at `stripe_webhook_events`, `public_booking_action_proofs`, `public_booking_used_action_token_nonces` kun har `service_role` (+ postgres) som tabell-grantees. Linear TEQ-5 lukket.
+
 ## 2026-11-01
 
 - [kode/db] Data API / `public`-grants (post Supabase 2026-10-30): ny migrasjon `20261101090000_data_api_grants_service_only_ledgers.sql` for eksplisitt `GRANT`/`REVOKE` på `stripe_webhook_events`, `public_booking_action_proofs`, `public_booking_used_action_token_nonces` (service_role-only ledger-tabeller). Runbook: [`docs/ops/supabase-data-api-public-grants.md`](../ops/supabase-data-api-public-grants.md). `migration-manifest.json` + `db:manifest:lock`.
