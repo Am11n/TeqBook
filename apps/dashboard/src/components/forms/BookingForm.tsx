@@ -18,7 +18,7 @@ interface BookingFormProps {
   setServiceId: (id: string) => void;
   date: string;
   setDate: (date: string) => void;
-  slots: { start: string; end: string; label: string }[];
+  slots: { start: string; end: string; label: string; value: string }[];
   selectedSlot: string;
   setSelectedSlot: (slot: string) => void;
   loadingSlots: boolean;
@@ -111,7 +111,7 @@ export function BookingForm({
           {loadingSlots ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{translations.loadingSlots}</div>
           ) : (
-            <DialogSelect value={selectedSlot} onChange={(v) => { setSelectedSlot(v); validateField("selectedSlot", v); }} required placeholder={slots.length === 0 ? translations.noSlotsYet : translations.selectSlotPlaceholder} options={slots.map((slot) => ({ value: slot.start, label: slot.label }))} />
+            <DialogSelect value={selectedSlot} onChange={(v) => { setSelectedSlot(v); validateField("selectedSlot", v); }} required placeholder={slots.length === 0 ? translations.noSlotsYet : translations.selectSlotPlaceholder} options={slots.map((slot) => ({ value: slot.value, label: slot.label }))} />
           )}
           {fieldErrors.selectedSlot && <p className="text-xs text-red-500">{fieldErrors.selectedSlot}</p>}
         </div>

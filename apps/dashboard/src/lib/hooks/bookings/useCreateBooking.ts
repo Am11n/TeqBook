@@ -11,6 +11,13 @@ import type { Product } from "@/lib/repositories/products";
 import { useBookingValidation } from "./useBookingValidation";
 import { useCustomerPrefill } from "./useCustomerPrefill";
 
+/** Stable select value for DialogSelect (must be unique per slot row). */
+const BOOKING_SLOT_VALUE_SEP = "\u001f";
+
+export function bookingSlotOptionValue(start: string, end: string): string {
+  return `${start}${BOOKING_SLOT_VALUE_SEP}${end}`;
+}
+
 interface UseCreateBookingOptions {
   employees: Array<{ id: string; full_name: string }>;
   services: Array<{ id: string; name: string }>;
@@ -29,7 +36,9 @@ export function useCreateBooking({
   const [employeeId, setEmployeeId] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [date, setDate] = useState<string>(() => getTodayLocal());
-  const [slots, setSlots] = useState<{ start: string; end: string; label: string }[]>([]);
+  const [slots, setSlots] = useState<
+    { start: string; end: string; label: string; value: string }[]
+  >([]);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [savingBooking, setSavingBooking] = useState(false);
@@ -73,10 +82,24 @@ export function useCreateBooking({
     const mapped = (data ?? []).map((slot) => {
       const startLabel = formatTimeInTimezone(slot.slot_start, salonTz, "en-US", { hour: "2-digit", minute: "2-digit" }, hour12);
       const endLabel = formatTimeInTimezone(slot.slot_end, salonTz, "en-US", { hour: "2-digit", minute: "2-digit" }, hour12);
-      return { start: slot.slot_start, end: slot.slot_end, label: `${startLabel} – ${endLabel}` };
+      const start = slot.slot_start;
+      const end = slot.slot_end;
+      return {
+        start,
+        end,
+        label: `${startLabel} – ${endLabel}`,
+        value: bookingSlotOptionValue(start, end),
+      };
     });
 
-    setSlots(mapped);
+    const seen = new Set<string>();
+    const unique = mapped.filter((row) => {
+      if (seen.has(row.value)) return false;
+      seen.add(row.value);
+      return true;
+    });
+
+    setSlots(unique);
     setLoadingSlots(false);
   }
 
@@ -95,7 +118,7 @@ export function useCreateBooking({
     setSavingBooking(true);
     setError(null);
 
-    const slot = slots.find((s) => s.start === selectedSlot);
+    const slot = slots.find((s) => s.value === selectedSlot);
     if (!slot) { setError(translations.invalidSlot); setSavingBooking(false); return; }
 
     const startTimeUTC = new Date(slot.start).toISOString();

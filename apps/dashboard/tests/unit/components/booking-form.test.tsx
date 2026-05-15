@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BookingForm } from "@/components/forms/BookingForm";
+import { bookingSlotOptionValue } from "@/lib/hooks/bookings/useCreateBooking";
 import type { Product } from "@/lib/repositories/products";
 
 // Mock data
@@ -29,8 +30,18 @@ const mockProducts: Product[] = [
 ];
 
 const mockSlots = [
-  { start: "2024-01-15T10:00:00Z", end: "2024-01-15T11:00:00Z", label: "10:00 – 11:00" },
-  { start: "2024-01-15T11:00:00Z", end: "2024-01-15T12:00:00Z", label: "11:00 – 12:00" },
+  {
+    start: "2024-01-15T10:00:00Z",
+    end: "2024-01-15T11:00:00Z",
+    label: "10:00 – 11:00",
+    value: bookingSlotOptionValue("2024-01-15T10:00:00Z", "2024-01-15T11:00:00Z"),
+  },
+  {
+    start: "2024-01-15T11:00:00Z",
+    end: "2024-01-15T12:00:00Z",
+    label: "11:00 – 12:00",
+    value: bookingSlotOptionValue("2024-01-15T11:00:00Z", "2024-01-15T12:00:00Z"),
+  },
 ];
 
 const defaultProps = {
