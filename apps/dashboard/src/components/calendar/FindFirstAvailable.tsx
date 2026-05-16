@@ -9,7 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useCurrentSalon } from "@/components/salon-provider";
 import { useLocale } from "@/components/locale-provider";
 import { normalizeLocale } from "@/i18n/normalizeLocale";
@@ -175,11 +176,19 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
                         count: slots.length,
                       })}
                 </p>
-                {slots.map((slot, i) => (
-                  <button
-                    key={i}
+                {slots.map((slot) => (
+                  <div
+                    key={`${slot.slot_start}-${slot.employee_id}`}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSlotSelected(slot)}
-                    className="flex w-full items-center justify-between rounded-lg border p-3 text-left hover:bg-accent transition-colors group"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSlotSelected(slot);
+                      }
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between rounded-lg border p-3 text-left hover:bg-accent transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div>
                       <div className="flex items-center gap-2 text-sm font-medium">
@@ -195,11 +204,16 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
                         <User className="h-3 w-3" />
                         {slot.employee_name}
                       </div>
-                      <Button size="sm" variant="outline" className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span
+                        className={cn(
+                          buttonVariants({ size: "sm", variant: "outline" }),
+                          "pointer-events-none h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity",
+                        )}
+                      >
                         {tc.findFirstAvailableBook}
-                      </Button>
+                      </span>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
