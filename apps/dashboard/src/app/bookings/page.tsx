@@ -320,7 +320,9 @@ function BookingsContent() {
             customerNameLabel: t.customerNameLabel,
             customerEmailLabel: t.customerEmailLabel, customerEmailPlaceholder: t.customerEmailPlaceholder,
             customerPhoneLabel: t.customerPhoneLabel, customerPhonePlaceholder: t.customerPhonePlaceholder,
-            isWalkInLabel: t.isWalkInLabel, cancelButton: t.cancelButton,
+            isWalkInLabel: t.isWalkInLabel,
+            isWalkInHint: t.isWalkInHint,
+            cancelButton: t.cancelButton,
             createBooking: t.createBooking, creatingBooking: t.creatingBooking,
             invalidSlot: t.invalidSlot, createError: t.createError,
           }}

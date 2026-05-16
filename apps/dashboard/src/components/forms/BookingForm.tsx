@@ -61,6 +61,7 @@ interface BookingFormProps {
     customerPhoneLabel: string;
     customerPhonePlaceholder: string;
     isWalkInLabel: string;
+    isWalkInHint?: string;
   };
 }
 

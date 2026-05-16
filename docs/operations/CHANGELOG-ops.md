@@ -13,6 +13,7 @@
 
 ## 2026-05-15
 
+- [kode/db] Drop-in/walk-in: `create_booking_atomic` setter alltid `status = confirmed`; `is_walk_in` er kun kanal-tag. Dashboard hopper over kunde-bekreftelses-e-post for walk-in; hint i opprett-dialog (nb/en). Migrasjon: `20261115170000_walk_in_bookings_use_confirmed_status.sql`.
 - [pilot/db] `supabase db push --yes` mot **teqbook-pilot** (`mdqnburqfzvzhvsicdyo`): remote allerede på `20261101090000_data_api_grants_service_only_ledgers.sql`; verifisert at `stripe_webhook_events`, `public_booking_action_proofs`, `public_booking_used_action_token_nonces` kun har `service_role` (+ postgres) som tabell-grantees. Linear TEQ-5 lukket.
 
 ## 2026-11-01

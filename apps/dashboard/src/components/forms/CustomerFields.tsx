@@ -29,6 +29,7 @@ interface CustomerFieldsProps {
     customerPhoneLabel: string;
     customerPhonePlaceholder: string;
     isWalkInLabel: string;
+    isWalkInHint?: string;
   };
 }
 
@@ -84,9 +85,14 @@ export function CustomerFields({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <input type="checkbox" id="isWalkIn" checked={isWalkIn} onChange={(e) => setIsWalkIn(e.target.checked)} className="h-4 w-4 rounded border-gray-300" />
-        <label htmlFor="isWalkIn" className="text-sm font-medium">{translations.isWalkInLabel}</label>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <input type="checkbox" id="isWalkIn" checked={isWalkIn} onChange={(e) => setIsWalkIn(e.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+          <label htmlFor="isWalkIn" className="text-sm font-medium">{translations.isWalkInLabel}</label>
+        </div>
+        {translations.isWalkInHint ? (
+          <p className="text-xs text-muted-foreground pl-6">{translations.isWalkInHint}</p>
+        ) : null}
       </div>
     </div>
   );

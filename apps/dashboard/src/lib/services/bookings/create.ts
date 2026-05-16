@@ -209,22 +209,26 @@ async function sendBookingNotifications(
         });
       }
     } else {
-      if (!customerEmailForNotify) {
-        return;
-      }
-      const { sendBookingConfirmation } = await import("@/lib/services/email-service");
-      await sendBookingConfirmation({
-        booking: bookingForEmail,
-        recipientEmail: customerEmailForNotify,
-        language: salon?.preferred_language || "en",
-        salonId: input.salon_id,
-      }).catch((emailError) => {
-        logWarn("Failed to send booking confirmation email", {
+      if (!input.is_walk_in && customerEmailForNotify) {
+        const { sendBookingConfirmation } = await import("@/lib/services/email-service");
+        await sendBookingConfirmation({
+          booking: bookingForEmail,
+          recipientEmail: customerEmailForNotify,
+          language: salon?.preferred_language || "en",
+          salonId: input.salon_id,
+        }).catch((emailError) => {
+          logWarn("Failed to send booking confirmation email", {
+            ...logContext,
+            bookingId: booking.id,
+            emailError: emailError instanceof Error ? emailError.message : "Unknown error",
+          });
+        });
+      } else if (input.is_walk_in) {
+        logInfo("Skipping customer booking confirmation email for walk-in (server path)", {
           ...logContext,
           bookingId: booking.id,
-          emailError: emailError instanceof Error ? emailError.message : "Unknown error",
         });
-      });
+      }
 
       await scheduleReminders({
         bookingId: booking.id,

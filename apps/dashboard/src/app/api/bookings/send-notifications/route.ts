@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // First, get booking to find salonId
     const { data: bookingRow, error: bookingFetchError } = await supabase
       .from("bookings")
-      .select("id, salon_id, status, customers(email, phone)")
+      .select("id, salon_id, status, is_walk_in, customers(email, phone)")
       .eq("id", bookingId)
       .maybeSingle();
 
@@ -267,32 +267,44 @@ export async function POST(request: NextRequest) {
 
     const bookingForNotification = prepareBookingForNotification(booking, salon);
 
+    const isWalkIn = Boolean(
+      bookingData?.is_walk_in ?? (bookingRow as { is_walk_in?: boolean }).is_walk_in ?? booking.is_walk_in,
+    );
+
     const results = {
-      email: null as { success: boolean; error?: string } | null,
+      email: null as { success: boolean; error?: string; skipped?: boolean; reason?: string } | null,
       reminders: null as { error: string | null } | null,
       inApp: null as { success: boolean; sent?: number; error?: string } | null,
     };
 
-    // Send confirmation email (and in-app for customer if configured) via unified notification service
-    const emailResult = await sendBookingNotification("booking_confirmed", {
-      booking: bookingForNotification,
-      salonId,
-      recipientUserId: null,
-      recipientEmail: customerEmail,
-      recipientPhone: notificationPolicy.smsDisabled ? null : customerPhoneFromRow,
-      language,
-    }).catch((err) => {
-      logWarn("Failed to send booking confirmation via unified notification service", {
+    // Drop-in: customer is typically on site — skip confirmation email/SMS; staff still get in-app alert.
+    if (isWalkIn) {
+      logInfo("Skipping customer booking confirmation for walk-in", {
         bookingId: booking.id,
-        error: err instanceof Error ? err.message : "Unknown error",
+        salonId,
       });
-      return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
-    });
+      results.email = { success: true, skipped: true, reason: "walk_in" };
+    } else {
+      const emailResult = await sendBookingNotification("booking_confirmed", {
+        booking: bookingForNotification,
+        salonId,
+        recipientUserId: null,
+        recipientEmail: customerEmail,
+        recipientPhone: notificationPolicy.smsDisabled ? null : customerPhoneFromRow,
+        language,
+      }).catch((err) => {
+        logWarn("Failed to send booking confirmation via unified notification service", {
+          bookingId: booking.id,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
+        return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+      });
 
-    results.email = {
-      success: emailResult.success,
-      error: 'channels' in emailResult ? emailResult.channels?.email?.error : emailResult.error,
-    };
+      results.email = {
+        success: emailResult.success,
+        error: "channels" in emailResult ? emailResult.channels?.email?.error : emailResult.error,
+      };
+    }
 
     // Schedule reminders (24h and 2h before appointment)
     const reminderResult = await scheduleReminders({

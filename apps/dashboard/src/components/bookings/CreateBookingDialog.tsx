@@ -42,6 +42,7 @@ interface CreateBookingDialogProps {
     customerPhoneLabel: string;
     customerPhonePlaceholder: string;
     isWalkInLabel: string;
+    isWalkInHint?: string;
     cancelButton: string;
     createBooking: string;
     creatingBooking: string;
@@ -179,6 +180,7 @@ export function CreateBookingDialog({
               customerPhoneLabel: translations.customerPhoneLabel,
               customerPhonePlaceholder: translations.customerPhonePlaceholder,
               isWalkInLabel: translations.isWalkInLabel,
+              isWalkInHint: translations.isWalkInHint,
             }}
           />
 

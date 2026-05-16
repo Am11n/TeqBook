@@ -55,6 +55,7 @@ export const bookings: TranslationNamespaces['bookings'] = {
     customerPhoneLabel: "Customer phone (optional)",
     customerPhonePlaceholder: "+47 99 99 99 99",
     isWalkInLabel: "Walk-in booking",
+    isWalkInHint: "Customer is on site. The slot is confirmed immediately; no confirmation email is sent.",
     cancelButton: "Cancel",
     createBooking: "Create booking",
     creatingBooking: "Creating…",

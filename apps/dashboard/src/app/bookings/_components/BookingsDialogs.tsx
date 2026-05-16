@@ -37,6 +37,7 @@ interface BookingsDialogsProps {
     customerPhoneLabel: string;
     customerPhonePlaceholder: string;
     isWalkInLabel: string;
+    isWalkInHint?: string;
     cancelButton: string;
     createBooking: string;
     creatingBooking: string;
