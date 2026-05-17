@@ -11,6 +11,10 @@
 
 ---
 
+## 2026-05-16
+
+- [kode/db] `find_first_available_slots_batch`: returnerer nå de tidligste ledige tidene på tvers av alle ansatte (sortert på `slot_start`), ikke de første N fra én ansatt. Standardgrense 25 (maks 100). Migrasjon: `20261116120000_find_first_available_slots_across_employees.sql`. Dashboard «Finn tid» bruker samme grense.
+
 ## 2026-05-15
 
 - [kode/db] Drop-in/walk-in: `create_booking_atomic` setter alltid `status = confirmed`; `is_walk_in` er kun kanal-tag. Dashboard hopper over kunde-bekreftelses-e-post for walk-in; hint i opprett-dialog (nb/en). Migrasjon: `20261115170000_walk_in_bookings_use_confirmed_status.sql`.

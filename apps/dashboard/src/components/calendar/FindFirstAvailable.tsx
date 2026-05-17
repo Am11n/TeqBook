@@ -20,7 +20,11 @@ import { applyTemplate } from "@/i18n/apply-template";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
 import { findFirstAvailableSlots } from "@/lib/repositories/schedule-segments";
 import { DialogSelect } from "@/components/ui/dialog-select";
+import { formatDateInTimezone, formatTimeInTimezone, getTodayInTimezone } from "@/lib/utils/timezone";
 import type { AvailableSlotBatch, Service } from "@/lib/types";
+
+/** Matches RPC default/limit cap in find_first_available_slots_batch. */
+const FIND_SLOTS_RESULT_LIMIT = 25;
 
 interface FindFirstAvailableProps {
   open: boolean;
@@ -38,12 +42,15 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
   );
   const [services, setServices] = useState<Service[]>([]);
   const [serviceId, setServiceId] = useState("");
-  const [dateFrom, setDateFrom] = useState(new Date().toISOString().slice(0, 10));
+  const [dateFrom, setDateFrom] = useState(() => getTodayInTimezone("UTC"));
   const [dateTo, setDateTo] = useState("");
   const [slots, setSlots] = useState<AvailableSlotBatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
+
+  const timezone = salon?.timezone || "UTC";
+  const hour12 = salon?.time_format === "12h";
 
   useEffect(() => {
     if (!salon?.id) return;
@@ -57,12 +64,12 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
   useEffect(() => {
     if (open) {
       setServiceId("");
-      setDateFrom(new Date().toISOString().slice(0, 10));
+      setDateFrom(getTodayInTimezone(timezone));
       setDateTo("");
       setSlots([]);
       setSearched(false);
     }
-  }, [open]);
+  }, [open, timezone]);
 
   const handleSearch = async () => {
     if (!salon?.id || !serviceId) return;
@@ -72,7 +79,7 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
     const { data, error } = await findFirstAvailableSlots(salon.id, serviceId, {
       dateFrom,
       dateTo: dateTo || undefined,
-      limit: 10,
+      limit: FIND_SLOTS_RESULT_LIMIT,
     });
 
     if (!error && data) {
@@ -81,31 +88,18 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
     setLoading(false);
   };
 
-  const formatSlotDate = (isoString: string) => {
-    const tz = salon?.timezone || "UTC";
-    const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
-    try {
-      return new Intl.DateTimeFormat(resolvedLocale, { weekday: "short", month: "short", day: "numeric", timeZone: tz }).format(new Date(isoString));
-    } catch {
-      return new Date(isoString).toLocaleDateString();
-    }
-  };
+  const formatSlotDate = (isoString: string) =>
+    formatDateInTimezone(isoString, timezone, appLocale, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
 
-  const formatSlotTime = (isoString: string) => {
-    const tz = salon?.timezone || "UTC";
-    const resolvedLocale = appLocale === "nb" ? "nb-NO" : appLocale;
-    const h12 = salon?.time_format === "12h" ? true : undefined;
-    try {
-      return new Intl.DateTimeFormat(resolvedLocale, {
-        hour: "numeric",
-        minute: "2-digit",
-        timeZone: tz,
-        ...(h12 !== undefined ? { hour12: h12 } : appLocale === "nb" ? { hour12: false } : {}),
-      }).format(new Date(isoString));
-    } catch {
-      return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    }
-  };
+  const formatSlotTime = (isoString: string) =>
+    formatTimeInTimezone(isoString, timezone, appLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }, hour12);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -99,7 +99,7 @@ export async function findFirstAvailableSlots(
       p_employee_ids: options?.employeeIds ?? null,
       p_date_from: options?.dateFrom ?? new Date().toISOString().slice(0, 10),
       p_date_to: options?.dateTo ?? null,
-      p_limit: options?.limit ?? 10,
+      p_limit: options?.limit ?? 25,
     });
 
     if (error) {
