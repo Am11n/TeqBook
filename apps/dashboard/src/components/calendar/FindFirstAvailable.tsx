@@ -18,13 +18,29 @@ import { translations } from "@/i18n/translations";
 import { resolveNamespace } from "@/i18n/resolve-namespace";
 import { applyTemplate } from "@/i18n/apply-template";
 import { getActiveServicesForCurrentSalon } from "@/lib/repositories/services";
+import { getEmployeesForCurrentSalon } from "@/lib/repositories/employees";
 import { findFirstAvailableSlots } from "@/lib/repositories/schedule-segments";
+import { bookingSlotOptionValue } from "@/lib/hooks/bookings/useCreateBooking";
 import { DialogSelect } from "@/components/ui/dialog-select";
 import { formatDateInTimezone, formatTimeInTimezone, getTodayInTimezone } from "@/lib/utils/timezone";
-import type { AvailableSlotBatch, Service } from "@/lib/types";
+import type { AvailableSlotBatch, Employee, Service } from "@/lib/types";
 
 /** Matches RPC default/limit cap in find_first_available_slots_batch. */
 const FIND_SLOTS_RESULT_LIMIT = 25;
+
+function slotRowKey(slot: AvailableSlotBatch): string {
+  return `${bookingSlotOptionValue(slot.slot_start, slot.slot_end)}-${slot.employee_id}`;
+}
+
+function dedupeAvailableSlots(slots: AvailableSlotBatch[]): AvailableSlotBatch[] {
+  const seen = new Set<string>();
+  return slots.filter((slot) => {
+    const key = slotRowKey(slot);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 interface FindFirstAvailableProps {
   open: boolean;
@@ -41,22 +57,37 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
     [appLocale],
   );
   const [services, setServices] = useState<Service[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [serviceId, setServiceId] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
   const [dateFrom, setDateFrom] = useState(() => getTodayInTimezone("UTC"));
   const [dateTo, setDateTo] = useState("");
   const [slots, setSlots] = useState<AvailableSlotBatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  const employeeOptions = useMemo(
+    () => [
+      { value: "", label: tc.filterEmployeeAll },
+      ...employees.map((e) => ({ value: e.id, label: e.full_name })),
+    ],
+    [employees, tc.filterEmployeeAll],
+  );
 
   const timezone = salon?.timezone || "UTC";
   const hour12 = salon?.time_format === "12h";
 
   useEffect(() => {
     if (!salon?.id) return;
-    getActiveServicesForCurrentSalon(salon.id).then(({ data }) => {
-      setServices((data ?? []) as Service[]);
-      setLoadingServices(false);
+    setLoadingOptions(true);
+    Promise.all([
+      getActiveServicesForCurrentSalon(salon.id),
+      getEmployeesForCurrentSalon(salon.id),
+    ]).then(([servicesRes, employeesRes]) => {
+      setServices((servicesRes.data ?? []) as Service[]);
+      setEmployees((employeesRes.data ?? []).filter((e) => e.is_active));
+      setLoadingOptions(false);
     });
   }, [salon?.id]);
 
@@ -64,6 +95,7 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
   useEffect(() => {
     if (open) {
       setServiceId("");
+      setEmployeeId("");
       setDateFrom(getTodayInTimezone(timezone));
       setDateTo("");
       setSlots([]);
@@ -79,11 +111,12 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
     const { data, error } = await findFirstAvailableSlots(salon.id, serviceId, {
       dateFrom,
       dateTo: dateTo || undefined,
+      employeeIds: employeeId ? [employeeId] : undefined,
       limit: FIND_SLOTS_RESULT_LIMIT,
     });
 
     if (!error && data) {
-      setSlots(data);
+      setSlots(dedupeAvailableSlots(data));
     }
     setLoading(false);
   };
@@ -120,13 +153,26 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
             <DialogSelect
               value={serviceId}
               onChange={setServiceId}
-              disabled={loadingServices}
+              disabled={loadingOptions}
               placeholder={tc.findFirstAvailableServicePlaceholder}
               className="mt-1"
               options={services.map((s) => ({
                 value: s.id,
                 label: `${s.name} (${s.duration_minutes}min)`,
               }))}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">
+              {tc.filterEmployeeLabel}
+            </label>
+            <DialogSelect
+              value={employeeId}
+              onChange={setEmployeeId}
+              disabled={loadingOptions}
+              placeholder={tc.filterEmployeeAll}
+              className="mt-1"
+              options={employeeOptions}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -172,7 +218,7 @@ export function FindFirstAvailable({ open, onOpenChange, onSlotSelected }: FindF
                 </p>
                 {slots.map((slot) => (
                   <div
-                    key={`${slot.slot_start}-${slot.employee_id}`}
+                    key={slotRowKey(slot)}
                     role="button"
                     tabIndex={0}
                     onClick={() => onSlotSelected(slot)}

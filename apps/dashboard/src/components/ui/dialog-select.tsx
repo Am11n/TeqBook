@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/components/locale-provider";
@@ -16,19 +17,103 @@ export interface DialogSelectOption {
   flagEmoji?: string;
 }
 
-function useClickOutside(
-  ref: React.RefObject<HTMLElement | null>,
+const DROPDOWN_MAX_HEIGHT_PX = 208; // max-h-52
+const DROPDOWN_GAP_PX = 4;
+const DROPDOWN_Z_INDEX = 100;
+
+function useDismissOnOutsideClick(
   open: boolean,
   onClose: () => void,
+  refs: Array<React.RefObject<HTMLElement | null>>,
 ) {
   useEffect(() => {
     if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    function handlePointerDown(e: MouseEvent) {
+      const target = e.target as Node;
+      if (refs.some((ref) => ref.current?.contains(target))) return;
+      onClose();
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open, ref, onClose]);
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open, onClose, refs]);
+}
+
+function useDropdownPosition(
+  open: boolean,
+  anchorRef: React.RefObject<HTMLButtonElement | null>,
+): CSSProperties {
+  const [style, setStyle] = useState<CSSProperties>({ visibility: "hidden" });
+
+  useEffect(() => {
+    if (!open || !anchorRef.current) return;
+
+    const update = () => {
+      const rect = anchorRef.current!.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom - DROPDOWN_GAP_PX;
+      const spaceAbove = rect.top - DROPDOWN_GAP_PX;
+      const openUp =
+        spaceBelow < Math.min(DROPDOWN_MAX_HEIGHT_PX, 120) && spaceAbove > spaceBelow;
+      const maxHeight = Math.min(
+        DROPDOWN_MAX_HEIGHT_PX,
+        Math.max(0, openUp ? spaceAbove : spaceBelow),
+      );
+
+      setStyle({
+        position: "fixed",
+        left: rect.left,
+        width: rect.width,
+        zIndex: DROPDOWN_Z_INDEX,
+        maxHeight,
+        ...(openUp
+          ? { bottom: window.innerHeight - rect.top + DROPDOWN_GAP_PX }
+          : { top: rect.bottom + DROPDOWN_GAP_PX }),
+      });
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [open, anchorRef]);
+
+  return style;
+}
+
+function DialogSelectDropdown({
+  open,
+  anchorRef,
+  onClose,
+  children,
+  className,
+}: {
+  open: boolean;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
+  onClose: () => void;
+  children: ReactNode;
+  className?: string;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const position = useDropdownPosition(open, anchorRef);
+  useDismissOnOutsideClick(open, onClose, [anchorRef, menuRef]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      ref={menuRef}
+      style={position}
+      className={cn(
+        "overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md",
+        className,
+      )}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
 }
 
 function LanguageFlagAvatar({ flagEmoji }: { flagEmoji: string }) {
@@ -70,14 +155,15 @@ export function DialogSelect({
   );
   const resolvedPlaceholder = placeholder ?? d.dialogSelectPlaceholderDefault;
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  useClickOutside(containerRef, open, () => setOpen(false));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const close = () => setOpen(false);
 
   const selected = options.find((o) => o.value === value);
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div className={cn("relative", className)}>
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
@@ -109,41 +195,39 @@ export function DialogSelect({
         />
       )}
 
-      {open && (
-        <div className="absolute inset-x-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-md border bg-popover shadow-md">
-          {options.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
-          ) : (
-            options.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  onChange(opt.value);
-                  setOpen(false);
-                }}
+      <DialogSelectDropdown open={open} anchorRef={triggerRef} onClose={close}>
+        {options.length === 0 ? (
+          <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
+        ) : (
+          options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                close();
+              }}
+              className={cn(
+                "flex w-full items-center gap-2 px-3 py-2.5 text-sm transition-colors active:bg-accent/80",
+                opt.value === value
+                  ? "bg-accent font-medium"
+                  : "hover:bg-accent/50",
+              )}
+            >
+              <Check
                 className={cn(
-                  "flex w-full items-center gap-2 px-3 py-2.5 text-sm transition-colors active:bg-accent/80",
-                  opt.value === value
-                    ? "bg-accent font-medium"
-                    : "hover:bg-accent/50",
+                  "h-3.5 w-3.5 shrink-0",
+                  opt.value === value ? "opacity-100" : "opacity-0",
                 )}
-              >
-                <Check
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0",
-                    opt.value === value ? "opacity-100" : "opacity-0",
-                  )}
-                />
-                {opt.flagEmoji ? (
-                  <LanguageFlagAvatar flagEmoji={opt.flagEmoji} />
-                ) : null}
-                <span className="min-w-0 flex-1 truncate text-left">{opt.label}</span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
+              />
+              {opt.flagEmoji ? (
+                <LanguageFlagAvatar flagEmoji={opt.flagEmoji} />
+              ) : null}
+              <span className="min-w-0 flex-1 truncate text-left">{opt.label}</span>
+            </button>
+          ))
+        )}
+      </DialogSelectDropdown>
     </div>
   );
 }
@@ -175,8 +259,8 @@ export function DialogMultiSelect({
   );
   const resolvedPlaceholder = placeholder ?? d.dialogSelectPlaceholderDefault;
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  useClickOutside(containerRef, open, () => setOpen(false));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const close = () => setOpen(false);
 
   const selectedLabels = options
     .filter((o) => value.includes(o.value))
@@ -191,8 +275,9 @@ export function DialogMultiSelect({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div className={cn("relative", className)}>
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
@@ -210,40 +295,38 @@ export function DialogMultiSelect({
         <ChevronDown className={cn("ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
 
-      {open && (
-        <div className="absolute inset-x-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-md border bg-popover shadow-md">
-          {options.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
-          ) : (
-            options.map((opt) => {
-              const checked = value.includes(opt.value);
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => toggle(opt.value)}
+      <DialogSelectDropdown open={open} anchorRef={triggerRef} onClose={close}>
+        {options.length === 0 ? (
+          <p className="px-3 py-2 text-xs text-muted-foreground">{d.dialogSelectNoOptions}</p>
+        ) : (
+          options.map((opt) => {
+            const checked = value.includes(opt.value);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => toggle(opt.value)}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-2.5 text-sm transition-colors active:bg-accent/80",
+                  checked ? "bg-accent/60 font-medium" : "hover:bg-accent/50",
+                )}
+              >
+                <div
                   className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2.5 text-sm transition-colors active:bg-accent/80",
-                    checked ? "bg-accent/60 font-medium" : "hover:bg-accent/50",
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                    checked
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-                      checked
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input",
-                    )}
-                  >
-                    {checked && <Check className="h-3 w-3" />}
-                  </div>
-                  <span className="truncate">{opt.label}</span>
-                </button>
-              );
-            })
-          )}
-        </div>
-      )}
+                  {checked && <Check className="h-3 w-3" />}
+                </div>
+                <span className="truncate">{opt.label}</span>
+              </button>
+            );
+          })
+        )}
+      </DialogSelectDropdown>
     </div>
   );
 }
